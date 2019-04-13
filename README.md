@@ -23,7 +23,7 @@ to report issues to the repository maintainer.
 ## Intellectual property
 **Neither the [https://kdm-manager.com](https://kdm-manager.com) service nor any
 of the software utilized by that service (including the API deployed at
-[https://thewatcher.io](https://thewatcher.io) are developed, authorized,
+[https://api.kdm-manager.com](https://api.kdm-manager.com) are developed, authorized,
 supported by or affiliated with Kingdom Death or Adam Poots Games, LLC.**
 
 For more information, please refer to
@@ -32,9 +32,8 @@ For more information, please refer to
 
 ## Licensing and permission
 The MIT license (LICENSE.md) covers application and API code in this repository,
- but it does not and cannot cover the game assets (in the 
-`/v2/api.thewatcher.io/api/assets` folder), which are the sole property of
-Kingdom Death.
+ but it does not and cannot cover the game assets (in the `/api/assets` folder),
+which are the sole property of Kingdom Death.
 
 
 
