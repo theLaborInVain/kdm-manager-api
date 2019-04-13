@@ -21,17 +21,20 @@ to report issues to the repository maintainer.
 
 
 ## Intellectual property
-**Neither the [https://kdm-manager.com](https://kdm-manager.com) service nor any of the software utilized by that ser
-vice (including the API deployed at [https://thewatcher.io](https://thewatcher.io) are developed, authorized, support
-ed by or affiliated with Kingdom Death or Adam Poots Games, LLC.**
+**Neither the [https://kdm-manager.com](https://kdm-manager.com) service nor any
+of the software utilized by that service (including the API deployed at
+[https://thewatcher.io](https://thewatcher.io) are developed, authorized,
+supported by or affiliated with Kingdom Death or Adam Poots Games, LLC.**
 
-For more information, please refer to [the 'About' section of the project's development blog](http://kdm-manager.blog
-spot.com/p/credits-and-acknowledgements.html).
+For more information, please refer to
+[the 'About' section of the project's development blog](http://kdm-manager.blogspot.com/p/credits-and-acknowledgements.html).
 
 
 ## Licensing and permission
-The MIT license (LICENSE.md) covers application and API code in this repository, but it does not and cannot cover the
- game assets (in the `/v2/api.thewatcher.io/api/assets` folder), which are the sole property of Kingdom Death.
+The MIT license (LICENSE.md) covers application and API code in this repository,
+ but it does not and cannot cover the game assets (in the 
+`/v2/api.thewatcher.io/api/assets` folder), which are the sole property of
+Kingdom Death.
 
 
 
@@ -61,7 +64,7 @@ Run the dev server from the root of the project directory:
     $ ./server.sh dev
 
 Assuming everything went according to plan with pip, this should start listening
-on 0.0.0.0:8021 and responding to requests.
+on 0.0.0.0:8013 and responding to requests.
 
 
 ## Deploy
@@ -74,7 +77,7 @@ the root user:
     # ./install.sh
 
 The `install.sh` script will reload both nginx and `supervisord`, at which point
-the API should be running on 127.0.0.0:8020 and nginx should be listening for
+the API should be running on 127.0.0.0:8013 and nginx should be listening for
 requests for https://downtime.kdm-manager.com, https://kdm-manager.com, etc.
 
 
