@@ -37,10 +37,6 @@ deploy() {
 }
 
 case "$1" in
-    dev)
-        start_venv development
-        python api.py
-        ;;
     status)
         deploy $1
         ;;
@@ -56,7 +52,11 @@ case "$1" in
         echo -e "Restarting API server..."
         deploy $1
         ;;
+    dev)
+        start_venv development
+        python api.py
+        ;;
     *)
-        echo "Usage: $NAME {dev}" >&2
+        echo "Usage: $NAME {status|start|stop|restart|dev}" >&2
         exit 3
 esac

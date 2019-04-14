@@ -32,9 +32,9 @@ For more information, please refer to
 
 
 ## Licensing and permission
-The MIT license (LICENSE.md) covers application and API code in this repository,
- but it does not and cannot cover the game assets (in the `/api/assets` folder),
-which are the sole property of Kingdom Death.
+The MIT license (`LICENSE` in the project root directory) covers application and
+API code in this repository, but it does not and cannot cover the game assets
+ (in the `/app/assets` folder), which are the sole property of Kingdom Death.
 
 
 
@@ -69,7 +69,7 @@ on 0.0.0.0:8013 and responding to requests.
 
 ## Deploy
 
-In order to deploy, **perform the steps above under `Install` first**, then
+In order to deploy, **perform the steps above under _Install_ first**, then
 navigate to the project's root directory and run the `install.sh` script as
 the root user:
 
@@ -80,4 +80,5 @@ The `install.sh` script will reload both nginx and `supervisord`, at which point
 the API should be running on 127.0.0.1:8013 and nginx should be listening for
 requests for https://api.kdm-manager.com
 
-
+From there, run `server.sh` as root to manage deployment operations, e.g. start,
+stop, restart, etc.
