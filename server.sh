@@ -2,6 +2,13 @@
 
 SUPERVISORCTL=`which supervisorctl`
 
+if [ -f "settings_private.cfg" ]; then
+    echo "settings_private.cfg found..."
+else
+    echo -e "\n\tsettings_private.cfg not found! Exiting...\n"
+    exit 1
+fi
+
 start_venv() {
     echo -e "\nVirtual Envrionment:"
 

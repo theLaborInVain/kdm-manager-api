@@ -43,7 +43,7 @@ API code in this repository, but it does not and cannot cover the game assets
 Install host dependencies:
 
     # apt-get -y update
-    # apt-get -y install python3 python3-venv python3-dev supervisor nginx git
+    # apt-get -y install python3 python3-venv python3-dev supervisor nginx git mongodb
 
 Clone the repo.
 
@@ -69,9 +69,9 @@ on 0.0.0.0:8013 and responding to requests.
 
 ## Deploy
 
-In order to deploy, **perform the steps above under _Install_ first**, then
-navigate to the project's root directory and run the `install.sh` script as
-the root user:
+In order to deploy, **perform the steps above under _Installation instructions_
+ first**, then navigate to the project's root directory and run the `install.sh`
+script as the root user:
 
     # cd kdm-manager-api
     # ./install.sh

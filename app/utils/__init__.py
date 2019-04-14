@@ -58,9 +58,9 @@ def get_logger(log_level=None, log_name=None):
         else:
             logger.setLevel(log_handler_level)
 
-        # now check the logging root, just as a precaution
+        # now check the logging root, create it if it's not there
         if not os.path.isdir(log_root_dir):
-            raise OSError("Logging root dir '%s' does not exist!" % log_root_dir)
+            os.mkdir(log_root_dir)
 
         # create the path and add it to the handler
         log_path = os.path.join(log_root_dir, log_file_name + ".log")
