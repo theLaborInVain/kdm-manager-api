@@ -149,7 +149,9 @@ def render_documentation(action, render_type=None):
 #   public routes for API users and webapps
 #
 
+#   game asset lookups
 @api.route("/game_asset")
+@api.route("/game_assets")  # as a courtesy/concession
 @crossdomain(origin=['*'])
 def list_game_assets():
     """ Dumps a list of all available game assets (does not include meta and
@@ -165,6 +167,7 @@ def list_game_assets():
 
 
 @api.route("/game_asset/<asset_type>", methods=api.default_methods)
+@api.route("/game_assets/<asset_type>", methods=api.default_methods)
 @crossdomain(origin=['*'])
 def lookup_asset(asset_type):
     """ Looks up game asset collection assets. Or, if you GET it, dumps the

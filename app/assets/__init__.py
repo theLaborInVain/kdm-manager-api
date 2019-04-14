@@ -1,19 +1,45 @@
 """
+
     This module allows programmatic access to the various asset dictionaries we
     support. Some are game assets, some are "meta" assets used by the webapp(s),
     etc.
+
+    This module also replaces the deprecated/cancelled 'request_broker.py'
+    module (in part), so there are some methods here that return flask Response
+    objects.
+
+    YHBW
+
 """
 
 # standard lib imports
 import glob
+import importlib
 import os
 
-# third part imports
+# third party imports
+import flask
 
 # local imports
 from app import api
 
-import importlib
+
+
+def dump_asset(collection_name, return_type=flask.Response):
+    """ Formerly a part of the (deprecated) request_broker.py module, this
+    method imports an asset type, alls its Assets() method and then returns
+	its request_response() method."""
+
+    model = importlib.import_module('app.models.%s' % collection_name)
+    A = model.Assets()
+
+    if return_type == dict:
+        return A.assets
+    elif return_type == object:
+        return A
+
+    return A.request_response()
+
 
 def list(game_assets=False):
     """ Returns a list of all available asset dictionaries. The 'game_assets'
@@ -29,15 +55,13 @@ def list(game_assets=False):
         in py_files_in_asset_dir
         if os.path.basename(f) != '__init__.py'
     ]
+
+    if game_assets:
+        for collection_name in output:
+            collectionObject = dump_asset(collection_name, return_type=object)
+            if not collectionObject.is_game_asset:
+                output.remove(collection_name)
+
     return output
 
 
-def dump_asset(collection_name):
-    """ Formerly a part of the (deprecated) request_broker.py module, this
-    method imports an asset type, alls its Assets() method and then returns
-	its request_response() method."""
-
-    model = importlib.import_module('app.models.%s' % collection_name)
-    A = model.Assets()
-
-    return A.request_response()

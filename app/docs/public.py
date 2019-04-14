@@ -47,6 +47,10 @@ game_asset_lookups = {
         'name': '/game_asset',
         'desc': 'Returns a list of available game asset modules.',
     },
+    'game_asset_abilities_and_impairments': {
+        'name': '/game_asset/abilities_and_impairments',
+        'desc': 'Returns a JSON representation of known A&I assets.',
+    },
     "game_asset_campaign": {
         "name": "/game_asset/campaign",
         "desc": """\
@@ -69,6 +73,28 @@ Hoard"], "innovation": ["Language"]},"nemesis_monsters": [
 <code>{"handle": "people_of_the_stars"}</code>
 <p>Like all lookup routes, if you <b>GET</b> this endpoint,
 the API will return the definitions of all assets.</p>
+        """,
+    },
+    'game_asset_cursed_items': {
+        'name': '/game_asset/cursed_items',
+        'desc': """\
+<p>Returns a JSON representation of all known cursed items.</p>
+<p>This is basically a lookup dictionary where the handles/keys correspond
+to handles in the <code>gear</code> asset collection, but the values contain
+references/hooks that can be used to look up curse effects.</p>
+<p>This is a transitional method and will eventually be deprecated.</p>
+        """,
+    },
+    'game_asset_disorders': {
+        'name': '/game_asset/disorders',
+        'desc': """\
+<p>Returns a JSON representation of all known disorders.</p>
+        """,
+    },
+    'game_asset_events': {
+        'name': '/game_asset/events',
+        'desc': """\
+<p>Returns a JSON representation of all known story and settlement events.</p>
         """,
     },
     "game_asset_expansion": {
@@ -127,6 +153,12 @@ to get a particular expansion's asset definition.</p>
 e.g. <code>{name: "Flower Knight"}</code> or similar.</p>
 <p>If you <b>GET</b> this route, it will return the definitions
 for all supported expansion content as a dictionary/hash.</p>
+        """,
+    },
+    'game_asset_fighting_arts': {
+        'name': '/game_asset/fighting_arts',
+        'desc': """\
+<p>Returns a JSON representation of all known Fighting Arts.</p>
         """,
     },
     "game_asset_gear": {

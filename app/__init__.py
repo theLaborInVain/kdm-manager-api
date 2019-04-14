@@ -83,9 +83,17 @@ def after_request(response):
 @api.errorhandler(Exception)
 @crossdomain(origin=['*'])
 def general_exception(exception):
-    """ This is how we do automatic email alerts on an API failure. """
-    if socket.getfqdn() == api.settings.get('server','prod_fqdn'):
-        utils.email_exception(exception)
+    """ This is how we do automatic email alerts on arbitrary API failures.
+
+    In production, we send an alert email out and then return a 500 to the user
+    for reference/debugging purposes.
+
+    In non-production environments, we just raise it to the Flask debugger."""
+
+    if socket.getfqdn() != api.settings.get('server','prod_fqdn'):
+        raise(exception)
+
+    utils.email_exception(exception)
     try:
         return flask.Response(response=exception.msg, status=500)
     except:
@@ -95,7 +103,7 @@ def general_exception(exception):
 @api.errorhandler(utils.InvalidUsage)
 @crossdomain(origin=['*'])
 def return_exception(exception):
-    """ This is how we fail an exception up (i.e. back) to the requester. """
+    """ This is how we fail user error (i.e. back) to the requester. """
     return flask.Response(response=exception.msg, status=error.status_code)
 
 

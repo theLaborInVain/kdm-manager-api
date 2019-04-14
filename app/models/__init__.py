@@ -90,15 +90,14 @@ class AssetCollection(object):
 
         self.logger = utils.get_logger()
 
+        # set the game_asset attrib first (default to True)
+        if not hasattr(self, 'is_game_asset'):
+            self.is_game_asset = True
+
+        # now, check for a root module and see if we can use that to init
         if hasattr(self, "root_module"):
             self.type = os.path.splitext(self.root_module.__name__)[-1][1:]
             self.set_assets_from_root_module()
-
-        # preserve 'raw' types as sub types
-#        for a in self.assets.keys():
-#            a_dict = self.assets[a]
-#            if 'type' in a_dict.keys() and not 'sub_type' in a_dict.keys():
-#                self.assets[a]['sub_type'] = self.assets[a]['type']
 
         # type override - be careful!
         if hasattr(self, "type_override"):
@@ -106,12 +105,31 @@ class AssetCollection(object):
             for a in self.assets.keys():
                 self.assets[a]["type"] = self.type_override
 
-        # set the default 'type_pretty' value
+        # set the default 'type_pretty' value, selector text, etc. DO NOT
+        # call this method before you have a sub_type
         self.set_ui_attribs()
 
+        # force all assets to have a 'handle' (that matches their key)
         for a in self.assets.keys():
             self.assets[a]["handle"] = a
 
+        # enforce mandatory_attributes, if necessary
+        if hasattr(self, 'mandatory_attributes'):
+            for mandatory_attribute in self.mandatory_attributes.keys():
+                for a_dict in self.get_dicts():
+                    if mandatory_attribute not in a_dict.keys():
+                        self.logger.debug(
+                            "[%s] '%s' asset missing mandatory attrib! '%s'" % (
+                                self.type,
+                                a_dict['handle'],
+                                mandatory_attribute
+                            )
+                        )
+                        self.assets[
+                            a_dict['handle']
+                        ][mandatory_attribute] = self.mandatory_attributes[
+                            mandatory_attribute
+                        ]
 
     #
     #   get / set / filter methods here
@@ -158,6 +176,24 @@ class AssetCollection(object):
         for k in sorted(all_assets.keys()):
             self.assets[k] = all_assets[k]
 
+
+    def set_default_max_values(self, default_max=1):
+        """ Use this with asset collections where there is a 'max' attribute,
+        e.g. Abilities & Impairments or similar. Calling this method sets
+        the 'max' key/value for each asset in the collection to the
+        'default_max' value. """
+
+        for d in self.get_dicts():
+
+            asset_max = d.get("max", None)
+            asset_handle = d["handle"]
+
+            if asset_max is None:
+                self.assets[asset_handle]["max"] = default_max
+            elif asset_max is False:
+                self.assets[asset_handle]["max"] = 666
+
+
     def set_ui_attribs(self, capitalize=True):
         """ Iterates over self.assets; adds the "type_pretty" and 'sub_type_pretty'
         to all assets in the AssetCollection.assets dict """
@@ -195,7 +231,12 @@ class AssetCollection(object):
             #
 
             selector_text = a_dict.get('name','')
+
             parenthetical = []
+
+            # special extre text for Secret fighting arts
+            if a_dict.get('sub_type', None) == 'secret_fighting_art':
+                parenthetical.append('Secret')
             if a_dict.get('expansion', None) is not None:
                 parenthetical.append(a_dict['expansion'].replace("_"," ").title())
 

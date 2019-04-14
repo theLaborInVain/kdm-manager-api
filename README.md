@@ -45,7 +45,10 @@ Install host dependencies:
     # apt-get -y update
     # apt-get -y install python3 python3-venv python3-dev supervisor nginx git mongodb
 
-Clone the repo.
+Navigate to your home and clone the repo:
+
+    $ cd 
+    $ git clone https://github.com/theLaborInVain/kdm-manager-api.git
 
 Install app dependencies:
 
@@ -58,6 +61,9 @@ Install app dependencies:
 
 ## Run
 
+The API server will not start without a file called `settings_private.cfg` in
+the project's root directory.
+
 Run the dev server from the root of the project directory:
 
     $ cd kdm-manager-api
@@ -68,6 +74,10 @@ on 0.0.0.0:8013 and responding to requests.
 
 
 ## Deploy
+
+**Important!** At the time of the 1.0.0 release of the API, the install files
+have some hard-coded paths, e.g. `/home/toconnell` and similar. Deploying the
+API as a different user will require the modification of these files!
 
 In order to deploy, **perform the steps above under _Installation instructions_
  first**, then navigate to the project's root directory and run the `install.sh`
