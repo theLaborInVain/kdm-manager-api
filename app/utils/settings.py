@@ -29,7 +29,7 @@ class Settings:
 
         # fail if the dir with settings.py does not have a settings.cfg
         if not os.path.isfile(c_path):
-            raise OSError("%s: Settings file '%s' does not exist!" % (sys.argv[0], settings_abs_path))
+            raise OSError("%s: Settings file '%s' does not exist!" % (sys.argv[0], c_path))
 
         self.config = SafeConfigParser()
         self.config.file_path = c_path
@@ -53,7 +53,7 @@ class Settings:
         lines = fh.readlines()
         for line in lines:
             line = line.strip()
-            key,ident = line.split("|~|")
+            key, ident = line.split("|~|")
             self.api_keys[key] = ident
 
 
@@ -63,36 +63,29 @@ class Settings:
         raw_value = self.config.get(section,key)
         if raw_value in ["True","False"]:
             return self.config.getboolean(section,key)
-        elif key in ["log_level"]:
-            exec ("log_level_obj = logging.%s" % raw_value)
-            return log_level_obj
         else:
             try:
                 return self.config.getint(section,key)
-            except:
+            except ValueError:
                 pass
 
         return raw_value
 
 
     def jsonify(self):
-        """ Renders the config object as JSON. """
+        """ Renders the config object as JSON, set it as an attribute of the
+        settings object AND returns it (just in case you need it right away. """
 
         d = {}
+
         for section in self.config.sections():
             d[section] = {}
             for option in self.config.options(section):
-                d[section][option] = self.get(section,option)   # use the custom get() method
+                d[section][option] = self.get(section,option)
         self.config.json = json.dumps(d)
 
+        return self.config.json
 
-    def json_file(self):
-        """ Returns a string IO object that looks like a file object. """
-        self.jsonify()
-        s_file = io.StringIO()
-        s_file.write(self.config.json)
-        s_file.seek(0)
-        return s_file
 
 
 def check_key(k=None):
@@ -128,20 +121,5 @@ def update(section=None, key=None, value=None):
     S.config.set(section, key, value)
     with open(S.config.file_path, 'wb') as c_file:
         S.config.write(c_file)
-
-
-if __name__=="__main__":
-    parser = OptionParser()
-    parser.add_option("--update", dest="update", help="Update a section/key/value", metavar='"application log_root_dir /var/log/kdm-manager"')
-    (options, args) = parser.parse_args()
-
-    os.chdir(os.path.dirname(sys.argv[0]))
-
-    if options.update:
-        section, key, value = tuple(options.update.split(" "))
-        update(section, key, value)
-
-
-
 
 

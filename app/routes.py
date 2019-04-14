@@ -27,7 +27,7 @@ import flask_jwt_extended
 #from api.models import users, settlements, names
 
 #   app module imports
-from app import api, docs, utils
+from app import api, assets, docs, utils
 from app.utils import crossdomain
 
 #import world
@@ -35,29 +35,62 @@ from app.utils import crossdomain
 
 
 #
-#   public API routes; these routes are not meant for use by applications or
-#       users or anything like that. These are reference and index routes.
+#   browser-facing endpoints, e.g. stat, documentation, etc..
 #
+
+#       stat (supersedes deprecated settings routes)
+
+@api.route("/stat")
+@crossdomain(origin=['*'])
+def stat_api():
+    """ This is basically a ping. Retruns the generic API meta data dict
+    as JSON. """
+    return Response(
+        response=json.dumps(utils.api_meta, default=json_util.default),
+        status=200,
+        mimetype="application/json"
+    )
+
+
+@api.route("/settings")
+def get_settings():
+    """ Deprecated: 2019-01-13. Returns the settings object as JSON. """
+    settingsObject = utils.settings.Settings()
+    return Response(
+        response=settingsObject.jsonify(),
+        status=299,
+        mimetype="application/json",
+    )
+
+
+@api.route("/settings.json")
+def get_settings_json():
+    """ Formerly returned the API settings as a JSON file. Deprecated on
+    2019-01-13 and removed in the version one release of the API. """
+    return utils.http_410
+
+
+
+#       documentation
 
 @api.route("/")
 def index():
-    """ The default return for accessing https://api.thewatcher.io (or
-    equivalent endpoint), which gets you the API docs.
-
-    This is NOT the same as the https://thewatcher.io return, which we handle
-    in the webserver (nginx) config, because that's a webserver job for now.
-    """
+    """ The default return for accessing https://api.kdm-manager.com (or
+    equivalent endpoint), which gets you the API docs. """
     return send_file("html/docs.html")
 
 
 @api.route("/docs/<action>/<render_type>")
-def render_documentation(action, render_type):
+def render_documentation(action, render_type=None):
     """ These routes get you various representations of the contents of the
     docs module.
 
     For now, the supported 'action' list includes only the following::
 
         - get: this basically retrieves all extant documentation
+        - get_documented_endpoints: calls this method of the docs object,
+            which basically returns a set of the currently documented
+            endpoints
         - get_sections: returns all sections defined in docs.sections
 
     The only supported 'render_type' is 'json' (case-insensitive).
@@ -68,11 +101,12 @@ def render_documentation(action, render_type):
 
     render_type = render_type.upper()   # case-insensitive: json/JSON
 
-    docs_object = docs.DocumentationObject()
+    docsObject = docs.DocumentationObject()
+
     if action == 'get':
         if render_type == 'JSON':
             j = json.dumps(
-                docs_object.render_as_json(),
+                docsObject.render_as_json(),
                 default=json_util.default
             )
             response = Response(
@@ -81,7 +115,7 @@ def render_documentation(action, render_type):
                 mimetype="application/json"
             )
     elif action == 'get_documented_endpoints':
-        output = docs_object.get_documented_endpoints()
+        output = docsObject.get_documented_endpoints()
         if render_type == 'JSON':
             response = Response(
                 response=json.dumps(output),
@@ -97,7 +131,7 @@ def render_documentation(action, render_type):
     elif action == 'get_sections':
         if render_type == 'JSON':
             j = json.dumps(
-                docs_object.dump_sections(),
+                docsObject.dump_sections(),
                 default=json_util.default
             )
             response = Response(
@@ -109,53 +143,40 @@ def render_documentation(action, render_type):
     return response
 
 
-@api.route("/settings.json")
-def get_settings_json():
-    """ Deprecated: 2019-01-13. """
-    settings_object = utils.settings.Settings()
-    return send_file(
-        settings_object.json_file(),
-        attachment_filename="settings.json",
-        as_attachment=True
-    )
-
-
-@api.route("/settings")
-def get_settings():
-    """ Deprecated: 2019-01-13. """
-    settings_object = utils.settings.Settings()
-    return Response(
-        response=settings_object.json_file(),
-        status=200,
-        mimetype="application/json",
-    )
-
 
 
 #
 #   public routes for API users and webapps
 #
 
-@api.route("/stat", methods=["GET", "POST", "OPTIONS"])
+@api.route("/game_asset")
 @crossdomain(origin=['*'])
-def stat_api():
-    """ Returns a dict of API information. """
+def list_game_assets():
+    """ Dumps a list of all available game assets (does not include meta and
+    webapp asset modules. """
     return Response(
-        response=json.dumps(utils.api_meta, default=json_util.default),
+        response=json.dumps(
+            assets.list(game_assets=True),
+            default=json_util.default
+        ),
         status=200,
         mimetype="application/json"
     )
 
 
-@api.route(
-    "/game_asset/<asset_collection>",
-    methods=["GET", "POST", "OPTIONS"]
-)
+@api.route("/game_asset/<asset_type>", methods=api.default_methods)
 @crossdomain(origin=['*'])
-def lookup_asset(asset_collection):
-    """ Looks up game asset collection assets. Or, if you GET it, dumps the whole
-    asset collection object """
-    return request_broker.get_game_asset(asset_collection)
+def lookup_asset(asset_type):
+    """ Looks up game asset collection assets. Or, if you GET it, dumps the
+    initialized asset module's assets dictionary. """
+
+    if asset_type not in assets.list():
+        return Response(
+            response="/game_asset/%s is not a supported endpoint!" % asset_type,
+            status=404,
+        )
+
+    return assets.dump_asset(asset_type)
 
 
 @api.route("/new_settlement")

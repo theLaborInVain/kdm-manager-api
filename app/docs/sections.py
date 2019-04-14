@@ -57,44 +57,14 @@ these routes, <u>all private routes supported by the KD:M API also support the
     "game_asset_lookups": {
         "name": "Game asset lookup routes",
         "desc": """\
-Use these endpoints to get information about game assets, e.g. monsters, gear, etc.
+Use these endpoints to get information about game assets, e.g. monsters, gear,
+expansions, etc.
 <p>Each of these routes works essentially the same way. You can
 <b>POST</b> a query to one and retireve data about a single asset if you
 know its name or handle -OR- you can <b>GET</b> the route to get a list
 of all assets.</p>
-<p> The following lookups are currently supported by the public API:</p>
-<ul>
-    <li><a href="/game_asset/abilities_and_impairments">
-        /game_asset/abilities_and_impairments</a>
-    </li>
-    <li><a href="/game_asset/campaign">
-        /game_asset/campaign</a> (campaign definitions)
-    </li>
-    <li><a href="/game_asset/disorder">
-        /game_asset/disorder</a>
-    </li>
-    <li><a href="/game_asset/expansion">
-        /game_asset/expansion</a>
-    </li>
-    <li><a href="/game_asset/fighting_art">
-        /game_asset/fighting_art</a>
-    </li>
-    <li><a href="/game_asset/gear">
-        /game_asset/gear</a>
-    </li>
-    <li><a href="/game_asset/monster">
-        /game_asset/monster</a>
-    </li>
-    <li><a href="/game_asset/resource">
-        /game_asset/resource</a>
-    </li>
-    <li><a href="/game_asset/rules">
-        /game_asset/rules</a>
-    </li>
-    <li><a href="/game_asset/storage">
-        /game_asset/storage</a> (settlement storage location types)
-    </li>
-</ul>
+<p>Use the <a href="/game_asset">/game_asset</a> endpoint to get a list of
+available game assets.</p>
         """
     },
 

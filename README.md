@@ -23,8 +23,9 @@ to report issues to the repository maintainer.
 ## Intellectual property
 **Neither the [https://kdm-manager.com](https://kdm-manager.com) service nor any
 of the software utilized by that service (including the API deployed at
-[https://api.kdm-manager.com](https://api.kdm-manager.com) are developed, authorized,
-supported by or affiliated with Kingdom Death or Adam Poots Games, LLC.**
+[https://api.kdm-manager.com](https://api.kdm-manager.com)) are developed,
+authorized, supported by or affiliated with Kingdom Death or Adam Poots Games,
+LLC.**
 
 For more information, please refer to
 [the 'About' section of the project's development blog](http://kdm-manager.blogspot.com/p/credits-and-acknowledgements.html).
@@ -76,7 +77,7 @@ the root user:
     # ./install.sh
 
 The `install.sh` script will reload both nginx and `supervisord`, at which point
-the API should be running on 127.0.0.0:8013 and nginx should be listening for
-requests for https://downtime.kdm-manager.com, https://kdm-manager.com, etc.
+the API should be running on 127.0.0.1:8013 and nginx should be listening for
+requests for https://api.kdm-manager.com
 
 

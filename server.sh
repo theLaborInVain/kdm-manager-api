@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+SUPERVISORCTL=`which supervisorctl`
+
 start_venv() {
     echo -e "\nVirtual Envrionment:"
 
@@ -21,10 +23,38 @@ start_venv() {
     echo -e "Flask server:"
 }
 
+deploy() {
+
+    OPERATION=$1
+
+    if [[ $EUID -ne 0 ]]; then
+       echo -e "\n\tThis operation must be performed by root!\n"
+       exit 1
+    fi
+
+    $SUPERVISORCTL $OPERATION kdm-manager-api
+
+}
+
 case "$1" in
     dev)
         start_venv development
         python api.py
+        ;;
+    status)
+        deploy $1
+        ;;
+    start)
+        echo -e "Starting API server..."
+        deploy $1
+        ;;
+    stop)
+        echo -e "Stopping API server..."
+        deploy $1
+        ;;
+    restart)
+        echo -e "Restarting API server..."
+        deploy $1
         ;;
     *)
         echo "Usage: $NAME {dev}" >&2
