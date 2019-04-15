@@ -140,7 +140,7 @@ def record_response_time(response):
             flask.request.method,
             response.status_code,
             duration,
-            flask.request.url,
+            flask.request.url.split(flask.request.url_root)[1],
             )
         )
 

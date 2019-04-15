@@ -51,8 +51,8 @@ game_asset_lookups = {
         'name': '/game_asset/abilities_and_impairments',
         'desc': 'Returns a JSON representation of known A&I assets.',
     },
-    "game_asset_campaign": {
-        "name": "/game_asset/campaign",
+    "game_asset_campaigns": {
+        "name": "/game_asset/campaigns",
         "desc": """\
 <p>Accepts a <code>name</code> or <code>handle</code> parameter included in the body
 of the request (which should be JSON) and returns a JSON
@@ -91,14 +91,43 @@ references/hooks that can be used to look up curse effects.</p>
 <p>Returns a JSON representation of all known disorders.</p>
         """,
     },
+    'game_asset_endeavors': {
+        'name': '/game_asset/endeavors',
+        'desc': """\
+<p>Endeavors are a complex asset and their attributes are irregular.</p>
+<p>At a minimum, a JSON representation of an endeavor includes its name and its
+cost:</p>
+<pre><code>
+    'bloodletting_breathing_a_vein': {
+        'name': 'Breathing a Vein',
+        'cost': 1,
+    },
+</code></pre>
+<p>Others include information that can be used to determine if a particular
+endeavor is available. These will typically reference other asset handles:</p>
+<pre><code>
+    'build_skinnery': {
+        'name': 'Build',
+        'desc': 'Skinnery',
+        'cost': 1,
+        'class': 'available_endeavors_build',
+        'hide_if_location_exists': 'skinnery',
+    },
+</code></pre>
+<p>Finally, watch out for some odd, not-totally-conventional or predictable
+handle names when working with Endeavor assets, e.g.
+<code>subterranean_agriculture_2_build_wet_resin_crafter</code>. We err on
+the side of being over-descriptive with these handles to avoid ambiguity.</p>
+        """,
+    },
     'game_asset_events': {
         'name': '/game_asset/events',
         'desc': """\
 <p>Returns a JSON representation of all known story and settlement events.</p>
         """,
     },
-    "game_asset_expansion": {
-        "name": "/game_asset/expansion",
+    "game_asset_expansions": {
+        "name": "/game_asset/expansions",
         "desc": """\
 <p><b>POST</b> a <code>name</code> or <code>handle</code> to this endpoint
 to get a particular expansion's asset definition.</p>
@@ -193,8 +222,23 @@ to do gear lookups:</p>
 <p><b>GET</b> this endpoint to dump all gear.</p>
         """,
     },
-    "game_asset_monster": {
-        "name": "/game_asset/monster",
+    'game_asset_innovations': {
+        'name': '/game_asset/innovations',
+        'desc': """\
+<p>Returns a JSON representation of all known Innovations.</p>
+        """,
+    },
+    'game_asset_locations': {
+        'name': '/game_asset/locations',
+        'desc': """\
+<p>Pay attention to the <code>type</code> and <code>sub_type</code>
+attributes of Settlement Location dictionaries: many of them are 'pseudo'
+locations meant to facilite gear organization, etc. and you typically will not
+want to show a user a list of all of these assets in a tracker app.</p>
+        """,
+    },
+    "game_asset_monsters": {
+        "name": "/game_asset/monsters",
         "desc": """\
 <p>
     Accepts a "name" or "handle" parameter in the <b>POST</b> body and
@@ -220,6 +264,45 @@ to do gear lookups:</p>
 }</code></pre>
 <p>Like all lookup routes, if you <b>GET</b> this endpoint,
 the API will return the definitions of all assets.</p>
+        """,
+    },
+    'game_asset_principles': {
+        'name': '/game_asset/principles',
+        'desc': """\
+<p>Dumps principles as JSON. Princples are represented as dictionaries of info
+about the asset itself as well as some actual python code that describes
+when to show webapp controls for adding them:</p>
+<pre><code>
+    "death": {
+        "name": "Death",
+        "handle": "death",
+        "sort_order": 1,
+        "milestone": "First time death count is updated",
+        "show_controls": ['int(self.settlement["death_count"]) >= 1'],
+        "option_handles": ["graves", "cannibalize"],
+    },
+</code></pre>
+<p><b>Important!</b> Please <u>do not</u> build anything around that code, as it
+is deprecated and will be going away when the legacy https://kdm-manager webapp
+goes away (in late 2019).</p>
+        """,
+    },
+    'game_asset_resources': {
+        'name': '/game_asset/resources',
+        'desc': """\
+<p>Returns a JSON representation of all known resources.</p>
+        """,
+    },
+    'game_asset_strain_milestones': {
+        'name': '/game_asset/strain_milestones',
+        'desc': """\
+<p>Returns a JSON representation of all known Strain Milestones.</p>
+        """,
+    },
+    'game_asset_survival_actions': {
+        'name': '/game_asset/survival_actions',
+        'desc': """\
+<p>Returns a JSON representation of all known Survival Actions.</p>
         """,
     },
 }

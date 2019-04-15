@@ -62,6 +62,6 @@ def list(game_assets=False):
             if not collectionObject.is_game_asset:
                 output.remove(collection_name)
 
-    return output
+    return sorted(output)
 
 

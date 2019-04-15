@@ -26,6 +26,15 @@ class Assets(models.AssetCollection):
         models.AssetCollection.__init__(self,  *args, **kwargs)
 
 
+    def get_all_rules(self):
+        """ Returns a set of all keywords for all assets. """
+
+        rules = set()
+        for a_dict in self.get_dicts():
+            rules = keywords.union(a_dict['rules'])
+        return sorted(keywords)
+
+
 class Gear(models.GameAsset):
 
     def __repr__(self):
