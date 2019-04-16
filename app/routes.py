@@ -63,11 +63,6 @@ def get_settings():
     )
 
 
-@api.route("/settings.json")
-def get_settings_json():
-    """ Formerly returned the API settings as a JSON file. Deprecated on
-    2019-01-13 and removed in the version one release of the API. """
-    return utils.http_410
 
 
 
@@ -77,7 +72,7 @@ def get_settings_json():
 def index():
     """ The default return for accessing https://api.kdm-manager.com (or
     equivalent endpoint), which gets you the API docs. """
-    return send_file("html/docs.html")
+    return send_file("static/html/docs.html")
 
 
 @api.route("/docs/<action>/<render_type>")
@@ -181,20 +176,6 @@ def lookup_asset(asset_type):
 
     return assets.dump_asset(asset_type)
 
-
-@api.route("/new_settlement")
-@crossdomain(origin=['*'], headers='Content-Type')
-def get_new_settlement_assets():
-    """ Deprecated! This should be under /game_asset/settlement (or similar)."""
-    settlement_assets = settlements.Assets()
-    return Response(
-        response=json.dumps(
-            settlement_assets.serialize(),
-            default=json_util.default
-        ),
-        status=299,
-        mimetype="application/json"
-    )
 
 
 @api.route("/world")
@@ -429,6 +410,27 @@ def admin_notifications(method):
 def admin_view(resource):
     """ Retrieves admin panel resources as JSON."""
     return request_broker.get_admin_data(resource)
+
+
+
+#
+#   the graveyard of deprecated endpoints!
+#
+
+@api.route("/settings.json")
+def get_settings_json():
+    """ Formerly returned the API settings as a JSON file. Deprecated on
+    2019-01-13 and removed in the version one release of the API. """
+    return utils.http_410
+
+@api.route("/new_settlement")
+@crossdomain(origin=['*'], headers='Content-Type')
+def new_settlement_deprecation_warning():
+    """ Formerly used to get options for creating a new settlement.
+    Deprecated in the 1.0.0 release in favor of /game_assets/settlements,
+    which follows convention and looks tidier in the documentation. """
+    return utils.http_410
+
 
 
 #
