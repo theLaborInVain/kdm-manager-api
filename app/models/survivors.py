@@ -32,8 +32,8 @@ from flask import request, Response
 
 # local imports
 from app import models, utils
+from app.assets import survivors
 from app.assets.survivors import color_schemes as survivor_color_schemes
-import app.assets.survivors as survivors
 from app.models import (
     abilities_and_impairments,
     cursed_items,

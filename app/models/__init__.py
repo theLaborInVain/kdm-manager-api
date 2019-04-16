@@ -18,8 +18,10 @@
 
 # standard lib imports
 from bson import json_util
+from bson.objectid import ObjectId
 from collections import OrderedDict
 from copy import copy, deepcopy
+import inspect
 import json
 import os
 
@@ -782,43 +784,36 @@ class UserAsset(object):
         )
 
 
-    def get_request_params(self, verbose=False):
+    def get_request_params(self):
         """ Checks the incoming request (from Flask) for JSON and tries to add
-        it to self. """
+        it to self.
+
+        Important! The 'verbose' kwarg is deprecated in the 1.0.0 release of the
+        API, as it is no longer require to see request info in non-production
+        environments.
+
+        """
 
         params = {}
 
-        if verbose:
-            self.logger.debug(
-                "%s request info: %s" % (request.method, request.url)
-            )
-            self.logger.debug(
-                "%s request user: %s" % (request.method, request.User)
-            )
-
-        if request.method == "GET" and verbose:
-            self.logger.warn(
-                "%s:%s get_request_params() call is being ignored!" % (
-                    request.method,
-                    request.url
-                )
-            )
-            return False
-
-        if request.get_json() is not None:
+        if flask.request.get_json() is not None:
             try:
-                params = dict(request.get_json())
+                params = dict(flask.request.get_json())
             except ValueError:
                 self.logger.warn(
-                    "%s request JSON could not be converted!" % request.method
+                    "%s request JSON could not be converted!" % (
+                        flask.request.method
+                    )
                 )
                 params = request.get_json()
         else:
-            if verbose:
+            if flask.request.method != 'GET':
                 self.logger.warn(
-                    "%s request did not contain JSON data!" % request.method
+                    "%s type request did not contain JSON data!" % (
+                        flask.request.method
+                    )
                 )
-                self.logger.warn("Request URL: %s" % request.url)
+                self.logger.warn("Request URL: %s" % flask.request.url)
 
         self.params = params
 
@@ -901,12 +896,13 @@ class UserAsset(object):
 
         return c_handle
 
+
     def get_serialize_meta(self):
         """ Sets the 'meta' dictionary for the object when it is serialized. """
 
         output = deepcopy(utils.api_meta)
 
-        if output['meta'].keys() != ['webapp','admins','api','object']:
+        if list(output['meta'].keys()) != ['api','server','info','admins','object']:
             stack = inspect.stack()
             the_class = stack[1][0].f_locals["self"].__class__
             the_method = stack[1][0].f_code.co_name
@@ -916,7 +912,7 @@ class UserAsset(object):
                 the_class,
                 the_method
             )
-            self.logger.error(msg)
+            self.logger.error(" ".join(msg.split()))
 
         try:
             output["meta"]["object"]["version"] = self.object_version

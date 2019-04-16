@@ -21,8 +21,26 @@ import os
 import flask
 
 # local imports
-from app import api
+from app import API, utils
+from app.models import settlements, survivors, users
 
+
+def get_user_asset(collection=None, asset_id=None):
+    """ Tries to initialize a user asset from one of our three user asset
+    collections. If any of these fail, they should raise the appropriate
+    exception back up (to the user).
+
+    Raises an exception if we get a bogus/bad collection name.
+    """
+
+    if collection == "settlement":
+        return settlements.Settlement(_id=asset_id)
+    elif collection == "survivor":
+        return survivors.Survivor(_id=asset_id)
+    elif collection == "user":
+        return users.User(_id=asset_id)
+
+    raise utils.InvalidUsage("Collection '%s' does not exist!", status_code=422)
 
 
 def dump_asset(collection_name, return_type=flask.Response):
@@ -46,7 +64,7 @@ def list(game_assets=False):
     kwarg filters this to only return game assets (i.e. to filter out meta and
     webapp only assets). """
 
-    asset_dir_abs_path = os.path.join(api.root_path, 'assets')
+    asset_dir_abs_path = os.path.join(API.root_path, 'assets')
     py_files_in_asset_dir = glob.glob(os.path.join(asset_dir_abs_path, '*.py'))
 
     output = [
