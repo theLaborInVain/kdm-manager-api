@@ -31,9 +31,9 @@ import random
 from flask import request, Response
 
 # local imports
-from app import models
-from app.assets.survivors import color_schemes.schemes as survivor_color_schemes
-import app.assets.survivors
+from app import models, utils
+from app.assets.survivors import color_schemes as survivor_color_schemes
+import app.assets.survivors as survivors
 from app.models import (
     abilities_and_impairments,
     cursed_items,
@@ -48,7 +48,6 @@ from app.models import (
     the_constellations,
     weapon_proficiency
 )
-import utils
 
 
 

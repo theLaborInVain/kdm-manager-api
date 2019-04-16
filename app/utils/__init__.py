@@ -135,8 +135,8 @@ def record_response_time(response):
     })
 
     if flask.request.log_response_time:
-        flask.request.logger = get_logger()
-        flask.request.logger.debug('[%s] [%s] [%s] %s ' % (
+        flask.request.logger = get_logger(log_name='server')
+        flask.request.logger.debug('[%s] [%s] [%s] /%s ' % (
             flask.request.method,
             response.status_code,
             duration,

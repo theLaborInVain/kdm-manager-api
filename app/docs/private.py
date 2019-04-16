@@ -165,7 +165,7 @@ create_assets = {
         "name": "/new/settlement",
         "methods": ["POST","OPTIONS"],
         "desc": """\
-<p>Use 'handle' values from the <code>/game_asset/new_settlement</code>
+<p>Use 'handle' values from the <code>/game_asset/settlements</code>
 route (see above) as params, like this:</p>
 <code><pre>{
     "campaign": "people_of_the_lantern",

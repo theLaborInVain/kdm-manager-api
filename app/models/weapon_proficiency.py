@@ -1,6 +1,5 @@
 from app.assets.survivors import weapon_proficiency
 from app import models
-import utils
 
 
 class Assets(models.AssetCollection):

@@ -293,6 +293,18 @@ goes away (in late 2019).</p>
 <p>Returns a JSON representation of all known resources.</p>
         """,
     },
+    'game_asset_settlements': {
+        'name': '/game_asset/settlements',
+        'desc': """\
+<p><b>Important!</b> In the 1.0.0 release of the API, this endpoint supersedes
+and replaces the deprecated <code>/new_settlement</code> endpoint.</p>
+<p>This endpoint returns a pseudo asset type that represents the options/items
+available for use in the creation of new settlements (e.g. using
+<code>/new/settlement</code> below in the private routes).</p>
+<p>This is simply a dictionary of options that should be on your "create a new
+settlement" menu.</p>
+        """,
+    },
     'game_asset_strain_milestones': {
         'name': '/game_asset/strain_milestones',
         'desc': """\

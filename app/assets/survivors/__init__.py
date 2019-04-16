@@ -1,3 +1,35 @@
+"""
+
+    This is kind of a dumping ground for miscellaneous survivor-related meta
+    and webapp assets.
+
+    This module exists so that a.) it is easier to zero in on specific assets
+    from the file systems and b.) so that we can do imports in other files more
+    legibly, e.g.
+
+        from app.assets.survivors import color_schemes
+
+    That said, please DO NOT add any methods here. Those should still go in
+    /app/models/survivors.py under the class object.
+
+
+"""
+
+# standard library imports
+
+# third part imports
+
+# local imports
+from app.assets.survivors import color_schemes as survivor_color_schemes
+
+
+#
+#   add assets here
+#
+color_schemes = survivor_color_schemes.schemes
+
+
+
 defaults = {
     "Movement": 5,
     "max_bleeding_tokens": 5,

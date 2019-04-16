@@ -6,11 +6,13 @@
 
     This file is organized thus:
 
+	Decorators (for models):
+         - log_event_exception_manager
+
         Objects:
          - AssetCollection
          - GameAsset
-	Decorators (for models):
-         - log_event_exception_manager
+         - UserAsset
 
 """
 
@@ -26,6 +28,34 @@ import flask
 
 # local imports
 from app import utils
+
+
+
+#
+#   model decorators
+#
+
+def log_event_exception_manager(log_event_call):
+    """ This is a decorator for model lookups. Do not use this decorator to
+    decorate other methods: it will fail.
+
+    The basic idea here is to capture exceptions, log them, email them and NOT
+    interrupt the request. This is really the only method where we ever want to
+    handle exceptions this way. """
+
+    def wrapper(self, *args, **kwargs):
+        """ Wraps the incoming call. """
+        try:
+            return log_event_call(self, *args, **kwargs)
+        except Exception as log_event_call_exception:
+            err_msg = "Unhandled exception in log_event() method!"
+            err_msg += "args: %s, kwargs: %s" % (args, kwargs)
+            self.logger.exception(err_msg)
+            utils.email_exception(log_event_call_exception)
+
+    return wrapper
+
+
 
 
 #
@@ -99,10 +129,18 @@ class AssetCollection(object):
             self.type = os.path.splitext(self.root_module.__name__)[-1][1:]
             self.set_assets_from_root_module()
 
+   # IMPORTANT! self.assets must be set by this point!
+
         # type override - be careful!
         if hasattr(self, "type_override"):
             self.type = self.type_override
             for a in self.assets.keys():
+                if type(self.assets[a]) != dict:
+                    self.logger.error(self.assets)
+                    err_msg = "AssetCollection object self.assets() dict\
+                    should be a dictionary of dictionaries, not %s.\
+                    " % type(self.assets[a])
+                    raise TypeError(" ".join(err_msg.split()))
                 self.assets[a]["type"] = self.type_override
 
         # set the default 'type_pretty' value, selector text, etc. DO NOT
@@ -492,6 +530,10 @@ class AssetCollection(object):
 
 
 
+#
+#	GameAsset class definition starts here!
+#
+
 class GameAsset(object):
     """ The base class for initializing individual game asset objects. All of
     the specific models in the models/ folder will sub-class this model for
@@ -610,26 +652,560 @@ class GameAsset(object):
 
 
 
+
 #
-#   model decorators
+#	The UserAsset class object code starts here.
 #
 
-def log_event_exception_manager(log_event_call):
-    """ This is a decorator for model lookups. Do not use this decorator to
-    decorate other methods: it will fail.
+class UserAsset(object):
+    """ The base class for all user asset objects, such as survivors, sessions,
+    settlements and users. All user asset controllers in the 'models' module
+    use this as their base class. """
 
-    The basic idea here is to capture exceptions, log them, email them and NOT
-    interrupt the request. This is really the only method where we ever want to
-    handle exceptions this way. """
 
-    def wrapper(self, *args, **kwargs):
-        """ Wraps the incoming call. """
+    def __repr__(self):
+        """ Default __repr__ method for all user assets. Note that you should
+        PROBABLY define a __repr__ for your individual assets, if for no other
+        reason than to make the logs look cleaner. """
+
         try:
-            return log_event_call(self, *args, **kwargs)
-        except Exception as log_event_call_exception:
-            err_msg = "Unhandled exception in log_event() method!"
-            err_msg += "args: %s, kwargs: %s" % (args, kwargs)
-            self.logger.exception(err_msg)
-            utils.email_exception(log_event_call_exception)
+            exec('repr_name = self.%s["name"]' % (self.collection[:-1]))
+        except:
+            self.logger.warn("UserAsset object has no 'name' attribute!")
+            repr_name = "UNKNOWN"
+        return "%s object '%s' [%s]" % (self.collection, repr_name, self._id)
 
-    return wrapper
+
+    def __init__(self, collection=None, _id=None, normalize_on_init=True,
+        new_asset_attribs={}, Settlement=None):
+
+        # initialize basic vars
+        self.logger = utils.get_logger()
+        self.normalize_on_init = normalize_on_init
+        self.new_asset_attribs = new_asset_attribs
+
+        if collection is not None:
+            self.collection = collection
+        elif hasattr(self,"collection"):
+            pass
+        else:
+            err_msg = "User assets (settlements, users, etc.) may not be\
+            initialized without specifying a collection!"
+
+            self.logger.error(err_msg)
+            raise AssetInitError(err_msg)
+
+        # use attribs to determine whether the object has been loaded
+        self.loaded = False
+
+        if _id is None:
+            self.get_request_params()
+            self.new()
+            _id = self._id
+
+        # if we're initializing with a settlement object already in memory, use
+        #   it if this object IS a Settlement, the load() call below will
+        #   overwrite this
+        self.Settlement = Settlement
+
+        # now do load() stuff
+        try:
+            try:
+                self._id = ObjectId(_id)
+            except Exception as e:
+                self.logger.error(e)
+                raise utils.InvalidUsage(
+                    "The asset OID '%s' is not a valid OID! %s" % (_id, e),
+                    status_code=422
+                )
+            self.load()
+            self.loaded = True
+        except Exception as e:
+            self.logger.error(
+                "Could not load _id '%s' from %s!" % (_id, self.collection)
+            )
+            self.logger.exception(e)
+            raise
+
+
+    def save(self, verbose=True):
+        """ Saves the user asset back to either the 'survivors' or 'settlements'
+        collection in mdb, depending on self.collection. """
+
+        if self.collection == "settlements":
+            utils.mdb.settlements.save(self.settlement)
+        elif self.collection == "survivors":
+            utils.mdb.survivors.save(self.survivor)
+        elif self.collection == "users":
+            utils.mdb.users.save(self.user)
+        else:
+            raise AssetLoadError("Invalid MDB collection for this asset!")
+        if verbose:
+            self.logger.info("Saved %s to mdb.%s successfully!" % (
+                self,
+                self.collection)
+            )
+
+
+    def load(self):
+        """ Retrieves an mdb doc using self.collection and makes the document an
+        attribute of the object. """
+
+        mdb_doc = self.get_mdb_doc()
+
+        if self.collection == "settlements":
+            self.settlement = mdb_doc
+            self._id = self.settlement["_id"]
+            self.settlement_id = self._id
+            self.get_campaign('initialize')     # sets an object
+            self.get_survivors('initialize')    # sets a list of objects
+            self.init_asset_collections()
+        elif self.collection == "survivors":
+            self.survivor = mdb_doc
+            self._id = self.survivor["_id"]
+            self.settlement_id = self.survivor["settlement"]
+        elif self.collection == "users":
+            self.user = mdb_doc
+            self._id = self.user["_id"]
+            self.login = self.user["login"]
+        else:
+            raise AssetLoadError("Invalid MDB collection for this asset!")
+
+
+    def return_json(self):
+        """ Calls the asset's serialize() method and creates a simple HTTP
+        response. """
+        return Response(
+            response=self.serialize(),
+            status=200,
+            mimetype="application/json"
+        )
+
+
+    def get_request_params(self, verbose=False):
+        """ Checks the incoming request (from Flask) for JSON and tries to add
+        it to self. """
+
+        params = {}
+
+        if verbose:
+            self.logger.debug(
+                "%s request info: %s" % (request.method, request.url)
+            )
+            self.logger.debug(
+                "%s request user: %s" % (request.method, request.User)
+            )
+
+        if request.method == "GET" and verbose:
+            self.logger.warn(
+                "%s:%s get_request_params() call is being ignored!" % (
+                    request.method,
+                    request.url
+                )
+            )
+            return False
+
+        if request.get_json() is not None:
+            try:
+                params = dict(request.get_json())
+            except ValueError:
+                self.logger.warn(
+                    "%s request JSON could not be converted!" % request.method
+                )
+                params = request.get_json()
+        else:
+            if verbose:
+                self.logger.warn(
+                    "%s request did not contain JSON data!" % request.method
+                )
+                self.logger.warn("Request URL: %s" % request.url)
+
+        self.params = params
+
+
+    def check_request_params(self, keys=[], verbose=True, raise_exception=True):
+        """ Checks self.params for the presence of all keys specified in 'keys'
+        list. Returns True if they're present and False if they're not.
+
+        Set 'verbose' to True if you want to log validation failures as errors.
+        """
+
+        for k in keys:
+            if k not in self.params.keys():
+                if verbose:
+                    err_msg = "Request is missing required parameter '%s'!" % k
+                    self.logger.error(err_msg)
+                if raise_exception:
+                    curframe = inspect.currentframe()
+                    calframe = inspect.getouterframes(curframe, 2)
+                    caller_function = calframe[1][3]
+                    msg = "Insufficient request parameters for this route!\
+                    The %s() method requires values for the following keys:\
+                    %s." % (
+                        caller_function,
+                        utils.list_to_pretty_string(keys)
+                    )
+                    self.logger.exception(msg)
+                    self.logger.error(
+                        "Bad request params were: %s" % self.params
+                    )
+                    raise utils.InvalidUsage(msg, status_code=400)
+                else:
+                    return False
+
+        return True
+
+
+    #
+    #   get/set methods for User Assets below here
+    #
+
+    def get_campaign(self, return_type=None):
+        """ Returns the campaign handle of the settlement as a string, if
+        nothing is specified for kwarg 'return_type'.
+
+        Use 'name' to return the campaign's name (from its definition).
+
+        'return_type' can also be dict. Specifying dict gets the
+        raw campaign definition from assets/campaigns.py. """
+
+        # first, get the handle; die if we can't
+        if self.collection == "survivors":
+            c_handle = self.Settlement.settlement["campaign"]
+        elif self.collection == "settlements":
+            # 2017-11-13 - bug fix - missing campaign attrib
+            if not "campaign" in self.settlement.keys():
+                self.settlement["campaign"] = 'people_of_the_lantern'
+                warn_msg = "%s is a legacy settlement! Adding missing\
+                'campaign' attribute!" % self
+                self.logger.warn(warn_msg)
+                self.save()
+            c_handle = self.settlement["campaign"]
+        else:
+            msg = "Objects whose collection is '%s' may not call the\
+            get_campaign() method!" % (self.collection)
+            raise AssetInitError(msg)
+
+        # now try to get the dict
+        C = models.campaigns.Assets()
+        c_dict = C.get_asset(c_handle, backoff_to_name=True)
+
+        # handle return_type requests
+        if return_type == 'name':
+            return c_dict["name"]
+        elif return_type == dict:
+            return c_dict
+        elif return_type == 'initialize':
+            self.campaign = models.campaigns.Campaign(c_dict['handle'])
+            return True
+
+        return c_handle
+
+    def get_serialize_meta(self):
+        """ Sets the 'meta' dictionary for the object when it is serialized. """
+
+        output = deepcopy(utils.api_meta)
+
+        if output['meta'].keys() != ['webapp','admins','api','object']:
+            stack = inspect.stack()
+            the_class = stack[1][0].f_locals["self"].__class__
+            the_method = stack[1][0].f_code.co_name
+            msg = "models.UserAsset.get_serialize_meta() got modified 'meta'\
+            (%s) dict during call by %s.%s()!" % (
+                output['meta'].keys(),
+                the_class,
+                the_method
+            )
+            self.logger.error(msg)
+
+        try:
+            output["meta"]["object"]["version"] = self.object_version
+        except Exception as e:
+            self.logger.error(
+                "Could not create 'meta' dictionary when serializing object!"
+            )
+            self.logger.exception(e)
+            self.logger.warn(output["meta"])
+        return output
+
+
+    def get_current_ly(self):
+        """ Convenience/legibility function to help code readbility and reduce
+        typos, etc. """
+
+        if self.collection == "survivors":
+            return int(self.Settlement.settlement["lantern_year"])
+        return int(self.settlement["lantern_year"])
+
+
+    def get_mdb_doc(self):
+        """ Retrieves the asset's MDB document. Raises a special exception if it
+        cannot for some reason. """
+
+        mdb_doc = utils.mdb[self.collection].find_one({"_id": self._id})
+        if mdb_doc is None:
+            raise AssetLoadError("Asset _id '%s' not be found in '%s'!" % (
+                self._id, self.collection
+                )
+            )
+        return mdb_doc
+
+
+    def list_assets(self, attrib=None, log_failures=True):
+        """ Laziness method that returns a list of dictionaries where dictionary
+        in the list is an asset in the object's list of those assets.
+
+        Basically, if your object is a survivor, and you set 'attrib' to
+        'abilities_and_impairments', you get back a list of dictionaries where
+        dictionary is an A&I asset dictionary.
+
+        Same goes for settlements: if you set 'attrib' to 'locations', you get
+        a list where each item is a location asset dict.
+
+        Important! This ignores unregistered/unknown/bogus items! Anything that
+        cannot be looked up by its handle or name is ignored!
+        """
+
+        if attrib is None:
+            msg = "The list_assets() method cannot process 'None' type values!"
+            self.logger.error(msg)
+            raise Exception(msg)
+
+        output = []
+        if attrib == "principles":
+            A = models.innovations.Assets()
+        else:
+            exec("A = models.%s.Assets()" % attrib)
+        exec("asset_list = self.%s['%s']" % (self.collection[:-1], attrib))
+
+        for a in asset_list:
+            a_dict = A.get_asset(
+                a,
+                backoff_to_name=True,
+                raise_exception_if_not_found=False
+            )
+            if a_dict is not None:
+                output.append(a_dict)
+            elif a_dict is None and log_failures:
+                self.logger.error(
+                    "%s Unknown '%s' asset '%s' cannot be listed!" % (
+                        self, attrib, a
+                    )
+                )
+            else:
+                pass # just ignore failures and silently fail
+
+        return output
+
+    #
+    #   asset update methods below
+    #
+    @log_event_exception_manager
+    def log_event(self, msg=None, event_type=None, action=None,
+        key=None, value=None, agent=None):
+
+        """ This is the primary user-facing logging interface, so there' s a bit
+        of a high bar for using it.
+
+        The basic idea of creating a log entry is that we're doing a bit of the
+        semantic logging (i.e. strongly typed) thing, so, depending on which
+        kwargs you use when calling this method, your final outcome/message is
+        going to vary somewhat.
+
+        That said, none of the kwargs here are mandatory, because context.
+        """
+
+        #
+        #   baseline attributes
+        #
+
+        # for those who still raw-dog it; force to ASCII:
+        if msg is not None:
+            msg = msg.encode("ascii",'ignore')
+
+        # 0.) method: determine caller method
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        method = calframe[2][3]
+
+        # 1.) event: determine event type if it's None
+        if event_type is None:
+            event_type = method
+
+        # 2.) action: figure out the action; set the special action vars
+        if action is None:
+            action = method.split("_")[0]
+        action_word, action_preposition = utils.action_keyword(action)
+
+        # 3.) key: default the key if we don't get one
+        if key is None:
+            key = " ".join(method.split("_")[1:])
+        key = key.encode('ascii','ignore')
+        if key == "settlement":
+            key = ""
+
+        # 4.) value; default the value if we don't get one
+        if value is None:
+            value = "UNKNOWN"
+        if type(value) != int:
+            value = value.encode('ascii','ignore')
+
+        # set 'created_by'
+        created_by = None
+        created_by_email = None
+        if request:
+            if hasattr(request, 'User'):
+                created_by = request.User.user['_id']
+                created_by_email = request.User.user['login']
+                if agent is None:
+                    agent = "user"
+
+
+        # set 'attribute_modified'
+        attribute_modified = {
+            'key': key,
+            'value': value,
+        }
+
+        if attribute_modified['key'] is not None:
+            attribute_modified['key_pretty'] = key.replace("_"," ").replace("and","&").title()
+        if attribute_modified['value'] is not None:
+            attribute_modified['value_pretty'] = str(value).replace("_"," ")
+
+        d = {
+            'version': 1.3,
+            'agent': agent,
+            "created_on": datetime.now(),
+            'created_by': created_by,
+            'created_by_email': created_by_email,
+            "settlement_id": self.settlement_id,
+            "ly": self.get_current_ly(),
+            'event_type': event_type,
+            'event': msg,
+            'modified': {'attribute': attribute_modified},
+        }
+
+        # survivor, if it's a survivor
+        if self.collection == 'survivors':
+            d['survivor_id'] = self.survivor['_id']
+
+        # target is the settlement, unless a survivor object calls this method
+        action_target = "settlement"
+        if 'survivor_id' in d.keys():
+            d['modified']['asset'] = {
+                'type': 'survivor',
+                '_id': d['survivor_id'],
+                'name': self.survivor['name'],
+                'sex': self.get_sex(),
+            }
+            action_target = "survivor"
+        else:
+            d['modified']['asset'] = {
+                "type": "settlement",
+                "name": self.settlement['name'],
+                '_id': self.settlement_id
+            }
+
+        # create the 'action'
+        d['action'] = {'word': action_word, 'preposition': str(action_preposition)}
+
+        # now write the repr, which is like...the simplified sentence of the event
+        if key is None and value is None:
+            d['action']['repr'] = " ".join(['modified', action_target])
+        elif key is not None and value is None:
+            d['action']['repr'] = " ".join(['modified', action_target, key])
+        else:
+            if action_preposition is None:
+                d['action']['repr'] = action_word
+            elif action_word in ['set']:
+                d['action']['repr'] = " ".join([
+                    action_word,
+                    action_target,
+                    key,
+                    action_preposition,
+                    str(value)
+                    ]
+                )
+            elif action_word in ['unset']:
+                d['action']['repr'] = " ".join([action_word, action_target, key])
+            elif action_target == "survivor" and action_preposition is not None:
+                d['action']['repr'] = " ".join([
+                    action_word,
+                    "'%s'" % value,
+                    action_preposition,
+                    str(key)
+                    ]
+                )
+            else:
+                d['action']['repr'] = " ".join([
+                    action_word,
+                    "'%s'" % value,
+                    action_preposition,
+                    action_target,
+                    str(key)
+                    ]
+                )
+
+        # default a message, if incoming message is none
+        if msg is None:
+
+            # create messages for survivor updates
+            if d['modified']['asset']['type'] == 'survivor':
+                if d['agent'] == 'user' and action_preposition is None:
+                    d['event'] = " ".join([
+                        d['created_by_email'],
+                        d['action']['word'],
+                        "%s [%s]" % (self.survivor['name'], self.get_sex()),
+                    ])
+                elif d['agent'] == 'user' and action_preposition is not None:
+                    d['event'] = " ".join([
+                        d['created_by_email'],
+                        d['action']['word'],
+                        d['modified']['attribute']['value_pretty'],
+                        d['action']['preposition'],
+                        "%s [%s]" % (self.survivor['name'], self.get_sex()),
+                        d['modified']['attribute']['key_pretty'],
+                    ])
+                else:
+                    d['event'] = " ".join([
+                        "%s [%s]" % (self.survivor['name'], self.get_sex()),
+                        d['action']['word'],
+                        d['modified']['attribute']['value_pretty'],
+                        d['action']['preposition'],
+                        d['modified']['attribute']['key_pretty'],
+                    ])
+            # create messages for settlements
+            elif d['modified']['asset']['type'] == 'settlement':
+                if d['agent'] == 'user' and action_preposition is None:
+                    d['event'] = " ".join([
+                        d['created_by_email'],
+                        d['action']['word'],
+                        self.settlement['name'],
+                    ])
+                else:
+                    d['event'] = " ".join([str(d['created_by_email']), str(d['action']['repr']), ])
+            else:
+                d['event'] = 'Updated %s' % self
+#            elif agent == "automation":
+#                d['event'] = d['action']['repr']
+        # enforce terminal punctuation on the event "sentence"
+        if d['event'][-1] not in ['.','!']:
+            d['event'] = d['event'].strip()
+            d['event'] += "."
+
+#        d['event'] = d['event'].decode('ascii','replace').encode('utf-8','replace')
+
+        # finally, if we had a requester, now that we've settled on a message
+        # text, update the requester's latest action with it
+        if 'created_by' is not None:
+            if request and hasattr(request, 'User'):
+                ua_string = str(ua_parse(request.user_agent.string))
+                request.User.set_latest_action(d['event'], ua_string)
+
+        # finally, insert the event (i.e. save)
+        utils.mdb.settlement_events.insert(d)
+        self.logger.info("%s event: %s" % (self, d['event']))
+
+
+
+

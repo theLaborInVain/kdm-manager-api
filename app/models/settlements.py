@@ -10,54 +10,88 @@
 
 """
 
-
+# standard library imports
 from bson import json_util
 from bson.objectid import ObjectId
 import collections
 from copy import copy, deepcopy
 from datetime import datetime, timedelta
-from flask import Response, request
 import inspect
 import json
 import random
 import time
 
-from api import assets, Models
-from api.models import survivors, campaigns, cursed_items, disorders, gear, endeavors, epithets, expansions, fighting_arts, weapon_specializations, weapon_masteries, causes_of_death, innovations, survival_actions, events, abilities_and_impairments, monsters, milestone_story_events, locations, causes_of_death, names, resources, storage, survivor_special_attributes, weapon_proficiency, survivor_color_schemes, strain_milestones
-import utils
+# third party imports
+from flask import Response, request
+
+# local imports
+from app import assets, models, utils
+from app.assets.survivors import color_schemes as survivor_color_schemes
+from app.models import (
+    abilities_and_impairments,
+    campaigns,
+    causes_of_death,
+    cursed_items,
+    disorders,
+    gear,
+    endeavors,
+    epithets,
+    events,
+    expansions,
+    fighting_arts,
+    innovations,
+    locations,
+    milestone_story_events,
+    monsters,
+    names,
+    resources,
+    storage,
+    strain_milestones,
+    survival_actions,
+    survivor_special_attributes,
+    survivors,
+    weapon_masteries,
+    weapon_proficiency,
+    weapon_specializations,
+)
 
 
-class Assets(Models.AssetCollection):
-    """ This is a weird one, because the "Assets" that go into creating a
-    settlement or working with a settlement are kind of...the whole manager.
+class Assets(models.AssetCollection):
+    """ The "asset collection" that we expose at /game_asset/settlements is
+    actually a pseudo collection made up of a number of different assets from
+    various parts of the API.
 
-    Nevertheless, this odd-ball Assets() class is used to represent options
-    for new settlements. """
+    Read the doc string under the (very customized) __init__ method for more.
+
+    Otherwise, initialize this odd-ball Assets() 'collection' to get a
+    representation of available options for creating a new settlement. """
 
 
     def __init__(self, *args, **kwargs):
-        self.assets = {}
-        self.type_override = "new_settlement_assets"
-        Models.AssetCollection.__init__(self,  *args, **kwargs)
+        """ We create the self.assets dictionary for this pseudo collection by
+        loading the campaigns, expansions and survivors modules from /app/models
+        and then initializing them.
 
+        Next, we go through their individual self.assets dictionaries and,
+        making some minor alterations, add them to our new self.assets.
 
-    def serialize(self):
-        """ This is primarily used by the '/new_settlement' public route to
-        indicate what options are available (in terms of asset handles) when
-        creating a new settlement.
+        Next, we load the available 'specials' (i.e. settlement creation
+        macro jobs) from the survivors asset collection.
 
-        Keep in mind that we DO NOT return all attributes of every campaign,
-        expansion, survivor, etc. asset that we serialize here: that would a.)
-        make the '/new_settlement' output really heavy/big, potentially
-        hurting page load times, and b.) return mostly irrelevant stuff, e.g.
-        back-end and meta data, timelines, etc.
+        Finally (and this is really important, so listen to this), we DO NOT
+        initialize the base class. This cuts us off from all of the methods and
+        attributes that get added when you do that.
+
+        YHBW
         """
-        output = {}
+
+        self.is_game_asset = True
+        self.assets = {}
 
         for mod in [campaigns, expansions, survivors]:
 
             mod_string = "%s" % str(mod.__name__).split(".")[2]
-            output[mod_string] = []
+            self.assets[mod_string] = []
 
             CA = mod.Assets()
 
@@ -67,12 +101,13 @@ class Assets(Models.AssetCollection):
                 for optional_key in ["subtitle", "default",'ui']:
                     if optional_key in asset.keys():
                         asset_repr[optional_key] = asset[optional_key]
-                output[mod_string].append(asset_repr)
+                self.assets[mod_string].append(asset_repr)
 
         S = survivors.Assets()
-        output["specials"] = S.get_specials("JSON")
+        self.assets["specials"] = S.get_specials("JSON")
 
-        return output
+#        self.type_override = "new_settlement_assets"
+#        models.AssetCollection.__init__(self,  *args, **kwargs)
 
 
 
@@ -88,14 +123,14 @@ class Assets(Models.AssetCollection):
 #       4. NEVER SORT THE settlement['milestone_story_events'] list
 #
 
-class Settlement(Models.UserAsset):
+class Settlement(models.UserAsset):
     """ This is the base class for all expansions. Private methods exist for
     enabling and disabling expansions (within a campaign/settlement). """
 
     def __init__(self, *args, **kwargs):
         self.collection="settlements"
         self.object_version=0.81
-        Models.UserAsset.__init__(self,  *args, **kwargs)
+        models.UserAsset.__init__(self,  *args, **kwargs)
 
         self.init_asset_collections()
         # now normalize
@@ -113,7 +148,7 @@ class Settlement(Models.UserAsset):
 
 
     def init_asset_collections(self):
-        """ Generally you want Models.UserAsset.load() to call this method. """
+        """ Generally you want models.UserAsset.load() to call this method. """
 
         self.Campaigns = campaigns.Assets()
         self.Endeavors = endeavors.Assets()
@@ -140,7 +175,7 @@ class Settlement(Models.UserAsset):
         """ Creates a new settlement. Expects a fully-loaded request, i.e. with
         an initialized User object, json() params, etc.
 
-        Think of this method as an alternate form of Models.UserAsset.load()
+        Think of this method as an alternate form of models.UserAsset.load()
         where, instead of getting a document from MDB and setting attribs from
         that, we have to create the document (and touch it up) to complete
         the load() request.
@@ -3670,7 +3705,7 @@ class Settlement(Models.UserAsset):
             else:
                 msg = "The expansion asset '%s' from %s cannot be migrated!" % (e, self)
                 self.logger.error(msg)
-                Models.AssetMigrationError(msg)
+                models.AssetMigrationError(msg)
 
         self.settlement["expansions"] = new_expansions
         self.settlement["meta"]["expansions_version"] = 1.0
@@ -4222,7 +4257,7 @@ class Settlement(Models.UserAsset):
 
         # support special response types
         if "response_method" in self.params:
-            exec "payload = self.%s()" % self.params['response_method']
+            exec("payload = self.%s()" % self.params['response_method'])
             return Response(payload, status=200, mimetype="application/json")
         elif "serialize_on_response" in self.params:
             return Response(self.serialize(), status=200, mimetype="application/json")
