@@ -6,16 +6,17 @@ import functools
 import logging
 import os
 import platform
+from pymongo import MongoClient
 import socket
 import sys
 
 # third-party imports
 from dateutil.relativedelta import relativedelta
 import flask
-from pymongo import MongoClient
+import gridfs
 
 # local imports
-from app import api
+from app import API
 from app.utils import crossdomain as crossdomain_module
 from app.utils import settings
 
@@ -31,7 +32,7 @@ mdb = MongoClient()[settings.get("api","mdb")]
 #
 
 log_root_dir = os.path.join(
-    api.root_path,
+    API.root_path,
     '..',
     settings.get('server','log_root_dir')
 )
@@ -99,12 +100,49 @@ class InvalidUsage(Exception):
         if status_code is not None:
            self.status_code = status_code
            self.payload = payload
-        self.alert()
+        self.logger.exception("[%s] %s" % (self.status_code, self.msg))
 
-#    def to_dict(self):
-#       rv = dict(self.payload or ())
-#       rv['msg'] = self.message
-#       return Response(rv['msg'], self.status_code)
+
+#
+#	Generic exception auto-mailer
+#
+
+def email_exception(exception):
+    """ This is called by the main Flask errorhandler() decorator in api.py
+    when we have an unhandled exception at any point of responding to a request.
+
+    This prevents user-facing (or Khoa-facing) failures from being silently
+    swallowed. """
+
+    # first, log it
+    e_logger = get_logger(log_name='error')
+    e_logger.exception(exception)
+
+    if not hasattr(request, 'User'):
+        request.User = noUser()
+
+    # finally, prepare the message template and the traceback for emailing
+    msg = html_file_to_template("exception_alert.html")
+    tb = traceback.format_exc().replace("    ","&ensp;").replace("\n","<br/>")
+
+    # do it
+    s = msg.safe_substitute(
+        traceback=tb,
+        user_login=request.User.login,
+        user_oid=request.User._id,
+        datetime=datetime.now(),
+        r_method=request.method,
+        r_url=request.url,
+        r_json=request.json
+    )
+    e = mailSession()
+    e.send(
+        subject="API Error! [%s]" % socket.getfqdn(),
+        recipients=API.settings.get('server','alert_email').split(','),
+        html_msg=s
+    )
+
+
 
 
 #
@@ -146,6 +184,36 @@ def record_response_time(response):
 
     old_record_query = {"created_on": {"$lt": (datetime.now() - timedelta(days=7))}}
     removed_records = mdb.api_response_times.remove(old_record_query)
+
+
+
+#
+#   GridFS Image object definition
+#
+
+class GridfsImage(object):
+    """ Initialize this with a string of an mdb Object ID, and use
+    the render_response() method to create an http response of the
+    image. Fuck a file system: props to the immortal rschulz. """
+
+    def __init__(self, img_id):
+        try:
+            img_oid = ObjectId(img_id)
+        except:
+            err_msg = 'Image OIDs must be 12-byte input or 24-character hex!'
+            raise InvalidUsage(err_msg, status_code=400)
+        try:
+            self.img = gridfs.GridFS(mdb).get(img_oid)
+        except gridfs.errors.NoFile:
+            self.img = None
+
+    def render_response(self):
+        """ Renders an http response. """
+        if self.img is None:
+            return Response(response="Image not found!", status=404)
+        image_file = StringIO(self.img.read())
+        return send_file(image_file, mimetype="image/png")
+
 
 
 #

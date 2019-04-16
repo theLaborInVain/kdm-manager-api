@@ -14,7 +14,7 @@ import sys
 # third party imports
 
 # local imports
-from app import api
+from app import API
 
 
 class Settings:
@@ -23,9 +23,9 @@ class Settings:
         """ Initialize a Settings object as public or private. """
 
         if settings_type == 'private':
-            c_path = os.path.join(api.root_path, "..", "settings_private.cfg")
+            c_path = os.path.join(API.root_path, "..", "settings_private.cfg")
         else:
-            c_path = os.path.join(api.root_path, "..", "settings.cfg")
+            c_path = os.path.join(API.root_path, "..", "settings.cfg")
 
         # fail if the dir with settings.py does not have a settings.cfg
         if not os.path.isfile(c_path):

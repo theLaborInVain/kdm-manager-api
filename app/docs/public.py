@@ -8,6 +8,7 @@ requires JWT or other credentials to access. """
 dashboard = {
     "stat": {
 	"name": "/stat",
+        "methods": ["GET"],
 	"desc": """\
 <p>This is an ultra lightweight version of what you get from <code>/settings</code>.</p>
 <p>This returns fewer details, but comes back in about half as much time
@@ -23,6 +24,7 @@ Consider using <code>/stat</code> instead</p>
     },
     "settings": {
 	"name": "/settings",
+        "methods": ["GET"],
 	"desc": """\
 <p><b>DEPRECATED: 2019-01-13.</b> This route is going away! Consider using\
 <code>/stat</code> instead</p> <p>Represents the API's <code>settings.cfg</code>
@@ -31,6 +33,7 @@ as JSON.</p>
     },
     "world": {
 	"name": "/world",
+        "methods": ["GET"],
 	"desc": """\
 <p> Retrieve a JSON representation of aggregate/world stats.</p>
 	""",
@@ -45,6 +48,7 @@ as JSON.</p>
 game_asset_lookups = {
     'game_asset': {
         'name': '/game_asset',
+        "methods": ["GET"],
         'desc': 'Returns a list of available game asset modules.',
     },
     'game_asset_abilities_and_impairments': {
@@ -410,7 +414,7 @@ to the password you <b>POST</b>ed, and you can use it to log them in.</p>
 
 ui_ux_helpers = {
     "get_random_names": {
-        "name": "/get_random_names/10",
+        "name": "/get_random_names/&lt;count&gt;",
         "methods": ["GET"],
         "desc": """\
 <p>Returns <code>count</code> random names for each possible survivor sex.</p>
@@ -433,7 +437,7 @@ ui_ux_helpers = {
         """,
     },
     "get_random_surnames": {
-        "name": "/get_random_surnames/10",
+        "name": "/get_random_surnames/&lt;count&gt;",
         "methods": ["GET"],
         "desc": """\
 <p>Returns <code>count</code> random surnames.</p>

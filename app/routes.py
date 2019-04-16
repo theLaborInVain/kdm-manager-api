@@ -27,7 +27,8 @@ import flask_jwt_extended
 #from api.models import users, settlements, names
 
 #   app module imports
-from app import api, assets, docs, utils
+from app import admin, API, assets, docs, utils
+from app.models import names, users
 from app.utils import crossdomain
 
 #import world
@@ -40,10 +41,10 @@ from app.utils import crossdomain
 
 #       stat (supersedes deprecated settings routes)
 
-@api.route("/stat")
+@API.route("/stat")
 @crossdomain(origin=['*'])
 def stat_api():
-    """ This is basically a ping. Retruns the generic API meta data dict
+    """ This is basically a ping. Returns the generic API meta data dict
     as JSON. """
     return Response(
         response=json.dumps(utils.api_meta, default=json_util.default),
@@ -52,12 +53,12 @@ def stat_api():
     )
 
 
-@api.route("/settings")
+@API.route("/settings")
 def get_settings():
     """ Deprecated: 2019-01-13. Returns the settings object as JSON. """
-    settingsObject = utils.settings.Settings()
+    settings_object = utils.settings.Settings()
     return Response(
-        response=settingsObject.jsonify(),
+        response=settings_object.jsonify(),
         status=299,
         mimetype="application/json",
     )
@@ -68,14 +69,14 @@ def get_settings():
 
 #       documentation
 
-@api.route("/")
+@API.route("/")
 def index():
     """ The default return for accessing https://api.kdm-manager.com (or
     equivalent endpoint), which gets you the API docs. """
     return send_file("static/html/docs.html")
 
 
-@api.route("/docs/<action>/<render_type>")
+@API.route("/docs/<action>/<render_type>")
 def render_documentation(action, render_type=None):
     """ These routes get you various representations of the contents of the
     docs module.
@@ -96,12 +97,12 @@ def render_documentation(action, render_type=None):
 
     render_type = render_type.upper()   # case-insensitive: json/JSON
 
-    docsObject = docs.DocumentationObject()
+    docs_object = docs.DocumentationObject()
 
     if action == 'get':
         if render_type == 'JSON':
             j = json.dumps(
-                docsObject.render_as_json(),
+                docs_object.render_as_json(),
                 default=json_util.default
             )
             response = Response(
@@ -110,7 +111,7 @@ def render_documentation(action, render_type=None):
                 mimetype="application/json"
             )
     elif action == 'get_documented_endpoints':
-        output = docsObject.get_documented_endpoints()
+        output = docs_object.get_documented_endpoints()
         if render_type == 'JSON':
             response = Response(
                 response=json.dumps(output),
@@ -126,7 +127,7 @@ def render_documentation(action, render_type=None):
     elif action == 'get_sections':
         if render_type == 'JSON':
             j = json.dumps(
-                docsObject.dump_sections(),
+                docs_object.dump_sections(),
                 default=json_util.default
             )
             response = Response(
@@ -139,46 +140,9 @@ def render_documentation(action, render_type=None):
 
 
 
+#   WORLD
 
-#
-#   public routes for API users and webapps
-#
-
-#   game asset lookups
-@api.route("/game_asset")
-@api.route("/game_assets")  # as a courtesy/concession
-@crossdomain(origin=['*'])
-def list_game_assets():
-    """ Dumps a list of all available game assets (does not include meta and
-    webapp asset modules. """
-    return Response(
-        response=json.dumps(
-            assets.list(game_assets=True),
-            default=json_util.default
-        ),
-        status=200,
-        mimetype="application/json"
-    )
-
-
-@api.route("/game_asset/<asset_type>", methods=api.default_methods)
-@api.route("/game_assets/<asset_type>", methods=api.default_methods)
-@crossdomain(origin=['*'])
-def lookup_asset(asset_type):
-    """ Looks up game asset collection assets. Or, if you GET it, dumps the
-    initialized asset module's assets dictionary. """
-
-    if asset_type not in assets.list():
-        return Response(
-            response="/game_asset/%s is not a supported endpoint!" % asset_type,
-            status=404,
-        )
-
-    return assets.dump_asset(asset_type)
-
-
-
-@api.route("/world")
+@API.route("/world")
 @crossdomain(origin=['*'], headers='Content-Type')
 def world_json():
     """ Renders the world data (from the world module) in webapp-friendly JSON. """
@@ -200,7 +164,45 @@ def world_json():
     return response
 
 
-@api.route("/get_random_names/<count>")
+
+#   game asset lookups
+
+@API.route("/game_asset")
+@API.route("/game_assets")  # as a courtesy/concession
+@crossdomain(origin=['*'])
+def list_game_assets():
+    """ Dumps a list of all available game assets (does not include meta and
+    webapp asset modules. """
+    return Response(
+        response=json.dumps(
+            assets.list(game_assets=True),
+            default=json_util.default
+        ),
+        status=200,
+        mimetype="application/json"
+    )
+
+@API.route("/game_asset/<asset_type>", methods=API.default_methods)
+@API.route("/game_assets/<asset_type>", methods=API.default_methods)
+@crossdomain(origin=['*'])
+def lookup_asset(asset_type):
+    """ Looks up game asset collection assets. Or, if you GET it, dumps the
+    initialized asset module's assets dictionary. """
+
+    if asset_type not in assets.list():
+        return Response(
+            response="/game_asset/%s is not a supported endpoint!" % asset_type,
+            status=404,
+        )
+
+    return assets.dump_asset(asset_type)
+
+
+#
+#   UI/UX Helpers
+#
+
+@API.route("/get_random_names/<count>")
 @crossdomain(origin=['*'], headers='Content-Type')
 def get_random_names(count):
     """ Rapid-fire random name generator for FIRST names. """
@@ -214,7 +216,7 @@ def get_random_names(count):
         mimetype="application/json"
     )
 
-@api.route("/get_random_surnames/<count>")
+@API.route("/get_random_surnames/<count>")
 @crossdomain(origin=['*'], headers='Content-Type')
 def get_random_surnames(count):
     """ Rapid-fire random name generator for LAST names. """
@@ -230,9 +232,10 @@ def get_random_surnames(count):
 
 
 #
-#   /login (not to be confused with the built-in /auth route)
+#   User creation and auth
 #
-@api.route("/login", methods=["POST", "OPTIONS"])
+
+@API.route("/login", methods=["POST", "OPTIONS"])
 @crossdomain(origin=['*'])
 def get_token(check_pw=True, user_id=False):
     """ Tries to get credentials from the request headers. Fails verbosely."""
@@ -256,9 +259,12 @@ def get_token(check_pw=True, user_id=False):
         return utils.http_401
 
     tok = {
-        'access_token': flask_jwt_extended.create_access_token(identity=user_object.jsonize()),
         "_id": str(user_object.user["_id"]),
+        'access_token': flask_jwt_extended.create_access_token(
+            identity=user_object.jsonize()
+        ),
     }
+
     return Response(
         response=json.dumps(tok),
         status=200,
@@ -266,7 +272,7 @@ def get_token(check_pw=True, user_id=False):
     )
 
 
-@api.route("/reset_password/<action>", methods=["POST", "OPTIONS"])
+@API.route("/reset_password/<action>", methods=["POST", "OPTIONS"])
 @crossdomain(origin=['*'])
 def reset_password(action):
     """ Routes for requesting and performing a password reset. """
@@ -286,7 +292,7 @@ def reset_password(action):
 #   private routes - past here, you've got to authenticate
 #
 
-@api.route("/authorization/<action>", methods=["POST", "GET", "OPTIONS"])
+@API.route("/authorization/<action>", methods=["POST", "GET", "OPTIONS"])
 @crossdomain(origin=['*'])
 def refresh_auth(action):
     """ Uses the 'Authorization' block in the request header to return a fresh
@@ -315,7 +321,7 @@ def refresh_auth(action):
     return utils.http_402
 
 
-@api.route("/new/<asset_type>", methods=["POST", "OPTIONS"])
+@API.route("/new/<asset_type>", methods=["POST", "OPTIONS"])
 @crossdomain(origin=['*'])
 def new_asset(asset_type):
     """ Uses the 'Authorization' block of the header and POSTed params to create
@@ -344,10 +350,7 @@ def new_asset(asset_type):
     return request_broker.new_user_asset(asset_type)
 
 
-@api.route(
-    "/<collection>/<action>/<asset_id>",
-    methods=["GET", "POST", "OPTIONS"]
-)
+@API.route("/<collection>/<action>/<asset_id>", methods=API.default_methods)
 @crossdomain(origin=['*'])
 def collection_action(collection, action, asset_id):
     """ This is our major method for retrieving and updating settlements.
@@ -368,16 +371,17 @@ def collection_action(collection, action, asset_id):
     # update the request object
     request.collection = collection
     setattr(request, 'action', action)
-    request.User = users.token_to_object(request, strict=False)     # temporarily non-strict
+    request.User = users.token_to_object(request, strict=False)
 
-    asset_object = request_broker.get_user_asset(collection, asset_id)
+    asset_object = assets.get_user_asset(collection, asset_id)
+
     if isinstance(asset_object, Response):
         return asset_object
 
     return asset_object.request_response(action)
 
 
-@api.route("/avatar/get/<image_oid>", methods=["GET"])
+@API.route("/avatar/get/<image_oid>", methods=["GET"])
 @crossdomain(origin=['*'])
 def serve_avatar_image(image_oid):
     """ Retrieves a survivor avatar from the GridFS system, sort of like a
@@ -387,29 +391,33 @@ def serve_avatar_image(image_oid):
     return avatar.render_response()
 
 
+
 #
-#      ADMIN PANEL - these use the @basicAuth decorator found __init__.py
+#      ADMIN PANEL
 #
 
-@api.route("/admin")
-@api.basicAuth.login_required
+@API.route("/admin/get/<resource>", methods=["GET", "OPTIONS"])
+@crossdomain(origin=['*'])
+def admin_view(resource):
+    """ Retrieves admin panel resources as JSON. This is a public route, i.e.
+    requires no authorization/authentication. """
+    return admin.get_data(resource)
+
+
+@API.route("/admin")
+@API.basicAuth.login_required
 def panel():
-    """ Gets the admin panel."""
+    """ Gets the admin panel. Requires basicAuth. """
     return send_file("html/admin/panel.html")
 
 
-@api.route("/admin/notifications/<method>", methods=["POST"])
-@api.basicAuth.login_required
+@API.route("/admin/notifications/<method>", methods=["POST"])
+@API.basicAuth.login_required
 def admin_notifications(method):
-    """ Creates a new admin type asset."""
+    """ Creates a new admin type asset. Requires basicAuth."""
     return request_broker.admin_notifications(method)
 
 
-@api.route("/admin/get/<resource>", methods=["GET", "OPTIONS"])
-@crossdomain(origin=['*'])
-def admin_view(resource):
-    """ Retrieves admin panel resources as JSON."""
-    return request_broker.get_admin_data(resource)
 
 
 
@@ -417,15 +425,15 @@ def admin_view(resource):
 #   the graveyard of deprecated endpoints!
 #
 
-@api.route("/settings.json")
+@API.route("/settings.json")
 def get_settings_json():
     """ Formerly returned the API settings as a JSON file. Deprecated on
     2019-01-13 and removed in the version one release of the API. """
     return utils.http_410
 
-@api.route("/new_settlement")
+@API.route("/new_settlement")
 @crossdomain(origin=['*'], headers='Content-Type')
-def new_settlement_deprecation_warning():
+def new_settlement_deprecated():
     """ Formerly used to get options for creating a new settlement.
     Deprecated in the 1.0.0 release in favor of /game_assets/settlements,
     which follows convention and looks tidier in the documentation. """
@@ -438,12 +446,12 @@ def new_settlement_deprecation_warning():
 #       does them). YHBW
 #
 
-@api.route('/static/<sub_dir>/<path:path>')
+@API.route('/static/<sub_dir>/<path:path>')
 def route_to_static(path, sub_dir):
     """ Generic /static/* endpoints served here."""
     return send_from_directory('static/%s' % sub_dir, path)
 
-@api.route("/favicon.ico")
+@API.route("/favicon.ico")
 def favicon():
     """ So you can see Logan's pretty logo in your dev environment."""
     return send_file("static/media/images/favicon.png")
