@@ -2,9 +2,10 @@
 
     No blueprints in this app! All the routes happen in this module.
 
-    See also: request_broker.py for the rest of what goes on with dynamic
-    request routing (becase we process endpoint components in certain types of
-    requests).
+    Some major changes in the 1.0.0 release:
+
+        - the request_broker.py module is no more!
+        - admin is a module in apps/ now, and has its own methods
 
 """
 
@@ -23,7 +24,6 @@ import flask_jwt_extended
 #
 #   app imports
 #
-#from api import application, docs, request_broker
 #from api.models import users, settlements, names
 
 #   app module imports
@@ -145,7 +145,7 @@ def render_documentation(action, render_type=None):
 @API.route("/world")
 @crossdomain(origin=['*'], headers='Content-Type')
 def world_json():
-    """ Renders the world data (from the world module) in webapp-friendly JSON. """
+    """ Renders the world data (from the world module) in JSON. """
 
     # 1.) initialize world/world daemon objects
     world_object = world.World()
@@ -420,7 +420,7 @@ def panel():
 @API.basicAuth.login_required
 def admin_notifications(method):
     """ Creates a new admin type asset. Requires basicAuth."""
-    return request_broker.admin_notifications(method)
+    return admin.get_notifications(method)
 
 
 

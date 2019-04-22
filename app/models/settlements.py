@@ -137,12 +137,10 @@ class Settlement(models.UserAsset):
         if self.normalize_on_init:
             self.normalize()
 
-#        if request.User.get_preference("update_timeline"):
-#            self.update_timeline_with_story_events()
         if request and request.log_response_time:
             stop = datetime.now()
             duration = stop - request.start_time
-            self.logger.debug("%s initialize() -> in %s" % (self, duration))
+            self.logger.debug("__init__() [%s] %s" % (duration, self))
 
         self.campaign_dict = self.get_campaign(dict)
 
@@ -462,7 +460,7 @@ class Settlement(models.UserAsset):
             if request.log_response_time:
                 stop = datetime.now()
                 duration = stop - request.start_time
-                self.logger.debug("%s serialize(%s) -> Sheet element in %s" % (self, return_type, duration))
+                self.logger.debug('serialize(%s) [%s] %s' % (return_type, duration, self))
 
         # create game_assets
         if return_type in [None, 'game_assets','campaign']:
@@ -517,7 +515,7 @@ class Settlement(models.UserAsset):
             if request.log_response_time:
                 stop = datetime.now()
                 duration = stop - request.start_time
-                self.logger.debug("%s serialize(%s) -> Game Assets element in %s" % (self, return_type, duration))
+                self.logger.debug("serialize(%s) [%s] %s" % (return_type, duration, self))
 
         # additional top-level elements for more API "flatness"
         if return_type in ['storage']:
@@ -551,7 +549,7 @@ class Settlement(models.UserAsset):
             if request.log_response_time:
                 stop = datetime.now()
                 duration = stop - request.start_time
-                self.logger.debug("%s serialize(%s) -> Campaign element in %s" % (self, return_type, duration))
+                self.logger.debug("serialize(%s) [%s] %s" % (return_type, duration, self))
 
         return json.dumps(output, default=json_util.default)
 
@@ -785,10 +783,15 @@ class Settlement(models.UserAsset):
         m_dict = self.Monsters.get_asset(monster_handle)
 
         # get the type from the asset dict
-        if m_dict["type"] == 'quarry':
+        if m_dict["sub_type"] == 'quarry':
             target_list = self.settlement["quarries"]
-        elif m_dict["type"] == 'nemesis':
+        elif m_dict["sub_type"] == 'nemesis':
             target_list = self.settlement["nemesis_monsters"]
+        else:
+            self.logger.error(m_dict)
+            raise AttributeError(
+                "Monster 'type' attribute is not an asset collection!"
+            )
 
         # finally, add, log and save
         if monster_handle not in target_list:
@@ -1676,7 +1679,8 @@ class Settlement(models.UserAsset):
         election = self.params["election"]
 
         # validate the principle first
-        principles = self.Innovations.get_principles()
+#        principles = self.Innovations.get_principles()
+        principles = self.Principles.assets
 
         if principle in principles.keys():
             p_dict = principles[principle]
@@ -1765,10 +1769,17 @@ class Settlement(models.UserAsset):
             value = int(d['value'])
 
             # remove all occurrences of handle from storage
-            self.settlement['storage'] = filter(lambda a: a != handle, self.settlement['storage'])
+            self.settlement['storage'] = list(
+                filter(lambda a: a != handle, self.settlement['storage'])
+            )
             for i in range(value):
                 self.settlement['storage'].append(handle)
-            self.log_event("%s updated settlement storage: %s x %s" % (request.User.login, a_obj.name, value))
+
+            self.log_event("%s updated settlement storage: %s x %s" % (
+                request.User.login,
+                a_obj.name,
+                value)
+            )
 
         self.save()
 
@@ -2971,8 +2982,14 @@ class Settlement(models.UserAsset):
                     elif S.sub_type == 'resources':
                         resources_total += item_obj.quantity
                         for i in range(item_obj.quantity):
-                            rollup_keywords(resources_keywords, item_obj.keywords)
-                            rollup_keywords(resources_rules, item_obj.rules)
+                            rollup_keywords(
+                                resources_keywords,
+                                item_obj.keywords
+                            )
+                            rollup_keywords(
+                                resources_rules,
+                                getattr(item_obj, 'rules', [])
+                            )
 
                     storage_repr[k]['collection'].append(item_obj.serialize(dict))
 
@@ -2992,7 +3009,14 @@ class Settlement(models.UserAsset):
                 if item_handle in storage_repr[item_type]['digest'].keys():
                    storage_repr[item_type]['digest'][item_handle]['count'] += 1
                 else:
-                    storage_repr[item_type]['digest'][item_handle] = {'count': 1, 'name': item_obj.name, 'handle': item_handle, 'desc': item_obj.desc, 'keywords': item_obj.keywords, 'rules': item_obj.rules}
+                    storage_repr[item_type]['digest'][item_handle] = {
+                        'count': 1,
+                        'name': item_obj.name,
+                        'handle': item_handle,
+                        'desc': item_obj.desc,
+                        'keywords': item_obj.keywords,
+                        'rules': getattr(item_obj, 'rules', []),
+                    }
 
 
         # now turn the digest dict into a list of dicts for easy iteration

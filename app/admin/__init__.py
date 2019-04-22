@@ -9,7 +9,7 @@
 
 # local imports
 from app import utils
-from app.admin import notifications
+from app.admin import notifications, panel
 
 
 def get_data(resource=None):
@@ -26,3 +26,18 @@ def get_data(resource=None):
         return notifications.get_webapp_alerts()
 
     return utils.InvalidUsage("Admin resource '%s' does not exist!", status=400)
+
+
+def get_notifications(method=None):
+    """ Creates a new admin asset. Used currently only for webapp alerts. """
+
+    A = notifications.Alert()
+    if method == "new":
+        return A.serialize()
+    elif method == "expire":
+        A.expire()
+        return A.serialize()
+    else:
+        return utils.http_501
+
+    return utils.http_501

@@ -3065,7 +3065,8 @@ manhunter = {
 
 generic = {
     'corsair_coat': {
-        'expansion': 'rare_gear',
+        'expansion': 'generic',
+        'type': 'rare_gear',
         'name': 'Corsair Coat',
         'keywords': ['item','leather','metal','other'],
         'rules': ['Ethereal','Unique','Accessory','Unwieldy','Range 5'],

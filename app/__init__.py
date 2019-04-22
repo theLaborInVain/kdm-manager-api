@@ -47,7 +47,7 @@ API.default_methods = [
     s in
     settings.get('api', 'default_methods').split(',')
 ]
-API.logger.info('API initialized with default methods: %s' % API.default_methods)
+API.logger.info('API initialized with default methods: %s', API.default_methods)
 
 #   Javascript Web Token! DO NOT import jwt (i.e. pyjwt) here!
 JWT = flask_jwt_extended.JWTManager(API)
@@ -104,7 +104,7 @@ def general_exception(exception):
     utils.email_exception(exception)
     try:
         return flask.Response(response=exception.msg, status=500)
-    except:
+    except AttributeError:
         return flask.Response(response=str(exception), status=500)
 
 

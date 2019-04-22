@@ -22,6 +22,7 @@ from bson.objectid import ObjectId
 from collections import OrderedDict
 from copy import copy, deepcopy
 from datetime import datetime, timedelta
+import importlib
 import inspect
 import json
 import os
@@ -158,13 +159,13 @@ class AssetCollection(object):
             for mandatory_attribute in self.mandatory_attributes.keys():
                 for a_dict in self.get_dicts():
                     if mandatory_attribute not in a_dict.keys():
-                        self.logger.debug(
-                            "[%s] '%s' asset missing mandatory attrib! '%s'" % (
-                                self.type,
-                                a_dict['handle'],
-                                mandatory_attribute
-                            )
-                        )
+#                        self.logger.debug(
+#                            "[%s] '%s' asset missing mandatory attrib! '%s'" % (
+#                                self.type,
+#                                a_dict['handle'],
+#                                mandatory_attribute
+#                            )
+#                        )
                         self.assets[
                             a_dict['handle']
                         ][mandatory_attribute] = self.mandatory_attributes[
@@ -246,7 +247,7 @@ class AssetCollection(object):
 
             a_dict = self.get_asset(handle=h)
             if a_dict.get('type', None) is None:
-                raise Exception("%s asset has no 'type' attribute! %s" % (self, a_dict))
+                raise AttributeError("%s asset has no 'type' attribute! %s" % (self, a_dict))
 
             #
             #   pretty types/sub_types
@@ -678,7 +679,8 @@ class UserAsset(object):
         PROBABLY define a __repr__ for your individual assets, if for no other
         reason than to make the logs look cleaner. """
 
-        name = getattr(self, 'name', 'UNDEFINED')
+        record = getattr(self, self.collection[:-1], {})
+        name = record.get('name', 'UNKNOWN')
         return "%s object '%s' [%s]" % (self.collection, name, self._id)
 
 
@@ -781,7 +783,7 @@ class UserAsset(object):
     def return_json(self):
         """ Calls the asset's serialize() method and creates a simple HTTP
         response. """
-        return Response(
+        return flask.Response(
             response=self.serialize(),
             status=200,
             mimetype="application/json"
@@ -976,7 +978,8 @@ class UserAsset(object):
         if attrib == "principles":
             A = models.innovations.Assets()
         else:
-            exec("A = models.%s.Assets()" % attrib)
+            A = importlib.import_module('app.models.%s' % attrib).Assets()
+#            exec("A = models.%s.Assets()" % attrib)
 
 #        exec("asset_list = self.%s['%s']" % (self.collection[:-1], attrib))
         asset_list = getattr(self, self.collection[:-1])[attrib]
