@@ -20,13 +20,6 @@
 # third part imports
 
 # local imports
-from app.assets.survivors import color_schemes as survivor_color_schemes
-
-
-#
-#   add assets here
-#
-color_schemes = survivor_color_schemes.schemes
 
 
 

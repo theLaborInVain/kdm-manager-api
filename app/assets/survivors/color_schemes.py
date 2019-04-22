@@ -1,4 +1,4 @@
-schemes = {
+standard = {
     'endeavor': {
         'name': 'Endeavor',
         'style': {

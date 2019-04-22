@@ -26,7 +26,6 @@ from flask import Response, request
 
 # local imports
 from app import assets, models, utils
-from app.assets.survivors import color_schemes as survivor_color_schemes
 from app.models import (
     abilities_and_impairments,
     campaigns,
@@ -44,16 +43,17 @@ from app.models import (
     milestone_story_events,
     monsters,
     names,
+    principles,
     resources,
     storage,
     strain_milestones,
     survival_actions,
-    survivor_special_attributes,
     survivors,
     weapon_masteries,
     weapon_proficiency,
     weapon_specializations,
 )
+from app.models.survivors import color_schemes, special_attributes, status_flags
 
 
 class Assets(models.AssetCollection):
@@ -139,7 +139,7 @@ class Settlement(models.UserAsset):
 
 #        if request.User.get_preference("update_timeline"):
 #            self.update_timeline_with_story_events()
-        if request and request.metering:
+        if request and request.log_response_time:
             stop = datetime.now()
             duration = stop - request.start_time
             self.logger.debug("%s initialize() -> in %s" % (self, duration))
@@ -162,11 +162,13 @@ class Settlement(models.UserAsset):
         self.Milestones = milestone_story_events.Assets()
         self.Monsters = monsters.Assets()
         self.Names = names.Assets()
+        self.Principles = principles.Assets()
 #        self.Storage = storage.Assets()
-        self.SpecialAttributes = survivor_special_attributes.Assets()
+        self.SpecialAttributes = special_attributes.Assets()
         self.SurvivalActions = survival_actions.Assets()
         self.Survivors = survivors.Assets()
-        self.SurvivorColorSchemes = survivor_color_schemes.Assets()
+        self.SurvivorColorSchemes = color_schemes.Assets()
+        self.SurvivorStatusFlags = status_flags.Assets()
         self.WeaponMasteries = weapon_masteries.Assets()
         self.StrainMilestones = strain_milestones.Assets()
 
@@ -193,8 +195,12 @@ class Settlement(models.UserAsset):
         """
 
         patron_attribs = request.User.get_patron_attributes()
+
         if request.User.get_settlements(return_type=int) >= 3 and patron_attribs['level'] < 1:
-            raise utils.InvalidUsage('Non-supporters may only create three settlements!', status_code=405)
+            raise utils.InvalidUsage(
+                'Free users may only create three settlements!',
+                status_code=405
+            )
 
         self.logger.info("%s is creating a new settlement..." % request.User)
 #        self.logger.debug("%s new settlement params: %s" % (request.User, self.params))
@@ -453,7 +459,7 @@ class Settlement(models.UserAsset):
             output['sheet']['monster_volumes'] = self.get_monster_volumes()
             output['sheet']['lantern_research_level'] = self.get_lantern_research_level()
 
-            if request.metering:
+            if request.log_response_time:
                 stop = datetime.now()
                 duration = stop - request.start_time
                 self.logger.debug("%s serialize(%s) -> Sheet element in %s" % (self, return_type, duration))
@@ -508,7 +514,7 @@ class Settlement(models.UserAsset):
             output['game_assets']['inspirational_statue_options'] = self.get_available_fighting_arts(exclude_dead_survivors=False, return_type='JSON')
             output['game_assets']['monster_volumes_options'] = self.get_available_monster_volumes()
 
-            if request.metering:
+            if request.log_response_time:
                 stop = datetime.now()
                 duration = stop - request.start_time
                 self.logger.debug("%s serialize(%s) -> Game Assets element in %s" % (self, return_type, duration))
@@ -522,8 +528,7 @@ class Settlement(models.UserAsset):
             output["survivor_bonuses"] = self.get_bonuses("JSON")
             output["survivor_attribute_milestones"] = self.get_survivor_attribute_milestones()
             output["eligible_parents"] = self.get_eligible_parents()
-            flags = assets.survivor_sheet_options.survivor_status_flags
-            output['survivor_status_flags'] = [{'handle': k, 'name': flags[k]['name']} for k in flags.keys()]
+            output['survivor_status_flags'] = self.SurvivorStatusFlags.assets
 
 
         # campaign summary specific
@@ -543,7 +548,7 @@ class Settlement(models.UserAsset):
             output['campaign'].update({'endeavors': available_endeavors})
             output['campaign'].update({'endeavor_count': available_endeavor_count})
 
-            if request.metering:
+            if request.log_response_time:
                 stop = datetime.now()
                 duration = stop - request.start_time
                 self.logger.debug("%s serialize(%s) -> Campaign element in %s" % (self, return_type, duration))
@@ -1792,7 +1797,7 @@ class Settlement(models.UserAsset):
             if exclude_dead and s.is_dead():
                 pass
             else:
-                for attribute, modifier in attrib_dict.iteritems():
+                for attribute, modifier in attrib_dict.items():
                     if operation == 'increment':
                         if attribute == 'abilities_and_impairments':
                             for ai_handle in modifier:  # 'modifier' is a list here
@@ -1857,7 +1862,12 @@ class Settlement(models.UserAsset):
             self.logger.error("Cannot update nemesis levels for '%s' (nemesis is not in 'nemesis_monsters' list for %s)" % (handle, self))
         else:
             self.settlement["nemesis_encounters"][handle] = levels
-            self.log_event('%s updated %s encounters to include %s' % (request.User.login, m_dict["name"], utils.list_to_pretty_string(levels)))
+            self.log_event('%s updated %s encounters to include %s' % (
+                request.User.login,
+                m_dict["name"],
+                utils.list_to_pretty_string(levels)
+                )
+            )
             self.save()
 
 
@@ -2385,7 +2395,7 @@ class Settlement(models.UserAsset):
                 "all": [],
             }
 
-        for handle,d in self.get_innovations(return_type=dict, include_principles=True).iteritems():
+        for handle,d in self.get_innovations(return_type=dict, include_principles=True).items():
             for k in d.keys():
                 if k in output.keys():
                     if return_type == "JSON":
@@ -2471,10 +2481,12 @@ class Settlement(models.UserAsset):
         return s_expansions
 
 
-    def get_event_log(self, return_type=None, ly=None, lines=None, get_lines_after=None, survivor_id=None):
+    def get_event_log(self, return_type=None, ly=None, lines=None,
+            get_lines_after=None, survivor_id=None):
+
         """ Returns the settlement's event log as a cursor object unless told to
         do otherwise.
-        
+
         Checks for a request and, if one exists, tries to search for lines after
         a certain time.
         """
@@ -2724,7 +2736,7 @@ class Settlement(models.UserAsset):
         #       not consequences)
         #
 
-        for i_handle, i_dict in available.iteritems():
+        for i_handle, i_dict in available.items():
             if i_dict.get("available_if", None) is not None:
                 for tup in i_dict['available_if']:
                     asset, collection = tup
@@ -2758,7 +2770,7 @@ class Settlement(models.UserAsset):
             output = collections.OrderedDict()
 
             sorting_hat = {}
-            for k,v in deck_dict.iteritems():
+            for k, v in deck_dict.items():
                 sorting_hat[v['name']] = k
 
             for i_name in sorted(sorting_hat.keys()):
@@ -2987,7 +2999,7 @@ class Settlement(models.UserAsset):
         for k in storage_repr.keys():
             orig_digest = copy(storage_repr[k]['digest'])
             storage_repr[k]['digest'] = []
-            for key, value in orig_digest.iteritems():
+            for key, value in orig_digest.items():
                 storage_repr[k]['digest'].append(value)
 
         #finally, package up our main dicts for export as JSON
@@ -3176,7 +3188,7 @@ class Settlement(models.UserAsset):
                 sa_dict[k]["title_tip"] = "'%s' has not been unlocked yet." % sa_dict[k]["name"]
 
         # second, udpate the master list to say which are available
-        for k,v in self.get_innovations(dict).iteritems():
+        for k, v in self.get_innovations(dict).items():
             innovation_sa = v.get("survival_action", None)
             if innovation_sa in sa_dict.keys():
                 sa_dict[innovation_sa]["available"] = True
@@ -3291,7 +3303,7 @@ class Settlement(models.UserAsset):
         p_handles = self.campaign.principles
         all_principles = {}
         for p_handle in p_handles:
-            p_dict = self.Innovations.get_principle(p_handle)
+            p_dict = self.Principles.get_asset(p_handle)
             all_principles[p_dict["name"]] = p_dict
 
         sorting_hat = {}
@@ -4090,7 +4102,7 @@ class Settlement(models.UserAsset):
         'action' kwarg appropriately. This is the ancestor of the legacy app
         assets.Settlement.modify() method. """
 
-        self.get_request_params(verbose=False)
+        self.get_request_params()
 
         #
         #   simple GET type methods

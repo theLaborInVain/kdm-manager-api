@@ -92,3 +92,13 @@ requests for https://api.kdm-manager.com
 
 From there, run `server.sh` as root to manage deployment operations, e.g. start,
 stop, restart, etc.
+
+## System administration
+
+If you do choose to deploy the API, you'll probably want to rotate the logs (in
+the application's `logs/` folder).
+
+The API comes with a simple _logrotate_ configuration file, and using it with
+your crontab is probably the most convenient way:
+
+    #30 2 * * * /usr/sbin/logrotate /home/toconnell/kdm-manager-api/deploy/logrotate.conf > /dev/null 2>&1

@@ -22,6 +22,7 @@ from io import StringIO
 from datetime import datetime
 import gridfs
 import imghdr
+import importlib
 import json
 import math
 from PIL import Image
@@ -33,7 +34,6 @@ from flask import request, Response
 # local imports
 from app import models, utils
 from app.assets import survivors
-from app.assets.survivors import color_schemes as survivor_color_schemes
 from app.models import (
     abilities_and_impairments,
     cursed_items,
@@ -43,12 +43,12 @@ from app.models import (
     fighting_arts,
     names,
     saviors,
+    settlements,
     survival_actions,
-    survivor_special_attributes,
     the_constellations,
     weapon_proficiency
 )
-
+from app.models.survivors import color_schemes, special_attributes
 
 
 class Assets(models.AssetCollection):
@@ -146,7 +146,7 @@ class Survivor(models.UserAsset):
         self.Disorders = disorders.Assets()
         self.Names = names.Assets()
         self.Saviors = saviors.Assets()
-        self.SpecialAttributes = survivor_special_attributes.Assets()
+        self.SpecialAttributes = special_attributes.Assets()
         self.WeaponProficiency = weapon_proficiency.Assets()
 
         # data model meta data
@@ -178,7 +178,6 @@ class Survivor(models.UserAsset):
         if self.Settlement is None:
             if request and request.collection != 'survivor':
                 self.logger.warn("%s Initializing Settlement object! THIS IS BAD FIX IT" % self)
-            import settlements
             self.Settlement = settlements.Settlement(_id=self.survivor["settlement"], normalize_on_init=False)
 
         if self.normalize_on_init:
@@ -262,7 +261,7 @@ class Survivor(models.UserAsset):
         #       that first, and fail bigly if you cannot
         #
 
-        import settlements  # baby jesus, still crying
+#        import settlements  # baby jesus, still crying
         self.Settlement = settlements.Settlement(_id=attribs["settlement"])
         self.settlement_id = self.Settlement.settlement["_id"]
 
@@ -989,7 +988,8 @@ class Survivor(models.UserAsset):
 
 
         #   2.) initialize/import the AssetModule and an AssetCollection object
-        exec("AssetModule = %s" % asset_class)
+#        exec("AssetModule = %s" % asset_class)
+        AssetModule = importlib.import_module('app.models.%s' % asset_class)
         A = AssetModule.Assets()
 
 
@@ -1135,7 +1135,7 @@ class Survivor(models.UserAsset):
         self.check_request_params(['handle'])
         handle = self.params['handle']
         self.survivor['color_scheme'] = handle
-        scheme_dict = survivor_color_schemes[handle]
+        scheme_dict = color_schemes.get_asset(handle=handle)
         self.log_event("%s set the color scheme to '%s' for %s." % (request.User.login, scheme_dict['name'], self.pretty_name()))
         self.save()
 
@@ -1802,7 +1802,7 @@ class Survivor(models.UserAsset):
         for d in self.survivor['disorders']:
             d_dict = self.Disorders.get_asset(d)
             if d_dict.get('on_return', None) is not None:
-                for k,v in d_dict['on_return'].iteritems():
+                for k, v in d_dict['on_return'].items():
                     self.survivor[k] = v
 
         # OK, we out!
@@ -2560,7 +2560,7 @@ class Survivor(models.UserAsset):
             active_cells = self.get_dragon_traits('active_cells')
             C = the_constellations.Assets()
             c_formulae = C.get_asset('lookups')["formulae"]
-            for k,v in c_formulae.iteritems():      # k = "Witch", v = set(["A1","A2","A3","A4"])
+            for k, v in c_formulae.items():      # k = "Witch", v = set(["A1","A2","A3","A4"])
                 if v.issubset(active_cells):
                     constellations.add(k)
             return list(constellations)
@@ -2791,7 +2791,7 @@ class Survivor(models.UserAsset):
         # support JSON return
         if return_type == 'JSON':
             output = []
-            for k, v in available_actions.iteritems():
+            for k, v in available_actions.items():
                 output.append(v)
             return sorted(output, key=lambda k: k['sort_order'])
 
@@ -3149,7 +3149,7 @@ class Survivor(models.UserAsset):
                 self.logger.warn("%s Duck-typed '%s' attrib from 'checked' to True" % (self, checked_attrib))
                 self.perform_save = True
 
-        if type(self.survivor["name"]) not in [unicode, str]:
+        if type(self.survivor["name"]) not in [str]:
             self.survivor["name"] = str(self.survivor["name"])
             self.perform_save = True
 

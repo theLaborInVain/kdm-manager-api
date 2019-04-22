@@ -788,7 +788,9 @@ class User(models.UserAsset):
         else:
             for s in settlements:
                 asset_age = datetime.now() - s['created_on']
-                older_than_cutoff = asset_age.days > utils.settings.get('application','free_user_settlement_age_max')
+                older_than_cutoff = asset_age.days > utils.settings.get(
+                    'users','free_user_settlement_age_max'
+                )
                 if older_than_cutoff and self.user['_id'] == s['created_by']:
                     warn_msg = "%s settlement '%s' is more than %s days old!"
                     self.logger.warn(
@@ -817,7 +819,11 @@ class User(models.UserAsset):
                         user_id = request.User._id,
                     )
                     e = utils.mailSession()
-                    e.send(subject="Settlement auto-remove! [%s]" % socket.getfqdn(), recipients=utils.settings.get('application','email_alerts').split(','), html_msg=msg)
+                    e.send(
+                        subject="Settlement auto-remove! [%s]" % socket.getfqdn(),
+                        recipients=utils.settings.get('application','email_alerts').split(','),
+                        html_msg=msg
+                    )
                     s['removed'] = datetime.now()
                     utils.mdb.settlements.save(s)
                     settlements.remove(s)

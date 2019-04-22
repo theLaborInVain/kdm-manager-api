@@ -25,6 +25,53 @@ from app import API, utils
 from app.models import settlements, survivors, users
 
 
+
+#
+#	Methods for creating and working with user assets, e.g. survivors,
+#		settlements, etc.
+#
+
+def new_user_asset(asset_type=None):
+    """ Hands off a new asset creation request and returns the result of the
+    request. Like all brokerage methods, this method always returns an HTTP
+    response.
+
+    The idea is to call this in request-processing workflow when you know that
+    you've got an asset creation request.
+
+    This brokerage method expects a few things:
+
+        1.) you've added a logger to the request
+        2.) you've also added a models.users.User object to the request
+        3.) you're passing in JSON params that can be processed when
+            fulfilling your request
+
+    If you are NOT doing all of that, do NOT pass off a request to this method,
+    unless you want to throw a 500 back at the user.
+
+    """
+
+    if asset_type == "settlement":
+        S = settlements.Settlement()
+        return S.serialize()
+    elif asset_type == "survivor":
+        S = survivors.Survivor()
+        return S.serialize()
+    elif asset_type == "survivors":
+        output = survivors.add_many_survivors(dict(request.get_json()))
+        return Response(
+            response=json.dumps(output, default=json_util.default),
+            status=200,
+            mimetype="application/json"
+        )
+    else:
+        # unknown user asset types get a 422
+        err = "Creating '%s' type user assets is not supported!" % asset_type
+        return Response(response=err, status=422, mimetype="text/plain")
+
+    return utils.http_400
+
+
 def get_user_asset(collection=None, asset_id=None):
     """ Tries to initialize a user asset from one of our three user asset
     collections. If any of these fail, they should raise the appropriate
@@ -43,10 +90,16 @@ def get_user_asset(collection=None, asset_id=None):
     raise utils.InvalidUsage("Collection '%s' does not exist!", status_code=422)
 
 
-def dump_asset(collection_name, return_type=flask.Response):
+
+#
+#       Methods for working with game assets, e.g. retrieving/dumping an asset
+#           collection, a specific game asset, etc.
+#
+
+def get_game_asset(collection_name, return_type=flask.Response):
     """ Formerly a part of the (deprecated) request_broker.py module, this
     method imports an asset type, alls its Assets() method and then returns
-	its request_response() method."""
+    its request_response() method."""
 
     model = importlib.import_module('app.models.%s' % collection_name)
     A = model.Assets()

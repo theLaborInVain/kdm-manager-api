@@ -27,7 +27,6 @@ from app.utils import settings
 from app.utils import crossdomain
 
 API.settings = settings
-API.default_methods = settings.get('api', 'default_methods').split(',')
 
 # update the config items used by flask
 API.config.update(
@@ -41,6 +40,14 @@ API.config['SECRET_KEY'] = API.settings.get(
     "secret_key",
     "private"
 )
+
+#   set default methods, log about it
+API.default_methods = [
+    s.strip() for
+    s in
+    settings.get('api', 'default_methods').split(',')
+]
+API.logger.info('API initialized with default methods: %s' % API.default_methods)
 
 #   Javascript Web Token! DO NOT import jwt (i.e. pyjwt) here!
 JWT = flask_jwt_extended.JWTManager(API)

@@ -21,17 +21,17 @@ from bson import json_util
 from bson.objectid import ObjectId
 from collections import OrderedDict
 from copy import copy, deepcopy
+from datetime import datetime, timedelta
 import inspect
 import json
 import os
+from user_agents import parse as ua_parse
 
 # third party imports
 import flask
 
 # local imports
-from app import utils
-
-
+from app import models, utils
 
 #
 #   model decorators
@@ -417,6 +417,7 @@ class AssetCollection(object):
                 rules |= set(A['rules'])
         return sorted(list(rules))
 
+
     def get_asset_from_name(self, name, case_sensitive=False, raise_exception_if_not_found=True):
         """ Tries to return an asset dict by looking up "name" attributes within
         the self.assets. dict. Returns None if it fails.
@@ -424,10 +425,16 @@ class AssetCollection(object):
         By default, the mactching here is NOT case-sensitive: everything is
         forced to upper() to allow for more permissive matching/laziness. """
 
-        if type(name) not in [str,unicode]:
-            self.logger.error("get_asset_from_name() cannot proceed! '%s' is not a str or unicode object!" % name)
+        if type(name) not in [str]:
+            self.logger.error(
+                (
+                    "get_asset_from_name() cannot proceed!"
+                    "'%s' is not a str or unicode object!" % name
+                )
+            )
             if raise_exception_if_not_found:
-                raise AssetInitError("The get_asset_from_name() method requires a str or unicode type name!")
+                err = "The get_asset_from_name() 'name' kwarg must be 'str'!"
+                raise AssetInitError(err_msg)
             else:
                 return None
 
@@ -454,6 +461,7 @@ class AssetCollection(object):
         else:
             return None
 
+
     def filter(self, filter_attrib=None, filtered_attrib_values=[], reverse=False):
         """ Drops assets from the collection if their 'filter_attrib' value is
         in the 'attrib_values' list.
@@ -467,7 +475,7 @@ class AssetCollection(object):
             self.logger.error("AssetCollection.filter() method does not accept None or empty list values!")
             return False
 
-        for asset_key in self.assets.keys():
+        for asset_key in list(self.assets.keys()):
             if self.get_asset(asset_key).get(filter_attrib, None) is None:
                 pass
             elif reverse:
@@ -670,12 +678,8 @@ class UserAsset(object):
         PROBABLY define a __repr__ for your individual assets, if for no other
         reason than to make the logs look cleaner. """
 
-        try:
-            exec('repr_name = self.%s["name"]' % (self.collection[:-1]))
-        except:
-            self.logger.warn("UserAsset object has no 'name' attribute!")
-            repr_name = "UNKNOWN"
-        return "%s object '%s' [%s]" % (self.collection, repr_name, self._id)
+        name = getattr(self, 'name', 'UNDEFINED')
+        return "%s object '%s' [%s]" % (self.collection, name, self._id)
 
 
     def __init__(self, collection=None, _id=None, normalize_on_init=True,
@@ -805,7 +809,7 @@ class UserAsset(object):
                         flask.request.method
                     )
                 )
-                params = request.get_json()
+                params = flask.request.get_json()
         else:
             if flask.request.method != 'GET':
                 self.logger.warn(
@@ -877,22 +881,23 @@ class UserAsset(object):
                 self.save()
             c_handle = self.settlement["campaign"]
         else:
-            msg = "Objects whose collection is '%s' may not call the\
-            get_campaign() method!" % (self.collection)
+            msg = ("Objects whose collection is '%s' may not call the "
+            "get_campaign() method!" % (self.collection))
             raise AssetInitError(msg)
 
-        # now try to get the dict
-        C = models.campaigns.Assets()
-        c_dict = C.get_asset(c_handle, backoff_to_name=True)
+        if return_type is not None:
+            from app.models import campaigns    # FIX THIS HOLY SHIT WTF
+            C = campaigns.Assets()
+            c_dict = C.get_asset(c_handle, backoff_to_name=True)
 
-        # handle return_type requests
-        if return_type == 'name':
-            return c_dict["name"]
-        elif return_type == dict:
-            return c_dict
-        elif return_type == 'initialize':
-            self.campaign = models.campaigns.Campaign(c_dict['handle'])
-            return True
+            # handle return_type requests
+            if return_type == 'name':
+                return c_dict["name"]
+            elif return_type == dict:
+                return c_dict
+            elif return_type == 'initialize':
+                self.campaign = campaigns.Campaign(c_dict['handle'])
+                return True
 
         return c_handle
 
@@ -972,7 +977,9 @@ class UserAsset(object):
             A = models.innovations.Assets()
         else:
             exec("A = models.%s.Assets()" % attrib)
-        exec("asset_list = self.%s['%s']" % (self.collection[:-1], attrib))
+
+#        exec("asset_list = self.%s['%s']" % (self.collection[:-1], attrib))
+        asset_list = getattr(self, self.collection[:-1])[attrib]
 
         for a in asset_list:
             a_dict = A.get_asset(
@@ -980,6 +987,7 @@ class UserAsset(object):
                 backoff_to_name=True,
                 raise_exception_if_not_found=False
             )
+
             if a_dict is not None:
                 output.append(a_dict)
             elif a_dict is None and log_failures:
@@ -1036,7 +1044,7 @@ class UserAsset(object):
         # 3.) key: default the key if we don't get one
         if key is None:
             key = " ".join(method.split("_")[1:])
-        key = key.encode('ascii','ignore')
+#        key = key.encode('ascii','ignore')
         if key == "settlement":
             key = ""
 
@@ -1049,10 +1057,10 @@ class UserAsset(object):
         # set 'created_by'
         created_by = None
         created_by_email = None
-        if request:
-            if hasattr(request, 'User'):
-                created_by = request.User.user['_id']
-                created_by_email = request.User.user['login']
+        if flask.request:
+            if hasattr(flask.request, 'User'):
+                created_by = flask.request.User.user['_id']
+                created_by_email = flask.request.User.user['login']
                 if agent is None:
                     agent = "user"
 
@@ -1064,7 +1072,7 @@ class UserAsset(object):
         }
 
         if attribute_modified['key'] is not None:
-            attribute_modified['key_pretty'] = key.replace("_"," ").replace("and","&").title()
+            attribute_modified['key_pretty'] = key.replace("_", " ").replace("and", "&").title()
         if attribute_modified['value'] is not None:
             attribute_modified['value_pretty'] = str(value).replace("_"," ")
 
@@ -1077,7 +1085,7 @@ class UserAsset(object):
             "settlement_id": self.settlement_id,
             "ly": self.get_current_ly(),
             'event_type': event_type,
-            'event': msg,
+            'event': str(msg),
             'modified': {'attribute': attribute_modified},
         }
 
@@ -1194,9 +1202,9 @@ class UserAsset(object):
         # finally, if we had a requester, now that we've settled on a message
         # text, update the requester's latest action with it
         if 'created_by' is not None:
-            if request and hasattr(request, 'User'):
-                ua_string = str(ua_parse(request.user_agent.string))
-                request.User.set_latest_action(d['event'], ua_string)
+            if flask.request and hasattr(flask.request, 'User'):
+                ua_string = str(ua_parse(flask.request.user_agent.string))
+                flask.request.User.set_latest_action(d['event'], ua_string)
 
         # finally, insert the event (i.e. save)
         utils.mdb.settlement_events.insert(d)

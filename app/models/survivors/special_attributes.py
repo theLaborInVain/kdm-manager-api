@@ -14,7 +14,5 @@ from app import models
 class Assets(models.AssetCollection):
 
     def __init__(self, *args, **kwargs):
-#        self.assets = survivor_sheet_options.survivor_special_attributes
-#        self.type_override = "special_attribute"
         self.root_module = special_attributes
         models.AssetCollection.__init__(self,  *args, **kwargs)

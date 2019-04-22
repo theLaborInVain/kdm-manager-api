@@ -1,4 +1,4 @@
-survivor_status_flags = {
+impairments = {
     'cannot_activate_weapons': {'name': 'Cannot activate weapons',},
     'cannot_activate_two_handed_weapons': {'name': 'Cannot activate two-handed weapons',},
     'cannot_activate_two_plus_str_gear': {'name': 'Cannot activate 2+ Strength gear',},

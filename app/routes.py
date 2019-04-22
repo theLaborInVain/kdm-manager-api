@@ -195,7 +195,7 @@ def lookup_asset(asset_type):
             status=404,
         )
 
-    return assets.dump_asset(asset_type)
+    return assets.get_game_asset(asset_type)
 
 
 #
@@ -330,13 +330,15 @@ def new_asset(asset_type):
     setattr(request, 'action', 'new')
 
     # first, check to see if this is a request to make a new user. If it is, we
-    #   don't need to try to pull the user from the token b/c it doesn't exist
-    #   yet, obvi. Instead, initialize a user obj w/ no _id to call User.new().
+    #   don't try to pull the user from the token b/c it doesn't exist yet.
+    #   Instead, initialize a user obj w/ no _id to call User.new()
     if asset_type == 'user':
         user_object = users.User()
         output = user_object.serialize('create_new')
         output["Authorization"] = {
-            'access_token': flask_jwt_extended.create_access_token(identity=user_object.jsonize()),
+            'access_token': flask_jwt_extended.create_access_token(
+                identity=user_object.jsonize()
+            ),
             "_id": str(user_object.user["_id"]),
         }
         return Response(
@@ -345,9 +347,12 @@ def new_asset(asset_type):
             mimetype="application/json"
         )
 
+    # otherwise, if we're creating any other type of user asset, do it using
+    #   the generic method in the app/assets/__init__.py module
     request.collection = asset_type
     request.User = users.token_to_object(request, strict=False)
-    return request_broker.new_user_asset(asset_type)
+
+    return assets.new_user_asset(asset_type)
 
 
 @API.route("/<collection>/<action>/<asset_id>", methods=API.default_methods)
