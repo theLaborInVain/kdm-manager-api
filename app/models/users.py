@@ -2,8 +2,12 @@
 
     Basic methods for working with users and authentication live here.
 
+    The whole first half of this module is laziness/convenience methods for
+    working with users. There is a TON of stuff here, so check here first before
+    rummaging about in utils.
+
     The class definition for the User object (which is kind of a big deal) lives
-    here as well.
+    here as well (all the way at the bottom of the file).
 
 """
 
@@ -94,6 +98,15 @@ def check_authorization(token):
         decoded = json.loads(jwt.decode(token, secret_key, verify=False)["identity"])
         logger.info("[%s (%s)] authorization check failed: %s!" % (decoded["login"], decoded["_id"]["$oid"], e))
         return utils.http_401
+
+
+def get_user_id_from_email(email):
+    """ Pulls the user from the MDB (or dies trying). Returns its email. """
+
+    u = utils.mdb.users.find_one({'login': email.lower().strip()})
+    if u is None:
+        raise AttributeError("Could not find user data for %s" % email)
+    return u['_id']
 
 
 def refresh_authorization(expired_token):
@@ -205,8 +218,6 @@ def jwt_identity_handler(payload):
         return U.serialize()
 
     return utils.http_404
-
-
 
 
 def token_to_object(request, strict=True):
@@ -546,6 +557,21 @@ class User(models.UserAsset):
 
 
     #
+    #   toggle methods
+    #
+
+    def toggle_admin_status(self, save=True):
+        """ Toggles the 'admin' attribute on/off. Use 'kwarg' to save (or not)
+        after the toggle is done. """
+
+        if 'admin' in self.user.keys():
+            del self.user["admin"]
+        else:
+            self.user["admin"] = datetime.now()
+        self.save()
+
+
+    #
     #   Collection Management - manage the user's asset collection
     #
 
@@ -592,6 +618,13 @@ class User(models.UserAsset):
         if utils.mdb.sessions.find_one({"created_by": self.user["_id"]}) is not None:
             return True
         return False
+
+
+    def is_admin(self):
+        """ Returns a bool representing whether the user is an API admin. This
+        is NOT THE SAME as being a settlement admin (see below)."""
+
+        return bool(self.user.get('admin', False))
 
 
     def is_active(self):

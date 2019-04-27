@@ -47,7 +47,7 @@ API.default_methods = [
     s in
     settings.get('api', 'default_methods').split(',')
 ]
-API.logger.info('API initialized with default methods: %s', API.default_methods)
+#API.debug.info('API initialized with default methods: %s', API.default_methods)
 
 #   Javascript Web Token! DO NOT import jwt (i.e. pyjwt) here!
 JWT = flask_jwt_extended.JWTManager(API)

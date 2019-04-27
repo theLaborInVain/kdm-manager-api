@@ -1,11 +1,14 @@
 """
 
-    This is the admin module. LOTS going on here:
+    The admin module should only be used for web-based administration stuff.
 
-        - command line administration methods
-        - API methods for getting administrative info
+    CLI admin methods are found in the __main__.py file.
 
 """
+
+# standard library imports
+from optparse import OptionParser
+import sys
 
 # local imports
 from app import utils
@@ -41,3 +44,6 @@ def get_notifications(method=None):
         return utils.http_501
 
     return utils.http_501
+
+
+

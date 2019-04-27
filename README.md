@@ -101,4 +101,6 @@ the application's `logs/` folder).
 The API comes with a simple _logrotate_ configuration file, and using it with
 your crontab is probably the most convenient way:
 
-    #30 2 * * * /usr/sbin/logrotate /home/toconnell/kdm-manager-api/deploy/logrotate.conf > /dev/null 2>&1
+    #30 2 * * * /usr/sbin/logrotate -s /home/toconnell/logrotate/status /home/toconnell/kdm-manager-api/deploy/logrotate.conf > /dev/null 2>&1
+
+(Obviously, you will need to create a 'logrotate' directory before this will run.)
