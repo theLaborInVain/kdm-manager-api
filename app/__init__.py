@@ -30,8 +30,8 @@ API.settings = settings
 
 # update the config items used by flask
 API.config.update(
-    DEBUG=API.settings.get("server", "DEBUG"),
-    TESTING=API.settings.get("server", "DEBUG"),
+    DEBUG=API.settings.get("server", "debug"),
+    TESTING=API.settings.get("server", "debug"),
 )
 
 API.logger.addHandler(utils.get_logger(log_name="server"))

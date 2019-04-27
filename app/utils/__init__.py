@@ -266,6 +266,18 @@ class GridfsImage(object):
 #   misc. helper methods
 #
 
+def decompose_name_string(name):
+    """ Accepts a name string and returns a list of possible versions of it. """
+
+    output = []
+
+    name_list = name.split(" ")
+    for i in range(len(name_list) + 1) :
+        output.append(" ".join(name_list[:i]))
+
+    return output
+
+
 def get_host_ip():
     """ Uses the 8.8.8.8 trick to get the localhost IP address. """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -391,7 +403,7 @@ def list_to_pretty_string(l, quote_char=False):
         except:
             l = [str(i) for i in l]
 
-    return " and ".join([", ".join(l[:-1]), l[-1]])
+    return " and ".join([", ".join(str(l)[:-1]), str(l)[-1]])
 
 
 

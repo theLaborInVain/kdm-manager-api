@@ -16,6 +16,12 @@ from bson import json_util
 from bson.objectid import ObjectId
 from copy import copy
 from datetime import datetime, timedelta
+import os
+import pickle
+import random
+import socket
+import string
+from urllib.parse import urlparse
 
 # third party imports
 from dateutil.relativedelta import relativedelta
@@ -23,13 +29,7 @@ from flask import Response, request
 from hashlib import md5
 import json
 import jwt
-import os
-import random
-import socket
-import string
-from urllib.parse import urlparse
 from werkzeug.security import safe_str_cmp, generate_password_hash, check_password_hash
-
 
 # local imports
 from app import models, utils
@@ -250,6 +250,102 @@ def token_to_object(request, strict=True):
     raise utils.InvalidUsage("Incoming JWT could not be processed!", status_code=422)
 
 
+#
+#   import_user method here! This is mostly called by admin methods, e.g. clone
+#
+
+def import_user(user_data=None):
+    """ Import a user from a pickle to the local mdb.
+
+    The 'user_data' arg can be either a pickle on the file system or a
+    string representation of a pickle.
+    """
+
+    # coerce incoming data to dict or die trying.
+    if isinstance(user_data, bytes):
+        data = pickle.loads(user_data, encoding='bytes')
+
+    if os.path.isfile(user_data):
+        data = pickle.load(open(user_data, 'rb'))
+
+    if data is None:
+        raise ValueError("'%s' does not appear to be a pickle!" % user_data)
+
+    # clean up the raw data
+    for foreign_attr in ['current_session']:
+        if data[b'user'].get(foreign_attr, False):
+            del data[b'user'][foreign_attr]
+
+    # start the import and check to see if we're doing something stupid
+    msg = "Importing user %s [%s]" % (
+        data[b'user']['login'],
+        data[b'user']['_id']
+    )
+    logger.warn(msg)
+
+    try:
+        new_user_oid = utils.mdb.users.save(data[b'user'])
+    except pymongo.errors.DuplicateKeyError:
+        err = "User login '%s' exists under a different user ID!"
+        raise pymongo.errors.DuplicateKeyError(err)
+
+    # private method to load individual assets
+    def import_user_assets(asset_name):
+        """ Helper function to import assets generically.
+
+        The 'asset_name' arg should be something like "settlement_events" or
+        "survivors" or "settlements", i.e. one of the keys in the incoming
+        'assets_dict' dictionary (called 'data' here). """
+
+        imported_assets = 0
+        logger.warn("Importing %s assets..." % asset_name)
+        for asset in data[bytes(asset_name, 'utf-8')]:
+            imported_assets += 1
+            utils.mdb[asset_name].save(asset)
+        logger.warn("%s %s assets imported." % (imported_assets, asset_name))
+
+    # load the important user assets to local
+    import_user_assets("settlements")
+    import_user_assets("settlement_events")
+    import_user_assets("survivors")
+
+    # check for orphan survivors (i.e. ones with no settlement)
+    for survivor in utils.mdb.survivors.find():
+        if utils.mdb.settlements.find_one(
+            {"_id": survivor["settlement"]}
+        ) is None:
+            logger.error("Survivor %s belongs to a non-existent settlement (%s)!" % (
+                survivor['_id'], survivor['settlement']
+                )
+            )
+            logger.warn("Removing survivor %s from mdb..." % (survivor["_id"]))
+            utils.mdb.survivors.remove({"_id": survivor["_id"]})
+
+    # next import avatars
+    imported_avatars = 0
+    for avatar in data[b"avatars"]:
+        if gridfs.GridFS(mdb).exists(avatar["_id"]):
+            gridfs.GridFS(mdb).delete(avatar["_id"])
+            logger.info("Removed object %s from local GridFS." % avatar["_id"])
+            gridfs.GridFS(mdb).put(
+                avatar["blob"],
+                _id=avatar["_id"],
+                content_type=avatar["content_type"],
+                created_by=avatar["created_by"],
+                created_on=avatar["created_on"]
+            )
+            imported_avatars += 1
+        logger.info("Imported %s avatars!" % imported_avatars)
+
+    # legacy webapp: clean up sessions
+    culled = utils.mdb.sessions.remove({"login": data[b"user"]["login"]})
+    if culled['n'] > 0:
+        logger.info(
+            "Removed %s session(s) belonging to incoming user!" % culled['n']
+        )
+
+    return new_user_oid
+
 
 #
 #   The big User object starts here
@@ -320,6 +416,7 @@ class User(models.UserAsset):
             'preferences': {},
             'collection': {"expansions": []},
             'notifications': {},
+            'subscriber': {'level': 0},
         }
         self._id = utils.mdb.users.insert(self.user)
         self.load()
@@ -346,7 +443,7 @@ class User(models.UserAsset):
         output['user']['gravatar_hash'] = md5(self.user['login'].encode('utf-8')).hexdigest()
         output["user"]["settlements_created"] = utils.mdb.settlements.find({'created_by': self.user['_id'], 'removed': {'$exists': False}}).count()
         output["user"]["survivors_created"] = utils.mdb.survivors.find({'created_by': self.user['_id']}).count()
-        output['user']['subscriber'] = self.get_patron_attributes()
+        output['user']['subscriber'] = self.get_subscriber_attributes()
 
         output['user']['preferences'] = self.get_preferences()
 
@@ -476,37 +573,45 @@ class User(models.UserAsset):
             self.save(verbose=False)
 
 
+    def set_subscriber_level(self, level=None):
+        """ Supersedes set_patron_attributes() in the 1.0.0 release. Sets the
+        subscriber level, i.e. self.user['subscriber']['level'] value, which, in
+        turn, sets the self.user['subscriber']['desc'] value using the
+        subscribers block of settings.cfg.
+        """
+
+        # sanity check first
+        if level is None:
+            raise TypeError("set_subscriber_level() requires an int!")
+
+        if self.user['subscriber']['level'] == level:
+            self.logger.warn(
+                '%s Subscriber level is already %s. Ignoring...' % (
+                    self,
+                    self.user['subscriber']['level'],
+                )
+            )
+            return True
+
+        # now make the change
+        if self.user['subscriber'].get('created_on', None) is None:
+            self.user['subscriber']['created_on'] = datetime.now()
+
+        self.user['subscriber']['level'] = level
+        self.user['subscriber']['desc'] = utils.settings.get(
+            'subscribers',
+            'level_%s' % level
+        )
+        self.user['subscriber']['updated_on'] = datetime.now()
+
+        self.logger.info('%s Set subscriber level to %s...' % (self, level))
+        self.save()
+
+
 
     def set_patron_attributes(self, level=None, beta=None):
-        """ Updates the user's self.user['patron'] dictionary: sets the level
-        (int) and the beta flag (bool)."""
-
-        level = int(level)
-
-        if not 'patron' in self.user.keys():
-            self.user['patron'] = {'created_on': datetime.now()}
-
-        if 'beta' in self.user['patron'].keys():
-            del self.user['patron']['beta']
-        self.user['patron']['updated_on'] = datetime.now()
-
-        if level is not None:
-            self.user['patron']['level'] = level
-
-        if beta is not None:
-            self.user['preferences']['beta'] = beta
-
-        if level == 0:
-            self.user['patron']['desc'] = None
-        elif level == 1:
-            self.user['patron']['desc'] = 'Survival +1'
-        elif level == 2:
-            self.user['patron']['desc'] = 'Survival +5'
-        else:
-            self.logger.warn("Patron level '%s' has no known description!" % level)
-
-        self.logger.info("%s Set patron level to %s (%s); set beta access to %s." % (self, level, self.user['patron']['desc'], beta))
-        self.save()
+        """ Deprecated in release 1.0.0. Remove at 1.0.1 and later. """
+        raise RuntimeError('This method is not supported in the 1.0.0 release!')
 
 
     def set_preferences(self):
@@ -653,14 +758,16 @@ class User(models.UserAsset):
         return utils.get_time_elapsed_since(self.user["created_on"], 'age')
 
 
-    def get_patron_attributes(self):
-        """ Returns a dictionary of patronage information. """
+    def get_subscriber_attributes(self):
+        """ Returns a dictionary of subscriber information. """
 
-        if 'patron' not in self.user.keys():
-            return {'level': 0}
-
-        self.user['patron'].update({'age': utils.get_time_elapsed_since(self.user['patron']['created_on'], 'age')})
-        return self.user['patron']
+        self.user['subscriber'].update(
+            {'age': utils.get_time_elapsed_since(
+                self.user['subscriber'].get('created_on', datetime.now()),
+                'age')
+            }
+        )
+        return self.user['subscriber']
 
 
     def get_preference(self, p_key):
@@ -891,8 +998,7 @@ class User(models.UserAsset):
 
     def get_subscriber_level(self):
         """ Returns the user's subscriber level as an int. """
-        p = self.get_patron_attributes()
-        return p['level']
+        return self.user['subscriber']['level']
 
 
     def get_survivors(self, qualifier=None, return_type=None):
@@ -947,32 +1053,32 @@ class User(models.UserAsset):
             self.perform_save = True
 
 
+
     def bug_fixes(self):
         """ Fix bugs! """
-
-        if self.user.get("patron",None) is not None and self.user['patron'].get('desc', None) is None:
-            self.logger.warn("%s Has no patron level description!" % self)
-            level = int(self.user['patron']['level'])
-            if level == 1:
-                self.user['patron']['desc'] = 'Survival +1'
-            elif level == 2:
-                self.user['patron']['desc'] = 'Survival +5'
-
-            if self.user['patron'].get('desc', None) is None:
-                self.logger.error("%s Could not set patron level description!" % self)
-            else:
-                self.logger.warn("%s Set patron description!" % self)
-                self.perform_save = True
+        pass
 
 
     def normalize(self):
-        """ Force/coerce the user into compliace with our data model for users. """
+        """ Force/coerce the user into compliance with our data model for users.
+        """
 
         if not 'preferences' in self.user.keys():
             self.user['preferences'] = {'preserve_sessions': False}
             self.logger.warn("%s has no 'preferences' attrib! Normalizing..." % self)
             self.perform_save = True
 
+        # 'patron' becomes 'subscriber' in the 1.0.0 release
+        if 'patron' in self.user.keys():
+            self.user['subscriber'] = self.user['patron']
+            del self.user['patron']
+            self.logger.warn("%s Normalized 'patron' to 'subscriber'!" % self)
+            self.perform_save = True
+
+        if not 'subscriber' in self.user.keys():
+            self.user['subscriber'] = {'level': 0}
+            self.logger.warn("%s Added 'subscruber' dict to user!" % self)
+            self.perform_save = True
 
         if self.perform_save:
             self.save()

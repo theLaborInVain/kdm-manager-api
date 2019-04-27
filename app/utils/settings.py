@@ -32,6 +32,7 @@ class Settings:
             raise OSError("%s: Settings file '%s' does not exist!" % (sys.argv[0], c_path))
 
         self.config = SafeConfigParser()
+        self.config.optionxform = lambda option: option # disables case-insensitivity
         self.config.file_path = c_path
         self.config.readfp(open(self.config.file_path))
         self.config.settings_type = settings_type
@@ -61,7 +62,7 @@ class Settings:
         """ Gets a value. Tries to do some duck-typing. """
 
         raw_value = self.config.get(section,key)
-        if raw_value in ["True","False"]:
+        if raw_value in ["True", "False"]:
             return self.config.getboolean(section,key)
         else:
             try:
@@ -109,7 +110,7 @@ def get(section=None, query=None, private=False):
         S = Settings()
     else:
         S = Settings("private")
-    return S.get(section,query)
+    return S.get(section, query)
 
 
 def update(section=None, key=None, value=None):

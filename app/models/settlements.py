@@ -2678,7 +2678,7 @@ class Settlement(models.UserAsset):
             self.logger.debug("%s available innovations: %s" % (self, available.keys()))
 
         # remove principles and ones we've already got
-        for a in available.keys():
+        for a in list(available.keys()):
             if a in self.settlement["innovations"]:
                 del available[a]
                 if debug:
@@ -2686,7 +2686,8 @@ class Settlement(models.UserAsset):
             if self.Innovations.get_asset(a).get("sub_type", None) == "principle":
                 del available[a]
                 if debug:
-                    self.logger.debug("%s removing '%s' principle from available innovations..." % (self, a))
+                    msg = "%s removed '%s' principle from available innovations"
+                    self.logger.debug("msg" % (self, a))
 
         if debug:
             self.logger.debug("%s available innovations AFTER removing principles and assets in the settlement's list: %s" % (self, available.keys()))

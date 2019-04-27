@@ -10,6 +10,7 @@
 # standard library imports
 import argparse
 from collections import OrderedDict
+import socket
 import sys
 
 # third party imports
@@ -18,7 +19,7 @@ from bson.objectid import ObjectId
 # local imports
 from app import API
 from app import models, utils
-
+from app.admin import clone
 
 #
 #   misc. helper methods for CLI admin tasks
@@ -55,6 +56,32 @@ def stat():
 def warn(message=None):
     """ Prints 'message', a str, to stdout with some formatting. """
     print(Style.GREEN, " *", Style.END, Style.BOLD, message, Style.END)
+
+
+#   Database methods start here
+#
+
+def initialize():
+    """ Completely initializes the application. Scorched earth. I'm not even
+    kidding: unless you've got a database backup, there's no coming back from
+    this one! YHBW
+    """
+    avatars = 0
+    for survivor in utils.mdb.survivors.find():
+        if "avatar" in survivor.keys():
+            gridfs.GridFS(mdb).delete(survivor["avatar"])
+            avatars += 1
+    print("\n Removed %s avatars from GridFS!" % avatars)
+
+    for collection in [
+        "users",
+        "sessions", # this is re: the legacy webapp; its days are numbered
+        "survivors",
+        "settlements",
+        "settlement_events",
+        "user_admin",
+        'response_times']:
+        utils.mdb[collection].remove()
 
 
 
@@ -175,12 +202,23 @@ class AdministrationObject:
         """
 
         parser = argparse.ArgumentParser(description=' KDM API Administration!')
+        parser.add_argument('--initialize', dest='initialize', default=False,
+                            help="Initialize the mdb database, '%s'" % (
+                                utils.settings.get('api','mdb'),
+                            ), action="store_true", )
+        parser.add_argument('--clone_user', dest='clone_user', default=None,
+                            help="Clone one user from production to local.",
+                            metavar="565f3d67421aa95c4af1e230")
         parser.add_argument('--user', dest='user', default=None,
                             help="Work with a user",
                             metavar="toconnell@tyrannybelle.com")
         parser.add_argument("--admin", dest="user_admin", default=False,
                             action="store_true",
                             help="Toggle admin status (requires --user).")
+        parser.add_argument("--level", dest="user_subscriber_level", type=int,
+                            help="Set subscriber level (requires --user).",
+                            metavar=2,
+                            )
         parser.add_argument("--settlements", dest="user_settlements",
                             default=False, action="store_true",
                             help="Dump user settlements (requires --user).")
@@ -188,15 +226,70 @@ class AdministrationObject:
         self.options = parser.parse_args()
 
 
-
-
-
     def process_args(self):
         """ Analyzes self.options and self.args and calls one of our class
         methods. """
 
+        # initialize MDB
+        if self.options.initialize:
+            # sanity/env check
+            print(" hostname: %s" % socket.gethostname())
+            if socket.gethostname() not in ["mona"]:
+                print(" Holy shit! This is not the dev machine! Exiting...\n")
+                sys.exit(1)
+
+            msg = (
+                ' Initialize the project and',
+                '%sremove all data%s?' % (Style.YELLOW, Style.END),
+                'Type "YES" to proceed: ',
+            )
+            manual_approve = input(" ".join(msg))
+            if manual_approve == "YES":
+                initialize()
+                print(
+                    Style.BOLD,
+                    "Project initialized!",
+                    Style.RED,
+                    "ALL DATA REMOVED!!\n",
+                    Style.END
+                )
+
+            print(' Exiting...\n')
+            sys.exit()
+
+        # clone user (by OID) from legacy webapp
+        if self.options.clone_user is not None:
+            self.clone_one_user()
+
+        # work with user
         if self.options.user is not None:
             self.work_with_user()
+
+
+    def clone_one_user(self):
+        """ Clones one user. Prompts to reset password. """
+        if not ObjectId.is_valid(self.options.clone_user):
+            raise AttributeError(
+                "'%s' is not a valid OID!" % self.options.clone_user
+            )
+
+        # do it!
+        new_oid = clone.one_user_from_legacy_webapp(
+            utils.settings.get('legacy', 'webapp_url'),
+            utils.settings.get('legacy', 'admin_key', private=True),
+            self.options.clone_user
+        )
+
+        user_object = models.users.User(_id=new_oid)
+        print(' %s has been cloned!' % user_object.user['login'])
+        msg = " Reset password? Type YES to reset: "
+        approval = input(msg)
+
+        if len(approval) > 0 and approval[0].upper() == 'Y':
+            user_object.update_password('password')
+            print(' Password has been reset!\n')
+        else:
+            print(" Password has NOT been reset.\n")
 
 
     def work_with_user(self):
@@ -217,6 +310,15 @@ class AdministrationObject:
         if self.options.user_admin:
             um_object.User.toggle_admin_status()
             warn('Set admin status to %s!' % um_object.User.is_admin())
+
+        if isinstance(self.options.user_subscriber_level, int):
+            um_object.User.set_subscriber_level(
+                self.options.user_subscriber_level
+            )
+            warn('Set subscriber level to %s!' % (
+                um_object.User.get_subscriber_level()
+            ))
+
 
         # now that we've done whatever we're doing, dump the user to stdout to
         #   show the changes
@@ -269,6 +371,9 @@ class UserManagementObject:
             mini_repr[attr] = serialized_user[attr]
         dump_doc_to_cli(mini_repr, gap_spaces=25)
 
+        print(" User subscriber status:")
+        dump_doc_to_cli(self.User.user['subscriber'])
+
         if self.User.user['preferences'] != {}:
             print(' User Preferences:')
             dump_doc_to_cli(self.User.user['preferences'], gap_spaces=35)
@@ -290,12 +395,7 @@ class UserManagementObject:
         """ Prints a little header to stdout that says who we're working on."""
 
         print(
-            " Working with user",
-            Style.YELLOW,
-            self.login,
-            Style.END,
-            self._id,
-            '\n'
+            " Working with user", Style.YELLOW, self.login, Style.END, self._id,
         )
 
 
