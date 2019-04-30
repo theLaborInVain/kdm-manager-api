@@ -192,6 +192,7 @@ class AdministrationObject:
     argument parsing and processing a little more OO and therefore easier to
     remember/debug. """
 
+
     def __init__(self):
         """
             DO NOT INITIALIZE ONE OF THESE UNLESS __name__ == '__main__'
@@ -202,6 +203,7 @@ class AdministrationObject:
         """
 
         parser = argparse.ArgumentParser(description=' KDM API Administration!')
+
         parser.add_argument('--initialize', dest='initialize', default=False,
                             help="Initialize the mdb database, '%s'" % (
                                 utils.settings.get('api','mdb'),
@@ -209,6 +211,9 @@ class AdministrationObject:
         parser.add_argument('--clone_user', dest='clone_user', default=None,
                             help="Clone one user from production to local.",
                             metavar="565f3d67421aa95c4af1e230")
+        parser.add_argument('--clone_recent_users', dest='clone_recent_users',
+                            default=False, action="store_true",
+                            help="Clone recent production users to local",)
         parser.add_argument('--user', dest='user', default=None,
                             help="Work with a user",
                             metavar="toconnell@tyrannybelle.com")
@@ -224,6 +229,25 @@ class AdministrationObject:
                             help="Dump user settlements (requires --user).")
 
         self.options = parser.parse_args()
+        self.validate_args()
+
+
+    #
+    #   methods for working with the arguments passed to the object
+    #
+
+    def validate_args(self):
+        """ This is our general-purpose sanity-checker. """
+
+        # 1.) too many clones:
+        if (
+            self.options.clone_user is not None
+            and self.options.clone_recent_users == True):
+            msg = (
+                "The '--clone_user' and '--clone_recent_users' arguments may"
+                "not be used together!"
+            )
+            raise AttributeError(msg)
 
 
     def process_args(self):
@@ -261,29 +285,52 @@ class AdministrationObject:
         if self.options.clone_user is not None:
             self.clone_one_user()
 
+        # clone many users (via API route)
+        if self.options.clone_recent_users == True:
+            self.clone_many_users()
+
         # work with user
         if self.options.user is not None:
             self.work_with_user()
 
+        return 0
 
-    def clone_one_user(self):
+    #
+    #   methods for cloning users from production
+    #
+
+    def clone_one_user(self, user_oid=None, force=False):
         """ Clones one user. Prompts to reset password. """
-        if not ObjectId.is_valid(self.options.clone_user):
-            raise AttributeError(
-                "'%s' is not a valid OID!" % self.options.clone_user
-            )
+
+        # first, override 'user_oid' kwarg if we've got CLI input
+        if self.options.clone_user is not None:
+            user_oid = self.options.clone_user
+
+        if not ObjectId.is_valid(user_oid):
+            raise AttributeError("'%s' is not a valid OID!" % user_oid)
 
         # do it!
+        print(" Requesting user OID %s from the legacy webapp!" % user_oid)
         new_oid = clone.one_user_from_legacy_webapp(
             utils.settings.get('legacy', 'webapp_url'),
             utils.settings.get('legacy', 'admin_key', private=True),
-            self.options.clone_user
+            user_oid
         )
 
+        # initialize the user as an object
         user_object = models.users.User(_id=new_oid)
-        print(' %s has been cloned!' % user_object.user['login'])
-        msg = " Reset password? Type YES to reset: "
-        approval = input(msg)
+        print(' %s%s%s has been cloned!' % (
+            Style.YELLOW,
+            user_object.user['login'],
+            Style.END,
+            )
+        )
+
+        # password reset business logic
+        approval = "Y"
+        if not force:
+            msg = " Reset password? Type YES to reset: "
+            approval = input(msg)
 
         if len(approval) > 0 and approval[0].upper() == 'Y':
             user_object.update_password('password')
@@ -292,6 +339,36 @@ class AdministrationObject:
             print(" Password has NOT been reset.\n")
 
 
+
+    @utils.metered
+    def clone_many_users(self):
+        """Gets a list of recent production users, iterates through the list
+        calling the self.clone_one_user() on each. """
+
+        # set the request URL, call the method from clone.py:
+        prod_api_url = utils.settings.get('server', 'prod_url')
+        print("\n API: %s\n Initiating request...\n" % prod_api_url)
+        users = clone.get_recent_users_from_api(prod_api_url)
+
+        # iterate the results:
+        for prod_user in users:
+            oid = prod_user['_id']['$oid']
+            self.clone_one_user(oid, force=True)
+
+        # summarize what we did:
+        for cloned_user in users:
+            print("  %s - %s " % (
+                cloned_user['_id']['$oid'],
+                cloned_user['login']
+                )
+            )
+
+        print('\n\tDone!\n')
+
+
+    #
+    #   methods for working with a local user
+    #
     def work_with_user(self):
         """ In which we perform user maintenance based on self.options. """
 
@@ -328,6 +405,7 @@ class AdministrationObject:
         # finally, if we're dumping settlements, do it now
         if self.options.user_settlements:
             um_object.dump_settlements()
+
 
 
 class UserManagementObject:
@@ -403,4 +481,4 @@ class UserManagementObject:
 if __name__ == '__main__':
     stat()
     ADMIN_OBJECT = AdministrationObject()
-    sys.exit(ADMIN_OBJECT.process_args())
+    ADMIN_OBJECT.process_args()

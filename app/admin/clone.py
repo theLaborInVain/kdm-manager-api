@@ -18,6 +18,7 @@ from urllib.parse import urljoin
 import requests
 
 # local imports
+from app import utils
 from app.models import users
 
 
@@ -25,15 +26,11 @@ from app.models import users
 #   import data wrappers: these methods get data and feed it to the import_data
 #   method below
 #
-
+@utils.metered
 def one_user_from_legacy_webapp(url, key, uid):
     """ Clones one user down from the legacy webapp to the local mdb. """
 
-    # meter this
-    start = datetime.now()
-
     # do the request
-    sys.stderr.write(" Initiating request...")
     req_url = urljoin(url, "get_user")
     r = requests.get(req_url, params={"admin_key": key, "u_id": uid})
 
@@ -45,21 +42,23 @@ def one_user_from_legacy_webapp(url, key, uid):
         )
         sys.exit(1)
 
-    # stop the meter
-    stop = datetime.now()
-    dur = stop - start
-    sys.stderr.write("user data pickle retrieved in %s.%s seconds!\n" % (
-        dur.seconds, dur.microseconds
-        )
-    )
-
     # assuming we're still here, load the data; return an OID
     pickle_string = r.text.strip().encode()
     return users.import_user(pickle_string)
 
 
-#
-#   Big, lumpy, procedural code for loading misc. data into the local mdb
-#
+@utils.metered
+def get_recent_users_from_api(prod_api):
+    """ Dials the prod API, hits the user_data route with no args, returns the
+    list of recent production user. This is supported in all releases. """
 
+    # create a URL and do the request
+    api_url = prod_api + "/admin/get/user_data"
+    response = requests.get(api_url)
+
+    if response.status_code == 200:
+        output = response.json()
+        return output['user_info']
+    else:
+        raise requests.RequestException(r.reason)
 

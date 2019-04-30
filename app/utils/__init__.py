@@ -10,6 +10,7 @@ import platform
 import socket
 from string import Template
 import sys
+import time
 import traceback
 
 # third-party imports
@@ -39,6 +40,7 @@ log_root_dir = os.path.join(
     '..',
     settings.get('server', 'log_root_dir')
 )
+
 
 def get_logger(log_level=None, log_name=None):
     """ Initialize a logger, specifying a new file if necessary. """
@@ -79,6 +81,27 @@ def get_logger(log_level=None, log_name=None):
         logger.addHandler(logger_fh)
 
     return logger
+
+#
+#   function metering method 
+#
+def metered(method):
+    """ A decorator for logging the time a method takes to execute. """
+    def timed(*args, **kwargs):
+        """ Wraps the incoming function in a start/stop, logs. """
+        start = datetime.now()
+        result = method(*args, **kwargs)
+        stop = datetime.now()
+        duration = stop - start
+        logger = get_logger()
+        logger.info('[%s.%s] %s()' % (
+            duration.seconds,
+            duration.microseconds,
+            method.__name__,
+            )
+        )
+        return result
+    return timed
 
 
 #
