@@ -61,6 +61,7 @@ def warn(message=None):
 #   Database methods start here
 #
 
+@utils.metered
 def initialize():
     """ Completely initializes the application. Scorched earth. I'm not even
     kidding: unless you've got a database backup, there's no coming back from
@@ -80,7 +81,10 @@ def initialize():
         "settlements",
         "settlement_events",
         "user_admin",
-        'response_times']:
+        "killboard",
+        'response_times',
+        'world',
+    ]:
         utils.mdb[collection].remove()
 
 

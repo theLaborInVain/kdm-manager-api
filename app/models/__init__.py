@@ -388,6 +388,7 @@ class AssetCollection(object):
             subtypes.add(a_dict.get('type', None))
         return subtypes
 
+
     def get_dicts(self):
         """ Dumps a list of dicts where each dict is an asset dict. """
 

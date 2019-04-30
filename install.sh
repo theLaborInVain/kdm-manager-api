@@ -12,6 +12,7 @@ APP_ROOT=`pwd`
 install() {
     echo -e " Creating symlinks:"
     ln -v -s $APP_ROOT/deploy/supervisor.conf /etc/supervisor/conf.d/kdm-manager-api.conf
+    ln -v -s $APP_ROOT/deploy/world_supervisor.conf /etc/supervisor/conf.d/kdm-manager-api-world-daemon.conf
     ln -v -s $APP_ROOT/deploy/nginx.conf /etc/nginx/sites-enabled/kdm-manager-api
     echo -e "\n Reloading services:"
     /etc/init.d/nginx reload

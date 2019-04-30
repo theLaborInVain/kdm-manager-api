@@ -5,6 +5,7 @@ chardet==3.0.4
 Click==7.0
 configparser==3.7.4
 cryptography==2.6.1
+decorator==4.4.0
 Flask==1.0.2
 Flask-HTTPAuth==3.2.4
 Flask-JWT-Extended==3.18.1
@@ -15,6 +16,7 @@ Jinja2==2.10.1
 MarkupSafe==1.1.1
 Pillow==6.0.0
 pkg-resources==0.0.0
+py==1.8.0
 pycparser==2.19
 PyJWT==1.7.1
 pymongo==3.7.2

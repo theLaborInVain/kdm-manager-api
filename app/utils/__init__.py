@@ -82,30 +82,9 @@ def get_logger(log_level=None, log_name=None):
 
     return logger
 
-#
-#   function metering method 
-#
-def metered(method):
-    """ A decorator for logging the time a method takes to execute. """
-    def timed(*args, **kwargs):
-        """ Wraps the incoming function in a start/stop, logs. """
-        start = datetime.now()
-        result = method(*args, **kwargs)
-        stop = datetime.now()
-        duration = stop - start
-        logger = get_logger()
-        logger.info('[%s.%s] %s()' % (
-            duration.seconds,
-            duration.microseconds,
-            method.__name__,
-            )
-        )
-        return result
-    return timed
-
 
 #
-#   InvalidUsage special exception class
+#   special exception class definitions
 #
 
 class InvalidUsage(Exception):
@@ -127,6 +106,16 @@ class InvalidUsage(Exception):
             self.status_code = status_code
             self.payload = payload
         self.logger.exception("[%s] %s" % (self.status_code, self.msg))
+
+
+class WorldQueryError(Exception):
+    """ Handler for asset-based errors. """
+
+    def __init__(self, query=None, message="World query produced no results!"):
+        self.logger = get_logger()
+        self.logger.exception(message)
+        self.logger.error("Query was: %s" % query)
+        Exception.__init__(self, message)
 
 
 #
@@ -174,6 +163,39 @@ def email_exception(exception):
 #
 #   performance monitoring/recording
 #
+
+def metered(method):
+    """ A decorator for logging the time a method takes to execute. Note that
+    this is hardcoded to only work in dev! We don't want to spam the prod logs,
+    since we rent disc there.
+    """
+
+    def not_timed(*args, **kwargs):
+        """ Just does the function. """
+        return method(*args, **kwargs)
+
+    def timed(*args, **kwargs):
+        """ Wraps the incoming function in a start/stop, logs. """
+        start = datetime.now()
+        result = method(*args, **kwargs)
+        stop = datetime.now()
+        duration = stop - start
+        logger = get_logger()
+        logger.info('[%s.%s] %s(%s, %s)' % (
+            duration.seconds,
+            duration.microseconds,
+            method.__name__,
+            ", ".join(args[1:]),
+            " ".join(["%s: %s" % (k, v) for k,v in kwargs.items()])
+            )
+        )
+        return result
+
+    # we only meter in the dev environment
+    if socket.gethostname() in ['mona']:
+        return timed
+    return not_timed
+
 
 def record_response_time(response):
     """ Accepts a request object, uses it to log the request and its response
@@ -308,6 +330,14 @@ def get_host_ip():
     ip = s.getsockname()[0]
     s.close()
     return ip
+
+
+def get_percentage(part, whole):
+    """ Input a part, then the whole. Returns percent as a float. """
+    if whole == 0:
+        return 0
+    else:
+        return 100 * round(float(part)/float(whole), 2)
 
 
 def get_time_elapsed_since(start_time, units=None, round_seconds=True):

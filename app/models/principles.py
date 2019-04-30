@@ -33,11 +33,16 @@ class Assets(models.AssetCollection):
 
         """
 
+        innovations_mod = models.innovations.Assets()
+
         output = {}
         for p_dict in self.get_dicts():
             alternatives = []
-            for option in p_dict["option_handles"]:
-                alternatives_list = [self.get_asset(option)["name"], option]
+            for option in p_dict["option_handles"]: # 'romantic,'graves', etc.
+                alternatives_list = [
+                    innovations_mod.get_asset(option)["name"],
+                    option
+                ]
                 alternatives.append(alternatives_list)
             output[p_dict["name"]] = tuple(alternatives)
 

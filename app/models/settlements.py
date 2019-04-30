@@ -127,6 +127,8 @@ class Settlement(models.UserAsset):
     """ This is the base class for all expansions. Private methods exist for
     enabling and disabling expansions (within a campaign/settlement). """
 
+
+    @utils.metered
     def __init__(self, *args, **kwargs):
         self.collection="settlements"
         self.object_version=0.81
@@ -136,11 +138,6 @@ class Settlement(models.UserAsset):
         # now normalize
         if self.normalize_on_init:
             self.normalize()
-
-        if request and request.log_response_time:
-            stop = datetime.now()
-            duration = stop - request.start_time
-            self.logger.debug("__init__() [%s] %s" % (duration, self))
 
         self.campaign_dict = self.get_campaign(dict)
 

@@ -40,6 +40,7 @@ deploy() {
     fi
 
     $SUPERVISORCTL $OPERATION kdm-manager-api
+    $SUPERVISORCTL $OPERATION kdm-manager-api-world-daemon
 
 }
 
