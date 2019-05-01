@@ -27,7 +27,7 @@ import flask_jwt_extended
 #from api.models import users, settlements, names
 
 #   app module imports
-from app import admin, API, assets, docs, utils
+from app import admin, API, assets, docs, utils, world
 from app.models import names, users
 from app.utils import crossdomain
 
@@ -147,15 +147,11 @@ def render_documentation(action, render_type=None):
 def world_json():
     """ Renders the world data (from the world module) in JSON. """
 
-    # 1.) initialize world/world daemon objects
     world_object = world.World()
-    world_daemon = world.WorldDaemon()
 
-    # 2.) create the output dictionary using both objects
-    output = {"world_daemon": world_daemon.dump_status(dict)}
+    output = {"world_daemon": {'msg': 'DEPRECATED'}}
     output.update(world_object.list(dict))
 
-    # 3.) render the response
     response = Response(
         response=json.dumps(output, default=json_util.default),
         status=200,

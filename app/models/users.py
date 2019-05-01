@@ -74,7 +74,7 @@ def authenticate(username=None, password=None):
             U = User(_id=user["_id"])
         else:
             try:
-                if safe_str_cmp(user["password"], md5(password).hexdigest()):
+                if safe_str_cmp(user["password"], md5(password.encode()).hexdigest()):
                     U = User(_id=user["_id"])
             except UnicodeEncodeError as e:
                 raise utils.InvalidUsage(e)

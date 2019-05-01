@@ -12,6 +12,7 @@ import time
 
 # local imports
 from app import utils, world
+from app.admin import purge
 
 
 def parse_arguments():
@@ -42,6 +43,7 @@ def start_daemon():
     for a more authentic daemon experience. """
 
     while True:
+        purge.purge_removed_settlements(arm=True)
         WORLD.refresh_all_assets()
         time.sleep(utils.settings.get("world", "refresh_interval") * 60)
 

@@ -3022,24 +3022,35 @@ dbk = {
         'type': 'rare_gear',
         'name': 'Regenerating Blade'
     },
- 'rolling_armor_set': {'expansion': 'dung_beetle_knight',
-                       'type': 'wet_resin_crafter',
-                       'name': 'Rolling Armor Set'},
- 'rubber_bone_harness': {'expansion': 'dung_beetle_knight',
-                         'type': 'wet_resin_crafter',
-                         'name': 'Rubber Bone Harness'},
- 'scarab_circlet': {'expansion': 'dung_beetle_knight',
-                    'type': 'wet_resin_crafter',
-                    'name': 'Scarab Circlet'},
- 'seasoned_monster_meat': {'expansion': 'dung_beetle_knight',
-                           'type': 'wet_resin_crafter',
-                           'name': 'Seasoned Monster Meat'},
- 'the_beetle_bomb': {'expansion': 'dung_beetle_knight',
-                     'type': 'wet_resin_crafter',
-                     'name': 'The Beetle Bomb'},
- 'trash_crown': {'expansion': 'dung_beetle_knight',
-                 'type': 'rare_gear',
-                 'name': 'Trash Crown'},
+    'rolling_armor_set': {
+        'expansion': 'dung_beetle_knight',
+        'type': 'wet_resin_crafter',
+        'name': 'Rolling Armor Set'
+    },
+    'rubber_bone_harness': {
+        'expansion': 'dung_beetle_knight',
+        'type': 'wet_resin_crafter',
+        'name': 'Rubber Bone Harness'
+    },
+    'scarab_circlet': {
+        'expansion': 'dung_beetle_knight',
+        'type': 'wet_resin_crafter',
+        'name': 'Scarab Circlet'
+    },
+    'seasoned_monster_meat': {
+        'expansion': 'dung_beetle_knight',
+        'type': 'wet_resin_crafter',
+        'name': 'Seasoned Monster Meat'
+    },
+    'the_beetle_bomb': {
+        'expansion': 'dung_beetle_knight',
+        'type': 'wet_resin_crafter',
+        'name': 'The Beetle Bomb'},
+    'trash_crown': {
+        'expansion': 'dung_beetle_knight',
+        'type': 'rare_gear',
+        'name': 'Trash Crown'
+    },
 }
 
 manhunter = {
@@ -3048,19 +3059,26 @@ manhunter = {
         'type': 'manhunter_gear',
         'name': 'Deathpact'
     },
- "hunters_heart": {'expansion': 'manhunter',
-                    'type': 'manhunter_gear',
-                    'name': "Hunter's Heart"},
- "manhunters_hat": {'expansion': 'manhunter',
-                     'type': 'manhunter_gear',
-                     'name': "Manhunter's Hat"},
- 'reverberating_lantern': {'expansion': 'manhunter',
-                           'type': 'manhunter_gear',
-                           'name': 'Reverberating Lantern'},
- 'tool_belt': {'expansion': 'manhunter',
-               'type': 'manhunter_gear',
-               'name': 'Tool Belt'},
-
+    "hunters_heart": {
+        'expansion': 'manhunter',
+        'type': 'manhunter_gear',
+        'name': "Hunter's Heart"
+    },
+    "manhunters_hat": {
+        'expansion': 'manhunter',
+        'type': 'manhunter_gear',
+        'name': "Manhunter's Hat"
+    },
+    'reverberating_lantern': {
+        'expansion': 'manhunter',
+        'type': 'manhunter_gear',
+        'name': 'Reverberating Lantern'
+    },
+    'tool_belt': {
+        'expansion': 'manhunter',
+        'type': 'manhunter_gear',
+        'name': 'Tool Belt'
+    },
 }
 
 generic = {
@@ -3091,7 +3109,11 @@ green_knight = {
         'recipes': [
             {
                 'locations': ['blacksmith'],
-                'gear_handles': {'beacon_shield': 1, 'sleeping_virus_flower': 1, 'life_elixir': 1},
+                'gear_handles': {
+                    'beacon_shield': 1,
+                    'sleeping_virus_flower': 1,
+                    'life_elixir': 1
+                },
                 'resource_handles': {'underplate_fungus': 1,},
             },
         ],

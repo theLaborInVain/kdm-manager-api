@@ -305,6 +305,7 @@ class World(object):
         elif output_type == "keys":
             return list(d["world"].keys())
         elif output_type == "keys_cli":
+            output = []
             for k in sorted(d["world"].keys()):
                 output.append(cli_dump(k, spacer, d["world"][k]["_id"]))
             return "".join(output)
@@ -365,7 +366,9 @@ class World(object):
         return survivor
 
 
-    def get_eligible_documents(self, collection=None, required_attribs=None, limit=None, exclude_dead_survivors=True, include_settlement=False, sort_on=None):
+    def get_eligible_documents(self, collection=None, required_attribs=None,
+                               limit=None, exclude_dead_survivors=True,
+                               include_settlement=False, sort_on=None):
         """ Returns a dict representing the baseline mdb query for a given
         collection.
 
@@ -374,17 +377,25 @@ class World(object):
         time and helps keep things DRY.
         """
 
-
         # base query dict; excludes ineligible names and docs w/o 'attrib'
         query = {"name": {"$nin": self.ineligible_names}}
 
         # add eligibility attrib if required
         if required_attribs is not None:
-            if type(required_attribs) == list:
+            if isinstance(required_attribs, list):
                 for a in required_attribs:
                     query.update({a: {"$exists": True}})
             else:
                 query.update({required_attribs: {"$exists": True}})
+
+        # log if debugging
+        if self.query_debug:
+            self.logger.debug(
+                "Gathering %s having '%s' values..." % (
+                    collection,
+                    required_attribs
+                )
+            )
 
         # exclude dead survivors switch
         if collection == "survivors" and exclude_dead_survivors:
@@ -430,11 +441,18 @@ class World(object):
         # change results from a query object to a list
         results = [x for x in results]
 
-        # hack around the dumbass implementation of .limit() in mongo
+        # hack around pymongo's weird implementation of limit
         if limit is not None:
-            return results[limit - 1]
+            output = results[limit - 1]
         else:
-            return results
+            output = results
+
+        if self.query_debug:
+            self.logger.debug(
+                "Returning %s eligible %s!" % (len(output), collection)
+            )
+
+        return output
 
 
     def get_minmax(self, collection=None, attrib=None):
@@ -448,11 +466,19 @@ class World(object):
 
         data_points = []
         for sample in sample_set:
-            data_points.append(int(sample[attrib]))
+            try:
+                data_points.append(int(sample[attrib]))
+            except TypeError:
+                if self.query_debug:
+                    err = "'%s' [%s] has non-int value for '%s': %s." % (
+                        sample['name'], sample['_id'], attrib, sample[attrib],
+                    ) + " Settlement excluded from sample set!"
+                    self.logger.error(err)
         return min(data_points), max(data_points)
 
 
-    def get_average(self, collection=None, attrib=None, precision=2, return_type=float):
+    def get_average(self, collection=None, attrib=None, precision=2,
+                    return_type=float):
         """ Gets the average value for 'attrib' across all elgible documents in
         'collection' (as determined by the world.eligible_documents() method).
 
@@ -460,6 +486,7 @@ class World(object):
         'precision' kwarg to modify rounding precision and 'return_type' to
         coerce the return a str or int as desired. """
 
+        # get the sample set
         sample_set = self.get_eligible_documents(collection, attrib)
 
         if sample_set is None:
@@ -467,11 +494,21 @@ class World(object):
 
         data_points = []
         for sample in sample_set:
-            try:
-                data_points.append(return_type(sample[attrib]))
-            except: # in case we need to coerce a list to an int
-                data_points.append(return_type(len(sample[attrib])))
-        result = reduce(lambda x, y: x + y, data_points) / float(len(data_points))
+            if sample.get(attrib, None) is None:
+                if self.query_debug:
+                    err = "'%s' [%s] has non-int value for '%s': %s." % (
+                        sample['name'], sample['_id'], attrib, sample[attrib],
+                    ) + " Settlement excluded from sample set!"
+                    self.logger.error(err)
+            else:
+                try:
+                    data_points.append(return_type(sample[attrib]))
+                except: # in case we need to coerce a list to an int
+                    data_points.append(return_type(len(sample[attrib])))
+
+        result = reduce(
+            lambda x, y: x + y, data_points) / float(len(data_points)
+        )
 
         # coerce return based on 'return_type' kwarg
         if return_type == int:
@@ -625,15 +662,27 @@ class World(object):
         return utils.mdb.users.find({'created_on': {'$gte': thirty_days_ago}}).count()
 
     def total_subscribers(self):
-        return utils.mdb.users.find({'patron': {'$exists': True}}, {'level': {'$gte': 1}}).count()
+        return utils.mdb.users.find({'subscriber.level': {'$gte': 1}}).count()
+
 
     def subscribers_by_level(self):
-        possible_values = utils.mdb.users.find({'patron': {'$exists': True}}).distinct("patron.level")
+        """ Creates a list where each item is a dict describing the subscriber
+        level and the number of users who are at that level. """
+
+        possible_values = utils.mdb.users.find(
+            {'subscriber.level': {'$gte': 1}}
+        ).distinct('subscriber.level')
+
+        if self.query_debug:
+            self.logger.debug("Distinct levels: %s" % possible_values)
+
         output = []
+
         for v in sorted(possible_values):
             d = {"level": v}
-            d['count'] = utils.mdb.users.find({'patron.level': v}).count()
+            d['count'] = utils.mdb.users.find({'subscriber.level': v}).count()
             output.append(d)
+
         return output
 
 
@@ -733,27 +782,39 @@ class World(object):
     def avg_fighting_arts(self):
         return self.get_average("survivors", "fighting_arts")
 
+
     # user averages
     # these happen in stages in order to work around the stable version of mdb
-    # (which doesn't support $lookup aggregations yet). 
+    # (which doesn't support $lookup aggregations yet).
+    # FIX THIS AFTER 1.0.0 goes live!!!
     # Not super DRY, but it still beats using a relational DB.
 
     def avg_user_settlements(self):
         data_points = []
         for user in utils.mdb.users.find():
-            data_points.append(utils.mdb.settlements.find({"created_by": user["_id"]}).count())
+            data_points.append(
+                utils.mdb.settlements.find({"created_by": user["_id"]}).count()
+            )
         return self.get_list_average(data_points)
+
 
     def avg_user_survivors(self):
         data_points = []
         for user in utils.mdb.users.find():
-            data_points.append(utils.mdb.survivors.find({"created_by": user["_id"]}).count())
+            data_points.append(
+                utils.mdb.survivors.find({"created_by": user["_id"]}).count()
+            )
         return self.get_list_average(data_points)
+
 
     def avg_user_avatars(self):
         data_points = []
         for user in utils.mdb.users.find():
-            data_points.append(utils.mdb.survivors.find({"created_by": user["_id"], "avatar": {"$exists": True}}).count())
+            data_points.append(
+                utils.mdb.survivors.find(
+                    {"created_by": user["_id"], "avatar": {"$exists": True}}
+                ).count()
+            )
         return self.get_list_average(data_points)
 
 
@@ -775,6 +836,7 @@ class World(object):
         s = self.get_eligible_documents(collection="survivors", limit=1, include_settlement=True)
         return self.pretty_survivor(s)
 
+
     def latest_fatality(self):
         s = self.get_eligible_documents(
             collection="survivors",
@@ -786,16 +848,19 @@ class World(object):
         )
         return self.pretty_survivor(s)
 
+
     def latest_settlement(self):
         """ Get the latest settlement and punch it up with some additional info,
         since JSON consumers don't have MDB access and can't get it otherwise.
         """
 
-#        s = self.get_eligible_documents(collection="settlements", limit=1)
         try:
-            s = utils.mdb.settlements.find({"name": {"$nin": self.ineligible_names}}, sort=[("created_on",-1)])[0]
+            s = utils.mdb.settlements.find(
+                {"name":
+                    {"$nin": self.ineligible_names}
+                }, sort=[("created_on",-1)]
+            )[0]
         except IndexError:
-            self.logger.error("No settlements in mdb match the 'latest_settlement' criteria! Returning None...")
             return None
 
         S = settlements_models.Settlement(_id=s["_id"])
@@ -815,20 +880,29 @@ class World(object):
     # and list type objects
 
     def killboard(self):
+        """ Create the killboard. Return a blank dict if there's nothing in the
+        MDB to show, e.g. if it's a freshly initialized db. """
         known_types = utils.mdb.killboard.find().distinct("type")
 
         if known_types == []:
-            self.logger.exception("No kills in mdb! Returning None for killboard...")
-            return None
+            return {}
 
         killboard = {}
         for t in known_types:
             killboard[t] = {}
+
+        # iterate monster assert dicts and use them to create our base killboard
         monster_assets = monster_models.Assets()
-        for m_handle in monster_assets.get_handles():
-            m_asset = monster_assets.get_asset(m_handle)
-            killboard[m_asset["type"]][m_handle] = {"name": m_asset["name"], "count": 0, "sort_order": m_asset["sort_order"]}
-        results = utils.mdb.killboard.find({"handle": {"$exists": True}, "type": {"$exists": True}})
+        for m_asset in monster_assets.get_dicts():
+            killboard[m_asset["sub_type"]][m_asset['handle']] = {
+                "name": m_asset["name"],
+                "count": 0,
+                "sort_order": m_asset["sort_order"]
+            }
+
+        results = utils.mdb.killboard.find(
+            {"handle": {"$exists": True}, "type": {"$exists": True}}
+        )
         for d in results:
             killboard[d["type"]][d["handle"]]["count"] += 1
 
@@ -851,13 +925,13 @@ class World(object):
         return killboard
 
     def top_survivor_names(self):
-        return self.get_top("survivors","name")
+        return self.get_top("survivors", "name")
 
     def top_settlement_names(self):
-        return self.get_top("settlements","name")
+        return self.get_top("settlements", "name")
 
     def top_causes_of_death(self):
-        return self.get_top("survivors","cause_of_death",limit=10)
+        return self.get_top("survivors", "cause_of_death", limit=10)
 
     def top_innovations(self):
         """ Does an innovations popularity contest, accounting for both names
@@ -948,10 +1022,14 @@ class World(object):
 
 
         popularity_contest = {
-            "People of the Lantern": utils.mdb.settlements.find({"campaign": {"$exists": False}}).count(),
+            "People of the Lantern": utils.mdb.settlements.find(
+                {"campaign": {"$exists": False}}
+            ).count(),
         }
 
-        campaigns = utils.mdb.settlements.find({"campaign": {"$exists": True}}).distinct("campaign")
+        campaigns = utils.mdb.settlements.find(
+            {"campaign": {"$exists": True}}
+        ).distinct("campaign")
 
         C = campaigns_models.Assets()
 

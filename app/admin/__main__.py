@@ -15,11 +15,13 @@ import sys
 
 # third party imports
 from bson.objectid import ObjectId
+import gridfs
+from pymongo import MongoClient
 
 # local imports
 from app import API
 from app import models, utils
-from app.admin import clone
+from app.admin import clone, patch, purge
 
 #
 #   misc. helper methods for CLI admin tasks
@@ -67,26 +69,10 @@ def initialize():
     kidding: unless you've got a database backup, there's no coming back from
     this one! YHBW
     """
-    avatars = 0
-    for survivor in utils.mdb.survivors.find():
-        if "avatar" in survivor.keys():
-            gridfs.GridFS(mdb).delete(survivor["avatar"])
-            avatars += 1
-    print("\n Removed %s avatars from GridFS!" % avatars)
 
-    for collection in [
-        "users",
-        "sessions", # this is re: the legacy webapp; its days are numbered
-        "survivors",
-        "settlements",
-        "settlement_events",
-        "user_admin",
-        "killboard",
-        'response_times',
-        'world',
-    ]:
-        utils.mdb[collection].remove()
-
+    logger = utils.get_logger()
+    MongoClient().drop_database(utils.settings.get('api','mdb'))
+    logger.critical("Initialized database!")
 
 
 #   Dumpers start here: these basically dump a dictionary to the CLI so that the
@@ -185,6 +171,7 @@ def dump_settlement_to_cli(s_id, verbose=False):
 
 
 
+
 #
 #   class methods below:
 #       - AdministrationObject
@@ -208,10 +195,17 @@ class AdministrationObject:
 
         parser = argparse.ArgumentParser(description=' KDM API Administration!')
 
+        # sysadmin / console cowboy / hacker shit
         parser.add_argument('--initialize', dest='initialize', default=False,
                             help="Initialize the mdb database, '%s'" % (
                                 utils.settings.get('api','mdb'),
                             ), action="store_true", )
+        parser.add_argument('--patch', dest='apply_patch',
+                            metavar="patch_method", default=None,
+                            help="Apply a patch (from the patches.py module)."
+                            )
+
+        # work with users
         parser.add_argument('--clone_user', dest='clone_user', default=None,
                             help="Clone one user from production to local.",
                             metavar="565f3d67421aa95c4af1e230")
@@ -226,11 +220,24 @@ class AdministrationObject:
                             help="Toggle admin status (requires --user).")
         parser.add_argument("--level", dest="user_subscriber_level", type=int,
                             help="Set subscriber level (requires --user).",
-                            metavar=2,
-                            )
+                            metavar=2)
+
+        # work with settlements
         parser.add_argument("--settlements", dest="user_settlements",
                             default=False, action="store_true",
                             help="Dump user settlements (requires --user).")
+        parser.add_argument("--purge_settlements", dest="purge_settlements",
+                            help=(
+                                "Drops settlements marked 'removed' from mdb. "
+                                "Works recursively & drops 'removed' survivors."
+                                " Max age is date removed + %s days."
+                                ) % (
+                                    utils.settings.get(
+                                        'users',
+                                        'removed_settlement_age_max'
+                                    )
+                                ),
+                            action="store_true", default=False)
 
         self.options = parser.parse_args()
         self.validate_args()
@@ -258,6 +265,25 @@ class AdministrationObject:
         """ Analyzes self.options and self.args and calls one of our class
         methods. """
 
+        # first, check to see if we're patching / hot-fixing
+        if self.options.apply_patch is not None:
+            p_name = str(self.options.apply_patch)
+            try:
+                patch_method = getattr(patch, p_name)
+            except AttributeError:
+                print(" '%s' is not a known patch! Exiting...\n" % p_name)
+                sys.exit(1)
+            patch_method()
+            print(' Patch applied successfully!\n')
+
+        # purge settlements/survivors marked 'removed' from mdb
+        if self.options.purge_settlements:
+            print(" Purging 'removed' settlements from MDB...")
+            purge_results = purge.purge_removed_settlements(arm=True)
+            print(' Settlements purged: %s'% purge_results['settlements'])
+            print(' Survivors purged: %s' % purge_results['survivors'])
+            print(' Done!\n')
+
         # initialize MDB
         if self.options.initialize:
             # sanity/env check
@@ -276,7 +302,7 @@ class AdministrationObject:
                 initialize()
                 print(
                     Style.BOLD,
-                    "Project initialized!",
+                    "\n Project initialized!",
                     Style.RED,
                     "ALL DATA REMOVED!!\n",
                     Style.END
@@ -373,6 +399,7 @@ class AdministrationObject:
     #
     #   methods for working with a local user
     #
+
     def work_with_user(self):
         """ In which we perform user maintenance based on self.options. """
 
@@ -409,6 +436,11 @@ class AdministrationObject:
         # finally, if we're dumping settlements, do it now
         if self.options.user_settlements:
             um_object.dump_settlements()
+
+
+    #
+    #   methods for working with local settlements
+    #
 
 
 
