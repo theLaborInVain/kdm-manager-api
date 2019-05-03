@@ -23,7 +23,7 @@ def get_settlement_data():
     settlements and gets their event_log. """
 
     recent_cutoff = datetime.now() - timedelta(
-        hours=utils.settings.get("application", "recent_user_horizon")
+        hours=utils.settings.get("users", "recent_user_horizon")
     )
 
     ids = utils.mdb.settlements.find(
@@ -76,7 +76,7 @@ def get_user_data():
 
     # next, get active/recent users
     recent_user_cutoff = datetime.now() - timedelta(
-        hours=utils.settings.get("application", "recent_user_horizon")
+        hours=utils.settings.get("users", "recent_user_horizon")
     )
     recent_users = utils.mdb.users.find(
         {"latest_activity": {"$gte": recent_user_cutoff}}
@@ -92,7 +92,7 @@ def get_user_data():
             'age'
         )
         if u["latest_activity"] > (datetime.now() - timedelta(
-                minutes=utils.settings.get('application', 'active_user_horizon')
+                minutes=utils.settings.get('users', 'active_user_horizon')
         )):
             active_user_count += 1
             u['is_active'] = True
@@ -105,12 +105,12 @@ def get_user_data():
     d = {
         "meta": {
             "active_user_horizon": utils.settings.get(
-                "application",
+                "users",
                 "active_user_horizon"
             ),
             "active_user_count": active_user_count,
             "recent_user_horizon": utils.settings.get(
-                "application",
+                "users",
                 "recent_user_horizon"
             ),
             "recent_user_count": recent_user_count,
@@ -127,14 +127,14 @@ def serialize_system_logs():
 
     d = {}
 
-    log_root = utils.settings.get("application", "log_root_dir")
+    log_root = utils.settings.get("server", "log_root_dir")
 
     for l in ["world", "api", "server", "world_daemon", "gunicorn"]:
         log_file_name = os.path.join(log_root, "%s.log" % l)
         if os.path.isfile(log_file_name):
             file_handle = open(log_file_name, "r")
             log_lines = file_handle.readlines()
-            log_limit = utils.settings.get("application", "log_summary_length")
+            log_limit = utils.settings.get("admin", "log_summary_length")
             d[l] = [line for line in reversed(log_lines[-log_limit:])]
         else:
             d[l] = ["'%s' does not exist!" % log_file_name]

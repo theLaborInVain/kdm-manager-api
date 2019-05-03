@@ -18,7 +18,7 @@ from bson.objectid import ObjectId
 from bson import json_util
 
 # flask!
-from flask import send_file, request, Response, send_from_directory
+import flask
 import flask_jwt_extended
 
 #
@@ -46,7 +46,7 @@ from app.utils import crossdomain
 def stat_api():
     """ This is basically a ping. Returns the generic API meta data dict
     as JSON. """
-    return Response(
+    return flask.Response(
         response=json.dumps(utils.api_meta, default=json_util.default),
         status=200,
         mimetype="application/json"
@@ -57,7 +57,7 @@ def stat_api():
 def get_settings():
     """ Deprecated: 2019-01-13. Returns the settings object as JSON. """
     settings_object = utils.settings.Settings()
-    return Response(
+    return flask.Response(
         response=settings_object.jsonify(),
         status=299,
         mimetype="application/json",
@@ -73,7 +73,7 @@ def get_settings():
 def index():
     """ The default return for accessing https://api.kdm-manager.com (or
     equivalent endpoint), which gets you the API docs. """
-    return send_file("static/html/docs.html")
+    return flask.send_file("static/html/docs.html")
 
 
 @API.route("/docs/<action>/<render_type>")
@@ -105,7 +105,7 @@ def render_documentation(action, render_type=None):
                 docs_object.render_as_json(),
                 default=json_util.default
             )
-            response = Response(
+            response = flask.Response(
                 response=j,
                 status=200,
                 mimetype="application/json"
@@ -113,13 +113,13 @@ def render_documentation(action, render_type=None):
     elif action == 'get_documented_endpoints':
         output = docs_object.get_documented_endpoints()
         if render_type == 'JSON':
-            response = Response(
+            response = flask.Response(
                 response=json.dumps(output),
                 status=200,
                 mimetype="application/json"
             )
         elif render_type == 'TEXT':
-            response = Response(
+            response = flask.Response(
                 response="\n".join(output),
                 status=200,
                 mimetype="application/json"
@@ -130,7 +130,7 @@ def render_documentation(action, render_type=None):
                 docs_object.dump_sections(),
                 default=json_util.default
             )
-            response = Response(
+            response = flask.Response(
                 response=j,
                 status=200,
                 mimetype="application/json"
@@ -152,7 +152,7 @@ def world_json():
     output = {"world_daemon": {'msg': 'DEPRECATED'}}
     output.update(world_object.list(dict))
 
-    response = Response(
+    response = flask.Response(
         response=json.dumps(output, default=json_util.default),
         status=200,
         mimetype="application/json"
@@ -169,7 +169,7 @@ def world_json():
 def list_game_assets():
     """ Dumps a list of all available game assets (does not include meta and
     webapp asset modules. """
-    return Response(
+    return flask.Response(
         response=json.dumps(
             assets.list(game_assets=True),
             default=json_util.default
@@ -186,7 +186,7 @@ def lookup_asset(asset_type):
     initialized asset module's assets dictionary. """
 
     if asset_type not in assets.list():
-        return Response(
+        return flask.Response(
             response="/game_asset/%s is not a supported endpoint!" % asset_type,
             status=404,
         )
@@ -203,7 +203,7 @@ def lookup_asset(asset_type):
 def get_random_names(count):
     """ Rapid-fire random name generator for FIRST names. """
     names_object = names.Assets()
-    return Response(
+    return flask.Response(
         response=json.dumps(
             names_object.get_random_names(int(count)),
             default=json_util.default
@@ -217,7 +217,7 @@ def get_random_names(count):
 def get_random_surnames(count):
     """ Rapid-fire random name generator for LAST names. """
     names_object = names.Assets()
-    return Response(
+    return flask.Response(
         response=json.dumps(
             names_object.get_random_surnames(int(count)),
             default=json_util.default
@@ -239,14 +239,14 @@ def get_token(check_pw=True, user_id=False):
     user_object = None
 
     if check_pw:
-        if request.json is None:
-            return Response(
+        if flask.request.json is None:
+            return flask.Response(
                 response="JSON payload missing from /login request!",
                 status=422
             )
         user_object = users.authenticate(
-            request.json.get("username", None),
-            request.json.get("password", None)
+            flask.request.json.get("username", None),
+            flask.request.json.get("password", None)
         )
     else:
         user_object = users.User(_id=user_id)
@@ -261,7 +261,7 @@ def get_token(check_pw=True, user_id=False):
         ),
     }
 
-    return Response(
+    return flask.Response(
         response=json.dumps(tok),
         status=200,
         mimetype="application/json"
@@ -272,7 +272,7 @@ def get_token(check_pw=True, user_id=False):
 @crossdomain(origin=['*'])
 def reset_password(action):
     """ Routes for requesting and performing a password reset. """
-    setattr(request, 'action', action)
+    setattr(flask.request, 'action', action)
     if action == 'request_code':
         return users.initiate_password_reset()
     elif action == 'reset':
@@ -280,7 +280,7 @@ def reset_password(action):
 
     err_msg = "'%s' is not a valid action for this route." % action
 
-    return Response(response=err_msg, status=422)
+    return flask.Response(response=err_msg, status=422)
 
 
 
@@ -295,15 +295,15 @@ def refresh_auth(action):
     token for a user. """
 
     # first, drop GETs trying to do a refresh: we don't play that shit
-    if action == 'refresh' and request.method == 'GET':
+    if action == 'refresh' and flask.request.method == 'GET':
         return utils.http_405
 
-    setattr(request, 'action', action)
+    setattr(flask.request, 'action', action)
 
-    if not "Authorization" in request.headers:
+    if not "Authorization" in flask.request.headers:
         return utils.http_401
     else:
-        auth = request.headers["Authorization"]
+        auth = flask.request.headers["Authorization"]
 
     if action == "refresh":
         user = users.refresh_authorization(auth)
@@ -323,7 +323,7 @@ def new_asset(asset_type):
     """ Uses the 'Authorization' block of the header and POSTed params to create
     a new settlement. """
 
-    setattr(request, 'action', 'new')
+    setattr(flask.request, 'action', 'new')
 
     # first, check to see if this is a request to make a new user. If it is, we
     #   don't try to pull the user from the token b/c it doesn't exist yet.
@@ -337,7 +337,7 @@ def new_asset(asset_type):
             ),
             "_id": str(user_object.user["_id"]),
         }
-        return Response(
+        return flask.Response(
             response=json.dumps(output, default=json_util.default),
             status=200,
             mimetype="application/json"
@@ -345,8 +345,8 @@ def new_asset(asset_type):
 
     # otherwise, if we're creating any other type of user asset, do it using
     #   the generic method in the app/assets/__init__.py module
-    request.collection = asset_type
-    request.User = users.token_to_object(request, strict=False)
+    flask.request.collection = asset_type
+    flask.request.User = users.token_to_object(flask.request, strict=False)
 
     return assets.new_user_asset(asset_type)
 
@@ -364,19 +364,19 @@ def collection_action(collection, action, asset_id):
     #   of machinery only to fail the request later
     if not ObjectId.is_valid(asset_id):
         err_msg = 'The /%s/%s/ route requires a valid Object ID!',
-        return Response(
+        return flask.Response(
             response=err_msg % (collection, action),
             status=400
         )
 
     # update the request object
-    request.collection = collection
-    setattr(request, 'action', action)
-    request.User = users.token_to_object(request, strict=False)
+    flask.request.collection = collection
+    setattr(flask.request, 'action', action)
+    flask.request.User = users.token_to_object(flask.request, strict=False)
 
     asset_object = assets.get_user_asset(collection, asset_id)
 
-    if isinstance(asset_object, Response):
+    if isinstance(asset_object, flask.Response):
         return asset_object
 
     return asset_object.request_response(action)
@@ -392,13 +392,23 @@ def serve_avatar_image(image_oid):
     return avatar.render_response()
 
 
+#
+#   Notifications
+#
+@API.route("/get/notifications", methods=["GET", "OPTIONS"])
+@crossdomain(origin=['*'])
+def get_notifications():
+    """ Retrieves notifications created by the admins via the panel (below).
+    This is is a public route, i.e. requires no authorization. """
+    return admin.notifications.get_webapp_alerts()
+
 
 #
 #      ADMIN PANEL
 #
 
 @API.route("/admin/get/<resource>", methods=["GET", "OPTIONS"])
-@crossdomain(origin=['*'])
+@API.basicAuth.login_required
 def admin_view(resource):
     """ Retrieves admin panel resources as JSON. This is a public route, i.e.
     requires no authorization/authentication. """
@@ -409,7 +419,11 @@ def admin_view(resource):
 @API.basicAuth.login_required
 def panel():
     """ Gets the admin panel. Requires basicAuth. """
-    return send_file("html/admin/panel.html")
+#    return send_file("templates/admin_panel.html")
+    return flask.render_template(
+        'admin_panel.html',
+        user=flask.request.User.user,
+    )
 
 
 @API.route("/admin/notifications/<method>", methods=["POST"])
@@ -450,9 +464,9 @@ def new_settlement_deprecated():
 @API.route('/static/<sub_dir>/<path:path>')
 def route_to_static(path, sub_dir):
     """ Generic /static/* endpoints served here."""
-    return send_from_directory('static/%s' % sub_dir, path)
+    return flask.send_from_directory('static/%s' % sub_dir, path)
 
 @API.route("/favicon.ico")
 def favicon():
     """ So you can see Logan's pretty logo in your dev environment."""
-    return send_file("static/media/images/favicon.png")
+    return flask.send_file("static/media/images/favicon.png")

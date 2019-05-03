@@ -14,6 +14,9 @@
          - GameAsset
          - UserAsset
 
+        Exception classes:
+         - AssetInitError
+
 """
 
 # standard lib imports
@@ -583,11 +586,25 @@ class GameAsset(object):
         with a bunch of exec calls. """
 
         if type(asset_dict) != dict:
-            raise AssetInitError("Asset objects may not be initialized with a '%s' type object!" % type(asset_dict))
+            err = "Assetss may not be initialized with a '%s' type object!"
+            raise AssetInitError(err % type(asset_dic))
+
+        # mandatory attribute sanity check!
+        for required_attr in ['handle', 'name']:
+            if not required_attr in asset_dict.keys():
+                raise AttributeError(
+                    "Asset dictionary has no '%s' attribute! %s" % (
+                        required_attr,
+                        asset_dict
+                    )
+                )
 
         for k, v in asset_dict.items():
             if type(v) == str:
-                exec("""self.%s = '%s' """ % (k,v.replace('"','\\"').replace("'","\\'")))
+                exec("""self.%s = '%s' """ % (
+                    k,v.replace('"','\\"').replace("'","\\'")
+                    )
+                )
             elif type(v) == datetime:
                 exec("""self.%s = '%s' """ % (k,v.strftime(utils.ymd)))
             else:
@@ -607,7 +624,13 @@ class GameAsset(object):
         self.initialize_asset(self.asset_dict)
 
         if self.name is None:
-            raise AssetInitError("Asset handle '%s' could not be retrieved!" % self.handle)
+            raise AssetInitError(
+                "Asset handle '%s' ('%s') could not be initialized! %s " % (
+                    self.name,
+                    self.handle,
+                    self.asset_dict
+                )
+            )
 
 
     def initialize_from_name(self):
@@ -1216,4 +1239,31 @@ class UserAsset(object):
 
 
 
+#
+#   Exception classes!
+#
+
+class AssetMigrationError(Exception):
+    """ Handler for asset migration/conversion errors. """
+
+    def __init__(self, message="An error occurred while migrating this asset!"):
+        self.logger = utils.get_logger()
+        self.logger.exception(message)
+        Exception.__init__(self, message)
+
+class AssetInitError(Exception):
+    """ Handler for asset-based errors. """
+
+    def __init__(self, message="An error occurred while loading this asset!"):
+        self.logger = utils.get_logger()
+        self.logger.exception(message)
+        Exception.__init__(self, message)
+
+class AssetLoadError(Exception):
+    """ Handler for asset-based errors. """
+
+    def __init__(self, message="Asset could not be retrieved from mdb!"):
+        self.logger = utils.get_logger()
+        self.logger.exception(message)
+        Exception.__init__(self, message)
 

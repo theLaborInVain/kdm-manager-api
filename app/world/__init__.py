@@ -256,7 +256,7 @@ class World(object):
         d = copy(utils.api_meta)
 
         d["meta"]["object"]["panel_revision"] = utils.settings.get(
-            "server",
+            "admin",
             "panel_revision"
         )
 

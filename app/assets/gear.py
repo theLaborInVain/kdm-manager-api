@@ -2524,6 +2524,18 @@ sunstalker = {
 
 white_box_promo = {
     # rare gear
+    'ancient_root': {
+        'name': 'Ancient Root',
+        'keywords': ['item', 'vegetable', 'heavy', 'consumable', 'other'],
+        'affinities': {'left': 'blue'},
+        'expansion': 'white_box',
+        'type': 'rare_gear',
+        'desc': """When you are picked as a target while <b>insane</b>, the carrot shrieks fearfully. Roll 1d10. On a 1, the shrill sound stuns you. You are <b>doomed</b> for the rest of the monster's action. On a 6+, the harsh note alerts you. Ignore the first hit of the monster's attack.""",
+        'recipes': [
+            {'prefix_text': """During <font class="kdm_font">g</font> <b>Black Harvest</b>, if the Gatherer is <b>insane</b>, they follow a shrill echo in the darkness. A Fleshy stalk quivers in the ground, its muffled shrieking begs to be uprooted. Gain the <b>Ancient Root</b> rare gear.""",
+            },
+        ],
+    },
     'bloodskin': {
         'expansion': 'white_box',
         'type': 'rare_gear',
@@ -2867,21 +2879,31 @@ dragon_king = {
         'name': 'Dragon Armor Set',
         'desc': 'Add <font class="inline_shield">1</font> to all hit locations.<br/><b>Charge:</b> Spend <font class="kdm_font">c a</font>. You leap into the air! Place your survivor on an unoccupied space exactly five spaces away in a straight line, then activate a melee weapon and attack with +2 accuracy and +5 strength.',
     },
-    'dragon_belt': {'expansion': 'dragon_king',
-                 'type': 'dragon_armory',
-                 'name': 'Dragon Belt'},
-    'dragon_bite_bolt': {'expansion': 'dragon_king',
-                      'type': 'dragon_armory',
-                      'name': 'Dragon Bite Bolt'},
-    'dragon_boots': {'expansion': 'dragon_king',
-                  'type': 'dragon_armory',
-                  'name': 'Dragon Boots'},
-    'dragon_chakram': {'expansion': 'dragon_king',
-                    'type': 'dragon_armory',
-                    'name': 'Dragon Chakram'},
-    'dragon_gloves': {'expansion': 'dragon_king',
-                   'type': 'dragon_armory',
-                   'name': 'Dragon Gloves'},
+    'dragon_belt': {
+        'expansion': 'dragon_king',
+        'type': 'dragon_armory',
+        'name': 'Dragon Belt'
+    },
+    'dragon_bite_bolt': {
+        'expansion': 'dragon_king',
+        'type': 'dragon_armory',
+        'name': 'Dragon Bite Bolt'
+    },
+    'dragon_boots': {
+        'expansion': 'dragon_king',
+        'type': 'dragon_armory',
+        'name': 'Dragon Boots'
+    },
+    'dragon_chakram': {
+        'expansion': 'dragon_king',
+        'type': 'dragon_armory',
+        'name': 'Dragon Chakram'
+    },
+    'dragon_gloves': {
+        'expansion': 'dragon_king',
+        'type': 'dragon_armory',
+        'name': 'Dragon Gloves'
+    },
     'dragon_mantle': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
@@ -2967,89 +2989,191 @@ dbk = {
         'expansion': 'dung_beetle_knight',
         'type': 'black_harvest',
         'name': 'Calcified Digging Claw',
+        'affinities': {'left': 'green'},
+        'speed': 1,
+        'accuracy': 4,
+        'strength': 5,
+        'keywords': ['weapon', 'melee', 'katar', 'pickaxe'],
+        'rules': ['Paired', 'Sharp'],
+        'desc': """During the <b>Mineral Gathering</b> story event, you may reroll one of your d10.""",
     },
     'calcified_greaves': {
         'expansion': 'dung_beetle_knight',
         'type': 'black_harvest',
         'name': 'Calcified Greaves',
+        'keywords': ['item', 'bone', 'heavy'],
+        'affinities': {'left': 'green'},
+        'desc': """-1 movement. Add <font class="inline_shield">3</font> to all hit locations.""",
+        'affinity_bonus': {
+            'requires': {'puzzle': {'green': 1}, 'complete': {'blue': 1}},
+            'desc': 'Add +2 to <b>Ripple Pattern</b> roll results.',
+        },
     },
     'calcified_juggernaut_blade': {
         'expansion': 'dung_beetle_knight',
         'type': 'rare_gear',
-        'name': 'Calcified Juggernaut Blade'
+        'name': 'Calcified Juggernaut Blade',
+        'keywords': ['weapon', 'melee', 'grand', 'bone', 'other'],
+        'speed': 1,
+        'accuracy': 5,
+        'strength': 9,
+        'affinities': {'right': 'red', 'left': 'red'},
+        'rules': ['Slow', 'Block 1'],
+        'desc': 'This weapon gains +1 strength for each token you have.',
     },
     'calcified_shoulder_pads': {
         'expansion': 'dung_beetle_knight',
         'type': 'black_harvest',
-        'name': 'Calcified Shoulder Pads'
+        'name': 'Calcified Shoulder Pads',
+        'keywords': ['item', 'bone', 'heavy'],
+        'affinities': {'right': 'green'},
+        'desc': """Add <font class="inline_shield">3</font> to all hit locations.""",
+        'affinity_bonus': {
+            'requires': {'puzzle': {'green': 1}, 'complete': {'green': 1}},
+            'desc': '<b>Ripple Pattern:</b> When you are attacked, roll 1d10. On a 10+, ignore 1 hit.',
+        },
     },
     'calcified_zanbato': {
         'expansion': 'dung_beetle_knight',
         'type': 'black_harvest',
-        'name': 'Calcified Zanbato'
+        'name': 'Calcified Zanbato',
+        'keywords': ['weapon','melee','grand','two-handed','bone','heavy'],
+        'rules': ['Slow','Deadly'],
+        'speed': 1,
+        'accuracy': 5,
+        'strength': 8,
+        'affinities': {'top': 'red', 'right': 'green'},
+        'affinity_bonus': {
+            'desc': 'Gains <b>Devastating 1:</b> Whenever you wound, inflict 1 additional wound.',
+            'requires': {
+                'puzzle': {'red': 1},
+                'complete': {'green': 1},
+            },
+        },
     },
     'century_greaves': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'Century Greaves'
+        'name': 'Century Greaves',
+        'keywords': ['item', 'bone', 'mineral', 'heavy'],
+        'affinities': {'left': 'green'},
+        'desc': """-1 movement. Add <font class="inline_shield">1</font> to all hit locations.""",
+        'affinity_bonus': {
+            'requires': {'puzzle': {'green': 1}, 'complete': {'blue': 1}},
+            'desc': 'Add +1 to <b>Ripple Pattern</b> roll results.',
+        },
     },
     'century_shoulder_pads': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'Century Shoulder Pads'
+        'name': 'Century Shoulder Pads',
+        'keywords': ['item', 'bone', 'mineral', 'heavy'],
+        'affinities': {'right': 'green'},
+        'desc': """Add <font class="inline_shield">1</font> to all hit locations.""",
+        'affinity_bonus': {
+            'requires': {'puzzle': {'green': 1}, 'complete': {'green': 1}},
+            'desc': '<b>Ripple Pattern:</b> When you are attacked, roll 1d10. On a 10+, ignore 1 hit.',
+        },
     },
     'dbk_errant_badge': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'DBK Errant Badge'
+        'name': 'DBK Errant Badge',
+        'keywords': ['item', 'jewelry', 'knight'],
+        'rules': ['Unique'],
+        'desc': """Add <font class="inline_shield">1</font> to all hit locations. At the start of the showdown, draw 1 tactics card.""",
     },
     'digging_claw': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'Digging Claw'
+        'name': 'Digging Claw',
+        'affinities': {'right': 'green'},
+        'speed': 1,
+        'accuracy': 4,
+        'strength': 5,
+        'keywords': ['weapon', 'melee', 'katar', 'pickaxe', 'bone', 'mineral'],
+        'rules': ['Paired'],
+        'desc': """During the <b>Mineral Gathering</b> story event, you may reroll one of your d10.""",
     },
     'hidden_crimson_jewel': {
         'expansion': 'dung_beetle_knight',
         'type': 'rare_gear',
-        'name': 'Hidden Crimson Jewel'
+        'name': 'Hidden Crimson Jewel',
+        'keywords': ['item', 'jewelry', 'other'],
+        'rules': ['Unique', 'Irreplaceable'],
+        'desc': 'Once per game phase, you may reroll one d10.',
+        'affinities': {'top': 'red', 'right': 'red', 'left': 'red', 'bottom': 'red'},
     },
     'rainbow_wing_belt': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'Rainbow Wing Belt'},
+        'name': 'Rainbow Wing Belt',
+        'keywords': ['item', 'flammable'],
+        'affinities': {'top': 'red', 'right': 'green'},
+        'affinity_bonus': {
+            'requires': {'complete': {'red': 2, 'blue': 1, 'green': 1}},
+            'desc': 'When any of your attack rolls are 1, you may reroll them. Limit, once per attack.',
+        },
+    },
     'regenerating_blade': {
         'expansion': 'dung_beetle_knight',
         'type': 'rare_gear',
-        'name': 'Regenerating Blade'
+        'name': 'Regenerating Blade',
+        'keywords': ['item', 'mineral', 'other'],
+        'affinities': {'left': 'green', 'right': 'blue'},
+        'desc': 'During the Settlement Phase, you may archive this to remove the <b>Dismembered Arm</b> or <b>Dismembered Leg</b> permanent injury from one survivor.',
     },
     'rolling_armor_set': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'Rolling Armor Set'
+        'name': 'Rolling Armor Set',
     },
     'rubber_bone_harness': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'Rubber Bone Harness'
+        'name': 'Rubber Bone Harness',
+        'keywords': ['item', 'bone', 'leather'],
+        'affinities': {'left': 'green', 'top': 'red', 'right': 'green', 'bottom': 'blue'},
+        'desc': 'Once per showdown, you may convert all of your negative attribute tokens to positive attribute tokens of the same type.',
     },
     'scarab_circlet': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'Scarab Circlet'
+        'name': 'Scarab Circlet',
+        'keywords': ['item', 'bone', 'jewelry', 'other'],
+        'affinities': {'top': 'blue', 'bottom': 'blue'},
+        'desc': """Add <font class="inline_shield">1</font> to all hit locations. During the showdown, when your survival is reduced to 0, gain +1 strength token.""",
     },
     'seasoned_monster_meat': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'Seasoned Monster Meat'
+        'name': 'Seasoned Monster Meat',
+        'keywords': ['item', 'consumable'],
+        'affinities': {'top': 'green', 'right': 'red'},
+        'desc': 'When you <b>depart</b>, gain +3 survival.',
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 1}},
+            'desc': """<b><font class="kdm_font">a</font> Consume:</b> Gain +3 survival and +1 strength token. Limit, once per showdown.""",
+        },
     },
     'the_beetle_bomb': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
-        'name': 'The Beetle Bomb'},
+        'name': 'The Beetle Bomb',
+        'affinities': {'top': 'blue', 'bottom': 'red'},
+        'keywords': ['item', 'thrown', 'fragile'],
+        'rules': ['Unique'],
+        'desc': """<font class="kdm_font">a</font><b>:</b> If adjacent to the monster, roll 1d10. On a 6+, the monster gains -1 accuracy and -1 evasion tokens. Limit, once per showdown.""",
+    },
     'trash_crown': {
         'expansion': 'dung_beetle_knight',
         'type': 'rare_gear',
-        'name': 'Trash Crown'
+        'name': 'Trash Crown',
+        'armor': 4,
+        'location': 'head',
+        'keywords': ['item', 'jewelry', 'fragile', 'other'],
+        'affinities': {'left': 'blue', 'bottom': 'red'},
+        'desc': """<b><font class="kdm_font">a</font>:</b> Reveal the next 4 hit location cards and discard 3 that are not <b>traps</b>. Place remaining cards on top of the deck in any order.""",
     },
 }
 
@@ -3057,27 +3181,51 @@ manhunter = {
     'deathpact': {
         'expansion': 'manhunter',
         'type': 'manhunter_gear',
-        'name': 'Deathpact'
+        'name': 'Deathpact',
+        'affinities': {'top': 'blue', 'right': 'red'},
+        'keywords': ['item', 'metal', 'fragile'],
+        'rules': ['Unique'],
+        'desc': """At the start of your act, gain +1 survival.<br/>Once per campaign, you may fire the gun to automatically hit and inflict a critical wound.""",
     },
     "hunters_heart": {
         'expansion': 'manhunter',
         'type': 'manhunter_gear',
-        'name': "Hunter's Heart"
+        'name': "Hunter's Heart",
+        'keywords': ['item', 'consumable', 'metal', 'heavy'],
+        'rules': ['Unique'],
+        'desc': """If you die, the heart crawls back to the settlement. Roll 1d10. On a 7+, it regrows you.<br/> During the settlement phase, you may archive this to <font class="kdm_font">g</font> <b>Bleeding Heart</b>.""",
     },
     "manhunters_hat": {
         'expansion': 'manhunter',
         'type': 'manhunter_gear',
-        'name': "Manhunter's Hat"
+        'name': "Manhunter's Hat",
+        'affinities': {'top': 'red', 'left': 'red', 'bottom': 'blue'},
+        'armor': 2,
+        'location': 'head',
+        'keywords': ['item', 'rawhide', 'leater'],
+        'rules': ['Unique', 'Accessory'],
+        'affinity_bonus': {
+            'desc': """Ignore the first severe <font class="kdm_font_2">b</font> injury you suffer each showdown.""",
+            'requires': {'puzzle': {'blue': 1}, 'complete': {'red': 1}},
+        },
     },
     'reverberating_lantern': {
         'expansion': 'manhunter',
         'type': 'manhunter_gear',
-        'name': 'Reverberating Lantern'
+        'name': 'Reverberating Lantern',
+        'keywords': ['item','tool','lantern'],
+        'rules': ['Unique'],
+        'affinities': {'top': 'green', 'right': 'blue'},
+        'desc': """At the start of any hunt turn, before an event is revealed, you may <font class="kdm_font">g</font> <b>Sonorous Rest</b>. Limit, once per hunt.""", 
     },
     'tool_belt': {
         'expansion': 'manhunter',
         'type': 'manhunter_gear',
-        'name': 'Tool Belt'
+        'name': 'Tool Belt',
+        'keywords': ['item', 'metal', 'fragile'],
+        'rules': ['Unique'],
+        'desc': """If you have no weapons in your gear grid, gain +3 evasion.<br/>Tools in your gear grid lose <b>frail</b>. Tools with attack profiles gain +1 speed, +3 accuracy and <b>sharp</b>.""",
+        'affinities': {'top': 'blue', 'right': 'green'},
     },
 }
 
@@ -3267,27 +3415,41 @@ flower_knight = {
         'type': 'rare_gear',
         'name': 'Flower Knight Helm'
     },
- 'replica_flower_sword': {'expansion': 'flower_knight',
-                          'type': 'rare_gear',
-                          'name': 'Replica Flower Sword'},
- 'satchel': {'expansion': 'flower_knight',
-             'type': 'sense_memory',
-             'name': 'Satchel'},
- 'sleeping_virus_flower': {'expansion': 'flower_knight',
-                           'type': 'rare_gear',
-                           'name': 'Sleeping Virus Flower'},
- 'vespertine_arrow': {'expansion': 'flower_knight',
-                      'type': 'sense_memory',
-                      'name': 'Vespertine Arrow'},
- 'vespertine_bow': {'expansion': 'flower_knight',
-                    'type': 'sense_memory',
-                    'name': 'Vespertine Bow'},
- 'vespertine_cello': {'expansion': 'flower_knight',
-                      'type': 'sense_memory',
-                      'name': 'Vespertine Cello'},
- 'vespertine_foil': {'expansion': 'flower_knight',
-                     'type': 'sense_memory',
-                     'name': 'Vespertine Foil'},
+    'replica_flower_sword': {
+        'expansion': 'flower_knight',
+        'type': 'rare_gear',
+        'name': 'Replica Flower Sword'
+    },
+    'satchel': {
+        'expansion': 'flower_knight',
+        'type': 'sense_memory',
+        'name': 'Satchel'
+    },
+    'sleeping_virus_flower': {
+        'expansion': 'flower_knight',
+        'type': 'rare_gear',
+        'name': 'Sleeping Virus Flower'
+    },
+    'vespertine_arrow': {
+        'expansion': 'flower_knight',
+        'type': 'sense_memory',
+        'name': 'Vespertine Arrow'
+    },
+    'vespertine_bow': {
+        'expansion': 'flower_knight',
+        'type': 'sense_memory',
+        'name': 'Vespertine Bow'
+    },
+    'vespertine_cello': {
+        'expansion': 'flower_knight',
+        'type': 'sense_memory',
+        'name': 'Vespertine Cello'
+    },
+    'vespertine_foil': {
+        'expansion': 'flower_knight',
+        'type': 'sense_memory',
+        'name': 'Vespertine Foil'
+    },
 }
 
 slenderman = {
@@ -3407,18 +3569,26 @@ slenderman = {
 
 
 lion_knight = {
- 'hideous_disguise': {'expansion': 'lion_knight',
-                      'type': 'rare_gear',
-                      'name': 'Hideous Disguise'},
- "lion_knights_left_claw": {'expansion': 'lion_knight',
-                             'type': 'rare_gear',
-                             'name': "Lion Knight's Left Claw"},
- "lion_knights_right_claw": {'expansion': 'lion_knight',
-                              'type': 'rare_gear',
-                              'name': "Lion Knight's Right claw"},
- 'lion_knight_badge': {'expansion': 'lion_knight',
-                       'type': 'rare_gear',
-                       'name': 'Lion Knight Badge'},
+    'hideous_disguise': {
+        'expansion': 'lion_knight',
+        'type': 'rare_gear',
+        'name': 'Hideous Disguise'
+    },
+    "lion_knights_left_claw": {
+        'expansion': 'lion_knight',
+        'type': 'rare_gear',
+        'name': "Lion Knight's Left Claw"
+    },
+    "lion_knights_right_claw": {
+        'expansion': 'lion_knight',
+        'type': 'rare_gear',
+        'name': "Lion Knight's Right claw"
+    },
+    'lion_knight_badge': {
+        'expansion': 'lion_knight',
+        'type': 'rare_gear',
+        'name': 'Lion Knight Badge'
+    },
 }
 
 

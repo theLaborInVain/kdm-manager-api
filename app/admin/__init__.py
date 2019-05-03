@@ -25,10 +25,8 @@ def get_data(resource=None):
         return panel.get_settlement_data()
     elif resource == 'logs':
         return panel.serialize_system_logs()
-    elif resource == 'webapp_alerts':
-        return notifications.get_webapp_alerts()
 
-    return utils.InvalidUsage("Admin resource '%s' does not exist!", status=400)
+    raise utils.InvalidUsage("Resource '%s' does not exist!", status_code=400)
 
 
 def get_notifications(method=None):

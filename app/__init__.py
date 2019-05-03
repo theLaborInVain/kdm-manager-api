@@ -15,6 +15,7 @@ import socket
 
 # third party imports
 import flask
+from flask_httpauth import HTTPBasicAuth
 import flask_jwt_extended
 
 
@@ -22,7 +23,7 @@ import flask_jwt_extended
 API = flask.Flask(__name__)
 
 # import the settings module and add it
-from app import utils
+from app import assets, utils
 from app.utils import settings
 from app.utils import crossdomain
 
@@ -54,8 +55,23 @@ JWT = flask_jwt_extended.JWTManager(API)
 
 
 #   HTTP basic auth, which we use for the admin panel:
-from flask_httpauth import HTTPBasicAuth
 API.basicAuth = HTTPBasicAuth()
+@API.basicAuth.verify_password
+def verify_password(username, password):
+    """ cf. the methods in routes.py that use the @basicAuth decorator. This is
+    what happens when those routes try to verify their user. """
+
+    flask.request.User = assets.users.authenticate(username, password)
+
+    if flask.request.User is None:
+        return False
+    elif flask.request.User.user.get("admin", None) is None:
+        msg = "Non-admin user %s attempted to access the admin panel!" % (
+            flask.request.User.user["login"])
+        application.logger.warn(msg)
+        return False
+
+    return True
 
 
 #

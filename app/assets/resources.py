@@ -475,6 +475,17 @@ vermin = {
         'rules_text': '<b class="special-rule">Consume:</b> Archive this and roll 1d10.',
         'rules_table': '<table class="roll-table"><tr class="zebra"><td class="roll">1-3</td><td class="result">The beetle burrows into your brain. You die instantly.</td></tr><tr><td class="roll">4-5</td><td class="result">Tough and disgusting. No effect.</td></tr><tr class="zebra"><td class="roll">6+</td><td class="result">Gain +1 permanent strength.</td></tr></table>'
     },
+
+
+    # expansion vermin!
+
+    'gibbering_haremite': {
+        'name': 'Gibbering Haremite',
+        'type': 'vermin',
+        'expansion': 'white_box',
+        'keywords': ['vermin', 'consumable'],
+        'desc': 'When you gain this, unless you <b>consume</b> it immediately, it latches on and removes all your head armor points. If this is in settlement storage when survivors <b>depart</b>, add another to storage and suffer -1 population.<br/><b>Consume:</b> Archive this and roll 1d10.',
+    },
 }
 
 

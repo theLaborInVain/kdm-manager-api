@@ -1,0 +1,563 @@
+<!doctype html>
+<html ng-app="adminPanel" ng-controller="globalController" ng-init="user = {{user}}">
+ <title>KDM API - Admin Panel</title>
+ <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="/static/js/adminPanel.js"></script>
+    <link rel="stylesheet" href="/static/css/adminPanel.css" />
+ </head>
+
+
+ <body>
+
+
+    <img id="spinner" src="/static/media/images/loading_io.gif">
+
+    <div class="container">
+
+
+        <div class="flex_item_basic">
+            <h1>KDM API</h1>
+            <b>API Hostname:</b> {a world.meta.server.hostname a}<br/>
+            <b>API Version:</b> {a world.meta.api.version a}<br/>
+            <b>Last Push:</b> {a github.pushed_at a}<br/>
+            <b>Open Issues:</b> {a github.open_issues a}
+            <hr/>
+            <b>Registered Users:</b> {a world.world.total_users.value a}<br/>
+            <b>Subscribers:</b> {a world.world.total_subscribers.value a}
+            <table class="subscribers_breakdown_table">
+                <tr ng-repeat="t in world.world.subscribers_by_level.value">
+                    <td><i>Lvl. {a t.level a}:</i></td>
+                    <td>{a t.count a}</td>
+                </tr>
+            </table>
+            <hr/>
+
+            {{user.login}}
+            <input
+                type="password"
+                placeholder="password"
+                ng-if="user.jwt === undefined" 
+                ng-model="user.plaintext_password"
+            />
+            <button
+                ng-if="user.jwt === undefined" 
+                ng-click="setUserJWT()"
+            >
+                Set
+            </button>
+
+            <hr/>
+            <b>Administrators:</b>
+            <ul>
+                <li ng-repeat="a in world.meta.admins">{a a.login a} - {a a._id.$oid a}</li>
+            </ul>
+
+            <br/>
+
+            <h2>Admin Panel</h2>
+            <b>Revision:</b> {a world.meta.object.panel_revision a}<br/>
+            <b>Last Refreshed:</b> {a refreshed a} ({a seconds_since_last_refresh a} seconds ago)<br/>
+
+            <br/>
+            <a href="/" target="top">API Documentation</a>
+
+        </div>
+
+        <div class="flex_item_basic" ng-controller="alertsController" ng-init="getWebappAlerts()">
+            <h2>Alerts!</h2>
+
+            <p ng-if="webappAlerts.length == 0">...no active webapp alerts...</p>
+
+            <div
+                class="webapp_alert"
+                ng-repeat="alert in webappAlerts"
+                title="{a alert._id.$oid a}"
+            >
+                <div
+                    class="clickable"
+                    ng-click="showHide(alert._id.$oid + '_controls')"
+                >
+                    <b>{a alert.title a}</b> <span ng-bind-html="alert.body|trustedHTML"></span><br/>
+                    <div
+                        class="alert_footer"
+                    >
+                        <b>release:</b> {a alert.release a}| <b>type:</b> {a alert.sub_type a} | <b>created:</b> {a alert.created_on.$date | date:'yyyy-MM-dd @ h:mma' a} | <b>expires:</b> {a alert.expiration a}
+                    </div>
+                </div>
+
+                <div id="{a alert._id.$oid a}_controls" class="clickable hidden">
+                    <div
+                        class="alert_controls"
+                    >
+                        <button class="red_button" ng-click="expireAlert(alert)">Expire Now!</button>
+                    </div>
+                </div>
+            </div>
+
+            <p ng-click="showHide('createNewAlert')" class="clickable alert">
+                Click/tap to create a new webapp alert!
+            </p>
+            <div id="createNewAlert" class="create_webapp_alert hidden">
+
+                <div class="create_webapp_alert_control_block">
+                    <input class="webapp_alert_title" type="text" ng-model="newAlert.title" placeholder="New Webapp Alert Title!" />
+                    <textarea class="webapp_alert_body" ng-model="newAlert.body">
+                    </textarea>
+                </div>
+                <div class="create_webapp_alert_control_block">
+                    <b>Type:</b>
+                    <label>
+                        <input
+                            type="radio"
+                            name="new_alert_type"
+                            ng-model="newAlert.type"
+                            value="kpi"
+                        > 
+                        KPI
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="new_alert_type"
+                            ng-model="newAlert.type"
+                            value="announcement"
+                        > 
+                        Announcement
+                    </label>
+                </div>
+                <div class="create_webapp_alert_control_block">
+                    <b>Expiration:</b>
+                    <label>
+                        <input
+                            type="radio"
+                            name="new_alert_expiration"
+                            ng-model="newAlert.expiration"
+                            value="next_release"
+                        > 
+                        Next release
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="new_alert_expiration"
+                            ng-model="newAlert.expiration"
+                            value="manual"
+                        > 
+                        Manual
+                    </label>
+                </div>
+
+                <button
+                    ng-if="newAlert.title != null && newAlert.body != null"
+                    ng-click="createAlert()"
+                    class="red_button"
+                >
+                    CREATE NEW WEBAPP ALERT
+                </button>
+            </div>
+        </div>
+
+
+        <div class="flex_item_basic users" ng-if="users.user_info.length != 0">
+            <div id="userSpinner" class="bg_spinner">
+                <img src="/static/media/images/loading_io.gif" >
+            </div>
+
+            <h2>Recent User Activity </h2>
+            <b title="Active during the last {a users.meta.active_user_horizon a} minutes">Active user count:</b> {a users.meta.active_user_count a}<br/>
+            <b title="Active during the last {a users.meta.recent_user_horizon a} hours">Recent user count:</b> {a users.meta.recent_user_count a}<br/>
+            
+
+            <div id="userFailure" ng-if="scratch.get_user_data_failure == true">
+                <hr/>
+                <p><b>Could not refresh recent user data!</b></p>
+                <code>{a scratch.get_user_data_failure_msg a}</code>
+            </div>
+
+            <div class="users_container">
+                <div
+                    class="user_basic_info clickable"
+                    ng-class="{
+                        'inactive_user': u.is_active == false,
+                        'active_user': u.is_active,
+                        'signed_out_user': u.latest_action=='signed out',
+                        'inactive_subscriber': u.is_active == false && u.subscriber.level > 0,
+                        'active_subscriber': u.is_active && u.subscriber.level > 0,
+                        'signed_out_subscriber': u.latest_action=='signed out' && u.subscriber.level > 0,
+                    }"
+                    ng-repeat="u in users.user_info"
+                    ng-click="showHide('user_' + u._id.$oid);"
+                >
+                    <h2>{a u.login a}
+                        <span ng-if="u.latest_action == 'signed out'" style="font-weight: normal">(signed out)</span>
+                    </h2>
+                    <div
+                        class="user_detail hidden"
+                        id="user_{a u._id.$oid a}"
+                        title="Click again to close and copy OID to clipboard."
+                        ng-click="copyToClipboard(u._id.$oid);"
+                    >
+                        <br><br/>
+                        <b>Latest User Agent:</b> {a u.latest_user_agent a}<br/>
+                        <b>Latest Activity:</b> {a u.latest_activity_age a} ago<br/>
+                        <b>Latest Action:</b> {a u.latest_action a}<br/>
+                        <b>Active:</b> {a u.is_active a}<br/>
+                        <br>
+                        <b>OID:</b> {a u._id.$oid a}<br/>
+                        <b>Created On:</b> {a u.created_on.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
+                        <b>User Age:</b> {a u.age a}<br/>
+                        <br><br>
+                        <span ng-if="u.subscriber.created_on"><b>Subscriber for:</b> {a getAge(u.subscriber.created_on.$date) a} days<br/></span>
+                        <span ng-if="u.subscriber.created_on"><b>Subscriber level:</b> {a u.subscriber.level a}<br/></span>
+                        <span ng-if="u.preferences.beta != undefined"><b>Beta:</b> {a u.preferences.beta a}<br/></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="flex_item_basic users" ng-if="settlements.length >= 1">
+            <div id="recentSettlementsSpinner" class="recent_settlements_spinner hidden">
+                <img src="/static/media/images/loading_io.gif" /><br/>
+                Refreshing...
+            </div>
+            <h2>Recent Settlement Activity</h2>
+            <br/>
+            <div
+                class="settlement"
+                ng-repeat="settlement in settlements"
+                ng-init="eventLogContainer = settlement._id.$oid + '_event_log'"
+            >
+                <button
+                    class="toggle_settlement_event_log"
+                    ng-if="user.jwt !== undefined"
+                    ng-click="getEventLog(settlement); showHide(eventLogContainer)"
+                >
+                    View settlement event log
+                </button>
+                <h3 class="settlement_name"><b>{a settlement.name a}</b> <i>LY:</i> {a settlement.lantern_year a} </h3>
+                {a settlement._id.$oid a}<br/><br/>
+                <i>{a campaign_assets[settlement.campaign].name a}</i><br>
+                <span ng-if="settlement.expansions.length >= 1">
+                    <i>Expansions:</i>
+                    <span ng-repeat="e_handle in settlement.expansions">
+                        {a expansion_assets[e_handle].name a}{a $last ? '' : ', ' a}
+                    </span>
+                </span>
+                <ul>
+                    <li><i>Creator:</i> {a settlement.creator_email a}</li>                   
+                    <li><i>Created:</i> {a settlement.age a} ago</li>
+                    <li ng-if="settlement.admins.length > 1"><i>Admins:</i> {a settlement.admins.join(', ') a}</li>
+                    <li ng-if="settlement.players.length > 1"><i>Players:</i> {a settlement.players.join(', ') a}</li>
+                    <li><i>Survivors:</i> {a settlement.population a}/{a settlement.death_count a}</li>
+                </ul>
+                <div id="{a eventLogContainer a}" class="settlement_event_log hidden">
+                    <table class="settlement_event_log">
+                        <tr><th>LY</th><th>Event</th></tr>
+                        <tr
+                            title="{a l a}"
+                            ng-repeat="l in settlement.event_log"
+                            ng-class-odd="'zebra'"
+                            class="{a l.event_type a}"
+                        >
+                            <td>{a l.ly a}</td>
+                            <td>{a l.event a}</td>
+                        </tr>
+                    </table>
+                </div>
+                <hr ng-if="!$last">
+            </div> <!-- settlement repeater -->
+        </div> <!-- flex_item_basic -->
+
+        <div class="flex_item_basic users">
+            <h2>User Agent Info</h2>
+            <p ng-click="showHide('user_agent_popularity_contest')" class="clickable">
+                Click/tap to show/hide the User Agent popularity contest.
+            </p>
+            <table id="user_agent_popularity_contest" class="hidden">
+                <tr><th>UA String</th><th>&nbsp; # &nbsp; </th></tr>
+                <tr ng-repeat="ua in users.user_agent_stats" ng-class-even="'zebra'">
+                    <td>{a ua.latest_user_agent a}:</td><td>{a ua.count a}</td>
+                </tr>
+            </table>
+        </div>
+
+
+
+        <div class="flex_item_basic api">
+            <h2>Response Times (last seven days)</h2>
+            <table class="api_response_times">
+            <tr>
+                <th>Method</th>
+                <th>Route</th>
+                <th>#</th>
+                <th>24Hrs</th>
+                <th>Avg.</th>
+                <th>Min</th>
+                <th>Max</th>
+            </tr>
+            <tr ng-repeat="r in world.world.api_response_times.value">
+                <td>{a r._id.method a}</td>
+                <td><code>/{a r._id.url a}</code></td>
+                <td>{a r.count a}</td>
+                <td>{a r.last_24_avg | limitTo:5 a}</td>
+                <td ng-class="{'warning': r.avg_time >= 2, 'error': r.avg_time >=4}">{a r.avg_time | limitTo:5 a}</td>
+                <td ng-class="{'warning': r.min_time >= 2, 'error': r.min_time >=4}">{a r.min_time | limitTo:5 a}</td>
+                <td ng-class="{'warning': r.max_time >= 2, 'error': r.max_time >=4}">{a r.max_time | limitTo:5 a}</td>
+            </tr>
+            </table>
+        </div>
+
+        <div class="flex_item_basic api">
+            <h2> API Log</h2>
+            <p ng-click="showHide('api_log')" class="clickable">
+                View last {a settings.application.log_summary_length a} lines.
+            </p>
+            <div class="log_detail hidden" id="api_log">
+                <div class="log_line" ng-repeat="l in logs.api track by $index" ng-class-even="'zebra'">
+                    {a l a}
+                </div>
+            </div>
+
+                <br/><br/>
+
+            <h2> Gunicorn Log</h2>
+            <p ng-click="showHide('gunicorn_log')" class="clickable">
+                View last {a settings.application.log_summary_length a} lines.
+            </p>
+            <div class="log_detail hidden" id="gunicorn_log">
+                <div class="log_line" ng-repeat="l in logs.gunicorn track by $index" ng-class-even="'zebra'">
+                    {a l a}
+                </div>
+            </div>
+
+                <br/><br/>
+
+            <h2> Server Log</h2>
+            <p ng-click="showHide('server_log')" class="clickable">
+                View last {a settings.application.log_summary_length a} lines.
+            </p>
+            <div class="log_detail hidden" id="server_log">
+                <div class="log_line" ng-repeat="l in logs.server track by $index" ng-class-even="'zebra'">
+                    {a l a}
+                </div>
+            </div>
+        </div>
+
+
+        <div class="flex_item_basic world">
+            <h2>World Daemon</h2>
+            <b>Active:</b> {a world.world_daemon.active a}<br/>
+            <b>Uptime:</b> {a world.world_daemon.uptime_hms a}<br/>
+            <b>Assets:</b> {a world.world_daemon.assets a}<br/>
+            <b>PID:</b> {a world.world_daemon.pid a}<br/>
+            <b>PID File:</b> <code>{a world.world_daemon.pid_file a}</code><br/>
+
+               <br/><br/>
+
+            <h2>World Log</h2>
+            <p ng-click="showHide('world_log')" class="clickable">
+                View last {a settings.application.log_summary_length a} lines.
+            </p>
+            <div class="log_detail hidden" id="world_log">
+                <div class="log_line" ng-repeat="l in logs.world track by $index" ng-class-even="'zebra'">
+                    {a l a}
+                </div>
+            </div>
+
+               <br/><br/>
+
+            <h2>World Daemon Log</h2>
+            <p ng-click="showHide('world_daemon_log')" class="clickable">
+                View last {a settings.application.log_summary_length a} lines.
+            </p>
+            <div class="log_detail hidden" id="world_daemon_log">
+                <div class="log_line" ng-repeat="l in logs.world_daemon track by $index" ng-class-even="'zebra'">
+                    {a l a}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex_item_basic world">
+            <h2>World Stats</h2>
+
+            <div class="world_item clickable" ng-repeat="w in world.world">
+                <div
+                    title="{a w.comment a}"
+                    ng-if="w.value_type == 'int' || w.value_type == 'float'" 
+                    ng-click="showHide(w.handle + '_tooltip')"
+                >
+                    <div class="world_key">{a w.name a} ({a w.value_type a}):</div>
+                    <div class="world_value">{a w.value a}</div>
+                    <span id="{a w.handle a}_tooltip" class="world_tooltip hidden">
+                        <i>comment:</i> {a w.comment a}<br/>
+                        <i>handle:</i> <code>{a w.handle a}</code><br/>
+                        <i>mdb OID:</i> {a w._id.$oid a}<br/>
+                        <i>refreshed:</i> {a w.created_on.$date a}<br/>
+                        <i>age (seconds):</i> {a w.age_in_seconds a}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex_item_basic world">
+            <h2>{a world.world.killboard.name a}</h2>
+            {a world.world.killboard.comment a}<br/>
+            <div ng-repeat="(type,board) in world.world.killboard.value">
+                <h3 class="capitalize">{a type a}</h3>
+                <table>
+                    <tr ng-repeat="row in board" ng-class-even="'zebra'">
+                        <td>{a row.name a}</td> <td class="int_key">{a row.count a}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="flex_item_basic world" ng-if="world.world.current_hunt.value != null">
+            <h2>{a world.world.current_hunt.name a}</h2>
+            {a world.world.current_hunt.comment a}<hr/>
+
+            <b>Settlement:</b> <i>{a world.world.current_hunt.value.settlement.name a}</i> (LY: {a world.world.current_hunt.value.settlement.lantern_year a})<br/>
+            <b>Quarry:</b> {a world.world.current_hunt.value.settlement.current_quarry a}<br/>
+            <b>Departing Survivors:</b>
+            <table>
+                <tr
+                    ng-repeat="s in world.world.current_hunt.value.survivors"
+                >
+                    <td>{a s.name a}</td><td class="int_key">{a s.sex a}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="flex_item_basic world">
+            <h2>{a world.world.latest_settlement.name a}</h2>
+            {a world.world.latest_settlement.comment a}
+
+            <div ng-click="showHide('latest_settlement_detail')" class="clickable">
+                <b>{a world.world.latest_settlement.value.name a}</b><br/>
+                <i>{a world.world.latest_settlement.value.campaign a} - LY {a world.world.latest_settlement.value.lantern_year a}</i>
+            </div>
+
+            <table id='latest_settlement_detail' class="hidden">
+                <tr ng-repeat="(k,v) in world.world.latest_settlement.value" ng-class-even="'zebra'">
+                    <td class="int_key">{a k a}</td> <td>{a v a}</td>
+                </tr>
+            </table>
+<hr/>
+            <h2>{a world.world.latest_survivor.name a}</h2>
+            {a world.world.latest_survivor.comment a}
+
+            <div ng-click="showHide('latest_survivor_detail')" class="clickable">
+                <b>{a world.world.latest_survivor.value.name a}</b> [{a world.world.latest_survivor.value.sex a}]<br/>
+                <i>{a world.world.latest_survivor.value.settlement_name a}</i>
+            </div>
+
+            <table id='latest_survivor_detail' class="hidden">
+                <tr ng-repeat="(k,v) in world.world.latest_survivor.value" ng-class-even="'zebra'">
+                    <td class="int_key">{a k a}</td> <td>{a v a}</td>
+                </tr>
+            </table>
+<hr/>
+            <h2>{a world.world.latest_fatality.name a}</h2>
+            {a world.world.latest_fatality.comment a}
+
+            <div ng-click="showHide('latest_fatality_detail')" class="clickable">
+                <b>{a world.world.latest_fatality.value.name a}</b> [{a world.world.latest_survivor.value.sex a}]<br/>
+                <i>{a world.world.latest_fatality.value.settlement_name a}</i>
+            </div>
+
+            <table id='latest_fatality_detail' class="hidden">
+                <tr ng-repeat="(k,v) in world.world.latest_fatality.value" ng-class-even="'zebra'">
+                    <td class="int_key">{a k a}</td> <td>{a v a}</td>
+                </tr>
+            </table>
+<hr/>
+
+            <h2>{a world.world.latest_kill.name a}</h2>
+            {a world.world.latest_kill.comment a}
+
+            <div ng-click="showHide('latest_kill_detail')" class="clickable">
+                <b>{a world.world.latest_kill.value.raw_name a}</b> ({a world.world.latest_kill.type a})<br/>
+                Killed by the survivors of <i>{a world.world.latest_kill.value.settlement_name a}</i> in LY {a world.world.latest_kill.value.kill_ly a}
+            </div>
+
+            <table id='latest_kill_detail' class="hidden">
+                <tr ng-repeat="(k,v) in world.world.latest_kill.value" ng-class-even="'zebra'">
+                    <td>{a k a}</td> <td>{a v a}</td>
+                </tr>
+            </table>
+
+        </div>
+
+        <div class="flex_item_basic world">
+            <h2>{a world.world.settlement_popularity_contest_campaigns.name a}</h2>
+            {a world.world.settlement_popularity_contest_campaigns.comment a}
+            <table>
+                <tr ng-repeat="(name,count) in world.world.settlement_popularity_contest_campaigns.value" ng-class-even="'zebra'">
+                    <td>{a name a}</td> <td class="int_key">{a count a}</td>
+                </tr>
+            </table>
+            <h2>{a world.world.settlement_popularity_contest_expansions.name a}</h2>
+            {a world.world.settlement_popularity_contest_expansions.comment a}
+            <table>
+                <tr ng-repeat="e in world.world.settlement_popularity_contest_expansions.value" ng-class-even="'zebra'">
+                    <td>{a e.name a}</td> <td class="int_key">{a e.count a}</td>
+                </tr>
+            </table>
+
+
+            <h2>{a world.world.top_innovations.name a}</h2>
+            {a world.world.top_innovations.comment a}
+            <table>
+                <tr ng-repeat="row in world.world.top_innovations.value" ng-class-even="'zebra'">
+                    <td>{a row.name a}</td> <td class="int_key">{a row.count a}</td>
+                </tr>
+            </table>
+
+            <h2>{a world.world.principle_selection_rates.name a}</h2>
+            {a world.world.principle_selection_rates.comment a}
+            <div ng-repeat="(principle, selections) in world.world.principle_selection_rates.value">
+                <h3 class="capitalize">{a principle a}</h3>
+                <table>
+                    <tr><td></td><td>#</td><td>%</td></tr>
+                    <tr ng-repeat="option in selections.options" ng-class-odd="'zebra'">
+                        <td>{a option a}</td>
+                        <td class="int_key">{a selections[option].total a}</td>
+                        <td class="int_key">{a selections[option].percentage a}</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="flex_item_basic world">
+            <h2>{a world.world.top_settlement_names.name a}</h2>
+            {a world.world.top_settlement_names.comment a}<br/>
+            <table>
+                <tr ng-repeat="row in world.world.top_settlement_names.value" ng-class-even="'zebra'">
+                    <td>{a row.name a}</td> <td class="int_key">{a row.count a}</td>
+                </tr>
+            </table>
+            <h2>{a world.world.top_survivor_names.name a}</h2>
+            {a world.world.top_survivor_names.comment a}<br/>
+            <table>
+                <tr ng-repeat="row in world.world.top_survivor_names.value" ng-class-even="'zebra'">
+                    <td>{a row.name a}</td> <td class="int_key">{a row.count a}</td>
+                </tr>
+            </table>
+            <h2>{a world.world.top_causes_of_death.name a}</h2>
+            {a world.world.top_causes_of_death.comment a}<br/>
+            <table>
+                <tr ng-repeat="row in world.world.top_causes_of_death.value" ng-class-even="'zebra'">
+                    <td>{a row.cause_of_death a}</td> <td class="int_key">{a row.count a}</td>
+                </tr>
+            </table>
+        </div>
+
+    </div> <!-- container -->
+
+ </body>
+
+</html>
