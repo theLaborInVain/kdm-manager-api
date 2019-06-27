@@ -1471,7 +1471,7 @@ class Settlement(models.UserAsset):
         """ Returns all survivors with departing=True (i.e. initializes the
         survivor and calls Survivor.return_survivor() on it and then processes
         showdown/hunt attributes.
-        
+
         Assumes a request context (because why else would you be doing this?)
         """
 
@@ -1535,6 +1535,11 @@ class Settlement(models.UserAsset):
         if showdown_type == 'normal' and live_returns != [] and aftermath == "victory":
             self.update_endeavor_tokens(len(live_returns), save=False)
 
+
+        # 7.) increment LY, if necessary
+        if self.params.get('increment_ly', False):
+            self.set_current_ly(self.get_current_ly() + 1)
+
         self.save()
 
 
@@ -1560,8 +1565,12 @@ class Settlement(models.UserAsset):
             ly = self.params['ly']
         ly = int(ly)
 
-        self.settlement['lantern_year'] = ly
+        # ignore bogus updates
+        if self.settlement['lantern_year'] == ly:
+            self.logger.warn('%s Ignoring attempt to set LY to current.' % self)
+            return True
 
+        self.settlement['lantern_year'] = ly
         self.log_event(action='set', key="current Lantern Year", value=ly)
         self.save()
 

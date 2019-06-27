@@ -13,8 +13,10 @@
 """
 
 # standard lib imports
+from bson import json_util
 import glob
 import importlib
+import json
 import os
 
 # third party imports
@@ -58,8 +60,8 @@ def new_user_asset(asset_type=None):
         S = survivors.Survivor()
         return S.serialize()
     elif asset_type == "survivors":
-        output = survivors.add_many_survivors(dict(request.get_json()))
-        return Response(
+        output = survivors.create_many_survivors(dict(flask.request.get_json()))
+        return flask.Response(
             response=json.dumps(output, default=json_util.default),
             status=200,
             mimetype="application/json"
@@ -67,7 +69,7 @@ def new_user_asset(asset_type=None):
     else:
         # unknown user asset types get a 422
         err = "Creating '%s' type user assets is not supported!" % asset_type
-        return Response(response=err, status=422, mimetype="text/plain")
+        return flask.Response(response=err, status=422, mimetype="text/plain")
 
     return utils.http_400
 

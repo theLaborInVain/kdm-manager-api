@@ -1706,16 +1706,25 @@ class Survivor(models.UserAsset):
             else:
                 self.survivor["died_in"] = self.Settlement.get_current_ly()
 
+            # now set the cause
+            self.survivor['cause_of_death'] = "Unspecified"
             if 'cause_of_death' in self.params:
                 try:
-                    self.survivor['cause_of_death'] = self.params["cause_of_death"].encode('ascii','ignore')
+#                    self.survivor['cause_of_death'] = self.params["cause_of_death"].encode('ascii','ignore')
+                    self.survivor['cause_of_death'] = str(self.params["cause_of_death"])
                 except Exception as e:
                     self.logger.exception(e)
-                    raise utils.InvalidUsage("Could not set custom type of death! Exception was: %s" % e)
-            else:
-                self.survivor['cause_of_death'] = "Unspecified"
+                    raise utils.InvalidUsage(
+                        "Could not set custom type of death! '%s'" % e
+                    )
 
-            self.log_event('%s has died! Cause of death: %s' % (self.pretty_name(), self.survivor["cause_of_death"]), event_type="survivor_death")
+            self.log_event(
+                '%s has died! Cause of death: %s' % (
+                    self.pretty_name(),
+                    self.survivor["cause_of_death"]
+                ),
+                event_type="survivor_death"
+            )
             self.Settlement.update_population(-1)
 
         self.save()
