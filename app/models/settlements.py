@@ -189,9 +189,10 @@ class Settlement(models.UserAsset):
 
         """
 
-        patron_attribs = request.User.get_patron_attributes()
-
-        if request.User.get_settlements(return_type=int) >= 3 and patron_attribs['level'] < 1:
+        if (
+            request.User.get_settlements(return_type=int) >= 3 and
+            request.User.subscriber['level'] < 1
+        ):
             raise utils.InvalidUsage(
                 'Free users may only create three settlements!',
                 status_code=405
@@ -2490,7 +2491,7 @@ class Settlement(models.UserAsset):
 
 
     def get_event_log(self, return_type=None, ly=None, lines=None,
-            get_lines_after=None, survivor_id=None):
+            get_lines_after=None, survivor_id=None, query_sort=-1):
 
         """ Returns the settlement's event log as a cursor object unless told to
         do otherwise.
@@ -2522,7 +2523,9 @@ class Settlement(models.UserAsset):
             query = {'survivor_id': ObjectId(survivor_id)}
 
         # now do the query
-        event_log = utils.mdb.settlement_events.find(query).sort("created_on",-1)
+        event_log = utils.mdb.settlement_events.find(query).sort(
+            "created_on", query_sort
+            )
 
         # limit, if we're doing that
         if lines is not None:

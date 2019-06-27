@@ -102,9 +102,43 @@ def dump_doc_to_cli(m, tab_spaces=2, gap_spaces=20, buffer_lines=0):
             second_spacer = " " * (gap_spaces - len(str(m[k])))
         else:
             second_spacer = " " * ((gap_spaces * 2) - len(str(m[k])))
-        print("%s%s%s%s%s%s" % (
-            tab, k, first_spacer, m[k], second_spacer, type(m[k])
-        ))
+
+        if not isinstance(m[k], dict):
+            print("%s%s%s%s%s%s" % (
+                tab, k, first_spacer, m[k], second_spacer, type(m[k])
+                )
+            )
+        else:
+            print(
+                "%s%s%s%s%s%s" % (
+                    tab, k, first_spacer, " " * gap_spaces, second_spacer, type(m[k])
+                )
+            )
+
+            def dump_dict_key(dictionary, key, recursion_level=1):
+                """ Lets us dump dictionary keys indefinitely and maintain
+                CLI legibility by doing indents. """
+                recursion_filler = "  " * recursion_level
+                if isinstance(dictionary[key], dict):
+                    print("%s%s%s" % (" " * gap_spaces, recursion_filler, key))
+                    for r_key in dictionary[key].keys():
+                        dump_dict_key(
+                            dictionary[key],
+                            r_key,
+                            recursion_level + 1
+                        )
+                else:
+                    print(
+                        "%s%s`- %s: %s" % (
+                            " " * gap_spaces,
+                            recursion_filler,
+                            key,
+                            dictionary[key],
+                        )
+                    )
+
+            for key in sorted(m[k].keys()):
+                dump_dict_key(m[k], key)
 
     print(buffer_spacer)
 
@@ -195,15 +229,6 @@ class AdministrationObject:
 
         parser = argparse.ArgumentParser(description=' KDM API Administration!')
 
-        # sysadmin / console cowboy / hacker shit
-        parser.add_argument('--initialize', dest='initialize', default=False,
-                            help="Initialize the mdb database, '%s'" % (
-                                utils.settings.get('api','mdb'),
-                            ), action="store_true", )
-        parser.add_argument('--patch', dest='apply_patch',
-                            metavar="patch_method", default=None,
-                            help="Apply a patch (from the patches.py module)."
-                            )
 
         # work with users
         parser.add_argument('--clone_user', dest='clone_user', default=None,
@@ -217,17 +242,63 @@ class AdministrationObject:
                             metavar="toconnell@tyrannybelle.com")
         parser.add_argument("--admin", dest="user_admin", default=False,
                             action="store_true",
-                            help="Toggle admin status (requires --user).")
+                            help=(
+                                "[USER] "
+                                "Toggle admin status (requires --user)."
+                            ),
+                            )
         parser.add_argument("--level", dest="user_subscriber_level", type=int,
-                            help="Set subscriber level (requires --user).",
-                            metavar=2)
+                            help=(
+                                "[USER] "
+                                "Set subscriber level (requires --user)."
+                            ),
+                            metavar=2
+                            )
 
-        # work with settlements
         parser.add_argument("--settlements", dest="user_settlements",
                             default=False, action="store_true",
-                            help="Dump user settlements (requires --user).")
+                            help=(
+                                "[USER] "
+                                "Dump user settlements (requires --user)."
+                            ),
+                            )
+
+        # work with settlements
+        parser.add_argument('--settlement', dest='settlement', default=None,
+                            help=(
+                                "[SETTLEMENT] "
+                                "Work with a settlement"
+                            ),
+                            metavar="5d13762e84d8863941ed4e20")
+        parser.add_argument('--event_log', dest='settlement_event_log',
+                            help=(
+                                "[SETTLEMENT] "
+                                "Dump the settlement event log "
+                                "(requires --settlement)."
+                            ),
+                            default=False,
+                            action="store_true",
+                            )
+
+        # sysadmin / console cowboy / hacker shit
+        parser.add_argument('--initialize', dest='initialize', default=False,
+                            help=(
+                                "[SYSADMIN] "
+                                "Initialize the mdb database, '%s'"
+                            ) % (
+                                utils.settings.get('api','mdb'),
+                            ), action="store_true",
+                            )
+        parser.add_argument('--patch', dest='apply_patch',
+                            metavar="patch_method", default=None,
+                            help=(
+                                "[SYSADMIN] "
+                                "Apply a patch (from the patches.py module)."
+                            ),
+                            )
         parser.add_argument("--purge_settlements", dest="purge_settlements",
                             help=(
+                                "[SYSADMIN] "
                                 "Drops settlements marked 'removed' from mdb. "
                                 "Works recursively & drops 'removed' survivors."
                                 " Max age is date removed + %s days."
@@ -276,6 +347,16 @@ class AdministrationObject:
             patch_method()
             print(' Patch applied successfully!\n')
 
+
+        # idiot-proofing
+        if (
+            self.options.user is not None and
+            self.options.settlement is not None
+        ):
+            msg = "Cannot work with a user and a settlement at the same time!"
+            raise ValueError(msg)
+
+
         # purge settlements/survivors marked 'removed' from mdb
         if self.options.purge_settlements:
             print(" Purging 'removed' settlements from MDB...")
@@ -319,9 +400,14 @@ class AdministrationObject:
         if self.options.clone_recent_users == True:
             self.clone_many_users()
 
+
         # work with user
         if self.options.user is not None:
             self.work_with_user()
+
+        # work with settlement
+        if self.options.settlement is not None:
+            self.work_with_settlement()
 
         return 0
 
@@ -439,9 +525,26 @@ class AdministrationObject:
 
 
     #
-    #   methods for working with local settlements
+    #   methods for working with a local settlement
     #
 
+    def work_with_settlement(self):
+        """ In which we perform settlement maintenance based on self.options."""
+
+        # first, see if self.options.user it looks like an email address
+        if not ObjectId.is_valid(self.options.settlement):
+            msg = "'%s' does not look like a valid OID!" % (
+                self.options.settlement
+            )
+            raise ValueError(msg)
+
+        sm_object = SettlementManagementObject(
+            oid=ObjectId(self.options.settlement)
+        )
+        sm_object.print_header()
+
+        if self.options.settlement_event_log:
+            sm_object.dump_event_log()
 
 
 class UserManagementObject:
@@ -511,6 +614,38 @@ class UserManagementObject:
         print(
             " Working with user", Style.YELLOW, self.login, Style.END, self._id,
         )
+
+
+class SettlementManagementObject:
+    """ Like the UserManagementObject (above), the SettlementManagementObject
+    is basically a special object used only by admin methods that allows the
+    user to perform settlement maintenance. """
+
+    def __init__(self, oid=None):
+        """ """
+
+        self._id = ObjectId(oid)
+        self.Settlement = models.settlements.Settlement(_id=self._id)
+
+
+    def print_header(self):
+        """ Prints a little header to stdout about the settlement."""
+
+        print(
+            " Working with settlement",
+            Style.YELLOW,
+            self.Settlement.settlement['name'],
+            Style.END,
+            self._id,
+        )
+
+    def dump_event_log(self):
+        """ Uses the vanilla Settlement object's built-in get_event_log() method
+        to get the settlement's event log and print it in a CLI-friendly way. """
+
+        event_log = self.Settlement.get_event_log(query_sort=1)
+        for event in event_log:
+            dump_doc_to_cli(event, gap_spaces=35)
 
 
 

@@ -372,6 +372,10 @@ class User(models.UserAsset):
         self.bug_fixes()
         self.normalize()
 
+        # check temporary users for expiration
+        if self.user['subscriber']['level'] >= 3:
+            self.check_subscriber_expiration()
+
         # random initialization methods
         self.set_current_settlement()
 
@@ -573,40 +577,6 @@ class User(models.UserAsset):
             self.save(verbose=False)
 
 
-    def set_subscriber_level(self, level=None):
-        """ Supersedes set_patron_attributes() in the 1.0.0 release. Sets the
-        subscriber level, i.e. self.user['subscriber']['level'] value, which, in
-        turn, sets the self.user['subscriber']['desc'] value using the
-        subscribers block of settings.cfg.
-        """
-
-        # sanity check first
-        if level is None:
-            raise TypeError("set_subscriber_level() requires an int!")
-
-        if self.user['subscriber']['level'] == level:
-            self.logger.warn(
-                '%s Subscriber level is already %s. Ignoring...' % (
-                    self,
-                    self.user['subscriber']['level'],
-                )
-            )
-            return True
-
-        # now make the change
-        if self.user['subscriber'].get('created_on', None) is None:
-            self.user['subscriber']['created_on'] = datetime.now()
-
-        self.user['subscriber']['level'] = level
-        self.user['subscriber']['desc'] = utils.settings.get(
-            'subscribers',
-            'level_%s' % level
-        )
-        self.user['subscriber']['updated_on'] = datetime.now()
-
-        self.logger.info('%s Set subscriber level to %s...' % (self, level))
-        self.save()
-
 
 
     def set_patron_attributes(self, level=None, beta=None):
@@ -644,6 +614,41 @@ class User(models.UserAsset):
         self.logger.info("'%s set recovery code '%s' for their account" % (self, r_code))
         self.save()
         return self.user["recovery_code"]
+
+
+    def set_subscriber_level(self, level=None):
+        """ Supersedes set_patron_attributes() in the 1.0.0 release. Sets the
+        subscriber level, i.e. self.user['subscriber']['level'] value, which, in
+        turn, sets the self.user['subscriber']['desc'] value using the
+        subscribers block of settings.cfg.
+        """
+
+        # sanity check first
+        if level is None:
+            raise TypeError("set_subscriber_level() requires an int!")
+
+        if self.user['subscriber']['level'] == level:
+            self.logger.warn(
+                '%s Subscriber level is already %s. Ignoring...' % (
+                    self,
+                    self.user['subscriber']['level'],
+                )
+            )
+            return True
+
+        # now make the change
+        if self.user['subscriber'].get('created_on', None) is None:
+            self.user['subscriber']['created_on'] = datetime.now()
+
+        self.user['subscriber']['level'] = level
+        self.user['subscriber']['desc'] = utils.settings.get(
+            'subscribers',
+            'level_%s' % level
+        )
+        self.user['subscriber']['updated_on'] = datetime.now()
+
+        self.logger.info('%s Set subscriber level to %s...' % (self, level))
+        self.save()
 
 
     def update_password(self, new_password=None):
@@ -1033,6 +1038,34 @@ class User(models.UserAsset):
 
         return survivors
 
+
+    #
+    #   subscription methods
+    #
+
+    def check_subscriber_expiration(self):
+        """ This method checks subscribers whose self.user['subscriber']
+        'level' key is >= 3 and decides whether to expire them back to a
+        zero. """
+
+        # determine how many days old the subscription is, remembering that we
+        #   can have re-subscriptions (i.e. use updated_on, rather than the
+        #   created_on value for the start date)
+
+        subscription_age = utils.get_time_elapsed_since(
+            self.user["subscriber"]['updated_on'], units='days'
+        )
+
+        subscription_max = utils.settings.get(
+            'subscribers',
+            'level_' + str(self.user['subscriber']['level']) + '_expires'
+        )
+
+        expires_in = subscription_max - subscription_age
+
+        if expires_in < 0:
+            self.logger.warn('%s SUBSCRIPTION EXPIRED' % self)
+            self.set_subscriber_level(0)
 
 
     #

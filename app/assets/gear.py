@@ -2240,7 +2240,7 @@ lion_god = {
         'rules': ['Unique', '-1 evasion'],
         'affinities': {'left': 'red','top': 'red','right': 'red','bottom':'red'},
         'affinity_bonus': {
-            'desc': """When you <b>depart</b>, gain +<font class="inline_shield">2</font> to all locations wearing fur armor.""",
+            'desc': """When you <b>depart</b>, gain + <font class="inline_shield">2</font> to all locations wearing fur armor.""",
             'requires': {'complete': {'red': 4},},
         },
     },
@@ -3456,7 +3456,7 @@ slenderman = {
     'dark_water_vial': {
         'expansion': 'slenderman',
         'type': 'light_forging',
-        'name': 'Dark Water vial',
+        'name': 'Dark Water Vial',
         'keywords': ['item','consumable','gloomy','fragile'],
         'affinities': {'bottom': 'green'},
         'desc': '<font class="kdm_font">a</font> <b>Consume:</b> You are knocked down and cannot gain bleeding tokens until the end of the round. Use once per showdown.',

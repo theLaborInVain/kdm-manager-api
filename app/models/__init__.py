@@ -1043,7 +1043,7 @@ class UserAsset(object):
         kwargs you use when calling this method, your final outcome/message is
         going to vary somewhat.
 
-        That said, none of the kwargs here are mandatory, because context.
+        That said, none of the kwargs here are mandatory, because context..
         """
 
         #
@@ -1052,7 +1052,8 @@ class UserAsset(object):
 
         # for those who still raw-dog it; force to ASCII:
         if msg is not None:
-            msg = msg.encode("ascii",'ignore')
+#            msg = msg.encode("ascii",'ignore')
+            msg = str(msg)
 
         # 0.) method: determine caller method
         curframe = inspect.currentframe()
@@ -1079,7 +1080,8 @@ class UserAsset(object):
         if value is None:
             value = "UNKNOWN"
         if type(value) != int:
-            value = value.encode('ascii','ignore')
+#            value = value.encode('ascii','ignore')
+            value = str(value)
 
         # set 'created_by'
         created_by = None
@@ -1112,7 +1114,7 @@ class UserAsset(object):
             "settlement_id": self.settlement_id,
             "ly": self.get_current_ly(),
             'event_type': event_type,
-            'event': str(msg),
+            'event': msg,
             'modified': {'attribute': attribute_modified},
         }
 
@@ -1217,14 +1219,12 @@ class UserAsset(object):
                     d['event'] = " ".join([str(d['created_by_email']), str(d['action']['repr']), ])
             else:
                 d['event'] = 'Updated %s' % self
-#            elif agent == "automation":
-#                d['event'] = d['action']['repr']
+
         # enforce terminal punctuation on the event "sentence"
         if d['event'][-1] not in ['.','!']:
             d['event'] = d['event'].strip()
             d['event'] += "."
 
-#        d['event'] = d['event'].decode('ascii','replace').encode('utf-8','replace')
 
         # finally, if we had a requester, now that we've settled on a message
         # text, update the requester's latest action with it
