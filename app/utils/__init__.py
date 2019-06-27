@@ -1,9 +1,11 @@
 """ The utilities module used by the API. """
 
 # std lib imports
+from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 import functools
 from html.parser import HTMLParser
+from io import BytesIO
 import logging
 import os
 import platform
@@ -302,8 +304,8 @@ class GridfsImage(object):
         """ Renders an http response. """
         if self.img is None:
             return Response(response="Image not found!", status=404)
-        image_file = StringIO(self.img.read())
-        return send_file(image_file, mimetype="image/png")
+        image_file = BytesIO(self.img.read())
+        return flask.send_file(image_file, mimetype="image/png")
 
 
 

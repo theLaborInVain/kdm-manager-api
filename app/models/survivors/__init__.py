@@ -18,7 +18,7 @@ import base64
 from bson import json_util
 from bson.objectid import ObjectId
 from copy import copy
-from io import StringIO
+from io import BytesIO
 from datetime import datetime
 import gridfs
 import imghdr
@@ -1036,53 +1036,56 @@ class Survivor(models.UserAsset):
         to the OID of the image. Also does the resizing, etc.
 
         Avatar rules!
-            - if you're calling this directly, 'avatar' must be a base 64 encoded
+            - if you're calling this directly, 'avatar' must be a base64 encoded
                 object.
-            - otherwise, if we're reading a request, the 'survivor_avatar' must
+            - otherwise, if we're reading a request, the 'avatar' key must
                 be a base 64 encoded string.
-            - we're going to validate them here as well, so they better be a real
-                image by the time you call this method!
+            - we're going to validate them here as well, so they better be a
+                real image by the time you call this method!
             - avatars are going to be auto-resized by this method
 
         """
 
         # initialize from request, if we're doing that
-        err_msg = 'Avatars must be base 64 encoded string representations of images!'
+#        err_msg = 'Avatars must be base 64 encoded string representations of images!'
         if avatar is None:
             self.check_request_params(['avatar'])
             avatar = self.params['avatar']
-            if len(avatar) % 4:
-#                self.logger.debug('padding!')
-                avatar += '=' * (4 - len(avatar) % 4)
-            try:
-                avatar = avatar.decode('base64')
-            except Exception as e:
-                self.logger.exception(e)
-                raise utils.InvalidUsage(err_msg)
-        else:
-            try:
-                avatar = avatar.decode('base64')
-            except Exception as e:
-                self.logger.exception(e)
-                raise utils.InvalidUsage(err_msg)
 
-        # now set the type. this validates that we've got an actual image encoded
+            if len(avatar) % 4:
+                avatar += '=' * (4 - len(avatar) % 4)
+
+            avatar = base64.b64decode(avatar)
+
+        # now set the type. this validates that we've got an actual image
         # in the incoming string/object
-        avatar_type = imghdr.what(None, avatar)
+        try:
+            avatar_type = imghdr.what(None, avatar)
+        except TypeError:
+            raise utils.InvalidUsage(
+                "Image type of incoming file could not be determined!"
+            )
 
         # since we've now got what we THINK is a valid image, use PIL to start
         # working with it; initialize, resize and save to PNG
 
-        processed_image = StringIO()
+        processed_image = BytesIO()
         try:
-            im = Image.open(StringIO(avatar))
+            im = Image.open(BytesIO(avatar))
+            self.logger.debug('AVATAR IMAGE INITIALIZED: %s' % im)
         except Exception as e:
             msg = "PIL could not initialize an Image object from incoming image string!"
             self.logger.error(msg)
             self.logger.exception(e)
             raise utils.InvalidUsage(msg)
 
-        resize_tuple = tuple([int(n) for n in utils.settings.get("api","avatar_size").split(",")])
+        resize_tuple = tuple(
+            [int(n) for n in utils.settings.get(
+                "api",
+                "avatar_size"
+                ).split(",")
+            ]
+        )
         im.thumbnail(resize_tuple, Image.ANTIALIAS)
         im.save(processed_image, format="PNG")
 
@@ -1094,7 +1097,11 @@ class Survivor(models.UserAsset):
         # check for/remove previous
         if 'avatar' in self.survivor.keys():
             fs.delete(self.survivor['avatar'])
-            self.logger.debug("%s Removed an avatar image '%s' from GridFS." % (request.User.login, self.survivor['avatar']))
+            self.logger.debug(
+                "%s Removed an avatar image '%s' from GridFS." % (
+                    request.User.login, self.survivor['avatar']
+                )
+            )
 
         # save new
         avatar_id = fs.put(
