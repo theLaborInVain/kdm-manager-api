@@ -191,7 +191,7 @@ class Settlement(models.UserAsset):
 
         if (
             request.User.get_settlements(return_type=int) >= 3 and
-            request.User.subscriber['level'] < 1
+            request.User.user['subscriber']['level'] < 1
         ):
             raise utils.InvalidUsage(
                 'Free users may only create three settlements!',
@@ -2475,10 +2475,10 @@ class Settlement(models.UserAsset):
         Setting return_type="dict" gets a dictionary where expansion 'name'
         attributes are the keys and asset dictionaries are the values. """
 
-        if return_type is None:
-            return self.settlement.get('expansions',[]) #bullshit legacy
+#        if return_type is None:
+#            return self.settlement.get('expansions', []) # legacy support
 
-        s_expansions = self.settlement['expansions']
+        s_expansions = copy(self.settlement['expansions'])
 
         if return_type == dict:
             exp_dict = {}
@@ -2493,7 +2493,9 @@ class Settlement(models.UserAsset):
         elif return_type in ['pretty', str]:
             output = []
             for e in s_expansions:
-                output.append(self.Expansions.get_asset(e, backoff_to_name=True)["name"])
+                output.append(
+                    self.Expansions.get_asset(e, backoff_to_name=True)["name"]
+                )
             return utils.list_to_pretty_string(output)
 
         return s_expansions

@@ -16,6 +16,7 @@ from bson import json_util
 from bson.objectid import ObjectId
 from copy import copy
 from datetime import datetime, timedelta
+import gridfs
 import os
 import pickle
 import random
@@ -324,15 +325,15 @@ def import_user(user_data=None):
     # next import avatars
     imported_avatars = 0
     for avatar in data[b"avatars"]:
-        if gridfs.GridFS(mdb).exists(avatar["_id"]):
-            gridfs.GridFS(mdb).delete(avatar["_id"])
-            logger.info("Removed object %s from local GridFS." % avatar["_id"])
-            gridfs.GridFS(mdb).put(
-                avatar["blob"],
-                _id=avatar["_id"],
-                content_type=avatar["content_type"],
-                created_by=avatar["created_by"],
-                created_on=avatar["created_on"]
+        if gridfs.GridFS(utils.mdb).exists(avatar[b"_id"]):
+            gridfs.GridFS(utils.mdb).delete(avatar[b"_id"])
+            logger.info("Removed object %s from local GridFS." % avatar[b"_id"])
+            gridfs.GridFS(utils.mdb).put(
+                avatar[b"blob"],
+                _id=avatar[b"_id"],
+                content_type=avatar[b"content_type"],
+                created_by=avatar[b"created_by"],
+                created_on=avatar[b"created_on"]
             )
             imported_avatars += 1
         logger.info("Imported %s avatars!" % imported_avatars)

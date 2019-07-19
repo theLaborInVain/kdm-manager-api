@@ -88,6 +88,8 @@ table td.text {text-align: left; }
 .side_nav.nav_open {width: 25%; }
 #container.nav_open {margin-left: 25%; }
 
+ul li.plain {font-size: 1em; padding: 0.5em; }
+
 /*  style the nav tree on the left side bar  */
 ul {margin-left: 0.5em; padding: 0; list-style-type: none; margin-bottom: 0.4em; }
 ul li {font-size: 1.4em; } /* type */

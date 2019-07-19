@@ -303,7 +303,7 @@ class GridfsImage(object):
     def render_response(self):
         """ Renders an http response. """
         if self.img is None:
-            return Response(response="Image not found!", status=404)
+            return flask.Response(response="Image not found!", status=404)
         image_file = BytesIO(self.img.read())
         return flask.send_file(image_file, mimetype="image/png")
 
@@ -453,12 +453,12 @@ def list_to_pretty_string(l, quote_char=False):
     if quote_char:
         l = [str("%s%s%s" % (quote_char, i, quote_char)) for i in l]
     else:
-        try:
-            l = [i.encode('ascii', 'ignore') for i in l]
-        except:
-            l = [str(i) for i in l]
+        l = [str(i) for i in l]
 
-    return " and ".join([", ".join(str(l)[:-1]), str(l)[-1]])
+    return " and ".join([
+        ", ".join(l[:-1]),
+        l[-1]
+    ])
 
 
 

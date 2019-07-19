@@ -629,9 +629,9 @@ that represent the settlement's current asset list:</p>
     ]
 }</code></pre>
 <p>Finally, a couple of tips/warnings on this route:<ul>
-    <li>The <code>handles</code> list/array is handled by the API as if it were a set, i.e. duplicates are silently ignored.</li>
-    <li>If any part of the update fails (i.e. individual add or remove operations), the whole update will fail and <u>no changes to the settlement will be saved</u>.</li>
-    <li>This route does not support Location or Innovation levels! (Use <code>set_location_level</code> or <code>set_innovation_level</code> for that.)</li>
+    <li class="plain">The <code>handles</code> list/array is handled by the API as if it were a set, i.e. duplicates are silently ignored.</li>
+    <li class="plain">If any part of the update fails (i.e. individual add or remove operations), the whole update will fail and <u>no changes to the settlement will be saved</u>.</li>
+    <li class="plain">This route does not support Location or Innovation levels! (Use <code>set_location_level</code> or <code>set_innovation_level</code> for that.)</li>
 </ul></p>
 	""",
     },
@@ -849,9 +849,9 @@ make:</p>
 }</code></pre>
 <p>This route has a couple of unusual behaviors to note:</p>
 	<ul>
-    <li>It requires both keys (i.e. you will get a 400 back if you
+    <li class="plain">It requires both keys (i.e. you will get a 400 back if you
     <b>POST</b> any JSON that does not include both).</li>
-    <li>It will accept a Boolean for 'election', because this is how
+    <li class="plain">It will accept a Boolean for 'election', because this is how
     you 'un-set' a principle.</li>
 	</ul>
 <p> To un-set a principle, simply post the principle handle and set the
@@ -1081,10 +1081,14 @@ endpoint:</p>
 <p><b>POST</b> the email address of a registered user to add them to the
 list of settlement administrators:</p>
 <code>{login: 'demo@kdm-manager.com'}</code>
-<p>Disclaimers:<ul><li>This will fail gracefully if the user's
-email is in the list (so feel free to spam it).</li><li>This will
+<p>Disclaimers:
+<ul>
+<li class="plain">This will fail gracefully if the user's
+email is in the list (so feel free to spam it).</li>
+<li class="plain">This will
 fail loudly if the email address does not belong to a registered
-user: you'll get a 400 and a nasty message back.</li></ul>
+user: you'll get a 400 and a nasty message back.</li>
+</ul>
 </p>
 	""",
     },
