@@ -944,7 +944,7 @@ class User(models.UserAsset):
                             self,
                             s['name'],
                             utils.settings.get(
-                                'application',
+                                'users',
                                 'free_user_settlement_age_max'
                                 )
                             )
@@ -967,7 +967,7 @@ class User(models.UserAsset):
                     e = utils.mailSession()
                     e.send(
                         subject="Settlement auto-remove! [%s]" % socket.getfqdn(),
-                        recipients=utils.settings.get('application','email_alerts').split(','),
+                        recipients=utils.settings.get('server','alert_email').split(','),
                         html_msg=msg
                     )
                     s['removed'] = datetime.now()

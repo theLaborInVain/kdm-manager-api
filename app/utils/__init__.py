@@ -3,12 +3,17 @@
 # std lib imports
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
+import email
+from email.header import Header as email_Header
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import functools
 from html.parser import HTMLParser
 from io import BytesIO
 import logging
 import os
 import platform
+import smtplib
 import socket
 from string import Template
 import sys
@@ -118,6 +123,63 @@ class WorldQueryError(Exception):
         self.logger.exception(message)
         self.logger.error("Query was: %s" % query)
         Exception.__init__(self, message)
+
+#
+#       Mail!
+#
+
+class mailSession:
+    """ Initialize one of these to authenticate via SMTP and send emails. This
+    is a port from the legacy app."""
+
+    def __init__(self):
+        self.logger = get_logger()
+        p_settings = settings.Settings('private')
+        self.smtp_host = p_settings.get("smtp","host")
+        self.smtp_user = p_settings.get("smtp","name")
+        self.smtp_pass = p_settings.get("smtp","pass")
+        self.sender_name = p_settings.get("smtp","name_pretty")
+        self.no_reply = p_settings.get("smtp","no-reply")
+        self.connect()
+
+    def connect(self):
+        self.server = smtplib.SMTP(self.smtp_host, 587)
+        self.server.starttls()
+        self.server.login(self.smtp_user, self.smtp_pass)
+        self.logger.debug("SMTP Authentication successful for %s (%s)." % (
+            self.smtp_user,
+            self.smtp_host
+            )
+        )
+        time.sleep(0.75)
+
+
+    def send(self, reply_to=None, recipients=["toconnell@tyrannybelle.com"],
+        html_msg='This is a <b>test</b> message!', subject="KDM-Manager!"):
+
+        """ Generic Emailer. Accepts a list of 'recipients', a 'msg' string and
+        a sender name (leave undefinied to use admin@kdm-manager.com). """
+
+        author = email.utils.formataddr(
+            (
+            str(email_Header(self.sender_name, 'utf-8')),
+            self.no_reply
+            )
+        )
+        msg = MIMEMultipart('alternative')
+        msg['From'] = author
+        msg['Subject'] = subject
+        msg['To'] = recipients[0]
+
+        if reply_to is not None:
+            msg.add_header('reply-to', reply_to)
+
+#        msg.attach(MIMEText(html_msg.encode('ascii','ignore'),'html'))
+        msg.attach(MIMEText(html_msg,'html'))
+
+        self.server.sendmail(self.no_reply, recipients, msg.as_string())
+        self.server.quit()
+        self.logger.debug("Email sent successfully!")
 
 
 #
@@ -413,7 +475,7 @@ def html_file_to_template(rel_path):
         API.settings.get('api','templates_dir'),
         rel_path
     )
-    return Template(open(tmp_file, "rb").read())
+    return Template(open(tmp_file, "rb").read().decode())
 
 
 def html_stripper(s):
