@@ -12,6 +12,7 @@ import argparse
 from collections import OrderedDict
 import socket
 import sys
+import time
 
 # third party imports
 from bson.objectid import ObjectId
@@ -231,15 +232,23 @@ class AdministrationObject:
 
 
         # work with users
+        #   clone (users)
         parser.add_argument('--clone_user', dest='clone_user', default=None,
-                            help="Clone one user from production to local.",
+                            help="[DEV] "
+                            "Clone one user from production to local.",
                             metavar="565f3d67421aa95c4af1e230")
         parser.add_argument('--clone_recent_users', dest='clone_recent_users',
                             default=False, action="store_true",
-                            help="Clone recent production users to local",)
+                            help="[DEV] "
+                            "Clone recent production users to local."),
+
+        #   admin (users)
         parser.add_argument('--user', dest='user', default=None,
                             help="Work with a user",
                             metavar="toconnell@tyrannybelle.com")
+        parser.add_argument('--reset_password', dest='reset_pw', default=None,
+                            help="[USER] Reset a user's password (manually)",
+                            action='store_true')
         parser.add_argument("--admin", dest="user_admin", default=False,
                             action="store_true",
                             help=(
@@ -254,7 +263,6 @@ class AdministrationObject:
                             ),
                             metavar=2
                             )
-
         parser.add_argument("--settlements", dest="user_settlements",
                             default=False, action="store_true",
                             help=(
@@ -512,6 +520,25 @@ class AdministrationObject:
             warn('Set subscriber level to %s!' % (
                 um_object.User.get_subscriber_level()
             ))
+
+
+        if self.options.reset_pw:
+            default_pass = 'password'
+            pw_1 = input(" New password ['%s']: " % default_pass)
+            pw_2 = input(" New password (again): ")
+
+            if pw_1 != pw_2:
+                raise ValueError("New passwords must match!")
+
+            # handle defaulting
+            if pw_1 == '':
+                um_object.User.update_password(new_password=default_pass)
+            else:
+                um_object.User.update_password(new_password=pw_1)
+
+            print()
+            warn('Reset password for %s' % um_object.User.user['login'])
+            time.sleep(2)
 
 
         # now that we've done whatever we're doing, dump the user to stdout to

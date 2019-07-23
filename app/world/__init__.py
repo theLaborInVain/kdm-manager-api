@@ -34,6 +34,7 @@ import flask
 
 # local imports
 from app import API, utils
+from app.admin import notifications
 from app.models import innovations as innovations_models
 from app.models import monsters as monster_models
 from app.models import principles as principles_mod
@@ -75,7 +76,11 @@ class World(object):
         NB: if you're trying to fiddle/filter or otherwise futz with final
         output, check the self.list() method. """
 
-        self.logger = utils.get_logger(utils.settings.get("world", "log_level"))
+        self.logger = utils.get_logger(
+            utils.settings.get("world", "log_level")
+        )
+
+
         self.query_debug = query_debug
         self.assets = world_assets.general
 
@@ -333,6 +338,9 @@ class World(object):
         Intended for CLI debugging and admin reference/use. """
 
         self.query_debug = True
+        # change the log level
+        self.logger = utils.get_logger(log_level='DEBUG')
+
         self.logger.debug("Debugging '%s' query!" % asset_key)
         asset_dict = self.initialize_asset_dict(asset_key)
         msg = "'%s' asset dict initialized..." % asset_dict["handle"]
@@ -367,7 +375,7 @@ class World(object):
 
 
     def get_eligible_documents(self, collection=None, required_attribs=None,
-                               limit=None, exclude_dead_survivors=True,
+                               limit=0, exclude_dead_survivors=True,
                                include_settlement=False, sort_on=None):
         """ Returns a dict representing the baseline mdb query for a given
         collection.
@@ -428,7 +436,10 @@ class World(object):
         sort_params = [("created_on", -1)]
         if sort_on is not None:
             sort_params = [(sort_on, -1)]
-        results = utils.mdb[collection].find(query, sort=sort_params)
+        results = utils.mdb[collection].find(
+            query,
+            sort=sort_params
+        ).limit(limit)
 
         # log an exception if results is None
         if results is None:
@@ -438,21 +449,19 @@ class World(object):
             self.logger.exception(utils.WorldQueryError(query=query))
             return None
 
-        # change results from a query object to a list
-        results = [x for x in results]
-
-        # hack around pymongo's weird implementation of limit
-        if limit is not None:
-            output = results[limit - 1]
-        else:
-            output = results
-
+        # report on raw results if we're doing query_debug
         if self.query_debug:
             self.logger.debug(
-                "Returning %s eligible %s!" % (len(output), collection)
+                "Returning %s eligible %s!" % (results.count(), collection)
             )
 
-        return output
+        # change results from a query object to a list for return
+        results = [x for x in results]
+
+        if len(results) == 1:
+            return results[0]
+
+        return results
 
 
     def get_minmax(self, collection=None, attrib=None):
@@ -833,7 +842,12 @@ class World(object):
 
 
     def latest_survivor(self):
-        s = self.get_eligible_documents(collection="survivors", limit=1, include_settlement=True)
+        """ Checks the 'survivors' collection for its latest entry. """
+        s = self.get_eligible_documents(
+            collection="survivors",
+            limit=1,
+            include_settlement=True
+        )
         return self.pretty_survivor(s)
 
 
@@ -1081,6 +1095,10 @@ class World(object):
     # meta/admin world stuff here
 
     def total_webapp_alerts(self):
+        """ This is kind of dirty: this not only returns a count of alerts, but
+        it also expires anything that's for a lower version of the manager, so
+        it's not strictly just a query, which is sort of against the rules. """
+
         query = {'expired': False, 'type': 'webapp_alert'}
 
         # first, prune anything that needs a pruning
@@ -1088,8 +1106,9 @@ class World(object):
         for a in alerts:
             if a['expiration'] == 'next_release':
                 if a['release'] < utils.settings.get('api','version'):
-                    self.logger.warn('Alert from version %s is lower than current release! Removing...' % (a['release']))
-                    A = API.notifications.Alert(_id=a['_id'])
+                    err_msg = 'Alert from v%s is lower than current! Removing!'
+                    self.logger.warn(err_msg % a['release'])
+                    A = notifications.Alert(_id=a['_id'])
                     A.expire()
 
         # now, check again
