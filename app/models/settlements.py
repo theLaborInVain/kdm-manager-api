@@ -138,6 +138,7 @@ class Settlement(models.UserAsset):
         # now normalize
         if self.normalize_on_init:
             self.normalize()
+            self.logger.warn(self.settlement)
 
         self.campaign_dict = self.get_campaign(dict)
 
@@ -507,7 +508,9 @@ class Settlement(models.UserAsset):
             # misc helpers for front-end
             output['game_assets']['survivor_special_attributes'] = self.get_survivor_special_attributes()
             output["game_assets"]["survival_actions"] = self.get_survival_actions("JSON")
-            output['game_assets']['inspirational_statue_options'] = self.get_available_fighting_arts(exclude_dead_survivors=False, return_type='JSON')
+            output['game_assets']['inspirational_statue_options'] = self.get_available_fighting_arts(
+                    exclude_dead_survivors=False, return_type='JSON'
+            )
             output['game_assets']['monster_volumes_options'] = self.get_available_monster_volumes()
 
             if request.log_response_time:
@@ -1404,7 +1407,10 @@ class Settlement(models.UserAsset):
         #   dict we want to with (since Timelines start with LY 0)
         t_index = e.get('ly', None)
         if t_index is None:
-            raise utils.InvalidUsage("To remove an event from the Timeline, the incoming event dict must specify a Lantern Year, e.g. {'ly': 3}")
+            raise utils.InvalidUsage(
+                "To remove an event from the Timeline, the incoming event dict "
+                "must specify a Lantern Year, e.g. {'ly': 3}"
+            )
 
         # if we can, "enhance" the incoming dict with additional asset info
         if e.get('handle', None) is not None:
@@ -1412,14 +1418,21 @@ class Settlement(models.UserAsset):
 
         # if we don't know the event's sub_type, we have to bail
         if e.get('sub_type', None) is None:
-            utils.InvalidUsage("To remove an event from the Timeline, the incoming event dict must specify the 'sub_type' of the event, e.g. {'sub_type': 'story_event'}")
+            utils.InvalidUsage(
+                "To remove an event from the Timeline, the incoming event dict "
+                "must specify the 'sub_type' of the event, "
+                "e.g. {'sub_type': 'story_event'}"
+            )
             return False
 
         # finally, get the target LY from the timeline; fail gracefully if there
         #   are no events of our target sub_type
         target_ly = self.settlement['timeline'][t_index]
         if target_ly.get(e['sub_type'], None) is None:
-            self.logger.error("Lantern Year %s does not include any '%s' events! Ignoring attempt to remove..." % (t_index, e['sub_type']))
+            self.logger.error(
+                "Lantern Year %s does not include any '%s' events! Ignoring "
+                "attempt to remove..." % (t_index, e['sub_type'])
+            )
             return False
 
 
@@ -1441,11 +1454,16 @@ class Settlement(models.UserAsset):
             rm_attrib = 'name'
 
         # now iterate through all events of our target sub_type in our target LY
-        #   and kill them, if they match our handle/name
+        #   and kill them, if they match our handle/name (see: issue #277)
         for e_dict in target_ly[e['sub_type']]:
             if e_dict.get(rm_attrib, None) == e[rm_attrib]:
                 target_ly[e['sub_type']].remove(e_dict)
-                self.log_event(action='rm', key="timeline (LY %s)" % t_index, value=e["name"], event_type="sysadmin")
+                self.log_event(
+                    action='rm',
+                    key="timeline (LY %s)" % t_index,
+                    value=e["name"],
+                    event_type="sysadmin"
+                )
                 success = True
 
         # insert our updated year back into the TL and save
@@ -1459,7 +1477,9 @@ class Settlement(models.UserAsset):
             if save:
                 self.save()
         else:
-            utils.InvalidUsage("Event could not be removed from timeline! %s" % (e))
+            utils.InvalidUsage(
+                "Event could not be removed from timeline! %s" % (e)
+            )
 
 
 
@@ -2322,7 +2342,9 @@ class Settlement(models.UserAsset):
         return available
 
 
-    def get_available_fighting_arts(self, exclude_dead_survivors=True, return_type=False):
+    def get_available_fighting_arts(
+            self, exclude_dead_survivors=True, return_type=False
+        ):
         """ Returns a uniqified list of farting art handles based on LIVING
         survivors unless otherwise specified with the 'exclude_dead_survivors'
         kwarg. """
@@ -2359,7 +2381,11 @@ class Settlement(models.UserAsset):
         elif return_type == "JSON":
             output = []
             for fa_handle in sorted(fa_handles):
-                fa_dict = self.FightingArts.get_asset(fa_handle, raise_exception_if_not_found=False)
+                fa_dict = self.FightingArts.get_asset(
+                    fa_handle,
+                    backoff_to_name=True,
+                    raise_exception_if_not_found=False
+                )
                 if fa_handle in dead_survivors and fa_handle not in live_survivors:
                     fa_dict['select_disabled'] = True
                 output.append(fa_dict)
@@ -4033,15 +4059,20 @@ class Settlement(models.UserAsset):
             for event_group in y.keys():
                 if event_group != 'year':
                     new_event_group = []
-                    for event in y[event_group]:
-                        # if we have a 'name' and not a 'handle'
-                        if event.get('name', None) is not None and event.get('handle', None) is None:
-#                            self.logger.debug("OK %s" % event)
-                            new_event_group.append(event)
-                        else:
-                            new_event_group.append({'handle': event['handle']})
-#                            self.logger.debug("UPDATED: %s" % event)
-                    new_year[event_group] = new_event_group
+                    try:
+                        for event in y[event_group]:
+                            # if we have a 'name' and not a 'handle', prefer it
+                            if event.get('name', None) is not None and event.get('handle', None) is None:
+                                new_event_group.append(event)
+                            else:
+                                new_event_group.append(
+                                    {'handle': event['handle']}
+                                )
+                        new_year[event_group] = new_event_group
+                    except KeyError as e:
+                        err = 'Timeline event could not be migrated! %s' % event
+                        self.logger.exception(e)
+                        self.logger.error(err)
                 else:
                     new_year['year'] = y['year']
             new_timeline.append(new_year)

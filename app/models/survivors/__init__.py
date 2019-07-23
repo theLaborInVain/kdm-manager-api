@@ -146,6 +146,7 @@ class Survivor(models.UserAsset):
         self.Disorders = disorders.Assets()
         self.Names = names.Assets()
         self.Saviors = saviors.Assets()
+        self.ColorSchemes = color_schemes.Assets()
         self.SpecialAttributes = special_attributes.Assets()
         self.WeaponProficiency = weapon_proficiency.Assets()
 
@@ -1142,7 +1143,7 @@ class Survivor(models.UserAsset):
         self.check_request_params(['handle'])
         handle = self.params['handle']
         self.survivor['color_scheme'] = handle
-        scheme_dict = color_schemes.get_asset(handle=handle)
+        scheme_dict = self.ColorSchemes.get_asset(handle=handle)
         self.log_event("%s set the color scheme to '%s' for %s." % (request.User.login, scheme_dict['name'], self.pretty_name()))
         self.save()
 
