@@ -376,7 +376,7 @@ class World(object):
 
     def get_eligible_documents(self, collection=None, required_attribs=None,
                                limit=0, exclude_dead_survivors=True,
-                               include_settlement=False, sort_on=None):
+                               include_settlement=False, sort_on='created_on'):
         """ Returns a dict representing the baseline mdb query for a given
         collection.
 
@@ -433,12 +433,11 @@ class World(object):
             self.logger.error("The collection '%s' is not in world.py scope!")
 
         # get results
-        sort_params = [("created_on", -1)]
         if sort_on is not None:
             sort_params = [(sort_on, -1)]
         results = utils.mdb[collection].find(
             query,
-            sort=sort_params
+            sort = sort_params
         ).limit(limit)
 
         # log an exception if results is None
@@ -456,7 +455,7 @@ class World(object):
             )
 
         # change results from a query object to a list for return
-        results = [x for x in results]
+        results = list(results)
 
         if len(results) == 1:
             return results[0]
