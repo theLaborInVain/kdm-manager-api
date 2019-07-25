@@ -138,7 +138,6 @@ class Settlement(models.UserAsset):
         # now normalize
         if self.normalize_on_init:
             self.normalize()
-            self.logger.warn(self.settlement)
 
         self.campaign_dict = self.get_campaign(dict)
 

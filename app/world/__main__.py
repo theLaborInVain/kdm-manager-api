@@ -29,6 +29,8 @@ def parse_arguments():
     parser.add_argument("-r", "--refresh", dest="refresh", default=False,
                         action="store_true",
                         help="Refresh/reset ALL warehoused asset handles.")
+    parser.add_argument("--index", dest="index_collections", default=False,
+                        action="store_true", help="Creates indexes.")
     parser.add_argument("--daemon", dest="start_daemon", default=False,
                         action="store_true", help="Starts the world daemon.")
     parser.add_argument("--debug", dest="debug_query", metavar="avg_pop",
@@ -53,6 +55,11 @@ if __name__ == "__main__":
     # initialize a world object and parse args
     WORLD = world.World()
     options = parse_arguments()
+
+    if options.index_collections:
+        print('\n\tIndexing user asset collections!')
+        WORLD.create_indexes()
+        print('\tDone!\n')
 
     if options.refresh:
         WORLD.refresh_all_assets(force=True)

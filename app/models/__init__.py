@@ -13,6 +13,7 @@
          - AssetCollection
          - GameAsset
          - UserAsset
+         - KillboardAsset
 
         Exception classes:
          - AssetInitError
@@ -1236,6 +1237,72 @@ class UserAsset(object):
         # finally, insert the event (i.e. save)
         utils.mdb.settlement_events.insert(d)
         self.logger.info("%s event: %s" % (self, d['event']))
+
+
+#
+#   KillboardAsset starts here
+#
+
+class KillboardAsset:
+    """ This is where we do work with killboard assets. """
+
+    def __init__(self, _id=None, params={}):
+        """ Basic init routine. Use a valid ObjectID as '_id' if you've got an
+        edit that you want to do; leave '_id' set to None to create a new
+        entry in the killboard."""
+
+        self.logger = utils.get_logger()
+
+        # initialize kwargs as part of the object
+        self._id = _id
+        self.params = params
+
+        if self._id is None and params == {}:
+            err = str(
+                "New killboard objects must be initialized with an '_id' value "
+                "of None and a non-empty 'params' dict!"
+            )
+            raise ValueError(err)
+
+        if self._id is None and params != {}:
+            self.new()  # defines self._id when it's done inserting
+
+        # now that we've got a self._id defined, add the document as an attrib
+        self.document = utils.mdb.killboard.find_one({'_id': self._id})
+        if self.document is None:
+            err = "Cannot find a killboard entry with _id=%s" % self._id
+            raise ValueError(err)
+
+        # set all document keys to be attributes
+        for key, value in self.document.items():
+            setattr(self, key, value)
+
+        #finally, normalize:
+        self.normalize()
+
+
+    def save(self, verbose=True):
+        """ Generic save method. """
+        utils.mdb.killboard.save(self.document)
+        if verbose:
+            self.logger.info('Saved changes to Killboard object: %s' % self._id)
+
+
+    def normalize(self):
+        """ Forces Killboard objects to adhere to our data model. """
+
+        perform_save = False
+
+        # fix the type, if necessary, to be the type in the monsters asset dict
+        if self.type == 'monsters':
+            self.logger.warn("Correcting Killboard entry 'type' attribute!")
+            MonsterAsset = models.monsters.Monster(handle=self.handle)
+            self.type = MonsterAsset.sub_type
+            self.document['type'] = self.type
+            perform_save = True
+
+        if perform_save:
+            self.save()
 
 
 

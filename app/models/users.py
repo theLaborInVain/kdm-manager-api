@@ -1111,7 +1111,7 @@ class User(models.UserAsset):
 
         if not 'subscriber' in self.user.keys():
             self.user['subscriber'] = {'level': 0}
-            self.logger.warn("%s Added 'subscruber' dict to user!" % self)
+            self.logger.warn("%s Added 'subscriber' dict to user!" % self)
             self.perform_save = True
 
         if self.perform_save:

@@ -33,6 +33,9 @@ td.int_key {width: 10%; word-break: inherit;}
 .flex_item_basic {background-color: #fff; padding: 1%; margin: 1%; width: 100%; }
 .flex_item_basic h1, .flex_item_basic h2 {margin: 0; }
 
+.initializing_screen {background: #eee; height: 100%; display: flex; flex-direction: column; flex-wrap: nowrap; color: #666; justify-content: center; align-items: center; }
+.initializing_screen img {width: min-content; }
+
 #spinner {position: fixed; bottom: 3%; right: 3%; z-index: 100;}
 
 

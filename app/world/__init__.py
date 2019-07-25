@@ -30,19 +30,25 @@ from bson.son import SON
 from bson import json_util
 from bson.objectid import ObjectId
 import flask
+import pymongo
 
 
 # local imports
 from app import API, utils
 from app.admin import notifications
+
+    # models
+from app.models import killboard as killboard_model
+from app.models import campaigns as campaigns_models
+from app.models import epithets as epithets_models
 from app.models import innovations as innovations_models
 from app.models import monsters as monster_models
 from app.models import principles as principles_mod
 from app.models import expansions as expansions_models
 from app.models import settlements as settlements_models
 from app.models import survivors as survivors_models
-from app.models import campaigns as campaigns_models
-from app.models import epithets as epithets_models
+
+    # assets
 from . import assets as world_assets
 
 
@@ -94,6 +100,52 @@ class World(object):
         ]
 
         self.total_refreshed_assets = 0
+
+    @utils.metered
+    def create_indexes(self, collections_in_scope=[
+            'survivors','settlements','settlement_events'
+        ]):
+        """ Indexes the main user asset collections. """
+
+        for collection in collections_in_scope:
+
+            msg = "Creating indexes for '%s' collection!" % collection
+            self.logger.warn(msg)
+
+            # survivors and settlements
+            if collection in ['survivors', 'settlements']:
+                utils.mdb[collection].create_index(
+                    [
+                        ("created_by", pymongo.ASCENDING),
+                        ("created_on", pymongo.DESCENDING)
+                    ],
+                    unique=True
+                )
+
+            # survivor special index
+            if collection in ['survivors']:
+                utils.mdb[collection].create_index([
+                    ('created_by', pymongo.ASCENDING),
+                    ('created_on', pymongo.DESCENDING),
+                    ('settlement', pymongo.ASCENDING)
+                ])
+
+            # settlement event logs special index
+            if collection in ['settlement_events']:
+                utils.mdb[collection].create_index([
+                    ('settlement_id', pymongo.ASCENDING),
+                    ('created_by', pymongo.ASCENDING),
+                    ('created_on', pymongo.DESCENDING),
+                ])
+
+            index_count = 1
+            for index in utils.mdb[collection].list_indexes():
+                self.logger.info('[%s] %s index: %s' % (
+                    index_count, collection, index
+                    )
+                )
+                index_count += 1
+
 
     @utils.metered
     def refresh_all_assets(self, force=False):
@@ -373,7 +425,7 @@ class World(object):
 
         return survivor
 
-
+    @utils.metered
     def get_eligible_documents(self, collection=None, required_attribs=None,
                                limit=0, exclude_dead_survivors=True,
                                include_settlement=False, sort_on='created_on'):
@@ -889,17 +941,37 @@ class World(object):
 
         return s
 
+
+    #
     # compound returns below. Unlike the above functions, these return dict
     # and list type objects
+    #
 
     def killboard(self):
         """ Create the killboard. Return a blank dict if there's nothing in the
         MDB to show, e.g. if it's a freshly initialized db. """
-        known_types = utils.mdb.killboard.find().distinct("type")
 
+        # first, figure out what monster types are in the killboard collection
+        known_types = list(utils.mdb.killboard.find().distinct("type"))
+        if self.query_debug:
+            self.logger.debug('Monster types in killboard: %s' % known_types)
         if known_types == []:
             return {}
 
+        # log an error if we find the generic asset type in the known types:
+        if 'monsters' in known_types:
+            bad_type = utils.mdb.killboard.find({'type': 'monsters'})
+            err = "%s killboard monsters with invalid type 'monsters' found!"
+            self.logger.error(err % bad_type.count())
+
+            # initialize the bogus entries, which will normalize/fix them
+            for killed in bad_type:
+                kbObject = killboard_model.Killboard(_id = killed['_id'])
+
+            # finally, remove 'monsters' from known types:
+            known_types.remove('monsters')
+
+        # now, start creating the dictionary representation
         killboard = {}
         for t in known_types:
             killboard[t] = {}
@@ -913,6 +985,7 @@ class World(object):
                 "sort_order": m_asset["sort_order"]
             }
 
+        # now go and get the monsters, ignoring broken ones
         results = utils.mdb.killboard.find(
             {"handle": {"$exists": True}, "type": {"$exists": True}}
         )

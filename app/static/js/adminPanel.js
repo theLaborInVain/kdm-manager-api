@@ -189,26 +189,33 @@ myApp.controller('globalController', function($scope, $http, $interval) {
 
 myApp.controller('alertsController', function($scope, $http) {
 
+    $scope.scratch = {
+        initializing_panel: true,
+    };
+
+    $scope.getWebappAlerts = function() {
+        $scope.scratch.initializing_panel = true;
+        console.time('getWebappAlerts()');
+        $http.get('/get/notifications').then(
+            function(result){
+                $scope.webappAlerts = result.data;
+                console.timeEnd('getWebappAlerts()');
+                $scope.scratch.initializing_panel = false;
+            },
+            function(result){console.error('Could not retrieve webapp alerts!');}
+        );
+    };
+
     // initialize
     $scope.newAlert = {
         expiration: 'next_release',
         type: 'kpi',
         title: null,
         body: null,
-        created_by: null,
+        created_by: $scope.user._id.$oid,
     }
 
     // methods
-    $scope.getWebappAlerts = function() {
-        console.time('getWebappAlerts()');
-        $http.get('/get/notifications').then(
-            function(result){
-                $scope.webappAlerts = result.data;
-                console.timeEnd('getWebappAlerts()');
-            },
-            function(result){console.error('Could not retrieve webapp alerts!');}
-        );
-    };
 
     $scope.createAlert = function() {
         console.warn($scope.newAlert);
@@ -217,7 +224,6 @@ myApp.controller('alertsController', function($scope, $http) {
             $scope.getWebappAlerts();
             $scope.newAlert.title = null;
             $scope.newAlert.body = null;
-            $scope.newAlert.created_by = $scope.user.login;
             $scope.showHide('createNewAlert');
         });
     };
@@ -229,5 +235,22 @@ myApp.controller('alertsController', function($scope, $http) {
             $scope.getWebappAlerts();
         });
     };
+
+
+    // run the alerts panel init job at intervals
+    setInterval( function init() {
+        console.info('Initializing alerts panel...');
+
+        if ($scope.user._id === undefined) {
+            console.error("Admin user '" + $scope.user.login + "' _id is undefined!");
+            console.warn($scope.user);
+        };
+
+        $scope.getWebappAlerts();
+
+        return init;
+        }(),
+    120000
+    )
 
 })

@@ -422,7 +422,7 @@ def panel():
 #    return send_file("templates/admin_panel.html")
     return flask.render_template(
         'admin_panel.html',
-        user=flask.request.User.user,
+        user = json.dumps(flask.request.User.user, default=json_util.default),
     )
 
 
