@@ -196,14 +196,15 @@ class World(object):
         if current_age is None:
             do_refresh = True
         elif current_age.seconds > asset_dict["max_age"]:
-            msg = "Asset '%s' is %s seconds old (max age is %s seconds)."
-            self.logger.debug(
-                msg % (
-                    asset_key,
-                    current_age.seconds,
-                    asset_dict["max_age"]
+            if self.query_debug:
+                msg = "Asset '%s' is %s seconds old (max age is %s seconds)."
+                self.logger.debug(
+                    msg % (
+                        asset_key,
+                        current_age.seconds,
+                        asset_dict["max_age"]
+                    )
                 )
-            )
             do_refresh = True
 
         # finally, if we're going to force, just force it
@@ -212,7 +213,7 @@ class World(object):
 
         # now do the refresh, if necessary
         if do_refresh:
-            self.logger.debug("Refreshing '%s' asset..." % asset_key)
+#            self.logger.debug("Refreshing '%s' asset..." % asset_key)
             try:
                 self.update_asset_dict(asset_dict)
                 self.update_mdb(asset_dict)
@@ -429,6 +430,7 @@ class World(object):
     def get_eligible_documents(self, collection=None, required_attribs=None,
                                limit=0, exclude_dead_survivors=True,
                                include_settlement=False, sort_on='created_on'):
+
         """ Returns a dict representing the baseline mdb query for a given
         collection.
 
@@ -507,7 +509,16 @@ class World(object):
             )
 
         # change results from a query object to a list for return
-        results = list(results)
+        try:
+            results = list(results)
+        except pymongo.errors.OperationFailure as e:
+#            self.logger.exception(e)
+            self.logger.error(
+                'Unable to return %s results as a list!' % results.count()
+            )
+            self.logger.debug('Attempting to re-sort by user...')
+            results.rewind()
+            results = list(results.sort('created_by', pymongo.DESCENDING))
 
         if len(results) == 1:
             return results[0]
@@ -539,6 +550,7 @@ class World(object):
 
     def get_average(self, collection=None, attrib=None, precision=2,
                     return_type=float):
+
         """ Gets the average value for 'attrib' across all elgible documents in
         'collection' (as determined by the world.eligible_documents() method).
 
@@ -549,9 +561,18 @@ class World(object):
         # get the sample set
         sample_set = self.get_eligible_documents(collection, attrib)
 
+        # some sanity check/debug stuff here
         if sample_set is None:
             return None
 
+        if self.query_debug:
+            msg = 'Calculating average for %s documents...'
+            if isinstance(sample_set, list):
+                self.logger.debug(msg % len(sample_set))
+            elif isinstance(sample_set, pymongo.cursor.Cursor):
+                self.logger.debug(msg % sample_set.count())
+
+        # now gather datapoints, i.e. get the thing we want from the documents
         data_points = []
         for sample in sample_set:
             if sample.get(attrib, None) is None:
@@ -565,6 +586,10 @@ class World(object):
                     data_points.append(return_type(sample[attrib]))
                 except: # in case we need to coerce a list to an int
                     data_points.append(return_type(len(sample[attrib])))
+
+        # report on how many data points we've got before the reduce()
+        if self.query_debug:
+            self.logger.debug('Gathered %s data points.' % len(data_points))
 
         result = reduce(
             lambda x, y: x + y, data_points) / float(len(data_points)
