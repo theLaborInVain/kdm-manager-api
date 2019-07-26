@@ -88,7 +88,7 @@ class World(object):
 
 
         self.query_debug = query_debug
-        self.assets = world_assets.general
+        self.assets = world_assets.GENERAL
 
         # common list of banned names (across all collections)
         # maybe this should come from a config file?
@@ -105,6 +105,7 @@ class World(object):
     def create_indexes(self, collections_in_scope=[
             'survivors','settlements','settlement_events'
         ]):
+
         """ Indexes the main user asset collections. """
 
         for collection in collections_in_scope:
@@ -668,6 +669,9 @@ class World(object):
 
     # application/meta
     def api_response_times(self):
+        """ Fires off a fairly sophisticated aggregate() query to return a
+        webapp-friendly representation of that data. """
+
         results = utils.mdb.api_response_times.aggregate([
             {"$group": {
                 "_id": {
@@ -690,15 +694,21 @@ class World(object):
 
     # survivors
     def total_survivors(self):
+        """ Counts all survivors; returns an int."""
         return utils.mdb.survivors.find().count()
 
     def live_survivors(self):
+        """ Counts *living* survivors; returns an int. """
         return utils.mdb.survivors.find({"dead": {"$exists": False}}).count()
 
     def dead_survivors(self):
+        """ Counts *dead* survivors; returns an int. Includes living survivors
+        from abandoned settlements (who are functionally dead). """
+
         natural_death_count = utils.mdb.survivors.find({"dead": {"$exists": True}}).count()
 
-        # include living survivors from removed/abandoned settlements
+        # include *living* survivors from removed/abandoned settlements; treat
+        # them as dead, for the purposes of this count.
         removed_count = 0
         pipeline = {"$or": [
             {"removed": {"$exists": True}},
@@ -714,37 +724,54 @@ class World(object):
 
     # settlements
     def total_settlements(self):
+        """ Counts settlements; returns an int."""
         return utils.mdb.settlements.find().count()
 
     def active_settlements(self):
+        """ Counts settlements, subtracts abandoned ones; returns an int."""
         return self.total_settlements() - self.abandoned_settlements()
 
     def removed_settlements(self):
+        """ Counts removed settlements that haven't been purged; returns
+        an int. """
         return utils.mdb.settlements.find({"removed": {"$exists": True}}).count()
 
     def abandoned_settlements(self):
-        return utils.mdb.settlements.find({"abandoned": {"$exists": True}}).count()
+        """ Counts abandoned settlements that have NOT been removed. """
+        return utils.mdb.settlements.find({
+            "abandoned": {"$exists": True},
+            "removed":  {"$exists": False}
+        }).count()
 
     def abandoned_or_removed_settlements(self):
         return utils.mdb.settlements.find({"$or": [
             {"removed": {"$exists": True}},
             {"abandoned": {"$exists": True}},
         ]}).count()
+
     def new_settlements_last_30(self):
+        """ Counts settlements created in the last 30 days; returns an int."""
         thirty_days_ago = datetime.now() - timedelta(days=30)
-        return utils.mdb.settlements.find({"created_on": {"$gte": thirty_days_ago}}).count()
+        return utils.mdb.settlements.find(
+            {"created_on": {"$gte": thirty_days_ago}}
+        ).count()
 
     # users
     def total_users(self):
+        """ Counts all users; returns an int."""
         return utils.mdb.users.find().count()
 
     def total_users_last_30(self):
         thirty_days_ago = datetime.now() - timedelta(days=30)
-        return utils.mdb.users.find({"latest_activity": {"$gte": thirty_days_ago}}).count()
+        return utils.mdb.users.find(
+            {"latest_activity": {"$gte": thirty_days_ago}}
+        ).count()
 
     def new_users_last_30(self):
         thirty_days_ago = datetime.now() - timedelta(days=30)
-        return utils.mdb.users.find({'created_on': {'$gte': thirty_days_ago}}).count()
+        return utils.mdb.users.find(
+            {'created_on': {'$gte': thirty_days_ago}}
+        ).count()
 
     def total_subscribers(self):
         return utils.mdb.users.find({'subscriber.level': {'$gte': 1}}).count()
@@ -831,7 +858,7 @@ class World(object):
         is a multiplayer settlement. """
 
         all_settlements = {}
-        all_survivors = utils.mdb.survivors.find()    # incldues removed/test/etc.
+        all_survivors = utils.mdb.survivors.find()
         for s in all_survivors:
             if s["settlement"] not in list(all_settlements.keys()):
                 all_settlements[s["settlement"]] = set([s["created_by"]])
@@ -1029,7 +1056,13 @@ class World(object):
             for k in sorted(sort_order_dict.keys()):
                 m_dict = sort_order_dict[k]
                 if m_dict["sort_order"] <= previous:
-                    self.logger.error("Sorting error! %s sort order (%s) is not greater than previous (%s)!" % (m_dict["name"], m_dict["sort_order"], previous))
+                    self.logger.error("Sorting error! %s sort order (%s) is "\
+                        "not greater than previous (%s)!" % (
+                            m_dict["name"],
+                            m_dict["sort_order"],
+                            previous
+                            )
+                        )
                 killboard[type].append(m_dict)
                 previous = m_dict["sort_order"]
 
@@ -1054,7 +1087,9 @@ class World(object):
         all_results = []
         for i_dict in I.get_dicts():
             aliases = [i_dict["name"], i_dict["handle"]]
-            results = utils.mdb.settlements.find({"innovations": {"$in": aliases}})
+            results = utils.mdb.settlements.find(
+                {"innovations": {"$in": aliases}}
+            )
             all_results.append({
                 "name": i_dict["name"],
                 "handle": i_dict["handle"],
@@ -1118,14 +1153,30 @@ class World(object):
 
         for e in expansions_assets.get_handles():
             e_dict = expansions_assets.get_asset(e)
-            e_name_count = utils.mdb.settlements.find({"expansions": {"$in": [e_dict["name"]]}}).count()
-            e_handle_count = utils.mdb.settlements.find({"expansions": {"$in": [e]}}).count()
+            e_name_count = utils.mdb.settlements.find(
+                {"expansions": {"$in": [e_dict["name"]]}}
+            ).count()
+            e_handle_count = utils.mdb.settlements.find(
+                {"expansions": {"$in": [e]}}
+            ).count()
             popularity_contest[e_dict["name"]] = e_name_count
             popularity_contest[e_dict["name"]] += e_handle_count
             reverse_lookup[e_dict['name']] = e_dict
 
-        sorted_keys = sorted(popularity_contest, key=lambda x: popularity_contest[x], reverse=1)
-        return [{'name': k, 'count': popularity_contest[k], 'sub_type': reverse_lookup[k]['sub_type']} for k in sorted_keys]
+        sorted_keys = sorted(
+            popularity_contest,
+            key=lambda x: popularity_contest[x],
+            reverse=1
+        )
+
+        return [
+            {
+                'name': k,
+                'count': popularity_contest[k],
+                'sub_type': reverse_lookup[k]['sub_type']
+            } for k in sorted_keys
+        ]
+
 
     def settlement_popularity_contest_campaigns(self):
         """ Uses the assets in assets/campaigns.py to return a popularity
@@ -1171,7 +1222,9 @@ class World(object):
                 "abandoned": {"$exists": False},
                 "name": {"$nin": self.ineligible_names},
                 "current_quarry": {"$exists": True},
-                "hunt_started": {"$gte": datetime.now() - timedelta(minutes=180)},
+                "hunt_started": {
+                    "$gte": datetime.now() - timedelta(minutes=180)
+                },
             }, sort=[("hunt_started", -1)],
         )
 

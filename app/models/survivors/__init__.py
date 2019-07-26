@@ -494,6 +494,7 @@ class Survivor(models.UserAsset):
             # if this parent happens to be the primary donor (for inheritance)
             # check settlement innovations for ones with a primary_donor_parent
             if primary_donor_parent:
+
                 for i_dict in self.Settlement.list_assets('innovations'):
                     if i_dict.get('primary_donor_parent', None) is not None:
                         for attr in i_dict['primary_donor_parent'].get('attributes', []):
@@ -502,9 +503,13 @@ class Survivor(models.UserAsset):
                             self.log_event(action="inherit", key=p_log_str, value=attr, agent="automation", event_type="inherit")
                         for special in i_dict['primary_donor_parent'].get('specials', []):
                             if special == "surname":
-                                if len(P.survivor['name'].split()) > 1:
-                                    surname = P.survivor['name'].split()[-1]
-                                    self.set_name(" ".join([self.survivor['name'], surname]), save=False)
+                                if P.get_surname() is not None:
+                                    surname = P.get_surname()
+                                    new_survivor_name = " ".join([
+                                        self.survivor['name'],
+                                        surname
+                                    ])
+                                    self.set_name(new_survivor_name, save=False)
                                     self.survivor['inherited'][parent_type]['surname'] = surname
                                     self.log_event(action="inherit", key=p_log_str, value="surname '%s'" % surname, agent="automation", event_type="inherit")
                             elif special == "one_half_weapon_proficiency":
@@ -1037,10 +1042,10 @@ class Survivor(models.UserAsset):
         to the OID of the image. Also does the resizing, etc.
 
         Avatar rules!
-            - if you're calling this directly, 'avatar' must be a base64 encoded
-                object.
-            - otherwise, if we're reading a request, the 'avatar' key must
-                be a base 64 encoded string.
+            - if you're calling this directly, 'avatar' should be a string that
+                we can base64 encode.
+            - similarly, if we're reading a request, the 'avatar' key must
+                be a base64 encoded string.
             - we're going to validate them here as well, so they better be a
                 real image by the time you call this method!
             - avatars are going to be auto-resized by this method
@@ -1048,15 +1053,14 @@ class Survivor(models.UserAsset):
         """
 
         # initialize from request, if we're doing that
-#        err_msg = 'Avatars must be base 64 encoded string representations of images!'
         if avatar is None:
             self.check_request_params(['avatar'])
             avatar = self.params['avatar']
 
-            if len(avatar) % 4:
-                avatar += '=' * (4 - len(avatar) % 4)
+        if len(avatar) % 4:
+            avatar += '=' * (4 - len(avatar) % 4)
 
-            avatar = base64.b64decode(avatar)
+        avatar = base64.b64decode(avatar)
 
         # now set the type. this validates that we've got an actual image
         # in the incoming string/object
@@ -1073,9 +1077,9 @@ class Survivor(models.UserAsset):
         processed_image = BytesIO()
         try:
             im = Image.open(BytesIO(avatar))
-            self.logger.debug('AVATAR IMAGE INITIALIZED: %s' % im)
+#            self.logger.debug('AVATAR IMAGE INITIALIZED: %s' % im)
         except Exception as e:
-            msg = "PIL could not initialize an Image object from incoming image string!"
+            msg = "PIL could not initialize an object from incoming string!"
             self.logger.error(msg)
             self.logger.exception(e)
             raise utils.InvalidUsage(msg)
@@ -2741,6 +2745,16 @@ class Survivor(models.UserAsset):
                 sex = invert_sex(sex)
 
         return sex
+
+
+    def get_surname(self):
+        """ Splits the survivor's name on whitespace and returns the last part.
+        Returns None if the survivor has no surname. """
+
+        split_name = self.survivor['name'].split(" ")
+        if len(split_name) == 1:
+            return None
+        return split_name[-1]
 
 
     def get_survival_actions(self, return_type=dict):

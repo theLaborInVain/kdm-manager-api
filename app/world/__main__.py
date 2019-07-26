@@ -34,8 +34,8 @@ def parse_arguments():
     parser.add_argument("--daemon", dest="start_daemon", default=False,
                         action="store_true", help="Starts the world daemon.")
     parser.add_argument("--debug", dest="debug_query", metavar="avg_pop",
-                        help=("Execute a query method and print results. "
-                        "Writes debug results to log. DOES NOT update mdb."), )
+                        help="Execute a query method and print results. "\
+                        "Writes debug results to log. DOES NOT update mdb.",)
 
     return parser.parse_args()
 
@@ -54,34 +54,34 @@ if __name__ == "__main__":
 
     # initialize a world object and parse args
     WORLD = world.World()
-    options = parse_arguments()
+    OPTIONS = parse_arguments()
 
-    if options.index_collections:
+    if OPTIONS.index_collections:
         print('\n\tIndexing user asset collections!')
         WORLD.create_indexes()
         print('\tDone!\n')
 
-    if options.refresh:
+    if OPTIONS.refresh:
         WORLD.refresh_all_assets(force=True)
 
-    if options.update_one_asset_handle:
+    if OPTIONS.update_one_asset_handle:
         WORLD.refresh_asset(
-            asset_key=options.update_one_asset_handle,
+            asset_key=OPTIONS.update_one_asset_handle,
             force=True
         )
         print("\n\tDone!\n")
 
-    if options.debug_query:
-        results = WORLD.debug_query(options.debug_query)
+    if OPTIONS.debug_query:
         print("\n")
-        print(results)
-        msg = "\n See '%s' for complete query debug info!\n"
-        print (msg % (WORLD.logger.handlers[0].baseFilename))
+        print(WORLD.debug_query(OPTIONS.debug_query))
+        print(
+            "\n See '%s' for complete query debug info!\n" % (
+                WORLD.logger.handlers[0].baseFilename
+            )
+        )
 
-    if options.list:
+    if OPTIONS.list:
         print(WORLD.list('keys_cli'))
 
-    if options.start_daemon:
+    if OPTIONS.start_daemon:
         start_daemon()
-
-

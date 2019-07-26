@@ -1,8 +1,21 @@
-general = {
+"""
+
+    This is an assets library, sort of like the ones we use in the main
+    app 'assets' folder.
+
+    The difference here is that the dictionary keys here map to methods in
+    the app.world.__init__ module and are used when creating world results
+    for the database or to represent back to users via API calls.
+
+"""
+
+
+GENERAL = {
     "api_response_times": {
         "name": "API Request Response Times",
         "max_age": 3,
-        "comment": "Information re: API request response times, including average and max.",
+        "comment": "Information re: API request response times, including "\
+            "average and max.",
     },
     "dead_survivors": {
         "name": "Dead survivors",
@@ -26,34 +39,39 @@ general = {
     },
     "active_settlements": {
         "name": "Active settlements",
-        "comment": "worldwide count of all settlements that have not been abandoned or removed"
+        "comment": "worldwide count of all settlements that have not been "\
+            "abandoned or removed.",
     },
     "abandoned_settlements": {
         "name": "Abandoned settlements",
-        "comment": "worldwide count of all abandoned settlements",
+        "comment": "worldwide count of all abandoned settlements; does not "\
+            "include removed.",
     },
     "removed_settlements": {
         "name": "Removed settlements",
-        "comment": "worldwide count of all removed settlements",
+        "comment": "worldwide count of all removed settlements.",
     },
     "abandoned_or_removed_settlements": {
         "name": "Abandoned or removed settlements",
-        "comment": "Application-wide count of all abandoned or removed settlements (does not double-dip)",
+        "comment": "Application-wide count of all abandoned or removed "\
+            "settlements (or is non-ionclusive; query does not double-dip).",
     },
     "total_users": {
         "max_age": 30,
         "name": "Total users",
-        "comment": "total of all registered users"
+        "comment": "total of all registered users."
     },
     "total_users_last_30": {
         "max_age": 60,
         "name": "Total users in the last 30 days",
-        "comment": "total of all users who have signed in during the last 30 days"
+        "comment": "total of all users who have signed in during the last 30 "\
+            "days (i.e. had an active session)."
     },
     "new_settlements_last_30": {
         "max_age": 60,
         "name": "Total settlements created in the last 30 days",
-        "comment": "total of all settlements with a 'created_on' date within the last 30 days"
+        "comment": "total of all settlements with a 'created_on' date within "\
+            "the last 30 days."
     },
     "recent_sessions": {
         "max_age": 30,
@@ -263,10 +281,4 @@ general = {
     },
 }
 
-
-
-
-
-
-
-
+# EOF
