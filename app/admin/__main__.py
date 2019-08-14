@@ -231,8 +231,12 @@ class AdministrationObject:
         parser = argparse.ArgumentParser(description=' KDM API Administration!')
 
 
-        # work with users
+        # dev / r&d
         #   clone (users)
+        parser.add_argument('--dump_requests', dest='dump_requests',
+                            default=None, metavar=5, type=int,
+                            help="[DEV] Dumps the last N requests to the CLI.",
+                            )
         parser.add_argument('--clone_user', dest='clone_user', default=None,
                             help="[DEV] "
                             "Clone one user from production to local.",
@@ -400,6 +404,10 @@ class AdministrationObject:
             print(' Exiting...\n')
             sys.exit()
 
+        # dump request logs
+        if self.options.dump_requests is not None:
+            self.dump_request_logs(self.options.dump_requests)
+
         # clone user (by OID) from legacy webapp
         if self.options.clone_user is not None:
             self.clone_one_user()
@@ -419,6 +427,23 @@ class AdministrationObject:
 
         return 0
 
+
+    #
+    #   log browsing
+    #
+
+    def dump_request_logs(self, how_many=1):
+        """ Dumps logs of recent requests. """
+
+        logs = utils.mdb.api_response_times.find().sort(
+            'created_on',
+            -1
+        ).limit(how_many)
+
+        for log in logs:
+            dump_doc_to_cli(log)
+
+
     #
     #   methods for cloning users from production
     #
@@ -437,7 +462,7 @@ class AdministrationObject:
         print(" Requesting user OID %s from the legacy webapp!" % user_oid)
         new_oid = clone.one_user_from_legacy_webapp(
             utils.settings.get('legacy', 'webapp_url'),
-            utils.settings.get('legacy', 'admin_key', private=True),
+            utils.settings.get('keys', 'legacy_webapp_admin_key'),
             user_oid
         )
 

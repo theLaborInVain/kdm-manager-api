@@ -934,7 +934,14 @@ class UserAsset(object):
 
         output = deepcopy(utils.api_meta)
 
-        if list(output['meta'].keys()) != ['api','server','info','admins','object']:
+        if list(output['meta'].keys()) != [
+            'api',
+            'server',
+            'info',
+            'subscriptions',
+            'object'
+            ]:
+
             stack = inspect.stack()
             the_class = stack[1][0].f_locals["self"].__class__
             the_method = stack[1][0].f_code.co_name

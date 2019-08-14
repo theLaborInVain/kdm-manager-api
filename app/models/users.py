@@ -33,15 +33,13 @@ import jwt
 from werkzeug.security import safe_str_cmp, generate_password_hash, check_password_hash
 
 # local imports
-from app import models, utils
+from app import API, models, utils
 from app.models import user_preferences
 from app.models.settlements import Settlement
 
 
 # laaaaaazy
 logger = utils.get_logger()
-secret_key = utils.settings.get("api","secret_key","private")
-
 
 #
 #   JWT helper methods here!
@@ -93,11 +91,21 @@ def check_authorization(token):
     if it doesn't. """
 
     try:
-        jwt.decode(token, secret_key, verify=True)
+        jwt.decode(token, API.config['SECRET_KEY'], verify=True)
         return utils.http_200
     except Exception as e:
-        decoded = json.loads(jwt.decode(token, secret_key, verify=False)["identity"])
-        logger.info("[%s (%s)] authorization check failed: %s!" % (decoded["login"], decoded["_id"]["$oid"], e))
+        decoded = json.loads(
+            jwt.decode(
+                token,
+                API.config['SECRET_KEY'],
+                verify=False
+            )["identity"]
+        )
+        logger.info("[%s (%s)] authorization check failed: %s!" % (
+            decoded["login"],
+            decoded["_id"]["$oid"],
+            e)
+        )
         return utils.http_401
 
 
@@ -119,7 +127,7 @@ def refresh_authorization(expired_token):
     user changed his password.
     """
 
-    decoded = jwt.decode(expired_token, secret_key, verify=False)
+    decoded = jwt.decode(expired_token, API.config['SECRET_KEY'], verify=False)
     user = dict(json.loads(decoded["identity"]))
     login = user["login"]
     pw_hash = user["password"]
@@ -236,7 +244,11 @@ def token_to_object(request, strict=True):
     # now, try to decode the token and get a dict
     try:
         if strict:
-            decoded = jwt.decode(auth_token, secret_key, verify=True)
+            decoded = jwt.decode(
+                auth_token,
+                API.confing['SECRET_KEY'],
+                verify=True
+            )
             user_dict = dict(json.loads(decoded["identity"]))
             return User(_id=user_dict["_id"]["$oid"])
         else:
@@ -624,6 +636,12 @@ class User(models.UserAsset):
         subscribers block of settings.cfg.
         """
 
+        # support updates from params, but check if we're an admin
+        if hasattr(self, 'params') and 'level' in self.params:
+            level = self.params['level']
+            if request.User.user.get('admin', None) is None:
+                raise utils.InvalidUsage('Only API admins can do this!')
+
         # sanity check first
         if level is None:
             raise TypeError("set_subscriber_level() requires an int!")
@@ -650,6 +668,7 @@ class User(models.UserAsset):
 
         self.logger.info('%s Set subscriber level to %s...' % (self, level))
         self.save()
+
 
 
     def update_password(self, new_password=None):
@@ -773,6 +792,11 @@ class User(models.UserAsset):
                 'age')
             }
         )
+
+        self.user['subscriber'].update(
+            {'level_handle': 'level_%s' % self.user['subscriber']['level']}
+        )
+
         return self.user['subscriber']
 
 
@@ -1138,6 +1162,13 @@ class User(models.UserAsset):
             return Response(response=self.serialize('dashboard'), status=200, mimetype="application/json")
         elif action == "set":
             return self.set_attrib()
+
+        elif action == 'set_subscriber_level':
+            return Response(
+                response=self.set_subscriber_level(),
+                status=200,
+                mimetype="application/json"
+            )
 
         elif action == "update_password":
             self.update_password()

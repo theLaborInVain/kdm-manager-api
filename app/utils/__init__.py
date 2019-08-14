@@ -2,6 +2,7 @@
 
 # std lib imports
 from bson.objectid import ObjectId
+import configparser
 from datetime import datetime, timedelta
 import email
 from email.header import Header as email_Header
@@ -19,6 +20,7 @@ from string import Template
 import sys
 import time
 import traceback
+from urllib.parse import urlparse
 
 # third-party imports
 from dateutil.relativedelta import relativedelta
@@ -88,6 +90,45 @@ def get_logger(log_level=None, log_name=None):
         logger.addHandler(logger_fh)
 
     return logger
+
+
+def check_api_key():
+    """ Checks the API key on the request; bombs the whole request out if
+    it wants to. """
+
+    logger = get_logger()
+    if not flask.request.api_key_valid:
+        msg = "Incoming request '%s' from '%s' has invalid API key (%s)!"
+        logger.warn(msg % (
+            flask.request.url,
+            flask.request.referrer,
+            flask.request.api_key
+            )
+        )
+        logger.warn(API.keys)
+
+
+def get_api_keys():
+    """ Looks for an API keys file and tries to read it."""
+
+    cfg_file = os.path.join(
+        API.root_path,
+        '..',
+        settings.get('api', 'api_keys_file')
+    )
+    if not os.path.isfile(cfg_file):
+        raise OSError("API keys file '%s' does not exist!" % cfg_file)
+
+    keys_file = configparser.ConfigParser()
+    keys_file.optionxform=str
+    keys_file.read(cfg_file)
+
+    keys = keys_file._sections['webapps']
+
+    logger = get_logger()
+    logger.info("Loaded %s API keys" % len(keys))
+
+    return keys
 
 
 #
@@ -278,6 +319,10 @@ def record_response_time(response):
 
     mdb.api_response_times.insert({
         "api_key": flask.request.api_key,
+        'api_key_owner': API.keys.get(
+            flask.request.api_key,
+            '[UNKNOWN] ' + urlparse(str(flask.request.referrer)).netloc
+        ),
         "created_on": datetime.now(),
         "url": url,
         "method": flask.request.method,
@@ -581,8 +626,34 @@ http_501 = flask.Response(
 
 
 #
-#   stub dictionary for creating the meta element of API returns
+#   meta element of all API returns; related methods
 #
+
+def create_subscriptions_dict():
+    """ Creates a dictionary representation of available subscription types."""
+
+    settings_dict = settings.get('subscribers')
+
+    output = {}
+    for key, value in settings_dict.items():
+        key_split = key.split("_")
+        level_number = int(key_split[1])
+
+        # set the handle and use it for the level number
+        handle = 'level_%s' % level_number
+        if not handle in output.keys():
+            output[handle] = {}
+        output[handle]['level'] = level_number
+
+        # now process values
+        if len(key_split) > 2:
+            output[handle][key_split[2]] = value
+        if len(key_split) == 2:
+            output[handle]['desc'] = value
+
+
+    return output
+
 
 api_meta = {
     "meta": {
@@ -605,9 +676,10 @@ api_meta = {
             "copyright": "The Labor in Vain (2015 - %s)" %
                     datetime.now().strftime("%Y"),
         },
-        "admins": list(
-            mdb.users.find({"admin": {"$exists": True}}).sort('login')
-        ),
+        'subscriptions': create_subscriptions_dict(),
+#        "admins": list(
+#            mdb.users.find({"admin": {"$exists": True}}).sort('login')
+#        ),
         "object": {},
     },
 }

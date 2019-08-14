@@ -1,11 +1,13 @@
 <!doctype html>
-<html ng-app="adminPanel" ng-controller="globalController" ng-init="user = {{user}}">
+<html ng-app="adminPanel" ng-controller="globalController" ng-init='user = {{user}}; api_key="{{api_key}}"'>
  <title>KDM API - Admin Panel</title>
  <head>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="/static/js/adminPanel.js"></script>
     <link rel="stylesheet" href="/static/css/adminPanel.css" />
+    <link rel="stylesheet" href="/static/css/fonts.css" />
+    <link href="https://fonts.googleapis.com/css?family=Ruda&display=swap" rel="stylesheet">
  </head>
 
 
@@ -22,37 +24,30 @@
             <b>API Hostname:</b> {a world.meta.server.hostname a}<br/>
             <b>API Version:</b> {a world.meta.api.version a}<br/>
             <b>Last Push:</b> {a github.pushed_at a}<br/>
-            <b>Open Issues:</b> {a github.open_issues a}
-            <hr/>
-            <b>Registered Users:</b> {a world.world.total_users.value a}<br/>
-            <b>Subscribers:</b> {a world.world.total_subscribers.value a}
-            <table class="subscribers_breakdown_table">
-                <tr ng-repeat="t in world.world.subscribers_by_level.value">
-                    <td><i>Lvl. {a t.level a}:</i></td>
-                    <td>{a t.count a}</td>
-                </tr>
-            </table>
-            <hr/>
+            <b>Open Issues:</b> {a github.open_issues a}<br/>
 
-            {{user.login}}
-            <input
-                type="password"
-                placeholder="password"
-                ng-if="user.jwt === undefined" 
-                ng-model="user.plaintext_password"
-            />
-            <button
-                ng-if="user.jwt === undefined" 
-                ng-click="setUserJWT()"
-            >
-                Set
-            </button>
+            <!-- set admin user JWT/password -->
+            <div class="text_input_container" ng-if="user.jwt === undefined">
+                <input
+                    type="password"
+                    class="text_input_input"
+                    placeholder="{a user.login a} password"
+                    ng-model="user.plaintext_password"
+                />
+                <button
+                    class="text_input_button"
+                    ng-click="setUserJWT()"
+                >
+                    Set
+                </button>
+            </div>
 
-            <hr/>
+<!--
             <b>Administrators:</b>
             <ul>
                 <li ng-repeat="a in world.meta.admins">{a a.login a} - {a a._id.$oid a}</li>
             </ul>
+-->
 
             <br/>
 
@@ -61,10 +56,13 @@
             <b>Last Refreshed:</b> {a refreshed a} ({a seconds_since_last_refresh a} seconds ago)<br/>
 
             <br/>
-            <a href="/" target="top">API Documentation</a>
+            <a href="/" target="top">API Documentation</a> | 
+            <a href="https://github.com/theLaborInVain/kdm-manager-api" target="top">GitHub</a>
 
         </div>
 
+
+        <!-- alerts controller -->
         <div class="flex_item_basic" ng-controller="alertsController">
 
             <!-- initializing_screen -->
@@ -172,6 +170,108 @@
         </div> <!-- flex_item_basic -->
 
 
+        <!-- user administration! -->
+        <div class="flex_item_basic users" ng-controller="userAdminController">
+
+            <div id="userSpinner" class="bg_spinner" ng-if="scratch.showLoader === true">
+                <img src="/static/media/images/loading_io.gif" >
+            </div>
+
+            <h2>User Admin</h2>
+            <b>Registered Users:</b> {a world.world.total_users.value a}<br/>
+            <b>Subscribers:</b> {a world.world.total_subscribers.value a}
+
+            <table class="subscribers_breakdown_table">
+                <tr ng-repeat="t in world.world.subscribers_by_level.value">
+                    <td><i>Lvl. {a t.level a}:</i></td>
+                    <td>{a t.count a}</td>
+                </tr>
+            </table>
+
+            <div
+                class="error_text_block"
+                ng-if="!user.jwt"
+            >
+                [set '{a user.login a}' password to work with users]
+            </div>
+
+            <div class="text_input_container" ng-if="!scratch.showLoader && user.jwt">
+                <input
+                    class="text_input_input"
+                    type="email"
+                    placeholder="search for a user"
+                    ng-model="scratch.searchUserEmail"
+                />
+                <button
+                    class="text_input_button"
+                    ng-disabled="scratch.searchUserEmail === undefined"
+                    ng-click="getUser()"
+                >
+                    Search!
+                </button>
+            </div>
+
+            <div 
+                class="work_with_user_container"
+                ng-if="workWithUser != undefined"
+            >
+                <div class="error_text_block" ng-if="workWithUser.user.login === null">
+                    [user not found!]
+                </div>
+
+                <div class="user_info_block" ng-if="workWithUser.user.login !== null">
+                    <h4>{a workWithUser.user.login a}</h4>
+                    <div class="user_info_block user_info_block_header">
+                        <img
+                            class="profile_gravatar"
+                            src="https://www.gravatar.com/avatar/{a workWithUser.user.gravatar_hash a}"
+                        />
+                        <div>
+	                		<b>OID:</b> {a workWithUser.user._id.$oid a}<br/>
+        		            <b>User Age:</b> {a workWithUser.user.age a}<br/>
+    	        	        <b>Created On:</b> {a workWithUser.user.created_on.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
+    	        	        <b>Latest Sign-in:</b> {a workWithUser.user.latest_sign_in.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
+	                		<b>Settlements created:</b> {a workWithUser.user.settlements_created a}<br/>
+	                		<b>Survivors created:</b> {a workWithUser.user.survivors_created a}<br/>
+                        </div>
+                     </div>
+
+					<div
+                        class="user_info_block" ng-if="workWithUser.user.subscriber.level > 0">
+                        <i>{a world.meta.subscriptions[workWithUser.user.subscriber.level_handle].desc a}</i><br/>
+						<b>Subscriber for:</b> {a workWithUser.user.subscriber.age a} <br/>
+						<b>Subscriber level:</b> {a workWithUser.user.subscriber.level a} <br/>
+						<b>Subscription set on:</b> {a workWithUser.user.subscriber.updated_on.$date |date:'yyyy-MM-dd' a} <br/>
+					</div>
+
+					<div class="user_info_block set_subscriber_container">
+                        <b>Set subscriber level:</b>
+                        <div
+                            class="set_subscriber_toggle"
+                            ng-class="{
+                                'current_sub_level': workWithUser.user.subscriber.level == sub_level.level
+                            }"
+                            ng-repeat="sub_level in world.meta.subscriptions"
+                            ng-click="
+                                setSubscriptionLevel(workWithUser, sub_level);
+                            "
+                        >
+                            <div
+                                class="kd_check_box"
+                                ng-class="{'checked': workWithUser.user.subscriber.level == sub_level.level}"
+                            ></div>
+                            {a sub_level.desc a}
+                        </div> <!-- subscription level repeater -->
+					</div>
+
+                </div>
+
+            </div> <!-- work with user -->
+
+        </div><!-- flex item basic -->
+
+
+        <!-- recent users -->
         <div class="flex_item_basic users" ng-if="users.user_info.length != 0">
             <div id="userSpinner" class="bg_spinner">
                 <img src="/static/media/images/loading_io.gif" >
@@ -297,7 +397,6 @@
         </div>
 
 
-
         <div class="flex_item_basic api">
             <h2>Response Times (last seven days)</h2>
             <table class="api_response_times">
@@ -322,110 +421,6 @@
             </table>
         </div>
 
-        <div class="flex_item_basic api">
-            <h2> API Log</h2>
-            <p ng-click="showHide('api_log')" class="clickable">
-                View last {a settings.application.log_summary_length a} lines.
-            </p>
-            <div class="log_detail hidden" id="api_log">
-                <div class="log_line" ng-repeat="l in logs.api track by $index" ng-class-even="'zebra'">
-                    {a l a}
-                </div>
-            </div>
-
-                <br/><br/>
-
-            <h2> Gunicorn Log</h2>
-            <p ng-click="showHide('gunicorn_log')" class="clickable">
-                View last {a settings.application.log_summary_length a} lines.
-            </p>
-            <div class="log_detail hidden" id="gunicorn_log">
-                <div class="log_line" ng-repeat="l in logs.gunicorn track by $index" ng-class-even="'zebra'">
-                    {a l a}
-                </div>
-            </div>
-
-                <br/><br/>
-
-            <h2> Server Log</h2>
-            <p ng-click="showHide('server_log')" class="clickable">
-                View last {a settings.application.log_summary_length a} lines.
-            </p>
-            <div class="log_detail hidden" id="server_log">
-                <div class="log_line" ng-repeat="l in logs.server track by $index" ng-class-even="'zebra'">
-                    {a l a}
-                </div>
-            </div>
-        </div>
-
-
-        <div class="flex_item_basic world">
-            <h2>World Daemon</h2>
-            <b>Active:</b> {a world.world_daemon.active a}<br/>
-            <b>Uptime:</b> {a world.world_daemon.uptime_hms a}<br/>
-            <b>Assets:</b> {a world.world_daemon.assets a}<br/>
-            <b>PID:</b> {a world.world_daemon.pid a}<br/>
-            <b>PID File:</b> <code>{a world.world_daemon.pid_file a}</code><br/>
-
-               <br/><br/>
-
-            <h2>World Log</h2>
-            <p ng-click="showHide('world_log')" class="clickable">
-                View last {a settings.application.log_summary_length a} lines.
-            </p>
-            <div class="log_detail hidden" id="world_log">
-                <div class="log_line" ng-repeat="l in logs.world track by $index" ng-class-even="'zebra'">
-                    {a l a}
-                </div>
-            </div>
-
-               <br/><br/>
-
-            <h2>World Daemon Log</h2>
-            <p ng-click="showHide('world_daemon_log')" class="clickable">
-                View last {a settings.application.log_summary_length a} lines.
-            </p>
-            <div class="log_detail hidden" id="world_daemon_log">
-                <div class="log_line" ng-repeat="l in logs.world_daemon track by $index" ng-class-even="'zebra'">
-                    {a l a}
-                </div>
-            </div>
-        </div>
-
-        <div class="flex_item_basic world">
-            <h2>World Stats</h2>
-
-            <div class="world_item clickable" ng-repeat="w in world.world">
-                <div
-                    title="{a w.comment a}"
-                    ng-if="w.value_type == 'int' || w.value_type == 'float'" 
-                    ng-click="showHide(w.handle + '_tooltip')"
-                >
-                    <div class="world_key">{a w.name a} ({a w.value_type a}):</div>
-                    <div class="world_value">{a w.value a}</div>
-                    <span id="{a w.handle a}_tooltip" class="world_tooltip hidden">
-                        <i>comment:</i> {a w.comment a}<br/>
-                        <i>handle:</i> <code>{a w.handle a}</code><br/>
-                        <i>mdb OID:</i> {a w._id.$oid a}<br/>
-                        <i>refreshed:</i> {a w.created_on.$date a}<br/>
-                        <i>age (seconds):</i> {a w.age_in_seconds a}
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex_item_basic world">
-            <h2>{a world.world.killboard.name a}</h2>
-            {a world.world.killboard.comment a}<br/>
-            <div ng-repeat="(type,board) in world.world.killboard.value">
-                <h3 class="capitalize">{a type a}</h3>
-                <table>
-                    <tr ng-repeat="row in board" ng-class-even="'zebra'">
-                        <td>{a row.name a}</td> <td class="int_key">{a row.count a}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
 
         <div class="flex_item_basic world" ng-if="world.world.current_hunt.value != null">
             <h2>{a world.world.current_hunt.name a}</h2>
@@ -443,6 +438,7 @@
             </table>
         </div>
 
+        <!-- main 'latest' box -->
         <div class="flex_item_basic world">
             <h2>{a world.world.latest_settlement.name a}</h2>
             {a world.world.latest_settlement.comment a}
@@ -457,7 +453,9 @@
                     <td class="int_key">{a k a}</td> <td>{a v a}</td>
                 </tr>
             </table>
-<hr/>
+
+            <hr/>
+
             <h2>{a world.world.latest_survivor.name a}</h2>
             {a world.world.latest_survivor.comment a}
 
@@ -471,7 +469,9 @@
                     <td class="int_key">{a k a}</td> <td>{a v a}</td>
                 </tr>
             </table>
-<hr/>
+
+            <hr/>
+
             <h2>{a world.world.latest_fatality.name a}</h2>
             {a world.world.latest_fatality.comment a}
 
@@ -485,7 +485,8 @@
                     <td class="int_key">{a k a}</td> <td>{a v a}</td>
                 </tr>
             </table>
-<hr/>
+
+            <hr/>
 
             <h2>{a world.world.latest_kill.name a}</h2>
             {a world.world.latest_kill.comment a}
@@ -502,6 +503,21 @@
             </table>
 
         </div>
+
+        <!-- killboard -->
+        <div class="flex_item_basic world">
+            <h2>{a world.world.killboard.name a}</h2>
+            {a world.world.killboard.comment a}<br/>
+            <div ng-repeat="(type,board) in world.world.killboard.value">
+                <h3 class="capitalize">{a type a}</h3>
+                <table>
+                    <tr ng-repeat="row in board" ng-class-even="'zebra'">
+                        <td>{a row.name a}</td> <td class="int_key">{a row.count a}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
 
         <div class="flex_item_basic world">
             <h2>{a world.world.settlement_popularity_contest_campaigns.name a}</h2>
@@ -566,6 +582,31 @@
                     <td>{a row.cause_of_death a}</td> <td class="int_key">{a row.count a}</td>
                 </tr>
             </table>
+        </div>
+
+        <div class="flex_item_basic world">
+            <h2>World Stats</h2>
+
+            <div
+                class="world_item clickable"
+                ng-repeat="w in world.world"
+                ng-if="w.value_type == 'int' || w.value_type == 'float'" 
+            >
+                <div
+                    title="{a w.comment a}"
+                    ng-click="showHide(w.handle + '_tooltip')"
+                >
+                    <div class="world_key">{a w.name a} ({a w.value_type a}):</div>
+                    <div class="world_value">{a w.value a}</div>
+                    <span id="{a w.handle a}_tooltip" class="world_tooltip hidden">
+                        <i>comment:</i> {a w.comment a}<br/>
+                        <i>handle:</i> <code>{a w.handle a}</code><br/>
+                        <i>mdb OID:</i> {a w._id.$oid a}<br/>
+                        <i>refreshed:</i> {a w.created_on.$date a}<br/>
+                        <i>age (seconds):</i> {a w.age_in_seconds a}
+                    </span>
+                </div>
+            </div>
         </div>
 
     </div> <!-- container -->

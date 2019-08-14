@@ -65,6 +65,70 @@ def get_settings():
 
 
 
+#   Notifications
+
+@API.route("/get/notifications", methods=["GET", "OPTIONS"])
+@crossdomain(origin=['*'])
+def get_notifications():
+    """ Retrieves notifications created by the admins via the panel (below).
+    This is is a public route, i.e. requires no authorization. """
+    return admin.notifications.get_webapp_alerts()
+
+
+#
+#      ADMIN PANEL
+#
+
+@API.route("/admin")
+@API.basicAuth.login_required
+def panel():
+    """ Gets the admin panel. Requires basicAuth. """
+    return flask.render_template(
+        'admin_panel.html',
+        user = json.dumps(flask.request.User.user, default=json_util.default),
+        api_key = utils.settings.get('keys','api_key'),
+    )
+
+
+@API.route("/admin/get/<resource>", methods=["GET", "OPTIONS"])
+@API.basicAuth.login_required
+def admin_view(resource):
+    """ Retrieves admin panel resources as JSON. """
+    return admin.get_data(resource)
+
+
+@API.route("/admin/notifications/<method>", methods=["POST"])
+@API.basicAuth.login_required
+def admin_notifications(method):
+    """ Creates a new admin type asset. Requires basicAuth."""
+    return admin.get_notifications(method)
+
+
+@API.route("/admin/user_asset/<action>", methods=['POST'])
+@API.basicAuth.login_required
+def admin_get_user(action):
+    """ Gets a user by email; login must be included in the POST. Calls the
+    response method of the User Object associated with <action>. """
+
+    utils.check_api_key()
+
+    user_login = flask.request.get_json().get('login', None)
+    user_record = utils.mdb.users.find_one({'login': user_login})
+
+    # die if we can't find the user record in MDB
+    if user_login is None or user_record is None:
+        return utils.http_404
+
+    user_object = assets.get_user_asset('user', user_record['_id'])
+    if isinstance(user_object, flask.Response):
+        return asset_object
+    return user_object.request_response(action)
+
+
+
+
+
+
 
 
 #       documentation
@@ -300,6 +364,8 @@ def refresh_auth(action):
 
     setattr(flask.request, 'action', action)
 
+    # check the headers; API key first, then user-level auth
+    utils.check_api_key()
     if not "Authorization" in flask.request.headers:
         return utils.http_401
     else:
@@ -322,6 +388,8 @@ def refresh_auth(action):
 def new_asset(asset_type):
     """ Uses the 'Authorization' block of the header and POSTed params to create
     a new settlement. """
+
+    utils.check_api_key()
 
     setattr(flask.request, 'action', 'new')
 
@@ -369,6 +437,8 @@ def collection_action(collection, action, asset_id):
             status=400
         )
 
+    utils.check_api_key()
+
     # update the request object
     flask.request.collection = collection
     setattr(flask.request, 'action', action)
@@ -391,46 +461,6 @@ def serve_avatar_image(image_oid):
     avatar = utils.GridfsImage(image_oid)
     return avatar.render_response()
 
-
-#
-#   Notifications
-#
-@API.route("/get/notifications", methods=["GET", "OPTIONS"])
-@crossdomain(origin=['*'])
-def get_notifications():
-    """ Retrieves notifications created by the admins via the panel (below).
-    This is is a public route, i.e. requires no authorization. """
-    return admin.notifications.get_webapp_alerts()
-
-
-#
-#      ADMIN PANEL
-#
-
-@API.route("/admin/get/<resource>", methods=["GET", "OPTIONS"])
-@API.basicAuth.login_required
-def admin_view(resource):
-    """ Retrieves admin panel resources as JSON. This is a public route, i.e.
-    requires no authorization/authentication. """
-    return admin.get_data(resource)
-
-
-@API.route("/admin")
-@API.basicAuth.login_required
-def panel():
-    """ Gets the admin panel. Requires basicAuth. """
-#    return send_file("templates/admin_panel.html")
-    return flask.render_template(
-        'admin_panel.html',
-        user = json.dumps(flask.request.User.user, default=json_util.default),
-    )
-
-
-@API.route("/admin/notifications/<method>", methods=["POST"])
-@API.basicAuth.login_required
-def admin_notifications(method):
-    """ Creates a new admin type asset. Requires basicAuth."""
-    return admin.get_notifications(method)
 
 
 

@@ -37,10 +37,11 @@ API.config.update(
 
 API.logger.addHandler(utils.get_logger(log_name="server"))
 API.config['SECRET_KEY'] = API.settings.get(
-    "api",
+    "keys",
     "secret_key",
-    "private"
 )
+
+API.keys = utils.get_api_keys()
 
 #   set default methods, log about it
 API.default_methods = [
@@ -87,6 +88,11 @@ def before_request():
 
     # get the API key from the incoming request
     flask.request.api_key = flask.request.headers.get('API-Key', None)
+
+    # set a flag on the request if it's a good key
+    flask.request.api_key_valid = False
+    if API.keys.get(flask.request.api_key, None) is not None:
+        flask.request.api_key_valid = True
 
     if socket.getfqdn() != API.settings.get('server', 'prod_fqdn'):
         flask.request.log_response_time = True

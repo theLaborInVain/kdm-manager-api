@@ -1,5 +1,3 @@
-#!/usr/bin/python2.7
-
 
 # standard lib imports
 import io
@@ -14,48 +12,35 @@ import sys
 # third party imports
 
 # local imports
-from app import API
-
+from app import API, utils
 
 class Settings:
 
     def __init__(self, settings_type=None):
         """ Initialize a Settings object as public or private. """
 
-        if settings_type == 'private':
-            c_path = os.path.join(API.root_path, "..", "settings_private.cfg")
-        else:
-            c_path = os.path.join(API.root_path, "..", "settings.cfg")
+        self.logger = API.logger
+
+        cfg_public = os.path.join(API.root_path, "..", "settings_private.cfg")
+        cfg_private = os.path.join(API.root_path, "..", "settings.cfg")
 
         # fail if the dir with settings.py does not have a settings.cfg
-        if not os.path.isfile(c_path):
-            raise OSError("%s: Settings file '%s' does not exist!" % (sys.argv[0], c_path))
+        for cfg_file in [cfg_public, cfg_private]:
+            if not os.path.isfile(cfg_file):
+                raise OSError(
+                    "%s: Settings file '%s' does not exist!" % (
+                        sys.argv[0],
+                        c_path
+                    )
+                )
 
         self.config = SafeConfigParser()
         self.config.optionxform = lambda option: option # disables case-insensitivity
-        self.config.file_path = c_path
-        self.config.readfp(open(self.config.file_path))
-        self.config.settings_type = settings_type
+#        self.config.file_path = c_path
+#        self.config.readfp(open(self.config.file_path))
+        self.config.read([cfg_public, cfg_private])
+#        self.config.settings_type = settings_type
 
-        self.load_api_keys()
-
-
-    def load_api_keys(self):
-        """ Looks for an API keys file and tries to read it. If it doesn't
-        find one, it sets self.secret_keys to be an empty dict. """
-
-        self.api_keys = {}
-
-        try:
-            fh = file(self.get("api","api_keys_file"), "rb")
-        except:
-            return False
-
-        lines = fh.readlines()
-        for line in lines:
-            line = line.strip()
-            key, ident = line.split("|~|")
-            self.api_keys[key] = ident
 
 
     def get(self, section, key):
@@ -104,12 +89,19 @@ def get(section=None, query=None, private=False):
     """ Laziness/convenience function to get a setting without initializing a
     Settings object. """
 
-    if section is None or query is None:
-        raise TypeError("settings.get() does not accept None type arguments.")
-    if not private:
-        S = Settings()
-    else:
+    if section is None:
+        raise TypeError("settings.get() requires the 'section' kwarg!")
+
+    S = Settings()
+    if private:
         S = Settings("private")
+        # this is deprecated
+        err = "Use of the 'private' kwarg in settings.get() is deprecated!"
+        S.logger.debug(err)
+
+    if section is not None and query is None:
+        return dict(S.config.items(section))
+
     return S.get(section, query)
 
 

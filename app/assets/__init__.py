@@ -89,7 +89,7 @@ def get_user_asset(collection=None, asset_id=None):
     elif collection == "user":
         return users.User(_id=asset_id)
 
-    raise utils.InvalidUsage("Collection '%s' does not exist!", status_code=422)
+    raise utils.InvalidUsage("Collection '%s' does not exist!" % collection, status_code=422)
 
 
 

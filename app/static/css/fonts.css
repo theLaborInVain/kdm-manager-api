@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'Silverado';
+    src: url('/static/fonts/329BC2_0_0.eot?#iefix') format('embedded-opentype'),
+        url('/static/fonts/329BC2_0_0.woff') format('woff'),
+        url('/static/fonts/329BC2_0_0.woff2') format('woff2'),
+        url('/static/fonts/329BC2_0_0.ttf') format('truetype');
+}
+

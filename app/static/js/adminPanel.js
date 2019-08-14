@@ -13,6 +13,7 @@ myApp.filter('trustedHTML', function($sce) {return $sce.trustAsHtml;});
 
 myApp.controller('globalController', function($scope, $http, $interval) {
 
+
     $scope.scratch = {};
 
     $scope.now = new Date();
@@ -36,6 +37,9 @@ myApp.controller('globalController', function($scope, $http, $interval) {
             data: {
                 'username': $scope.user.login,
                 'password': $scope.user.plaintext_password,
+            },
+            headers: {
+				'API-Key': $scope.api_key,
             },
         })
 
@@ -71,9 +75,9 @@ myApp.controller('globalController', function($scope, $http, $interval) {
 			method: 'POST',
 			url: event_log_req_url,
 			headers: {
+				'API-Key': $scope.api_key,
 				'Content-Type': undefined,
 				'Authorization': $scope.user.jwt,
-				'API-Key': $scope.api_key,
 			},
 		})
         event_log_promise.then(function(result){
@@ -130,16 +134,11 @@ myApp.controller('globalController', function($scope, $http, $interval) {
         });
     };
 
-
-    $scope.getJWT = function(user) {
-        // gets a JWT for the admin user and pins it on the scope
-
-    };
-
     setInterval( function init() {
+        
         $scope.showSpinner('spinner');
         $http.get('stat').then(function(result){$scope.settings = result.data;});
-        $http.get('https://api.github.com/repos/toconnell/kdm-manager').then(function(result){$scope.github = result.data;});
+        $http.get('https://api.github.com/repos/theLaborInVain/kdm-manager-api').then(function(result){$scope.github = result.data;});
 
         if ($scope.retrievingSettlements != true){
             $scope.getRecentSettlements();
@@ -252,5 +251,109 @@ myApp.controller('alertsController', function($scope, $http) {
         }(),
     120000
     )
+})
+
+myApp.controller('userAdminController', function($scope, $http) {
+
+    $scope.scratch = {
+    };
+
+    $scope.getUser = function() {
+        var userLogin = $scope.scratch.searchUserEmail;
+
+        // blank out the search and show the spinner
+        $scope.scratch.searchUserEmail = undefined;
+        $scope.scratch.showLoader = true;
+
+        console.warn("Attempting to retrieve '" + userLogin + "' from API...")
+
+        var timerName = 'getUser(' + userLogin + ')'
+		console.time(timerName);
+
+        var user_promise = $http({
+            method: 'POST',
+            url: '/admin/user_asset/get',
+            data: {
+            	'login': userLogin,
+            },
+            headers: {
+                'API-Key': $scope.api_key,
+            },
+        })
+
+		user_promise.then(
+            function successCallback(response) {
+                $scope.workWithUser = response.data
+                console.timeEnd(timerName);
+        		$scope.scratch.showLoader = false;
+            }, function errorCallback(response) {
+                console.error(response);
+                console.timeEnd(timerName);
+				$scope.workWithUser = {'user': {'login': null}};
+        		$scope.scratch.showLoader = false;
+            }
+        );
+
+    };
+
+    $scope.setSubscriptionLevel = function(userObject, subscriptionObject) {
+        var userLogin = userObject.user.login;
+        var currentSubscriptionLevel = userObject.user.subscriber.level;
+        var targetSubscriptionLevel = subscriptionObject.level;
+        var targetSubscriptionDesc = subscriptionObject.desc;
+
+        // sanity check; die if we fail
+        if (currentSubscriptionLevel === targetSubscriptionLevel) {
+            console.error(userLogin + ' subscription level is already ' + targetSubscriptionLevel);
+            return false;
+        };
+    
+        // get ready to do it
+        console.warn('Setting ' + userLogin + ' subscriber level to ' +
+            targetSubscriptionLevel + ' (' + targetSubscriptionDesc + ').'
+        );
+
+        $scope.scratch.showLoader = true;
+        $scope.workWithUser = undefined;
+
+
+        var timerName = 'setSubscriptionLevel(' + userLogin + ')'
+        console.time(timerName);
+
+        var subscriber_promise = $http({
+            method: 'POST',
+            url: '/admin/user_asset/set_subscriber_level',
+            data: {
+                'login': userLogin,
+                'level': targetSubscriptionLevel,
+            },
+            headers: {
+                'API-Key': $scope.api_key,
+            },
+        })
+
+		subscriber_promise.then(
+            function successCallback(response) {
+                console.timeEnd(timerName);
+                window.alert(userLogin + ' subscription level updated!');
+                $scope.scratch.searchUserEmail = userLogin;
+                $scope.getUser()
+            }, function errorCallback(response) {
+                console.error(response);
+                window.alert(response.data);
+                console.timeEnd(timerName);
+        		$scope.scratch.showLoader = false;
+            }
+        );
+        
+
+
+    };
+
+    $scope.init = function() {
+        console.info('Initializing userAdminController...')
+    };
+
+    $scope.init();
 
 })
