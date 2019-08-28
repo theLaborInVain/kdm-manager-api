@@ -127,33 +127,6 @@ fighting_art = {
     },
 
 
-    # echoes of death
-    'backstabber': {
-        'name': 'Backstabber',
-        'expansion': 'echoes_of_death',
-        'strain_milestone': 'opportunists_strain',
-        'desc': "On a <b>Perfect Hit</b> with a dagger, your first wound attempt in that attack gains <b>Devastating 1</b>.<br/>When you attack a monster with a dagger from its blind spot, if you have the <b>Hoarder</b> or <b>Secretive</b> disorder, increase the range of your <b>Perfect hits<b> by 1.",
-    },
-    'ethereal_pact': {
-        'name': 'Ethereal Pact',
-        'expansion': 'echoes_of_death',
-        'strain_milestone': 'ethereal_culture_strain',
-        'desc': """Add +3 to your brain trauma rolls.<br/>When you suffer the <b>Impossible!</b> brain trauma, the fungus in your head connects to the dreaming. <font class="kdm_font">g</font> <b>Birth of a Savior</b> and choose a dream. (If you've already reached Age 2, you cannot gain your dream's secret fighting art.)<br/>If you are a Savior, this Fighting Art has no effect.""",
-        'epithet': 'ethereal',
-    },
-    'giants_blood': {
-        'name': "Giant's Blood",
-        'expansion': 'echoes_of_death',
-        'strain_milestone': 'giants_strain',
-        'desc': 'You overproduce growth hormones! When you gain this fighting art, gain +1 strength, -1 evasion permanently.<br>You may <b>consume</b> skulls. If you do, gain the <b>Marrow Hunger</b> impairment.',
-        'epithet': 'giants_blood',
-    },
-    'infinite_lives': {
-        'name': 'Invinite Lives',
-        'expansion': 'echoes_of_death',
-        'strain_milestone': 'trepanning_strain',
-        'desc': """You can't create new memories.<br/>You cannot gain new fighting arts or disorders. When you would gain one, instead gain a new lifetime! Give yourself a new name and a once per lifetime reroll. (Gain +1 survival for naming. Gain the reroll regardless of principle. Only 1 once per lifetime reroll at a time.)""",
-    },
 
 
     # flower knight
@@ -492,7 +465,15 @@ When another survivor dies on the showdown board, place a token where they died.
 
     # Percival
     'black_guard_style': {
-        'desc': 'Swords in your gear grid gain <b>Block 1</b>.<br/>When you block a hit with a sword, your next attack that round with a sword gains +2 accuracy, +2 strength, +2 speed. Limit, once per round.<br/> During the settlement phase you may spend <font class="kdm_font">d</font> to train a survivor. They gain the <b>Black Guard Style</b> secret fighting art. You lose it and suffer the <b>broken arm</b> severe injury.',
+        'desc': (
+            'Swords in your gear grid gain <b>Block 1</b>.<br/>When you block '
+            'a hit with a sword, your next attack that round with a sword '
+            'gains +2 accuracy, +2 strength, +2 speed. Limit, once per '
+            'round.<br/> During the settlement phase you may spend '
+            '<font class="kdm_font">d</font> to train a survivor. They gain '
+            'the <b>Black Guard Style</b> secret fighting art. You lose it '
+            'and suffer the <b>broken arm</b> severe injury.'
+        ),
         'expansion': 'percival',
         'epithet': 'black_guard',
         'name': 'Black Guard Style',
@@ -502,5 +483,121 @@ When another survivor dies on the showdown board, place a token where they died.
 }
 
 
+strain_fighting_art = {
 
+    # echoes of death
+    'backstabber': {
+        'name': 'Backstabber',
+        'expansion': 'echoes_of_death',
+        'type': 'strain',
+        'strain_milestone': 'opportunists_strain',
+        'desc': (
+            "On a <b>Perfect Hit</b> with a dagger, your first wound attempt "
+            "in that attack gains <b>Devastating 1</b>.<br/> When you attack a "
+            "monster with a dagger from its blind spot, if you have the "
+            "<b>Hoarder</b> or <b>Secretive</b> disorder, increase the range "
+            "of your <b>Perfect hits<b> by 1."
+        ),
+    },
+    'ethereal_pact': {
+        'name': 'Ethereal Pact',
+        'expansion': 'echoes_of_death',
+        'strain_milestone': 'ethereal_culture_strain',
+        'type': 'strain',
+        'desc': (
+            "Add +3 to your brain trauma rolls.<br/>When you suffer the "
+            "<b>Impossible!</b> brain trauma, the fungus in your head "
+            'connects to the dreaming. <font class="kdm_font">g</font> '
+            "<b>Birth of a Savior</b> and choose a dream. (If you've already "
+            "reached Age 2, you cannot gain your dream's secret fighting "
+            "art.)<br/>If you are a Savior, this Fighting Art has no effect."
+        ),
+        'epithet': 'ethereal',
+    },
+    'giants_blood': {
+        'name': "Giant's Blood",
+        'expansion': 'echoes_of_death',
+        'strain_milestone': 'giants_strain',
+        'type': 'strain',
+        'desc': (
+            "You overproduce growth hormones! When you gain this "
+            "fighting art, gain +1 strength, -1 evasion permanently.<br/> You "
+            "may <b>consume</b> skulls. If you do, gain the <b>Marrow "
+            "Hunger</b> impairment."
+        ),
+        'epithet': 'giants_blood',
+    },
+    'infinite_lives': {
+        'name': 'Infinite Lives',
+        'expansion': 'echoes_of_death',
+        'strain_milestone': 'trepanning_strain',
+        'type': 'strain',
+        'desc': (
+            "You can't create new memories.<br/>You cannot gain new fighting "
+            "arts or disorders. When you would gain one, instead gain a new "
+            "lifetime! Give yourself a new name and a once per lifetime "
+            "reroll. (Gain +1 survival for naming. Gain the reroll regardless "
+            "of principle. Only 1 once per lifetime reroll at a time.)"
+        ),
+    },
 
+    # echoes of death 2 - 2019
+    'convalescer': {
+        'name': 'Convalescer',
+        'expansion': 'echoes_of_death_2',
+        'strain_milestone': 'surgical_sight',
+        'type': 'strain',
+        'desc': (
+            "Sympathy and tenderness elevate your care. Whenever you remove "
+            "bleeding tokens, gain survival, or add armor points, increase "
+            "this benefit by 1.<br/> (e.g., if you use Bandages on another "
+            "survivor, they remove up to 3 bleeding tokens.)<br/> "
+            "In contrast to your care, your attacks become more crude. They "
+            "gain the club keyword."
+        ),
+    },
+    'infernal_rhythm': {
+        'name': 'Infernal Rhythm',
+        'expansion': 'echoes_of_death_2',
+        'strain_milestone': 'memetic_symphony',
+        'type': 'strain',
+        'desc': (
+            'You may spend <font class="kdm_font">a</font> to play an '
+            'instrument in your gear grid. Reveal the next 3 monster hit '
+            'locations, then put them back in any order.<br/> '
+            'Whenever you activate an instrument, gain a lantern token. At '
+            "the start of another survivor's act, you may spend 5 lantern "
+            'tokens to stir their blood. They gain <font class="kdm_font">'
+            'c</font> and <font class="kdm_font">a</font>.'
+        ),
+    },
+    'rolling_gait': {
+        'name': 'Rolling Gait',
+        'expansion': 'echoes_of_death_2',
+        'strain_milestone': 'marrow_transformation',
+        'type': 'strain',
+        'desc': (
+            'Spend <font class="kdm_font">a</font> to notch an arrow. Your '
+            "next attack with a bow ignores <b>cumbersome</b>.<br/> At the end "
+            "of your attack with a bow or arrow, if you hit the monster from "
+            "outside its facing, it gains a <b>flinch token</b>.<br/> "
+            "<b>Flinch token:</b> When a monster with a flinch token attempts "
+            'to perform <font class="kdm_font">e</font>, cancel'
+            '<font class="kdm_font">e</font> and discard this token. '
+        ),
+    },
+    'shielderang': {
+        'name': 'Shielderang',
+        'expansion': 'echoes_of_death_2',
+        'strain_milestone': 'hyper_cerebellum',
+        'type': 'strain',
+        'desc': (
+            "You are impervious behind your shield. IF you have a shield in "
+            "your gear grid, ignore the first severe injury you suffer each "
+            "showdown.<br/> If you have Shield Specialization, shields in your "
+            "gear grid gain <b>Reach 3</b> and +1 strength for each level of "
+            "Shield weapon proficiency you have beyond 3."
+        ),
+    },
+
+}

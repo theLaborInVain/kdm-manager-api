@@ -124,7 +124,7 @@ gear = {
     },
     "promo": {
         "name": "Promo",
-        "expansion": "white_box",
+        "expansion": "promo",
         "color": "3BB9FF",
         "selectable": False,
     },
@@ -188,7 +188,16 @@ location = {
         "special_rules": [
             {
                 "name": "Dead Guardian",
-                "desc": "The sleeping predator is gone. Without its protective presence, intelligent monsters draw near.<ul><li>You may only hunt Lvl 3+ monsters</li><li>All departing survivors must have 1 gear with the <i>lantern</i> keyword in their gear grid.</li><li>If the settlement has the Final Lantern, 1 survivor must depart with it in their gear grid.</li></ul><br/><b>The light of inspiration is extinguished. You cannot innovate</b>",
+                "desc": (
+                    "The sleeping predator is gone. Without its protective "
+                    "presence, intelligent monsters draw near.<ul><li>You may "
+                    "only hunt Lvl 3+ monsters</li><li>All departing survivors "
+                    "must have 1 gear with the <i>lantern</i> keyword in their "
+                    "gear grid.</li><li>If the settlement has the Final "
+                    "Lantern, 1 survivor must depart with it in their gear "
+                    "grid.</li></ul><br/><b>The light of inspiration is "
+                    "extinguished. You cannot innovate</b>"
+                ),
                 "bg_color": "9F99A5",
                 "font_color": "FFF",
             },
@@ -208,6 +217,7 @@ location = {
         "consequences": ["Weapon Crafter"],
         "endeavors": ['bone_smith_build_weapon_crafter'],
     },
+
     "weapon_crafter": {
         "type": "gear",
         "name": "Weapon Crafter",
@@ -235,7 +245,11 @@ location = {
         "name": "Organ Grinder",
         "color": "B58AA5",
         "consequences": ["Stone Circle"],
-        "endeavors": ['organ_grinder_augury','organ_grinder_build_stone_circle','organ_grinder_stone_noses'],
+        "endeavors": [
+            'organ_grinder_augury',
+            'organ_grinder_build_stone_circle',
+            'organ_grinder_stone_noses'
+        ],
     },
 
     "stone_circle": {
@@ -251,9 +265,17 @@ location = {
         "name": "Plumery",
         "color": "FF5EAA",
     },
+
     "catarium": {
         "type": "gear",
         "name": "Catarium",
+        "color": "BA8B02",
+    },
+
+    "giga_catarium": {
+        "type": "gear",
+        'extension': True,
+        "name": "Giga-Catarium",
         "color": "BA8B02",
     },
 

@@ -60,6 +60,7 @@ core = {
         'requires_gear': ['final_lantern'],
     },
     'exhausted_lantern_hoard_1_oxidation': {
+        'name': 'Oxidation',
         'desc': '<font class="kdm_font">g</font> <b>Oxidation</b>',
         'cost': 1,
     },

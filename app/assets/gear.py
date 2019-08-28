@@ -2522,38 +2522,91 @@ sunstalker = {
     },
 }
 
-white_box_promo = {
+
+white_box = {
+
+    # fade
+    'sword_of_silence': {
+        'expansion': 'fade',
+        'type': 'rare_gear',
+        'name': 'Sword of Silence',
+        'speed': 2,
+        'accuracy': 5,
+        'strength': 6,
+        'affinities': {'left': 'blue', 'top': 'red', 'right': 'green'},
+        'keywords': ['weapon','melee','sword','other'],
+        'rules': ['Sentient','Irreplaceable','Unique'],
+        'desc': (
+            'Gains <b>Sharp</b> if you have 5+ understanding. While your '
+            'settlement has this sword, ignore <font class="kdm_font">g</font> '
+            '<b>White Secret</b> and <font class="kdm_font">g</font> <b>White '
+            'Speaker</b>.'
+        ),
+    },
+    'newborn': {
+        'expansion': 'fade',
+        'type': 'rare_gear',
+        'name': 'Newborn',
+        'keywords': ['item','heavy','fragile'],
+        'rules': ['Irreplaceable'],
+        'desc': (
+            'While you have this, all your weapons gain <b>Slow</b>. When you '
+            'return to the settlement, archive this and gain +1 population.'
+        ),
+    },
+
+    # sword hunter
+
+}
+
+
+promo = {
+
+    # any promo stuff can go here; white box expansions are separate
+
     # rare gear
     'ancient_root': {
         'name': 'Ancient Root',
         'keywords': ['item', 'vegetable', 'heavy', 'consumable', 'other'],
         'affinities': {'left': 'blue'},
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'rare_gear',
-        'desc': """When you are picked as a target while <b>insane</b>, the carrot shrieks fearfully. Roll 1d10. On a 1, the shrill sound stuns you. You are <b>doomed</b> for the rest of the monster's action. On a 6+, the harsh note alerts you. Ignore the first hit of the monster's attack.""",
+        'desc': (
+            "When you are picked as a target while <b>insane</b>, the carrot "
+            "shrieks fearfully. Roll 1d10. On a 1, the shrill sound stuns you. "
+            "You are <b>doomed</b> for the rest of the monster's action. On a "
+            "6+, the harsh note alerts you. Ignore the first hit of the "
+            "monster's attack."
+        ),
         'recipes': [
-            {'prefix_text': """During <font class="kdm_font">g</font> <b>Black Harvest</b>, if the Gatherer is <b>insane</b>, they follow a shrill echo in the darkness. A Fleshy stalk quivers in the ground, its muffled shrieking begs to be uprooted. Gain the <b>Ancient Root</b> rare gear.""",
+            {
+                'prefix_text': (
+                    'During <font class="kdm_font">g</font> <b>Black '
+                    'Harvest</b>, if the Gatherer is <b>insane</b>, they '
+                    'follow a shrill echo in the darkness. A Fleshy stalk '
+                    'quivers in the ground, its muffled shrieking begs to be '
+                    'uprooted. Gain the <b>Ancient Root</b> rare gear.'
+                ),
             },
         ],
     },
-    'bloodskin': {
-        'expansion': 'white_box',
-        'type': 'rare_gear',
-        'name': 'Bloodskin',
-        'keywords': ['item','consumable','other'],
-        'affinities': {'top': 'green','bottom': 'green'},
-        'desc': 'When you <b>depart</b>, you fill the bloodskin and gain 2 bleeding tokens. At the start of each of each of your acts, remove 1 bleeding token.',
-    },
+
+
+    # allison the twilight knight
     'blue_lantern': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'rare_gear',
         'name': 'Blue Lantern',
-        'keywords': ['item','lantern','order','other'],
-        'rules': ['Sentient','Cursed'],
-        'desc': '<font class="kdm_font">a</font>: Suffer 2d10 brain damage and reveal HL cards until you reveal the the trap. Put them back in the same order. Limit, once per showdown.',
+        'keywords': ['item', 'lantern', 'order', 'other'],
+        'rules': ['Sentient', 'Cursed'],
+        'desc': (
+            '<font class="kdm_font">a</font>: Suffer 2d10 brain damage and '
+            'reveal HL cards until you reveal the the trap. Put them back in '
+            'the same order. Limit, once per showdown.'
+        ),
     },
     'dormant_twilight_cloak': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'rare_gear',
         'name': 'Dormant Twilight Cloak',
         'keywords': ['item','heavy','order','other'],
@@ -2563,8 +2616,10 @@ white_box_promo = {
         'location': 'head',
         'armor': 3,
     },
+
+    # pinup devil satan halloween 2018
     'hope_stealer': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'rare_gear',
         'name': 'Hope Stealer',
         'speed': 2,
@@ -2572,13 +2627,38 @@ white_box_promo = {
         'strength': 0,
         'keywords': ['weapon','melee','spear','two-handed','other'],
         'rules': ['Unique','Sentient','Reach 2'],
-        'desc': "At the end of the showdown, you die. Your settlement's death count is added to this weapon's strength.",
+        'desc': (
+            "At the end of the showdown, you die. Your settlement's death "
+            "count is added to this weapon's strength."
+        ),
         'recipes': [
-            {'prefix_text': """If you're <b>insane</b> when you pull the <b>Adventure Sword</b> from the grimacing stone face, you hear a distant cackle.<br/>You're holding a much different weapon! i<br/>Gain the <b>Hope Stealer</b> instead. <br/>(Hunt Event 85)""",},
+            {
+                'prefix_text': (
+                    "If you're <b>insane</b> when you pull the <b>Adventure "
+                    "Sword</b> from the grimacing stone face, you hear a "
+                    "distant cackle.<br/>You're holding a much different "
+                    "weapon!<br/> Gain the <b>Hope Stealer</b> instead. "
+                    "<br/>(Hunt Event 85)"
+                ),
+            },
         ],
     },
+
+    # white speaker 2018
+    'bloodskin': {
+        'expansion': 'promo',
+        'type': 'rare_gear',
+        'name': 'Bloodskin',
+        'keywords': ['item','consumable','other'],
+        'affinities': {'top': 'green','bottom': 'green'},
+        'desc': (
+            'When you <b>depart</b>, you fill the bloodskin and gain 2 '
+            'bleeding tokens. At the start of each of each of your acts, '
+            'remove 1 bleeding token.'
+        ),
+    },
     'speaker_cult_knife': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'rare_gear',
         'name': 'Speaker Cult Knife',
         'keywords': ['weapon','melee','steel','dagger','fist & tooth'],
@@ -2593,39 +2673,25 @@ white_box_promo = {
         },
     },
 
-    # fade
-    'sword_of_silence': {
-        'expansion': 'fade',
-        'type': 'rare_gear',
-        'name': 'Sword of Silence',
-        'speed': 2,
-        'accuracy': 5,
-        'strength': 6,
-        'affinities': {'left': 'blue', 'top': 'red', 'right': 'green'},
-        'keywords': ['weapon','melee','sword','other'],
-        'rules': ['Sentient','Irreplaceable','Unique'],
-        'desc': 'Gains <b>Sharp</b> if you have 5+ understanding. While you settlement has this sword, ignore <font class="kdm_font">g</font> <b>White Secret</b> and <font class="kdm_font">g</font> <b>White Speaker</b>.',
-    },
-    'newborn': {
-        'expansion': 'fade',
-        'type': 'rare_gear',
-        'name': 'Newborn',
-        'keywords': ['item','heavy','fragile'],
-        'rules': ['Irreplaceable'],
-        'desc': 'While you have this, all your weapons gain <b>Slow</b>. When you return to the settlement, archive this and gain +1 population.',
-    },
 
+    #
     # promo
+    #
+
+    # black friday ninja
     'black_friday_lantern': {
-        'desc': 'On <b>Arrival</b> (at the start of the showdown), you may archive this and ambush the monster. limit, once per campaign.',
-        'expansion': 'white_box',
+        'desc': (
+            'On <b>Arrival</b> (at the start of the showdown), you may archive '
+            'this and ambush the monster. limit, once per campaign.'
+        ),
+        'expansion': 'promo',
         'type': 'promo',
         'name': 'Black Friday Lantern',
         'keywords': ['item', 'lantern', 'other'],
         'rules': ['+1 Evasion'],
     },
     'belt_of_gender_swap': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'promo',
         'name': 'Belt of Gender Swap',
         'keywords': ['item','jewelry','other'],
@@ -2633,8 +2699,10 @@ white_box_promo = {
         'desc': 'While in your gear grid, change to the opposite sex.',
         'affinities': {'right': 'green', 'bottom': 'green'},
     },
+
+    # pinup sci-fi white speaker
     'blood_plasma_gun': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'promo',
         'name': 'Blood Plasma Gun',
         'speed': 'X',
@@ -2642,10 +2710,13 @@ white_box_promo = {
         'strength': 'Z',
         'keywords': ['weapon','ranged','gun','other'],
         'rules': ['Range: X<sup>3</sup>', 'Unique'],
-        'desc': 'When you activate this, gain 1 bleeding token. X = your bleeding tokens. Z = X + X + X + X + X',
+        'desc': (
+            'When you activate this, gain 1 bleeding token. X = your bleeding '
+            'tokens. Z = X + X + X + X + X'
+        ),
     },
     'blood_plasma_katana': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'promo',
         'name': 'Blood Plasma Katana',
         'keywords': ['weapon','melee','katana','other'],
@@ -2653,10 +2724,15 @@ white_box_promo = {
         'accuracy': 6,
         'strength': 9,
         'rules': ['Unique','Sharp','Devastating X'],
-        'desc': 'When you activate this, gain 1 bleeding token. X = your bleeding tokens minus 2.',
+        'desc': (
+            'When you activate this, gain 1 bleeding token. X = your bleeding '
+            'tokens minus 2.'
+        ),
     },
+
+    # detective twilight knight
     'detective_cap': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'promo',
         'name': 'Detective Cap',
         'armor':2,
@@ -2665,33 +2741,8 @@ white_box_promo = {
         'affinities': {'left': 'red', 'top': 'blue', 'right': 'red', 'bottom': 'blue'},
         'desc': 'You must <b>investigate</b> if a choice to investigate arises. When you would roll to investigate, pick any result. If you are a returning survivor, you leave your hardboiled life behind and retired.',
     },
-    'dying_lantern': {
-        'expansion': 'white_box',
-        'type': 'promo',
-        'name': 'Dying Lantern',
-        'keywords': ['item','lantern','other'],
-        'rules': ['+1 Evasion'],
-        'desc': 'You may archive this to gain 1 <b>Skull</b> basic resource and +3 insanity.',
-    },
-    'nightmare_breast_pump': {
-        'expansion': 'white_box',
-        'type': 'promo',
-        'name': 'Nightmare Breast Pump',
-        'affinities': {'top': 'blue'},
-        'keywords': ['item','noisy','fragile','other'],
-        'rules': ['Sentient','Irreplaceable','Female Only'],
-        'desc': "The pump mimics a baby's cries, stimulating your milk glands. As a returning survivor, gain +1 to your intimacy rolls this settlement phase.",
-    },
-    'prismatic_lantern': {
-        'expansion': 'white_box',
-        'type': 'promo',
-        'name': 'Prismatic Lantern',
-        'keywords': ['item','lantern','other'],
-        'rules': ['+1 Movement', 'Unique', 'Irreplaceable'],
-        'desc': 'During the showdown, you may archive this and gain 1 permanent affinity of any color.',
-    },
     'twilight_revolver': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'promo',
         'name': 'Twilight Revolver',
         'speed': 1,
@@ -2700,38 +2751,97 @@ white_box_promo = {
         'keywords': ['weapon','ranged','metal','finesse','other'],
         'affinities': {'left': 'red', 'right': 'blue'},
         'rules': ['Cursed', 'Sentient', 'Range 8'],
-        'desc': '<font class="kdm_font">c</font> <font class="kdm_font">a</font> and 1 survival: Make an attack using this weapon. This attack has <b>Range 3</b> and gains -2 Accuracy, +5 speed. Ignore <font class="kdm_font_10">e</font> <b>WOUND</b> for this attack. Limit, once per showdown.',
+        'desc': (
+            '<font class="kdm_font">c</font> <font class="kdm_font">a</font> '
+            'and 1 survival: Make an attack using this weapon. This attack has '
+            '<b>Range 3</b> and gains -2 Accuracy, +5 speed. Ignore <font '
+            'class="kdm_font_10">e</font> <b>WOUND</b> for this attack. Limit, '
+            'once per showdown.'
+        ),
     },
+
+    # pinup wet nurse
+    'nightmare_breast_pump': {
+        'expansion': 'promo',
+        'type': 'promo',
+        'name': 'Nightmare Breast Pump',
+        'affinities': {'top': 'blue'},
+        'keywords': ['item','noisy','fragile','other'],
+        'rules': ['Sentient','Irreplaceable','Female Only'],
+        'desc': (
+            "The pump mimics a baby's cries, stimulating your milk glands. As "
+            "a returning survivor, gain +1 to your intimacy rolls this "
+            "settlement phase."
+        ),
+    },
+
+    # prismatic warrior of the sun
+    'prismatic_lantern': {
+        'expansion': 'promo',
+        'type': 'promo',
+        'name': 'Prismatic Lantern',
+        'keywords': ['item','lantern','other'],
+        'rules': ['+1 Movement', 'Unique', 'Irreplaceable'],
+        'desc': (
+            'During the showdown, you may archive this and gain 1 permanent '
+            'affinity of any color.'
+        ),
+    },
+
+    # pinup order knight
     'twilight_thong': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'promo',
         'name': 'Twilight Thong',
         'keywords': ['armor','set','rawhide','other'],
         'rules': ['Outfit'],
-        'desc': 'Its fabric responds to you; stress causes INTENSE constriction. Do not suffer brain traumas (ignore this if you have destroyed genitals).',
+        'desc': (
+            'Its fabric responds to you; stress causes INTENSE constriction. '
+            'Do not suffer brain traumas (ignore this if you have destroyed '
+            'genitals).'
+        ),
         'location': 'waist',
         'armor': 0,
 
     },
+
+    # pinup sci-fi twilight knight + gencon 2015
+    'dying_lantern': {
+        'expansion': 'promo',
+        'type': 'promo',
+        'name': 'Dying Lantern',
+        'keywords': ['item','lantern','other'],
+        'rules': ['+1 Evasion'],
+        'desc': (
+            'You may archive this to gain 1 <b>Skull</b> basic resource and '
+            '+3 insanity.'
+        ),
+    },
     'vibrant_lantern': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'promo',
         'name': 'Vibrant Lantern',
         'keywords': ['item','lantern','other'],
         'rules': ['+1 Accuracy'],
-        'desc': 'You may archive this to gain 1 <b>Broken Lantern</b> basic resource and 1 survival.',
+        'desc': (
+            'You may archive this to gain 1 <b>Broken Lantern</b> basic '
+            'resource and 1 survival.'
+        ),
     },
 
-    # gear recipe
+    # beyond the wall
     'cloth_leggings': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'gear_recipe',
         'name': 'Cloth Leggings',
         'keywords': ['item','cloth'],
         'armor': 1,
         'location': 'legs',
         'rules': ['Accessory'],
-        'desc': 'When you suffer the <b>Bleeding</b> or <b>Bloody thighs</b> severe injuries, only gain 1 bleeding token.',
+        'desc': (
+            'When you suffer the <b>Bleeding</b> or <b>Bloody thighs</b> '
+            'severe injuries, only gain 1 bleeding token.'
+        ),
         'affinities': {'bottom': 'green'},
         'recipes': [
             {
@@ -2742,7 +2852,7 @@ white_box_promo = {
         ],
     },
     'hard_breastplate': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'gear_recipe',
         'name': 'Hard Breastplate',
         'keywords': ['armor','leather','heavy'],
@@ -2762,13 +2872,18 @@ white_box_promo = {
             },
         ],
     },
+
+    # halloween pinup twilight knight
     "jack_o_lantern": {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'gear_recipe',
         'name': "Jack O' Lantern",
         'keywords': ['item','consumable','lantern','other'],
         'rules': ['Irreplaceable'],
-        'desc': 'During the showdown, if you are, <b>insane</b>, when a survivor dies, gain +10 survival.',
+        'desc': (
+            'During the showdown, if you are, <b>insane</b>, when a survivor '
+            'dies, gain +10 survival.'
+        ),
         'recipes': [
             {
                 'resource_types': {'scrap': 1, 'organ': 1},
@@ -2777,28 +2892,75 @@ white_box_promo = {
             },
         ],
     },
-    'tabard': {'expansion': 'white_box',
+
+    # valentine's day pinup twilight knight
+    'scoopy_club': {
+        'expansion': 'promo',
+        'name': 'Scoopy Club',
+    },
+
+    # before the wall
+    'tabard': {
+        'expansion': 'promo',
         'type': 'gear_recipe',
         'name': 'Tabard',
         'keywords': ['item','cloth'],
         'rules': ['Accessory'],
-        'desc': 'When you are encouraged, gain +1 insanity if your settlement is <b>Barbaric</b> or gain +1 survival if your settlement is <b>Romantic</b>.',
+        'desc': (
+            'When you are encouraged, gain +1 insanity if your settlement is '
+            '<b>Barbaric</b> or gain +1 survival if your settlement is '
+            '<b>Romantic</b>.'
+        ),
         'affinities': {'left': 'blue'},
         'location': 'body',
         'armor':1,
         'recipes': [
-            {'innovations': ['paint'], 'resource_types': {'organ': 1}, 'gear_handles': {'cloth': 1}, },
+            {
+                'innovations': ['paint'],
+                'resource_types': {'organ': 1},
+                'gear_handles': {'cloth': 1},
+            },
         ],
     },
-    'vagabond_armor_set': {'expansion': 'white_box', 'type': 'gear_recipe', 'name': 'Vagabond Armor Set'},
+    'vagabond_armor_set': {
+        'expansion': 'promo',
+        'type': 'gear_recipe',
+        'name': 'Vagabond Armor Set'
+    },
+    'white_dragon_gauntlets': {
+        'expansion': 'promo',
+        'type': 'ivory_carver',
+        'name': 'White Dragon Gauntlets',
+        'armor': 12,
+        'keywords': ['armor','set','ivory','metal','heavy'],
+        'affinities': {'left': 'red'},
+        'affinity_bonus': {
+            'desc': (
+                'When you <b>Sideswipe</b>, gain +1 accuracy and +5 strength '
+                'for your attack next this turn',
+            ),
+            'requires': {
+                'puzzle': {'red': 1},
+                'complete': {'red': 2},
+            },
+        },
+    },
+
+
+    # white speaker nico
     'xmaxe': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'type': 'gear_recipe',
         'name': 'Xmaxe',
         'keywords': ['weapon', 'melee','axe','other'],
         'rules': ['Irreplaceable'],
         'desc': "This weapon's strength is equal to your current insanity.",
-        'affinities': {'top': 'red', 'left': 'red', 'right': 'green', 'bottom': 'green'},
+        'affinities': {
+            'top': 'red',
+            'left': 'red',
+            'right': 'green',
+            'bottom': 'green'
+        },
         'recipes': [
             {
                 'innovations': ['sculpture','storytelling'],
@@ -2811,22 +2973,6 @@ white_box_promo = {
         'strength': 0,
     },
 
-    # ivory carver
-    'white_dragon_gauntlets': {
-        'expansion': 'white_box',
-        'type': 'ivory_carver',
-        'name': 'White Dragon Gauntlets',
-        'armor': 12,
-        'keywords': ['armor','set','ivory','metal','heavy'],
-        'affinities': {'left': 'red'},
-        'affinity_bonus': {
-            'desc': 'When you <b>Sideswipe</b>, gain +1 accuracy and +5 strength for your attack next this turn',
-            'requires': {
-                'puzzle': {'red': 1},
-                'complete': {'red': 2},
-            },
-        },
-    },
 
 }
 
@@ -3243,6 +3389,15 @@ generic = {
             'desc': 'After moving from a <b>dash</b>, the coat fires its guns! It attacks with this profile, ignoring your attribute modifiers (4/9/8).',
             'requires': {'puzzle': {'red': 2, 'blue': 1}}
         },
+        'recipes': [
+            {
+                'misc':(
+                    "When a Savior shares a well told dream during "
+                    '<font class="kdm_se_card">se</font> <b>Weird Dream</b> '
+                    'add <b>Corsair Coat</b> rare gear to settlement storage.'
+                ),
+            },
+        ],
     },
 }
 
@@ -3452,6 +3607,29 @@ flower_knight = {
     },
 }
 
+lion_knight = {
+    'hideous_disguise': {
+        'expansion': 'lion_knight',
+        'type': 'rare_gear',
+        'name': 'Hideous Disguise'
+    },
+    "lion_knights_left_claw": {
+        'expansion': 'lion_knight',
+        'type': 'rare_gear',
+        'name': "Lion Knight's Left Claw"
+    },
+    "lion_knights_right_claw": {
+        'expansion': 'lion_knight',
+        'type': 'rare_gear',
+        'name': "Lion Knight's Right claw"
+    },
+    'lion_knight_badge': {
+        'expansion': 'lion_knight',
+        'type': 'rare_gear',
+        'name': 'Lion Knight Badge'
+    },
+}
+
 slenderman = {
     'dark_water_vial': {
         'expansion': 'slenderman',
@@ -3567,28 +3745,145 @@ slenderman = {
     },
 }
 
-
-lion_knight = {
-    'hideous_disguise': {
-        'expansion': 'lion_knight',
+sword_hunter = {
+    'excalibur': {
+        'name': 'Excalibur',
         'type': 'rare_gear',
-        'name': 'Hideous Disguise'
-    },
-    "lion_knights_left_claw": {
-        'expansion': 'lion_knight',
-        'type': 'rare_gear',
-        'name': "Lion Knight's Left Claw"
-    },
-    "lion_knights_right_claw": {
-        'expansion': 'lion_knight',
-        'type': 'rare_gear',
-        'name': "Lion Knight's Right claw"
-    },
-    'lion_knight_badge': {
-        'expansion': 'lion_knight',
-        'type': 'rare_gear',
-        'name': 'Lion Knight Badge'
+        'speed': 2,
+        'accuracy': 4,
+        'strength': 4,
+        'expansion': 'sword_hunter',
+        'keywords': ['weapon', 'melee', 'sword', 'heavy', 'metal', 'other'],
+        'rules': ['Savage', 'Unique'],
+        'desc': (
+            'When you die, you cease to exist (ignore death principle) and '
+            'this gains +2 permanent strength (note this on the settlement '
+            'record sheet).'
+        ),
+        'affinities': {'left': 'blue'},
     },
 }
 
 
+vignettes_of_death_white_gigalion = {
+    'dense_bone_arrows': {
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'type': 'catarium',
+        'name': 'Dense Bone Arrows',
+        'speed': 2,
+        'accuracy': 5,
+        'strength': 6,
+        'desc': (
+            '(You depart with enough arrows to last. There is no activation '
+            'limit.)'
+        ),
+        'affinities': {'top': 'blue', 'right': 'red'},
+        'rules': ['Ammo - Bow', 'Sharp'],
+        'keywords': ['item', 'bone', 'ammunition', 'arrow'],
+        'recipes': [
+            {
+                'locations': ['catarium', 'giga_catarium', 'blacksmith'],
+                'resource_handles': {
+                    'hooked_claw': 1,
+                    'great_cat_bone': 3,
+                    'leather': 2,
+                    'iron': 2,
+                },
+            },
+        ],
+    },
+    'hooked_claw_knife': {
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'type': 'catarium',
+        'name': 'Hooked Claw Knife',
+        'keywords': ['weapon', 'melee', 'dagger', 'bone'],
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 7,
+        'affinities': {
+            'top': 'red',
+            'right': 'red',
+            'left': 'red',
+            'bottom': 'red'
+        },
+        'affinity_bonus': {
+            'desc': (
+                'When your wound causes a reaction where the monster moves, '
+                'you tear a chunk of flesh out! It suffers a wound. '
+            ),
+            'requires': {'complete': {'red': 4},},
+        },
+        'recipes': [
+            {
+                'locations': ['catarium', 'giga_catarium'],
+                'resource_types': {'organ': 2},
+                'resource_handles': {'hooked_claw': 1, 'elder_cat_teeth': 1},
+            },
+        ],
+    },
+    'lion_slayer_cape': {
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'type': 'catarium',
+        'name': 'Lion Slayer Cape',
+        'armor': 1,
+        'location': 'body',
+        'desc': (
+            'On <b>Arrival</b>, all survivors gain +1 survival. If you are '
+            'wearing fur armor, reduce all damage suffered by 1, to a '
+            'minimum of 1.'
+        ),
+        'affinities': {'top': 'red', 'bottom': 'green'},
+        'rules': ['Accessory'],
+        'keywords': ['item', 'fur', 'bone', 'flammable'],
+        'recipes': [
+            {
+                'locations': ['catarium', 'giga_catarium'],
+                'resource_handles': {
+                    'hooked_claw': 1,
+                    'white_fur': 2,
+                    'shimmering_mane': 1,
+                },
+            },
+        ],
+    },
+    'lovelorn_rock': {
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'type': 'rare_gear',
+        'name': 'Lovelorn Rock',
+        'desc': 'You will never be apart.',
+        'keywords': ['item', 'heavy', 'bone', 'stone'],
+    },
+    'oxidized_beast_katar': {
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'type': 'catarium',
+        'name': 'Oxidized Beast Katar',
+        'speed': 2,
+        'accuracy': 7,
+        'strength': 5,
+        'keywords': ['weapon', 'melee', 'katar', 'metal', 'bone'],
+        'rules': ['Deadly', 'Paired', 'Sharp'],
+        'affinities': {'top': 'red', 'bottom': 'red'},
+        'affinity_bonus': {
+            'desc': (
+                'On a <b>Perfect hit</b>, the edge sharpens. Gain +4 strength '
+                'for this attack.'
+            ),
+            'requires': {'complete': {'red': 2}},
+        },
+        'recipes': [
+            {
+                'endeavors': ['exhausted_lantern_hoard_1_oxidation'],
+                'locations': ['catarium', 'giga_catarium'],
+                'gear_handles': {
+                    'lion_beast_katar': 1,
+                },
+                'resource_handles': {
+                    'hooked_claw': 2,
+                    'iron': 1,
+                    'shimmering_mane': 1,
+                },
+                'resource_types': {'bone': 2},
+            },
+        ],
+    },
+}

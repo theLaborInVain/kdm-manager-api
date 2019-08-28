@@ -17,11 +17,7 @@ class Assets(models.AssetCollection):
 
         self.root_module = gear
 
-        self.mandatory_attributes = {
-            'keywords': list(),
-            'rules': list(),
-            'desc': str(),
-        }
+        self.mandatory_attributes = {'keywords': [], 'rules': [], 'desc': "",}
 
         models.AssetCollection.__init__(self,  *args, **kwargs)
 

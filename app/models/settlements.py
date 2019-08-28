@@ -603,7 +603,10 @@ class Settlement(models.UserAsset):
             #
 
             # farts/disorders pseudo
-            if asset_dict['type'] in ['fighting_arts','disorders'] and asset_dict['sub_type'] != 'secret_fighting_art':
+            if (
+                asset_dict['type'] in ['fighting_arts','disorders'] and
+                asset_dict['sub_type'] != 'secret_fighting_art'
+            ):
                 if 'kd_collection_fighting_arts_and_disorders' in self.settlement['expansions']:
                     if asset_dict['expansion'] in request.User.user['collection']['expansions']:
                         return True
@@ -2194,7 +2197,11 @@ class Settlement(models.UserAsset):
     #
 
 
-    def get_available_assets(self, asset_module=None, handles=True, exclude_types=[], only_include_selectable=False):
+    def get_available_assets(
+            self, asset_module=None, handles=True, exclude_types=[],
+            only_include_selectable=False
+        ):
+
         """ Generic function to return a dict of available game assets based on
         their family. The 'asset_module' should be something such as,
         'cursed_items' or 'weapon_proficiencies', etc. that has an Assets()
@@ -2207,6 +2214,7 @@ class Settlement(models.UserAsset):
         Use the 'ignore_types' kwarg (list) to filter/exclude assets whose
         'type' should NOT be returned.
         """
+
         if handles:
             available = collections.OrderedDict()   # NOT A REGULAR DICT!!!
         else:
@@ -2344,7 +2352,13 @@ class Settlement(models.UserAsset):
     def get_available_fighting_arts(
             self, exclude_dead_survivors=True, return_type=False
         ):
-        """ Returns a uniqified list of farting art handles based on LIVING
+        """ This is meant to be used ONLY when doing things like checking to see
+        what options the settlement has for its Inspirational Statue! This is
+        NOT the same as checking compatibility!
+
+        Use self.get_available_assets() for that type of stuff!
+
+        Returns a uniqified list of farting art handles based on LIVING
         survivors unless otherwise specified with the 'exclude_dead_survivors'
         kwarg. """
 
@@ -3516,7 +3530,9 @@ class Settlement(models.UserAsset):
         if context == "showdown_options":
             candidate_handles.extend(self.settlement.get("quarries", []))
         elif context == "nemesis_encounters":
-            candidate_handles.extend(self.settlement.get("nemesis_monsters", []))
+            candidate_handles.extend(
+                self.settlement.get("nemesis_monsters", [])
+            )
             candidate_handles.append(self.campaign.final_boss)
         elif context == "defeated_monsters":
             candidate_handles.extend(self.settlement.get("quarries", []))
@@ -3526,20 +3542,15 @@ class Settlement(models.UserAsset):
         elif context == "special_showdown_options":
             candidate_handles.extend(self.get_special_showdowns())
         else:
-            self.logger.warn("Unknown 'context' for get_monster_options() method!")
+            self.logger.warn(
+                "Unknown 'context' for get_monster_options() method!"
+            )
 
         # now create the output list based on our candidates
         output = []
 
         # uniquify candidate handles just in case
         candidate_handles = list(set(candidate_handles))
-
-        # this context wants handles back
-#        if context == "nemesis_encounters":
-#            for m in candidate_handles:
-#                M = monsters.Monster(m)
-#                if not M.is_selectable():
-#                    candidate_handles.remove(m)
 
         for m in candidate_handles:
             M = monsters.Monster(m)
@@ -3551,10 +3562,20 @@ class Settlement(models.UserAsset):
             if M.is_unique():
                 output.append(M.name)
             else:
-                for l in range(M.levels):
-                    lvl = l+1
-                    output.append("%s Lvl %s" % (M.name,lvl))
+                blank_string = '%s lvl %s'
+                if isinstance(M.levels, int):
+                    for l in range(M.levels):
+                        lvl = l+1
+                        output.append(blank_string % (M.name, lvl))
+                elif isinstance(M.levels, list):
+                    for lvl in M.levels:
+                        output.append(blank_string % (M.name, lvl))
+                else:
+                    err_msg = 'Monster levels must be integer or list types!'
+                    raise utils.InvalidUsage(err_msg)
+
         output = sorted(output)
+
         return output
 
 
@@ -3624,6 +3645,18 @@ class Settlement(models.UserAsset):
             if not req_dict in self.settlement.keys():
                 self.settlement[req_dict] = {}
                 self.perform_save = True
+
+
+        #
+        #   updates/changes/fixes to assets
+        #
+
+        if "white_box" in self.settlement['expansions']:
+            wb_index = self.settlement['expansions'].index('white_box')
+            self.settlement['expansions'].insert(wb_index, 'promo')
+            self.settlement['expansions'].remove('white_box')
+            self.logger.warn("Converted 'white_box' expansion to 'promo'.")
+            self.perform_save=True
 
         #
         #   This is where we add the 'meta' element; note that we actually

@@ -123,6 +123,11 @@ class AssetCollection(object):
             the same as their actual dictionary key value. Individual assets
             SHOULD NEVER have a 'handle' attribute.
 
+
+        When using the self.mandatory_attributes in the models file, use the
+        self.warn_on_missing_mandatory_attribute to log a warning when the
+        method fires.
+
         """
 
         self.logger = utils.get_logger()
@@ -158,23 +163,43 @@ class AssetCollection(object):
         for a in self.assets.keys():
             self.assets[a]["handle"] = a
 
-        # enforce mandatory_attributes, if necessary
+        # enforce mandatory_attributes dictionary now, if we're doing that:
         if hasattr(self, 'mandatory_attributes'):
-            for mandatory_attribute in self.mandatory_attributes.keys():
-                for a_dict in self.get_dicts():
-                    if mandatory_attribute not in a_dict.keys():
-#                        self.logger.debug(
-#                            "[%s] '%s' asset missing mandatory attrib! '%s'" % (
-#                                self.type,
-#                                a_dict['handle'],
-#                                mandatory_attribute
-#                            )
-#                        )
-                        self.assets[
-                            a_dict['handle']
-                        ][mandatory_attribute] = self.mandatory_attributes[
-                            mandatory_attribute
-                        ]
+            warn_on = False
+            if hasattr(self, "warn_on_missing_mandatory_attribute"):
+                warn_on = True
+            self.enforce_mandatory_attributes(warn_on)
+
+
+    def enforce_mandatory_attributes(self, warn_on_missing_attr=False):
+        """ This method checks each asset in the collection against a dictionary
+        defined in the app/models/whatever.py file for the collection.
+
+        These dictionaries are simple and each key has one value, which is also
+        teated as the default value:
+
+           {'keywords': [], 'desc': ""}
+
+        That dict would enforce those attributes being defined as the exact
+        value specified.
+        """
+
+        for mandatory_attribute in self.mandatory_attributes.keys():
+            for a_dict in self.get_dicts():
+                if mandatory_attribute not in a_dict.keys():
+
+                    # warn if we're warning
+                    if warn_on_missing_attr:
+                        err = "Asset '%s' missing mandatory attr: '%s'!"
+                        self.logger.warn(
+                            err % (a_dict['handle'], mandatory_attribute)
+                        )
+
+                    self.assets[
+                        a_dict['handle']
+                    ][mandatory_attribute] = self.mandatory_attributes[
+                        mandatory_attribute
+                    ]
 
     #
     #   get / set / filter methods here
@@ -282,6 +307,10 @@ class AssetCollection(object):
             # special extre text for Secret fighting arts
             if a_dict.get('sub_type', None) == 'secret_fighting_art':
                 parenthetical.append('Secret')
+
+            if a_dict.get('sub_type', None) == 'strain':
+                parenthetical.append('Strain')
+
             if a_dict.get('expansion', None) is not None:
                 parenthetical.append(a_dict['expansion'].replace("_"," ").title())
 

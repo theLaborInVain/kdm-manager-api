@@ -556,6 +556,26 @@ expansion_ai = {
         'type': 'ability'
     },
 
+    # flower knight
+    "sleeping_virus_flower": {
+        "name": "Sleeping Virus Flower",
+        "expansion": "flower_knight",
+        "desc": 'When you die, a flower blooms from your corpse. Add <font class="kdm_font">g</font> <b>A Warm Virus</b> to the timeline next year. You are the guest.',
+        "epithet": "host",
+        "max": 1,
+        "Luck": 1,
+    },
+
+    # gorm
+    'acid_palms_gorm': {
+        'desc': 'Add 1d10 strength to your wound attempts when attacking with Fist & Tooth.',
+        'expansion': 'gorm',
+        'max': 1,
+        'name': 'Acid Palms',
+        'type': 'ability'
+    },
+
+
     # lonely tree
     'nightmare_blood': {
         'desc': 'Whenever you gain a bleeding token, add <font class="inline_shield">1</font> to all hit locations.',
@@ -586,29 +606,6 @@ expansion_ai = {
         'type': 'ability'
     },
 
-    # spidicules
-    "rivals_scar": {
-        "name": "Rival's Scar",
-        "type": "ability",
-        "expansion": "spidicules",
-        "desc":"Gain +1 permanent strength and -1 permanent evasion.",
-        "max": 1,
-        "epithet": "rivals_scar",
-        "Strength": 1,
-        "Evasion": -1,
-    },
-
-    # flower knight
-    "sleeping_virus_flower": {
-        "name": "Sleeping Virus Flower",
-        "expansion": "flower_knight",
-        "desc": 'When you die, a flower blooms from your corpse. Add <font class="kdm_font">g</font> <b>A Warm Virus</b> to the timeline next year. You are the guest.',
-        "epithet": "host",
-        "max": 1,
-        "Luck": 1,
-    },
-
-
     # lion knight
     "hideous_disguise": {
         "name": "Hideous Disguise",
@@ -627,22 +624,6 @@ expansion_ai = {
         'type': 'curse'
     },
 
-    # sunstalker
-    'reflection': {
-        'desc': '<ul><li>Your complete affinities and incomplete affinity halves count as all colors.</li><li>You may dodge at any time and as many times as you like each round.</li><li>When you attack from a blind spot, add +1d10 to all wound attempts for that attack.</li></ul>',
-        'expansion': 'sunstalker',
-        'max': 1,
-        'name': 'Reflection',
-        'type': 'ability'
-    },
-    'refraction': {
-        'desc': '<ul><li>Your complete affinities and incomplete affinity halves count as all colors.</li><li>During the Showdown, after you perform a survival action, gain +1 survival.</li></ul>',
-        'expansion': 'sunstalker',
-        'max': 1,
-        'name': 'Refraction',
-        'type': 'ability'
-    },
-
     # slenderman
     "forgettable": {
         "name": "Forgettable",
@@ -653,25 +634,71 @@ expansion_ai = {
         "Evasion": 2,
     },
 
-    # gorm
-    'acid_palms_gorm': {
-        'desc': 'Add 1d10 strength to your wound attempts when attacking with Fist & Tooth.',
-        'expansion': 'gorm',
+    # spidicules
+    "rivals_scar": {
+        "name": "Rival's Scar",
+        "type": "ability",
+        "expansion": "spidicules",
+        "desc":"Gain +1 permanent strength and -1 permanent evasion.",
+        "max": 1,
+        "epithet": "rivals_scar",
+        "Strength": 1,
+        "Evasion": -1,
+    },
+
+    # sunstalker
+    'reflection': {
+        'desc': '<ul><li>Your complete affinities and incomplete affinity halves count as all colors.</li><li>You may dodge at any time and as many times as you like each round.</li><li>When you attack from a blind spot, add +1d10 to all wound attempts for that attack.</li></ul>',
+        'expansion': 'sunstalker',
         'max': 1,
-        'name': 'Acid Palms',
+        'name': 'Reflection',
+        'type': 'ability'
+    },
+    'refraction': {
+        'desc': (
+            '<ul><li>Your complete affinities and incomplete affinity halves '
+            'count as all colors.</li><li>During the Showdown, after you '
+            'perform a survival action, gain +1 survival.</li></ul>'
+        ),
+        'expansion': 'sunstalker',
+        'max': 1,
+        'name': 'Refraction',
         'type': 'ability'
     },
 
+    # vignettes of death: white gigalion
+    'gigaslayer': {
+        'desc': (
+            "Gain +2 strength and +1 luck when attacking a 3x3 or larger "
+            "monster. When you participate in <b>Intimacy</b>, newborns with "
+            "your surname gain <b>Gigaslayer</b> in addition to any other "
+            "benefits."
+        ),
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'max': 1,
+        'name': 'Gigaslayer',
+        'type': 'ability',
+        'inheritable': True,
+    },
+
+
     # dragon king
     'acid_palms_dk': {
-        'desc': 'Add 1d10 strength to your wound attempts when attacking with Fist & Tooth.',
+        'desc': (
+            'Add 1d10 strength to your wound attempts when attacking with Fist '
+            '& Tooth.'
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': 'Acid Palms',
         'type': 'ability'
     },
     'heart_of_the_sword': {
-        'desc': 'If you gain weapon proficiency during the Aftermath, gain +3 additional ranks. You cough up a hunk of your own solidified blood and gain +1 <b>Iron</b> strange resource.',
+        'desc': (
+            'If you gain weapon proficiency during the Aftermath, gain +3 '
+            'additional ranks. You cough up a hunk of your own solidified '
+            'blood and gain +1 <b>Iron</b> strange resource.'
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': 'Heart of the Sword',
@@ -748,9 +775,13 @@ expansion_ai = {
 
     # white box
     'gender_swap': {
-        'desc': 'You own the <b>Belt of Gender Swap</b>, it will always take one space in your gear grid and while it is there, your gender is reversed.',
+        'desc': (
+            'You own the <b>Belt of Gender Swap</b>, it will always take one '
+            'space in your gear grid and while it is there, your gender is '
+            'reversed.'
+        ),
         'epithet': 'gender_swap',
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'max': 1,
         'name': 'Gender Swap',
         'reverse_sex': True,

@@ -282,6 +282,12 @@ class AdministrationObject:
                                 "Work with a settlement"
                             ),
                             metavar="5d13762e84d8863941ed4e20")
+        parser.add_argument('--dump_settlement', dest='dump_settlement',
+                            default=None, help = (
+                                "[SETTLEMENT] "
+                                "Work with a settlement"
+                            ),
+                            action="store_true"),
         parser.add_argument('--event_log', dest='settlement_event_log',
                             help=(
                                 "[SETTLEMENT] "
@@ -595,6 +601,9 @@ class AdministrationObject:
         )
         sm_object.print_header()
 
+        if self.options.dump_settlement:
+            dump_settlement_to_cli(sm_object._id)
+
         if self.options.settlement_event_log:
             sm_object.dump_event_log()
 
@@ -691,9 +700,15 @@ class SettlementManagementObject:
             self._id,
         )
 
+        creator = utils.mdb.users.find_one(
+            {'_id': self.Settlement.settlement['created_by']}
+        )
+        print("  (created by: %s %s)" % (creator['login'], creator['_id']))
+
+
     def dump_event_log(self):
         """ Uses the vanilla Settlement object's built-in get_event_log() method
-        to get the settlement's event log and print it in a CLI-friendly way. """
+        to get the settlement's event log and print it in a CLI-friendly way."""
 
         event_log = self.Settlement.get_event_log(query_sort=1)
         for event in event_log:

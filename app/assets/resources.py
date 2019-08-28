@@ -482,9 +482,15 @@ vermin = {
     'gibbering_haremite': {
         'name': 'Gibbering Haremite',
         'type': 'vermin',
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'keywords': ['vermin', 'consumable'],
-        'desc': 'When you gain this, unless you <b>consume</b> it immediately, it latches on and removes all your head armor points. If this is in settlement storage when survivors <b>depart</b>, add another to storage and suffer -1 population.<br/><b>Consume:</b> Archive this and roll 1d10.',
+        'desc': (
+            'When you gain this, unless you <b>consume</b> it immediately, it '
+            'latches on and removes all your head armor points. If this is in '
+            'settlement storage when survivors <b>depart</b>, add another to '
+            'storage and suffer -1 population.<br/><b>Consume:</b> Archive '
+            'this and roll 1d10.'
+        ),
     },
 }
 
@@ -1116,9 +1122,22 @@ expansions = {
         'type': 'sunstalker_resources',
         'name': 'Sunshark Fin',
         'keywords': ['bone', 'hide'],
-        'desc': '<i class="flavor-text">Removing the slimy hands reveals a curable, viscous substance.</i>',
+        'desc': (
+            '<i class="flavor-text">Removing the slimy hands reveals a '
+            'curable, viscous substance.</i>'
+        ),
         'copies': 1,
         'flavor_text': 'Removing the slimy hands reveals a curable, viscous substance.',
+    },
+
+    # vignettes of death: white gigalion
+    'hooked_claw': {
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'type': 'strange_resources',
+        'name': 'Hooked Claw',
+        'flavor_text':
+            'Stained with flecks of ancient dried blood and ossified hair',
+        'keywords': ['bone'],
     },
 
 

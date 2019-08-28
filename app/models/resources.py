@@ -15,7 +15,7 @@ class Assets(models.AssetCollection):
 
     def __init__(self, *args, **kwargs):
         self.root_module = resources
-        self.mandatory_attributes = {'keywords': list(), 'desc': str()}
+        self.mandatory_attributes = {'keywords': [], 'desc': ""}
         models.AssetCollection.__init__(self,  *args, **kwargs)
 
 

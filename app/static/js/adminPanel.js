@@ -60,12 +60,6 @@ myApp.controller('globalController', function($scope, $http, $interval) {
 		// make sure we've got a fresh token
 		$scope.setUserJWT();
 
-        // now, to the API with a proper authorization header and get it
-        for (var i=0; i < $scope.world.meta.admins.length; i++) {
-            var admin_id = $scope.world.meta.admins[i]._id.$oid;
-            var admin_login = $scope.world.meta.admins[i].login;
-        };
-
         settlement.event_log = [
             {event: 'Retrieving settlement Event Log as ' + $scope.user.login + '...'}
            ]
@@ -256,6 +250,10 @@ myApp.controller('alertsController', function($scope, $http) {
 myApp.controller('userAdminController', function($scope, $http) {
 
     $scope.scratch = {
+    };
+
+    $scope.closeWorkWithUser = function() {
+        delete $scope.workWithUser;
     };
 
     $scope.getUser = function() {

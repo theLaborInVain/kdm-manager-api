@@ -290,9 +290,9 @@ core = {
 
 expansion = {
 
-    # promo / whitebox
+    # promo
     'female_only': {
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'name': 'Female Only',
         'desc': None,
     },

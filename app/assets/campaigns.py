@@ -144,7 +144,16 @@ core_campaign = {
             "nemesis_encounters": {'butcher': []},
         },
         'help': [
-            {'type': 'timeline', 'tip': "While you may always add the <b>Gold Smoke Knight</b> to your settlement's timeline, you must add the <b>Watcher</b> to your settlement's Nemesis Monsters list before you may add an encounter with it to your timeline."},
+            {
+                'type': 'timeline',
+                'tip': (
+                    "As of <i>Monster</i> version 1.5, the <b>Watcher</b> is "
+                    "no longer automatically included in settlement Timelines. "
+                    "You must first add the <b>Watcher</b> to your "
+                    "settlement's Nemesis Monsters list before you may add an "
+                    "encounter with it to your Timeline."
+                ),
+            },
         ],
     },
     "people_of_the_skull": {

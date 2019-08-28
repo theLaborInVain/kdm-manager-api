@@ -1,8 +1,24 @@
 ui_prompts = {
-    'retired': {'name': 'Retired', 'desc': 'Retired survivors cannot depart, but still contribute to the total population of the settlement, and may participate in settlement events and endeavors.'},
-    'max_courage': {'name': 'Max Courage', 'desc': 'The maximum value a survivor may have for this attribute is nine.'},
-    'max_understanding': {'name': 'Max Understanding', 'desc': 'The maximum value a survivor may have for this attribute is nine.'},
-    'max_weapon_proficiency': {'name': 'Max Weapon Proficiency', 'desc': 'The maximum value a survivor may have for this attribute is nine.'},
+    'retired': {
+        'name': 'Retired',
+        'desc': (
+            'Retired survivors cannot depart, but still contribute to the '
+            'total population of the settlement, and may participate in '
+            'settlement events and endeavors.'
+        ),
+    },
+    'max_courage': {
+        'name': 'Max Courage',
+        'desc': 'The max value a survivor may have for this attribute is nine.'
+    },
+    'max_understanding': {
+        'name': 'Max Understanding',
+        'desc': 'The max value a survivor may have for this attribute is nine.'
+    },
+    'max_weapon_proficiency': {
+        'name': 'Max Weapon Proficiency',
+        'desc': 'The max value a survivor may have for this attribute is nine.'
+    },
 }
 
 settlement_event = {
@@ -51,12 +67,15 @@ settlement_event = {
     # gorm
     "gorm_gorm_climate": {"name": "Gorm Climate", "expansion": "gorm"},
 
-    # promo/white box
-    "promo_strange_spot": {"name": "A Strange Spot", "expansion": "white_box"},
-    "promo_story_in_the_snow": {"name": "Story in the Snow", "expansion": "white_box"},
+    # promo
+    "promo_strange_spot":
+        {"name": "A Strange Spot", "expansion": "promo"},
+    "promo_story_in_the_snow":
+        {"name": "Story in the Snow", "expansion": "promo"},
 
     # spidicules
-    "spid_season_of_the_spiderling": {"name": "Season of the Spiderling", "expansion": "spidicules"},
+    "spid_season_of_the_spiderling":
+        {"name": "Season of the Spiderling", "expansion": "spidicules"},
     "spid_silk_storm": {
         "name": "Silk Storm", "expansion": "spidicules",
         'endeavors': ['talk_to_legless_ball', 'silk_diet'],
@@ -64,7 +83,13 @@ settlement_event = {
 
     # slenderman
     "slender_phantom": {"name": "Phantom", "expansion": "slenderman"},
-    "slender_slender_blight": {"name": "Slender Blight", "expansion": "slenderman"},
+    "slender_slender_blight":
+        {"name": "Slender Blight", "expansion": "slenderman"},
+
+    "sword_hunter_sword_hunter": {
+        'name': 'Sword hunter',
+        'expansion': 'sword_hunter',
+    },
 
 }
 

@@ -714,7 +714,8 @@ class User(models.UserAsset):
             handle = self.params['handle']
 
         if handle in self.user['collection']['expansions']:
-            self.logger.warn("%s Expansion handle '%s' is already in the user's collection. Ignoring..." % (self, handle))
+            err = "%s Expansion '%s' already added to collection. Ignoring..."
+            self.logger.warn(err % (self, handle))
             return True
 
         self.user['collection']['expansions'].append(handle)
@@ -730,7 +731,8 @@ class User(models.UserAsset):
             handle = self.params['handle']
 
         if handle not in self.user['collection']['expansions']:
-            self.logger.warn("%s Expansion handle '%s' is not in the user's collection. Ignoring..." % (self, handle))
+            err = "%s Expansion '%s' not found in collection. Ignoring..."
+            self.logger.warn(err % (self, handle))
             return True
 
         self.user['collection']['expansions'].remove(handle)

@@ -1,7 +1,7 @@
 items = {
     "blue_lantern": {
         "name": "Blue Lantern",
-        "expansion": "white_box",
+        "expansion": "promo",
     },
     "husk_of_destiny": {
         "name": "Husk of Destiny",
@@ -14,7 +14,7 @@ items = {
     },
     "belt_of_gender_swap": {
         "name": "Belt of Gender Swap",
-        "expansion": "white_box",
+        "expansion": "promo",
         "abilities_and_impairments": ["gender_swap"],
     },
     "regal_helm": {

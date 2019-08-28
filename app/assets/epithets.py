@@ -300,7 +300,7 @@ mar_2016_expansions = {
         'bordercolor': 'BC2361',
         'bgcolor': 'FF4081',
         'color': 'fff',
-        'expansion': 'white_box',
+        'expansion': 'promo',
         'selectable': False,
     },
     'black_guard': {'expansion': 'percival', 'name': "Black Guard"},
