@@ -2937,7 +2937,7 @@ promo = {
         'affinity_bonus': {
             'desc': (
                 'When you <b>Sideswipe</b>, gain +1 accuracy and +5 strength '
-                'for your attack next this turn',
+                'for your attack next this turn'
             ),
             'requires': {
                 'puzzle': {'red': 1},
