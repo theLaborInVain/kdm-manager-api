@@ -95,6 +95,16 @@ expansions_of_death = {
         "timeline_add": [
             {"ly": 5, "handle": "fk_crones_tale"}
         ],
+        "help": [
+            {
+                "type": "storage",
+                "tip": (
+                    '<i>Vespertine</i> and other expansion-specific gear is '
+                    'organized under the <b>Sense Memory</b> heading in the '
+                    'Settlement Storage controls.'
+                ),
+            },
+        ],
     },
 
     "gorm": {
@@ -523,7 +533,7 @@ miscellaneous = {
             "bgcolor": "4EC6F0",
         },
         "subtitle": (
-            'Adds promotional events, gear, Abilities & Impairments, etc.) '
+            'Adds promotional events, gear, Abilities & Impairments, etc. '
             'to Settlement and Survivor Sheet drop-down lists. '
             'Collects the following releases: '
             "Allison the Twilight Knight, "

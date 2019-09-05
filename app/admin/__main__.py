@@ -9,6 +9,7 @@
 """
 # standard library imports
 import argparse
+import getpass
 from collections import OrderedDict
 import socket
 import sys
@@ -503,7 +504,20 @@ class AdministrationObject:
         # set the request URL, call the method from clone.py:
         prod_api_url = utils.settings.get('server', 'prod_url')
         print("\n API: %s\n Initiating request...\n" % prod_api_url)
-        users = clone.get_recent_users_from_api(prod_api_url)
+
+        admin_login = input(' Login: ')
+        admin_password = getpass.getpass(' Password: ')
+
+        users = clone.get_recent_users_from_api(
+            prod_api_url,
+            admin_login,
+            admin_password
+        )
+
+        if len(users) == 0:
+            print('\n No recent users to clone! Exiting...\n')
+            sys.exit(255)
+        print('\n Preparing to clone %s users...\n' % len(users))
 
         # iterate the results:
         for prod_user in users:

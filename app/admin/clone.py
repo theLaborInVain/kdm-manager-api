@@ -48,17 +48,17 @@ def one_user_from_legacy_webapp(url, key, uid):
 
 
 @utils.metered
-def get_recent_users_from_api(prod_api):
+def get_recent_users_from_api(prod_api, admin_login, admin_password):
     """ Dials the prod API, hits the user_data route with no args, returns the
     list of recent production user. This is supported in all releases. """
 
     # create a URL and do the request
     api_url = prod_api + "/admin/get/user_data"
-    response = requests.get(api_url)
+    response = requests.get(api_url, auth=(admin_login, admin_password))
 
     if response.status_code == 200:
         output = response.json()
         return output['user_info']
     else:
-        raise requests.RequestException(r.reason)
+        raise requests.RequestException(response.reason)
 

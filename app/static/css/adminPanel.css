@@ -63,7 +63,7 @@ td.int_key {width: 10%; word-break: inherit;}
 .inactive_subscriber {background-color: #FFF9C4; }
 .signed_out_subscriber {background-color: #FFFDE7; }
 .user_detail { padding-left: 1%; padding-top: 1%; font-size: 0.9em; }
-.user_detail_button_raft {margin: 0 auto; display: flex; margin: 1em; background: #ddd; padding: 1em; justify-content: space-between; }
+.user_detail_button_raft {margin: 0 auto; display: flex; margin: 1em; background: rgba(0,0,0,0.1); padding: 1em; justify-content: space-between; }
 .log_detail { }
 .log_line {padding: 1%; }
 

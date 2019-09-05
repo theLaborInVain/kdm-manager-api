@@ -107,7 +107,7 @@ settlement_events = {
 }
 
 endeavor = {
-    "core_sacrificed":          {"name": "Sacrified", "context": "endeavor"},
+    "core_sacrificed":          {"name": "Sacrificed", "context": "endeavor"},
 }
 
 other = {
