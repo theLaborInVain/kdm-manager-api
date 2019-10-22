@@ -1,3 +1,14 @@
+tenth_anniversary_white_speaker = {
+    'plot_twist': {
+        'name': 'Plot Twist',
+        'expansion': 'tenth_anniversary_white_speaker',
+        'milestone_condition': (
+            'If the settlement has remembered all the '
+            '<font class="kdm_font">g</font> <b>White Secret</b> stories.'
+        )
+    },
+}
+
 echoes_of_death = {
     "giants_strain": {
         "name": "Giant's Strain",

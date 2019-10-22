@@ -820,7 +820,11 @@ core = {
             'requires': {'complete': {'red': 2}},
         },
         'recipes': [
-            {'locations': ['organ_grinder'], 'resource_types': {'scrap':1, 'bone': 1}, 'prefix_text': '<b>Heat</b> Required.'},
+            {
+                'locations': ['organ_grinder'],
+                'resource_types': {'scrap':1, 'bone': 1},
+                'prefix_text': '<b>Heat</b> Required.'
+            },
         ],
     },
     'stone_noses': {
@@ -1532,7 +1536,11 @@ core = {
         'type': 'weapon_crafter',
         'name': 'Whistling Mace',
         'keywords': ['weapon','melee','club','bone'],
-        'desc': 'On a <b>Perfect hit</b>, reveal the next AI card. Place it on top or bottom of the AI deck.<br/><b>Unwieldy:</b> If any attack roll results are 1, you hit yourself and suffer 1 damage.',
+        'desc': (
+            'On a <b>Perfect hit</b>, reveal the next AI card. Place it on top '
+            'or bottom of the AI deck.<br/><b>Unwieldy:</b> If any attack roll '
+            'results are 1, you hit yourself and suffer 1 damage.'
+        ),
         'rules': ['Unwieldy'],
         'speed': 3,
         'accuracy': 6,
@@ -1559,7 +1567,11 @@ core = {
             },
         },
         'recipes': [
-            {'locations': ['weapon_crafter'], 'resource_types': {'hide': 2}, 'resource_handles': {'great_cat_bone': 1}},
+            {
+                'locations': ['weapon_crafter'],
+                'resource_types': {'hide': 2},
+                'resource_handles': {'great_cat_bone': 1}
+            },
         ],
     },
 
@@ -1567,11 +1579,259 @@ core = {
     'portcullis_key': {
         'type': 'other',
         'name': 'Portcullis Key',
-        'desc': '<i>This is the key to the portcullis. Without it, you will never get through.</i>',
+        'desc': (
+            '<i>This is the key to the portcullis. Without it, you will never '
+            'get through.</i>'
+        ),
     },
 
 }
 
+tenth_anniversary_survivors = {
+    'teleric_eye_tac': {
+        'type': 'pattern',
+        'name': 'Teleric Eye Tac',
+        'keywords': ['item', 'jewelry', 'other'],
+        'affinities': {'right': 'blue'},
+        'desc': (
+            '<font class="kdm_font">a</font>: Roll 3 hit location dice and '
+            'note the results. The next time you are hit, use one of these '
+            'results. (Discard the remaining noted results.)'
+        ),
+        'recipes': [
+            {
+                'gear_handles': {
+                    'cat_eye_circlet':1,
+                },
+                'resource_handles': {
+                    'golden_whiskers': 1,
+                    'sinew': 1
+                },
+                'crafting_process': [
+                    (
+                        'Spin Circlet on <b>Lion Tail</b> until lens comes '
+                        'free. Invert the lens and replace in Circlet.'
+                    ),
+                    (
+                        'Melt Golden Whiskers with <b>Heat</b> to form focal '
+                        'point beads to hang on back.'
+                    ),
+                    (
+                        'Soak the work in <b>Ammonia</b> to provide rigidity '
+                        'and give color.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'tempered_spear': {
+        'type': 'pattern',
+        'name': 'Tempered Spear',
+        'speed': 2,
+        'accuracy': 5,
+        'strength': 5,
+        'keywords': ['weapon','melee','spear','finesse','metal'],
+        'rules': ['Reach 2'],
+        'affinities': {
+            'top': 'red',
+            'right': 'blue',
+            'bottom': 'red',
+            'left': 'blue'
+        },
+        'affinity_bonus': {
+            'desc': (
+                'Add +1 to your Spear Specialization roll results with '
+                'this weapon'
+            ),
+            'requires': {
+                'puzzle': {'red': 2, 'blue': 2},
+            },
+        },
+        'recipes': [
+            {
+                'gear_handles': {
+                    'scrap_sword':1,
+                },
+                'resource_types': {
+                    'bone': 2,
+                },
+                'resource_handles': {
+                    'cloth': 1,
+                    'leather': 1,
+                },
+                'crafting_process': [
+                    (
+                        'Drive a pointed bone into the tang of the Scrap '
+                        'Sword, splintering it.'
+                    ),
+                    (
+                        'Combine marrow and scrap into a steaming slurry '
+                        'using <b>Scrap Smelting</b>. Beware of fumes.'
+                    ),
+                    (
+                        'Use steaming slurry and <b>Bone Club</b> to reform '
+                        'sword into a multi-pointed blade.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'plated_shield': {
+        'type': 'pattern',
+        'name': 'Plated Shield',
+        'keywords': ['weapon', 'melee', 'shield', 'finesse', 'metal'],
+        'speed': 1,
+        'accuracy': 8,
+        'strength': 3,
+        'rules': ['Frail', 'Deflect 1'],
+        'desc': '<b>Sharp</b> while you have any deflect tokens.',
+        'recipes': [
+            {
+                'gear_handles': {
+                    'monster_grease': 1,
+                    'round_leather_shield': 1,
+                },
+                'resource_handles': {
+                    'scrap': 3,
+                },
+                'crafting_process': [
+                    (
+                        'Compare blood pooling in a stone eye socket to blood '
+                        'running off <b>Stone Noses</b>.'
+                    ),
+                    (
+                        'Remove impact-absorbing material from a Round Leater '
+                        'Shield.'
+                    ),
+                    (
+                        'Polish spiral scrap plating with Monster Grease while '
+                        'wearing <b>metal arm armor</b>.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'tempered_axe': {
+        'type': 'pattern',
+        'name': 'Tempered Axe',
+        'keywords': ['weapon', 'melee', 'axe', 'finesse', 'metal'],
+        'affinities': {'bottom': 'red'},
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 6,
+        'rules': ['Paired'],
+        'desc': (
+            'When you use Axe Specialization, your second attempt to wound the '
+            'selected hit location gains <b>Sharp</b>.'
+        ),
+        'recipes': [
+            {
+                'gear_handles': {
+                    'bone_axe':1,
+                },
+                'resource_types': {
+                    'bone': 1,
+                },
+                'resource_handles': {
+                    'scrap': 1,
+                    'leather': 1,
+                },
+                'crafting_process': [
+                    (
+                        'Hollow out Bone Axe by soaking in <b>Ammonia</b> and '
+                        'scraping with bone tools. '
+                    ),
+                    (
+                        'Combine marrow and scrap into a steaming slurry using '
+                        '<b>Scrap Smelting</b>. Beware of fumes. '
+                    ),
+                    (
+                        'Coat entire axe with steaming slurry and fill hollow '
+                        'head with scrap for heft.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'tempered_dagger': {
+        'type': 'pattern',
+        'name': 'Tempered Dagger',
+        'keywords': ['weapon', 'melee', 'dagger', 'finesse', 'metal'],
+        'affinities': {'bottom': 'blue'},
+        'speed': 3,
+        'accuracy': 7,
+        'strength': 4,
+        'rules': ['Paired'],
+        'desc': (
+            'While using Dagger Specialization, you may discard all other '
+            'drawn hit locations to gain that much luck for your second '
+            'attempt to wound that hit location.'
+        ),
+        'recipes': [
+            {
+                'gear_handles': {
+                    'scrap_dagger':1,
+                },
+                'resource_types': {
+                    'bone': 1,
+                },
+                'resource_handles': {
+                    'scrap': 1,
+                    'leather': 1,
+                },
+                'crafting_process': [
+                    (
+                        'Consult a disgruntled aesthete complaining about '
+                        'Scrap Dagger design.'
+                    ),
+                    (
+                        'Combine marrow and scrap into a steaming slurry '
+                        'using <b>Scrap Smelting</b>. Beware of fumes.'
+                    ),
+                    (
+                        'Soften Scrap Dagger in slurry and fully reform. '
+                        'Sharpen with <b>Founding Stone</b>.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'vault_key_earrings': {
+        'type': 'pattern',
+        'name': 'Vault Key Earrings',
+        'keywords': ['item', 'jewelry', 'fragile'],
+        'affinities': {'right': 'green'},
+        'desc': (
+            'While you have this in your gear grid, choose one of your '
+            'disorders and ignore its effects.'
+        ),
+        'recipes': [
+            {
+                'resource_types': {
+                    'bone': 1,
+                },
+                'resource_handles': {
+                    'broken_lantern': 1,
+                    'cyclops_fly': 1,
+                },
+                'crafting_process': [
+                    (
+                        'Consult with a survior that has <b>Fear of the '
+                        "Dark</b> to understand the key's shape."
+                    ),
+                    (
+                        '<b>Heat</b> and fold the Broken Lantern innards '
+                        'to shape a key that unlocks the mind.'
+                    ),
+                    (
+                        'Brush thin coats of Cyclops Fly paste with <b>fur '
+                        'armor</b> bristles.'
+                    ),
+                ],
+            },
+        ],
+    },
+}
 
 beta_challenge_scenarios = {
     'arm_of_the_first_tree': {

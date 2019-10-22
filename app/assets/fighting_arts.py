@@ -88,6 +88,92 @@ fighting_art = {
     #   Expansions!
     #
 
+    # 10th anniversary 
+
+    'story_of_blood_1': {
+        'name': 'Story of Blood 1',
+        'type': 'strain',
+        'strain_milestone': 'plot_twist',
+        'desc': (
+            'At some point in your life, you learned a miraculous thing! '
+            'You cannot recall who taught you or what it was. For a moment, '
+            'you see a spectrum of colors in your blood. The first time you '
+            'gain a bleeding token during the showdown, gain +1 survival.'
+            '<br/><br/>'
+            '<b>Observation:</b> When <font class="kdm_font">d</font> is spent '
+            'at <b>Bloodletting</b> or <b>Sacrifice</b>, gain +1 '
+            '<span class="strain_block"></span>.'
+        ),
+        'strain_threshold': {
+            'blocks': 4,
+            'desc': 'Advance <b>Story of Blood 2</b>',
+        },
+    },
+    'story_of_blood_2': {
+        'name': 'Story of Blood 2',
+        'type': 'strain',
+        'strain_milestone': 'plot_twist',
+        'desc': (
+            'You dream of your skin hardening and turning deep red. '
+            'Your own image turns your stomach. Spend '
+            '<font class="kdm_font">a</font> to convert a bleeding token '
+            'into scab armor. Add <font class="inline_shield">1</font> to any '
+            'hit location and suffer 1 brain damage.'
+            '<br/><br/>'
+            '<b>Observation:</b> When you use this while you have 4+ bleeding '
+            'tokens, gain +1 <span class="strain_block"></span>.'
+        ),
+        'strain_threshold': {
+            'blocks': 4,
+            'desc': 'Advance <b>Story of Blood 3</b>',
+        },
+    },
+    'story_of_blood_3': {
+        'name': 'Story of Blood 3',
+        'type': 'strain',
+        'strain_milestone': 'plot_twist',
+        'desc': (
+            'The red creature of your nightmares wears your skin and speaks of '
+            'unending torment and eternal life. Spend '
+            '<font class="kdm_font">a</font> to convert a bleeding token '
+            'into scab armor. Add <font class="inline_shield">1</font> to any '
+            'hit location.'
+            '<br/><br/>'
+            '<b>Observation:</b> When another survivor dies from bleeding '
+            'tokens, gain +1 <span class="strain_block"></span>.'
+        ),
+        'strain_threshold': {
+            'blocks': 3,
+            'desc': 'Advance <b>Story of Blood 4</b>',
+        },
+    },
+    'story_of_blood_4': {
+        'name': 'Story of Blood 4',
+        'type': 'strain',
+        'strain_milestone': 'plot_twist',
+        'desc': (
+            "You peel back the monster's skin to reveal a mass of blood with "
+            'your likenesss. It hangs in the air briefly before collapsing and '
+            'washing the wasteland red. Spend '
+            '<font class="kdm_font">a</font> to convert a bleeding token '
+            'into scab armor. Add <font class="inline_shield">1</font> to all '
+            'hit locations. You may spend your bleeding tokens in place of '
+            'survival.'
+            '<br/><br/>'
+            '<b>Observation:</b> When you use this, gain +1 '
+            '<span class="strain_block"></span>.'
+        ),
+        'strain_threshold': {
+            'blocks': 7,
+            'desc': (
+                'You stress your heart. Roll 1d10. On a 6+, lose 1 '
+                '<span class="strain_block"></span>. Otherwise, you have a '
+                'heart attack and die.'
+            ),
+            'final': True,
+        },
+    },
+
     # dragon king
     'acrobatics': {
         'desc': 'When you are adjacent to the monster, you may spend <font class="kdm_font">c</font> to place your survivor on any other space adjacent to the monster.',
@@ -116,7 +202,11 @@ fighting_art = {
 
     # DBK
     'carapace_of_will': {
-        'desc': 'At the start of the showdown, gain the <b>Steadfast</b> survivor status card.<br/> When you are attacked, if you have 2+ steadfast tokens, ignore a hit and remove all your steadfast tokens.',
+        'desc': (
+            'At the start of the showdown, gain the <b>Steadfast</b> survivor '
+            'status card.<br/> When you are attacked, if you have 2+ steadfast '
+            'tokens, ignore a hit and remove all your steadfast tokens.'
+        ),
         'expansion': 'dung_beetle_knight',
         'name': 'Carapace of Will'
     },
@@ -358,7 +448,16 @@ When another survivor dies on the showdown board, place a token where they died.
 
     # flower knight
     'acanthus_doctor': {
-        'desc': 'You may wear up to 3 <b>Satchel</b> gear cards.<br/>When you <b>depart</b>, if you are not wearing any armor, for each <font id="Dormenatus">&#x02588;</font> you have, gain +1 strength token and add <font class="inline_shield">1</font> to all hit locations.<br/>Spend <font class="kdm_font">a</font> and a Flower or <b>Fresh Acanthus</b> resource to heal a permanent injury you or an adjacent survivor suffered this showdown.',
+        'desc': (
+            'You may wear up to 3 <b>Satchel</b> gear cards.<br/>When you '
+            '<b>depart</b>, if you are not wearing any armor, for each '
+            '<font id="Dormenatus">&#x02588;</font> you have, gain +1 '
+            'strength token and add <font class="inline_shield">1</font> '
+            'to all hit locations.<br/>Spend <font class="kdm_font">a</font> '
+            'and a Flower or <b>Fresh Acanthus</b> resource to heal a '
+            'permanent injury you or an adjacent survivor suffered this '
+            'showdown.'
+        ),
         'expansion': 'flower_knight',
         'name': 'Acanthus Doctor',
     },

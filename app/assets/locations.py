@@ -145,6 +145,12 @@ gear = {
         "color": "FF00FF",
         "selectable": False,
     },
+    "pattern": {
+        "name": "Pattern",
+        "font_color": "FFF",
+        "color": "9E999C",
+        "selectable": False,
+    },
     "black_harvest": {
         "name": "Black Harvest",
         "expansion": "dung_beetle_knight",

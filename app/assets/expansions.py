@@ -415,6 +415,18 @@ product_lines = {
 
 
     # white box
+    "tenth_anniversary_white_speaker": {
+        "name": "10th Anniversary White Speaker",
+        "ui": {"pretty_category": "White Box"},
+        "released": datetime(2019, 10, 9),
+        'strain_milestones': ['plot_twist'],
+    },
+
+    "tenth_anniversary_survivors": {
+        "name": "10th Anniversary Survivors",
+        "ui": {"pretty_category": "White Box"},
+        "released": datetime(2019, 10, 9),
+    },
 
     "fade": {
         "name": "Fade",
