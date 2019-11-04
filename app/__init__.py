@@ -120,10 +120,19 @@ def general_exception(exception):
 
     In non-production environments, we just raise it to the Flask debugger."""
 
+    API.logger.warn('Flask caught an unhandled exception!')
+
     if socket.getfqdn() != API.settings.get('server', 'prod_fqdn'):
+        err = "'%s' is not production! Raising exception..." % socket.getfqdn()
+        API.logger.warn(err)
         raise exception
 
-    utils.email_exception(exception)
+    try:
+        utils.email_exception(exception)
+    except Exception as e:
+        API.logger.error('An exception occurred while sending the alert email!')
+        API.logger.exception(e)
+
     try:
         return flask.Response(response=exception.msg, status=500)
     except AttributeError:

@@ -39,6 +39,14 @@ crossdomain = crossdomain_module.crossdomain
 #   Mongo!
 mdb = MongoClient()[settings.get("api", "mdb")]
 
+# the noUser class is used when emailing errors where we don't have an
+# authenticated user. This was missing from the 1.0.0 release and broke the
+# alert email feature...which buried a lot of errors. 
+class noUser:
+    def __init__(self):
+        self.login="admin@kdm-manager.com"
+        self._id = "666"
+
 
 #
 #   Application logging is all here. Do not fiddle with logging anywhere else!
@@ -231,11 +239,11 @@ def email_exception(exception):
     """ This is called by the main Flask errorhandler() decorator in api.py
     when we have an unhandled exception at any point of responding to a request.
 
-    This prevents user-facing (or Khoa-facing) failures from being silently
-    swallowed. """
+    This prevents user-facing failures from being silently swallowed. """
 
     # first, log it
     e_logger = get_logger(log_name='error')
+    e_logger.warn('Preparing to email exception!')
     e_logger.exception(exception)
 
     if not hasattr(flask.request, 'User'):
@@ -261,6 +269,7 @@ def email_exception(exception):
         recipients=API.settings.get('server', 'alert_email').split(','),
         html_msg=s
     )
+    e_logger.warn('Exception email sent!')
 
 
 
