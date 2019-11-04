@@ -210,7 +210,11 @@ def initiate_password_reset():
             netloc=netloc
         )
         e = utils.mailSession()
-        e.send(recipients=[user_login], html_msg=msg)
+        e.send(
+            recipients=[user_login],
+            html_msg=msg,
+            subject='KDM-Manager password reset request!'
+        )
     except Exception as e:
         logger.error(e)
         raise

@@ -448,7 +448,7 @@ def get_application_url(strip_http=False):
 
     fqdn = socket.getfqdn()
     if fqdn == settings.get("server", "prod_fqdn"):
-        output = settings.get('prod_url')
+        output = settings.get('server', 'prod_app_url')
     else:
         output = "https://%s" % (get_host_ip())
 
