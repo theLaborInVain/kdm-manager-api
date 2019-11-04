@@ -25,6 +25,7 @@ start_venv() {
     echo -e " * Python $PYTHON_VERS"
     echo -e " * FLASK_ENV=$FLASK_ENV"
     echo -e "\nPIP:"
+    pip install -r requirements.txt | grep -v 'already satisfied' 
     pip freeze $1 | while read x; do echo -e " * $x"; done
     echo -e
     echo -e "Flask server:"

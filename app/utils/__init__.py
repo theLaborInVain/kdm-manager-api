@@ -441,6 +441,23 @@ def decompose_name_string(name):
     return output
 
 
+def get_application_url(strip_http=False):
+    """ Determines the URL to use for API operations based on some socket
+    operations and settings from the settings.cfg. Defaults to using localhost
+    on the default API port defined in settings.cfg. """
+
+    fqdn = socket.getfqdn()
+    if fqdn == settings.get("server", "prod_fqdn"):
+        output = settings.get('prod_url')
+    else:
+        output = "https://%s" % (get_host_ip())
+
+    if strip_http:
+        return output[7:]
+    else:
+        return output
+
+
 def get_host_ip():
     """ Uses the 8.8.8.8 trick to get the localhost IP address. """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

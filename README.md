@@ -5,36 +5,37 @@ The API used by [https://kdm-manager.com](https://kdm-manager.com) and related
 * Webapp: [Flask](http://flask.pocoo.org/) + [AngularJS](https://angularjs.org/) (1.754)
 * Webserver: [NGINX](https://www.nginx.com/) + [Gunicorn](http://gunicorn.org/)
 
-# Important Information!
+
+# Important!
+
+**Neither the code stored in this repository nor the code deployed at
+[https://api.kdm-manager.com](https://api.kdm-manager.com)) are authorized,
+developed, supported by or otherwise affiliated with Kingdom Death or Adam 
+Poots Games, LLC.**
+
+# About
 
 Please read the information below before cloning or forking this repository.
 
-## About
-The KDM API is developed and maintained exclusively by 
-[The Labor in Vain](https://thelaborinvain.com).
+For more general information about this project, please refer to
+[the 'About' section of the project's development blog](http://kdm-manager.blogspot.com/p/credits-and-acknowledgements.html).
+
+
+## Licensing and permission
+The KDM API is developed and maintained by [The Labor in Vain](https://thelaborinvain.com)
+and the code in this repository is available under the terms of the MIT license
+(i.e. `LICENSE` in the project root directory).
+
+This license covers application code in this repository only. The license 
+**does not and cannot** pertain to the game assets (in the `/app/assets` 
+folder), which are __the sole property of Adam Poots Games, LLC.__ and which
+are presented here without authorization.
 
 
 ## Issues
 Please use
 [GitHub's Issues utility](https://github.com/theLaborInVain/kdm-manager-api/issues)
 to report issues to the repository maintainer.
-
-
-## Intellectual property
-**Neither the [https://kdm-manager.com](https://kdm-manager.com) service nor any
-of the software utilized by that service (including the API deployed at
-[https://api.kdm-manager.com](https://api.kdm-manager.com)) are developed,
-authorized, supported by or affiliated with Kingdom Death or Adam Poots Games,
-LLC.**
-
-For more information, please refer to
-[the 'About' section of the project's development blog](http://kdm-manager.blogspot.com/p/credits-and-acknowledgements.html).
-
-
-## Licensing and permission
-The MIT license (`LICENSE` in the project root directory) covers application and
-API code in this repository, but it does not and cannot cover the game assets
- (in the `/app/assets` folder), which are the sole property of Kingdom Death.
 
 
 

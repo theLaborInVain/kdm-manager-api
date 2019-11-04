@@ -202,9 +202,13 @@ def initiate_password_reset():
 
     # finally, send the email to the user
     try:
-        tmp_file = os.path.join(utils.settings.get("api","cwd"), "html/password_recovery.html")
-        msg = string.Template(file(tmp_file, "rb").read())
-        msg = msg.safe_substitute(login=user_login, recovery_code=user_code, app_url=application_url, netloc=netloc)
+        tmp_file = utils.html_file_to_template('password_recovery.html')
+        msg = tmp_file.safe_substitute(
+            login=user_login,
+            recovery_code=user_code,
+            app_url=application_url,
+            netloc=netloc
+        )
         e = utils.mailSession()
         e.send(recipients=[user_login], html_msg=msg)
     except Exception as e:

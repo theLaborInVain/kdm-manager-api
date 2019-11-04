@@ -140,6 +140,13 @@ def index():
     return flask.send_file("static/html/docs.html")
 
 
+@API.route("/robots.txt")
+def robots():
+    """ The default return for accessing https://api.kdm-manager.com (or
+    equivalent endpoint), which gets you the API docs. """
+    return flask.send_file("static/html/robots.txt")
+
+
 @API.route("/docs/<action>/<render_type>")
 def render_documentation(action, render_type=None):
     """ These routes get you various representations of the contents of the
