@@ -3703,7 +3703,13 @@ class Settlement(models.UserAsset):
         # Duck Typing!
 
         for attrib in ['survival_limit', 'population', 'death_count']:
-            self.settlement[attrib] = int(self.settlement[attrib])
+            try:
+                self.settlement[attrib] = int(self.settlement[attrib])
+            except TypeError:
+                err = 'Illegal %s value: %s! Resetting to zero!'
+                self.log_event(err % (attrib, self.settlement[attrib]))
+                self.settlement[attrib] = 0
+                self.perform_save = True
 
 
     def bug_fixes(self):
