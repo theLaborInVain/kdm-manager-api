@@ -2973,7 +2973,7 @@ class Settlement(models.UserAsset):
         return [n for n in notes]
 
 
-    def get_settlement_storage(self):
+    def get_settlement_storage(self, include_rollups=False):
         """ Returns a JSON-ish representation of settlement storage, meant to
         facilitate front-end design.
 
@@ -2981,68 +2981,24 @@ class Settlement(models.UserAsset):
         little messy.
         """
 
-        gear_total = 0
-        resources_total = 0
-
-        gear_keywords = {}
-        gear_rules = {}
-        resources_keywords = {}
-        resources_rules = {}
-
-
-        def rollup_keywords(kw_dict, kw_list):
-            """ Private func to add a list of keywords to a dictionary that keeps
-            a running tally of them ."""
-
-            for kw in kw_list:
-                if kw not in kw_dict.keys():
-                    kw_dict[kw] = 1
-                else:
-                    kw_dict[kw] += 1
-
-
         # get available storage locations into a dictionary of dicts
         storage_repr = self.get_available_assets(storage)['storage']
 
         # now update the dictionaries in the big dict to have a new key
-        # called 'inventory' where we will park note handles
+        # called 'inventory' where we will park asset handles
         for k in storage_repr.keys():
             storage_repr[k]['inventory'] = []
             storage_repr[k]['digest'] = collections.OrderedDict()
             storage_repr[k]['collection'] = []
 
-            S = storage.Storage(k)
+            # add COMPATIBLE item dicts to the 'collection' list
+            S = storage.Storage(k)  # storage object!
             for handle in S.get_collection():
-                if S.sub_type == 'gear':
-                    item_obj = gear.Gear(handle)
-                elif S.sub_type == 'resources':
-                    item_obj = resources.Resource(handle)
-                else:
-                    raise utils.InvalidUsage("Unknown item sub_type '%s'!" % S.sub_type)
-
-                # now that we've got an item object, touch it up and add it to the
-                # locations 'collection' dict, updating the keywords rollup as we go
+                item_obj = storage.handle_to_item_object(handle)
                 if self.is_compatible(item_obj):
-                    item_obj.quantity = self.settlement['storage'].count(item_obj.handle)
-
-                    if S.sub_type == 'gear':
-                        gear_total += item_obj.quantity
-                        for i in range(item_obj.quantity):
-                            rollup_keywords(gear_keywords, item_obj.keywords)
-                            rollup_keywords(gear_rules, item_obj.rules)
-                    elif S.sub_type == 'resources':
-                        resources_total += item_obj.quantity
-                        for i in range(item_obj.quantity):
-                            rollup_keywords(
-                                resources_keywords,
-                                item_obj.keywords
-                            )
-                            rollup_keywords(
-                                resources_rules,
-                                getattr(item_obj, 'rules', [])
-                            )
-
-                    storage_repr[k]['collection'].append(item_obj.serialize(dict))
+                    item_dict = item_obj.serialize(dict)
+                    item_dict['quantity'] = self.settlement['storage'].count(handle)
+                    storage_repr[k]['collection'].append(item_dict)
 
             # use expansion flair colors for gear locations from expansions
             if storage_repr[k]['sub_type'] == 'gear' and 'expansion' in storage_repr[k].keys():
@@ -3077,24 +3033,42 @@ class Settlement(models.UserAsset):
             for key, value in orig_digest.items():
                 storage_repr[k]['digest'].append(value)
 
-        #finally, package up our main dicts for export as JSON
+
+        #
+        #   POST PROCESS
+        #
         gear_dict = {
             'storage_type': 'gear',
             'name': 'Gear',
             'locations': [],
-            'total': gear_total,
-            'keywords': gear_keywords,
-            'rules': gear_rules,
         }
         reso_dict = {
             'storage_type': 'resources',
             'name': 'Resource',
             'locations': [],
-            'total': resources_total,
-            'keywords': resources_keywords,
-            'rules': resources_rules,
         }
 
+        #finally, package up our main dicts for export as JSON
+        if include_rollups:
+
+            g_kw, g_rules, g_total = self.get_settlement_storage_rollup(
+                'gear', 'all'
+            )
+            gear_dict['keywords'] = g_kw
+            gear_dict['rules'] = g_rules
+            gear_dict['total'] = g_total
+
+            r_kw, r_rules, r_total = self.get_settlement_storage_rollup(
+                'resources', 'all'
+            )
+            reso_dict['keywords'] = r_kw
+            reso_dict['rules'] = r_rules
+            reso_dict['total'] = r_total
+
+
+        # look through all dictionaries in strorage_repr(esentation) and make
+        # each into a member of the 'locations' list for the appropriate
+        # outbound dict
         for k in storage_repr.keys():
             if storage_repr[k]['sub_type'] == 'gear':
                 gear_dict['locations'].append(storage_repr[k])
@@ -3102,6 +3076,92 @@ class Settlement(models.UserAsset):
                 reso_dict['locations'].append(storage_repr[k])
 
         return json.dumps([reso_dict, gear_dict])
+
+
+    def get_settlement_storage_rollup(self, asset_type=None, rollup_type=None):
+        """ Returns a rollup dictionary (or count) based on 'asset_type' and
+        'rollup_type':
+
+            - asset_type = 'gear'
+            - asset_type = 'resources'
+
+            - rollup_type = 'keywords'      -- returns a dict
+            - rollup_type = 'resources'     -- returns a dict
+            - rollup_type = 'total'         -- returns an int
+
+            - rollup_type = 'all'           -- gets all three as a tuple
+
+        Finally, leave both kwargs set to None to get everything back as JSON.
+
+        """
+
+        # start the tallies
+        gear_count = 0
+        resources_count = 0
+
+        gear_kw_list = []
+        resources_kw_list = []
+        gear_rules_list = []
+        resources_rules_list = []
+
+        for handle in set(self.settlement['storage']):
+            item_count = self.settlement['storage'].count(handle)
+            item_obj = storage.handle_to_item_object(handle)
+
+            if item_obj.type == 'gear':
+                gear_count += item_count
+                gear_kw_list.extend(item_obj.keywords)
+            elif item_obj.type == 'resources':
+                resources_count += item_count
+                resources_kw_list.extend(item_obj.keywords)
+
+
+        def list_to_rollup(input_list):
+            """ private convenience/DRYness method for making a rollup dict"""
+            output = collections.OrderedDict()
+            for item in sorted(input_list):
+                output[item] = input_list.count(item)
+            return output
+
+        if asset_type == 'gear' and rollup_type == 'total':
+            return gear_count
+        elif asset_type == 'resources' and rollup_type == 'total':
+            return resources_count
+        elif asset_type == 'gear' and rollup_type == 'keywords':
+            return list_to_rollup(gear_kw_list)
+        elif asset_type == 'gear' and rollup_type == 'rules':
+            return list_to_rollup(gear_rules_list)
+        elif asset_type == 'gear' and rollup_type == 'all':
+            return (
+                list_to_rollup(gear_kw_list),
+                list_to_rollup(gear_rules_list),
+                gear_count
+            )
+        elif asset_type == 'resources' and rollup_type == 'keywords':
+            return list_to_rollup(resources_kw_list)
+        elif asset_type == 'resources' and rollup_type == 'rules':
+            return list_to_rollup(resources_rules_list)
+        elif asset_type == 'resources' and rollup_type == 'all':
+            return (
+                list_to_rollup(resources_kw_list),
+                list_to_rollup(resources_rules_list),
+                resources_count
+            )
+
+        # finall, if no kwargs, return everything:
+        output = {
+            'gear': {
+                'keywords': list_to_rollup(gear_kw_list),
+                'rules': list_to_rollup(gear_rules_list),
+                'total': gear_count
+            },
+            'resources': {
+                'keywords': list_to_rollup(resources_kw_list),
+                'rules': list_to_rollup(resources_rules_list),
+                'total': resources_count
+            },
+        }
+        return json.dumps(output)
 
 
     def get_survivor_special_attributes(self):
@@ -4227,6 +4287,12 @@ class Settlement(models.UserAsset):
             return Response(response=self.serialize('campaign'), status=200, mimetype="application/json")
         elif action == 'get_storage':
             return Response(response=self.get_settlement_storage(), status=200, mimetype="application/json")
+        elif action == 'get_storage_rollups':
+            return Response(
+                response=self.get_settlement_storage_rollup(),
+                status=200,
+                mimetype="application/json"
+            )
         elif action == "get_event_log":
             return Response(response=self.get_event_log("JSON"), status=200, mimetype="application/json")
         elif action == "gear_lookup":

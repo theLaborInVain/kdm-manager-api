@@ -475,6 +475,25 @@ product_lines = {
         'basic_hunt_event': ['sword_in_the_stone'],
     },
 
+    "oktoberfest_aya": {
+        "name": "Oktoberfest Aya",
+        "ui": {"pretty_category": "White Box"},
+        "released": datetime(2019, 10, 31),
+        'help': [
+            {
+                'type': 'gear',
+                'tip': (
+                    'The recipe for <b>Afterdeath Brew</b> requires the '
+                    '<b>Blistering Plasma Fruit</b> Strange Resource from the '
+                    '<i>Lonely Tree</i> expansion. Enabling <i>Oktoberfest '
+                    'Aya</i> for a settlement that does not also have '
+                    '<i>Lonely Tree</i> enabled will prevent the Manager from '
+                    'displaying the recipe correctly!'
+                ),
+            }
+        ],
+    },
+
 
 
 

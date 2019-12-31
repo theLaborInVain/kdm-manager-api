@@ -17,7 +17,7 @@ import socket
 import flask
 from flask_httpauth import HTTPBasicAuth
 import flask_jwt_extended
-
+import pymongo
 
 # create the app
 API = flask.Flask(__name__)
@@ -108,7 +108,15 @@ def after_request(response):
     return response
 
 
-# error handling
+#
+#   error handling/errorhandlers
+#
+
+@API.errorhandler(404)
+def four_oh_four(e):
+    """ Default 404 for the API, which gets a lot of bogus endpoint spam. """
+    return utils.http_404
+
 
 @API.errorhandler(Exception)
 @crossdomain(origin=['*'])
@@ -121,6 +129,11 @@ def general_exception(exception):
     In non-production environments, we just raise it to the Flask debugger."""
 
     API.logger.warn('Flask caught an unhandled exception!')
+
+    # in the criminal justice system, database failure is especially heinous
+    if isinstance(exception, pymongo.errors.ServerSelectionTimeoutError):
+        API.logger.error('The database is unavailable!')
+        utils.email_exception(exception)
 
     if socket.getfqdn() != API.settings.get('server', 'prod_fqdn'):
         err = "'%s' is not production! Raising exception..." % socket.getfqdn()

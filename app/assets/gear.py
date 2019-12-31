@@ -7,7 +7,11 @@ core = {
         'desc': 'When you <b>depart</b>, gain +2 insanity.<br/>You cannot gain disorders.',
         'affinities': {'right': 'blue'},
         'recipes': [
-            {'locations': ['barber_surgeon'], 'resource_types': {'leather': 2}, 'innovations': ['pictograph']},
+            {
+                'locations': ['barber_surgeon'],
+                'resource_types': {'leather': 2},
+                'innovations': ['pictograph']
+            },
         ],
     },
     'brain_mint': {
@@ -465,7 +469,12 @@ core = {
     'white_lion_coat': {
         'type': 'catarium',
         'name': 'White Lion Coat',
-        'desc': '<b>Pounce:</b> Spend <font class="kdm_font">c</font> and <font class="kdm_font">a</font> to move 3 spaces in a straight line. Then, if you moved 3 spaces, activate a melee weapon with +1 strength.',
+        'desc': (
+            '<b>Pounce:</b> Spend <font class="kdm_font">c</font> and <font '
+            'class="kdm_font">a</font> to move 3 spaces in a straight line. '
+            'Then, if you moved 3 spaces, activate a melee weapon with +1 '
+            'strength.'
+        ),
         'armor': 2,
         'location': 'body',
         'affinities': {'top': 'blue'},
@@ -641,7 +650,10 @@ core = {
         },
         'keywords': ['armor','set','leather'],
         'recipes': [
-            {'locations': ['leather_worker'], 'resource_types': {'leather':1, 'hide': 1}, },
+            {
+                'locations': ['leather_worker'],
+                'resource_types': {'leather':1, 'hide': 1},
+            },
         ],
     },
     'leather_bracers': {
@@ -831,7 +843,10 @@ core = {
         'type': 'organ_grinder',
         'name': 'Stone Noses',
         'keywords': ['item','jewelry'],
-        'desc': 'On <b>Arrival</b>, gain +1 survival, +1 insanity.<br/><b>Arrival:</b> At the start of the showdown.',
+        'desc': (
+            'On <b>Arrival</b>, gain +1 survival, +1 insanity.<br/>'
+            '<b>Arrival:</b> At the start of the showdown.'
+        ),
     },
 
     # plumery
@@ -1247,7 +1262,12 @@ core = {
         'type': 'starting_gear',
         'name': 'Founding Stone',
         'keywords': ['weapon','melee','stone'],
-        'desc': 'Spend <font class="kdm_font">a</font> to sling the stone from anywhere on the board! Archive this card for 1 automatic hit that inflicts a critical wound.<br/><b>Archive:</b> Return this card to the game box.',
+        'desc': (
+            'Spend <font class="kdm_font">a</font> to sling the stone from '
+            'anywhere on the board! Archive this card for 1 automatic hit '
+            'that inflicts a critical wound.<br/><b>Archive:</b> Return this '
+            'card to the game box.'
+        ),
         'speed': 2,
         'accuracy': 7,
         'strength': 1,
@@ -1264,7 +1284,11 @@ core = {
         'rules': ['Paired'],
         'desc': 'When you wound with this weapon, monster gains -1 toughness until end of the attack.',
         'recipes': [
-            {'locations': ['stone_circle'], 'resource_handles': {'large_flat_tooth': 1}, 'resource_types': {'pelt': 1}, },
+            {
+                'locations': ['stone_circle'],
+                'resource_handles': {'large_flat_tooth': 1},
+                'resource_types': {'pelt': 1},
+            },
         ],
     },
     'blood_paint': {
@@ -1833,6 +1857,7 @@ tenth_anniversary_survivors = {
     },
 }
 
+
 beta_challenge_scenarios = {
     'arm_of_the_first_tree': {
         'keywords': ['weapon', 'melee', 'club'],
@@ -1842,7 +1867,11 @@ beta_challenge_scenarios = {
         'speed': 2,
         'accuracy': 6,
         'strength': 4,
-        'desc': 'On a <b>Perfect Hit</b>, the monster gains -1 toughness token until the end of the round. A monster can only suffer this once per round.',
+        'desc': (
+            'On a <b>Perfect Hit</b>, the monster gains -1 toughness token '
+            'until the end of the round. A monster can only suffer this once '
+            'per round.'
+        ),
     },
     "ayas_spear": {
         'keywords': ['weapon', 'melee', 'spear'],
@@ -2151,7 +2180,15 @@ gorm = {
         'desc': 'When you critically wound, the next time a monster would draw AI, it performs <b>Basic Action</b> instead.',
         'affinities': {'left': 'blue'},
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'pure_bulb': 1, 'stout_kidney': 1, 'dense_bone': 1, 'jiggling_lard': 1}, },
+            {
+                'locations':['gormery'],
+                'resource_handles': {
+                    'pure_bulb': 1,
+                    'stout_kidney': 1,
+                    'dense_bone': 1,
+                    'jiggling_lard': 1
+                },
+            },
         ],
     },
 
@@ -2720,9 +2757,15 @@ sunstalker = {
         'accuracy': 5,
         'strength': 10,
         'keywords': ['weapon','melee','grand','heavy','two-handed','bone'],
-        'desc': """On the first <b>Perfect hit</b> each attack, this gains <b>devastating 1</b> until the end of the attack.""",
+        'desc': (
+            'On the first <b>Perfect hit</b> each attack, this gains '
+            '<b>devastating 1</b> until the end of the attack.'
+        ),
         'affinities': {'top': 'red', 'bottom': 'red'},
-        'affinity_bonus': {'desc': 'Loses the heavy keyword', 'requires': {'puzzle': {'red': 1}, 'complete': {'red': 2}}},
+        'affinity_bonus': {
+            'desc': 'Loses the heavy keyword',
+            'requires': {'puzzle': {'red': 1}, 'complete': {'red': 2}}
+        },
     },
     'sky_harpoon': {
         'expansion': 'sunstalker',
@@ -2815,7 +2858,127 @@ white_box = {
         ),
     },
 
-    # sword hunter
+    # oktoberfest aya
+
+    'afterdeath_brew': {
+        'name': 'Afterdeath Brew',
+        'expansion': 'oktoberfest_aya',
+        'type': 'pattern',
+        'keywords': ['item', 'consumable', 'soluble', 'other'],
+        'affinities': {'right': 'green'},
+        'desc': (
+            '<font class="kdm_font">a</font>: You <b>consume</b> this and gain '
+            '5 bleeding tokens.<br/> During the Aftermath, roll 1d10 for each '
+            'survivor that died from bleeding tokens. On a 9+, the brew saves '
+            'their life but makes them <b>deaf</b>.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'blistering_plasma_fruit': 1,
+                    'love_juice': 1,
+                    'scrap': 1
+                },
+                'crafting_process': [
+                    (
+                        'Boil mixture over <b>heat</b> to remove invasive '
+                        'microbes.'
+                    ),
+                    (
+                        'Knead <b>pottery</b> clay to create a cask. Bake, '
+                        'then glaze interior with <b>Love Juice</b>.'
+                    ),
+                    (
+                        'Set aside oily residue during skimming. Let cool '
+                        'until waxy then shape to create seal.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'brave_dirndl': {
+        'name': 'Brave Dirndl',
+        'expansion': 'oktoberfest_aya',
+        'type': 'pattern',
+        'armor': 1,
+        'location': 'body',
+        'aux_location': 'waist',
+        'keywords': ['armor', 'cloth'],
+        'affinities': {'right': 'red'},
+        'desc': (
+            'Once per lifetime, when you are a returning survivor and this is '
+            'the only armor you are wearing, gain +1 courage. If your '
+            'settlement has <b>Song of the Brave</b>, gain +1 permanent '
+            'strength too!'
+        ),
+        'recipes': [
+            {
+                'gear_handles': {
+                    'cloth': 2,
+                    'skullcap_hammer': 1,
+                },
+                'resource_handles': {
+                    'leather': 1,
+                },
+                'crafting_process': [
+                    (
+                        'Hear gleeful music of a <b>returning survivor with an '
+                        'instrument</b> to inspire design.'
+                    ),
+                    (
+                        'Reclaim hardware from Skullcap Hammer for motions '
+                        'used throughout ensemble.'
+                    ),
+                    (
+                        'Use <b>Bone Sickle</b> to properly size choker and '
+                        'armlet accessories.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'durendal': {
+        'name': 'Durendal',
+        'expansion': 'oktoberfest_aya',
+        'type': 'pattern',
+        'rules': ['Ethereal'],
+        'keywords': ['weapon', 'melee', 'sword', 'metal', 'other'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 9,
+        'affinities': {'bottom': 'red'},
+        'desc': (
+            'When you depart with  <font class="inline_shield">1</font> or '
+            'less at each hit location (after all other departing bonuses), '
+            'add armor equal to your courage to all hit locations.'
+
+        ),
+        'recipes': [
+            {
+                'undefined_ingredient': '1 x Other gear or resource, ',
+                'resource_handles': {
+                    'iron': 2,
+                    'leather': 1,
+                },
+                'crafting_process': [
+                    (
+                        'Eavesdrop on a sleeping <b>savior</b> to determine '
+                        "the blade's dimensions."
+                    ),
+                    (
+                        'Create custom <b>Blacksmith</b> tools with material '
+                        'from the other.'
+                    ),
+                    (
+                        'Collect bile off a <b>returning survivor who was '
+                        'Regurgitated</b> to cure leather.'
+                    ),
+                ],
+            },
+        ],
+    },
+
+    # Halloween White Speaker 2019
 
 }
 
@@ -3283,7 +3446,13 @@ dragon_king = {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
         'name': 'Dragon Armor Set',
-        'desc': 'Add <font class="inline_shield">1</font> to all hit locations.<br/><b>Charge:</b> Spend <font class="kdm_font">c a</font>. You leap into the air! Place your survivor on an unoccupied space exactly five spaces away in a straight line, then activate a melee weapon and attack with +2 accuracy and +5 strength.',
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+            '<br/><b>Charge:</b> Spend <font class="kdm_font">c a</font>. You '
+            'leap into the air! Place your survivor on an unoccupied space '
+            'exactly five spaces away in a straight line, then activate a '
+            'melee weapon and attack with +2 accuracy and +5 strength.'
+        ),
     },
     'dragon_belt': {
         'expansion': 'dragon_king',

@@ -246,6 +246,8 @@ class AssetCollection(object):
         for k in sorted(all_assets.keys()):
             self.assets[k] = all_assets[k]
 
+        self.handles = sorted(self.assets.keys())
+
 
     def set_default_max_values(self, default_max=1):
         """ Use this with asset collections where there is a 'max' attribute,

@@ -9,8 +9,33 @@
 
 from app.assets import storage
 from app.models import gear, resources
-from app import models
+from app import models, utils
 
+Gear = gear.Assets()
+Resources = resources.Assets()
+
+#
+#   general object methods
+#
+
+
+def handle_to_item_object(handle=None):
+    """ The authoritative way to turn a storage handle into a game asset
+    object. If you see this happening on the fly anywhere, then we've
+    failed. """
+
+    if handle in Gear.handles:
+        return gear.Gear(handle)
+    elif handle in Resources.handles:
+        return resources.Resource(handle)
+
+    err = 'Unknown game asset handle: %s' % handle
+    raise utils.InvalidUsage(err)
+
+
+#
+#   Asset collection
+#
 
 class Assets(models.AssetCollection):
 
@@ -20,7 +45,14 @@ class Assets(models.AssetCollection):
         models.AssetCollection.__init__(self,  *args, **kwargs)
 
 
+#
+#   Object
+#
+
 class Storage(models.GameAsset):
+    """ This is what is called a 'location' elsewhere, basically an object
+    that represents a group of items in storage. """
+
 
     def __init__(self, *args, **kwargs):
         models.GameAsset.__init__(self,  *args, **kwargs)
@@ -33,9 +65,9 @@ class Storage(models.GameAsset):
         location. """
 
         if self.sub_type == 'gear':
-            A = gear.Assets()
+            A = Gear
         elif self.sub_type == 'resources':
-            A = resources.Assets()
+            A = Resources
         else:
             self.logger.error(self.asset_dict)
             err_msg = "'%s' is not a valid 'sub_type' for storage asset: %s" % (
@@ -45,6 +77,3 @@ class Storage(models.GameAsset):
             raise ValueError(err_msg)
 
         return A.get_assets_by_sub_type(self.handle)
-
-
-
