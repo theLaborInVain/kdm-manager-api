@@ -394,7 +394,7 @@ class User(models.UserAsset):
         self.normalize()
 
         # check temporary users for expiration
-        if self.user['subscriber']['level'] >= 3:
+        if int(self.user['subscriber']['level']) >= 3:
             self.check_subscriber_expiration()
 
         # random initialization methods
@@ -901,6 +901,8 @@ class User(models.UserAsset):
                 return []
             else:
                 return [f["login"] for f in friends]
+        elif return_type == 'JSON':
+            return json.dumps(list(friends), default=json_util.default)
 
         return friends
 
@@ -1191,18 +1193,26 @@ class User(models.UserAsset):
         elif action == "rm_expansion_from_collection":
             self.rm_expansion_from_collection()
 
+        # social?
+        elif action == "get_friends":
+            return Response(
+                response=self.get_friends('JSON'),
+                status=200,
+                mimetype="application/json"
+            )
 
         else:
             # unknown/unsupported action response
-            self.logger.warn("Unsupported survivor action '%s' received!" % action)
+            err = "Unsupported survivor action '%s' received!" % action
+            self.logger.warn(err)
             return utils.http_400
 
 
-        # finish successfully
-        return Response(response="Completed '%s' action successfully!" % action, status=200)
-
-
-
+        # finish successfully; generic
+        return Response(
+            response="Completed '%s' action successfully!" % action,
+            status=200
+        )
 
 
 # ~fin

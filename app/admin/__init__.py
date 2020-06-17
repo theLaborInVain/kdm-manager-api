@@ -17,7 +17,7 @@ from app.admin import notifications, panel
 
 def get_data(resource=None):
     """ Retrieves various types of admin panel data. If the requester wants
-	something we don't have, raise a 422 """
+	something we don't have, raise a 400. """
 
     if resource == 'user_data':
         return panel.get_user_data()

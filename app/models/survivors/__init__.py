@@ -673,6 +673,9 @@ class Survivor(models.UserAsset):
         output.update({"notes": self.get_notes()})
         output.update({"survival_actions": self.get_survival_actions("JSON")})
 
+        # epithets will soon be replaced by tags
+        output['sheet']['tags'] = self.survivor['epithets']
+
         if return_type == dict:
             return output
 

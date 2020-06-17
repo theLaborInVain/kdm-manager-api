@@ -146,19 +146,23 @@ def dump_doc_to_cli(m, tab_spaces=2, gap_spaces=20, buffer_lines=0):
 
 
 # survivor dumper
-def dump_survivor_to_cli(s_id):
+def dump_survivor_to_cli(s_id, detailed=False):
     """ Dump a simplified representation of a survivor to the CLI buffer. """
 
     spacer = 30
 
     s = utils.mdb.survivors.find_one({'_id': s_id})
-    print(
-        "  %s\t" % s['_id'],
-        "%s | %s" % (s['sex'], s['name']),
-        " " * (spacer - len(s['name'])),
-        "created: %s" % (s['created_on'].strftime(utils.ymd)),
-        end=''
-    )
+
+    if detailed:
+        dump_doc_to_cli(s)
+    else:
+        print(
+            "  %s\t" % s['_id'],
+            "%s | %s" % (s['sex'], s['name']),
+            " " * (spacer - len(s['name'])),
+            "created: %s" % (s['created_on'].strftime(utils.ymd)),
+            end=''
+        )
 
     if s.get('removed', False):
         print(" / removed: %s" % (s['removed'].strftime(utils.ymd)), end='')
@@ -275,6 +279,13 @@ class AdministrationObject:
                                 "Dump user settlements (requires --user)."
                             ),
                             )
+        parser.add_argument("--survivors", dest="user_survivors",
+                            default=False, action="store_true",
+                            help=(
+                                "[USER] "
+                                "Dump user survivors (requires --user)."
+                            ),
+                            )
 
         # work with settlements
         parser.add_argument('--settlement', dest='settlement', default=None,
@@ -286,7 +297,7 @@ class AdministrationObject:
         parser.add_argument('--dump_settlement', dest='dump_settlement',
                             default=None, help = (
                                 "[SETTLEMENT] "
-                                "Work with a settlement"
+                                "Dump settlement details"
                             ),
                             action="store_true"),
         parser.add_argument('--event_log', dest='settlement_event_log',
@@ -298,6 +309,40 @@ class AdministrationObject:
                             default=False,
                             action="store_true",
                             )
+        parser.add_argument('--remove_settlement', dest='settlement_remove',
+                            help=(
+                                "[SETTLEMENT] "
+                                "Mark the settlement 'removed': this queues for"
+                                " it for automatic deletion."
+                                "(requires --settlement)."
+                            ),
+                            default=False,
+                            action="store_true",
+                            )
+        parser.add_argument('--unremove_settlement', dest='settlement_unremove',
+                            help=(
+                                "[SETTLEMENT] "
+                                "Remove the 'removed' flag and take the "
+                                "settlement out of the delete queue."
+                                "(requires --settlement)."
+                            ),
+                            default=False,
+                            action="store_true",
+                            )
+
+        # work with survivors
+        parser.add_argument('--survivor', dest='survivor', default=None,
+                            help=(
+                                "[SURVIVOR] "
+                                "Work with a survivor"
+                            ),
+                            metavar="135d137e3d81953941ed4e20")
+        parser.add_argument('--dump_survivor', dest='dump_survivor',
+                            default=None, help = (
+                                "[SURVIVOR] "
+                                "Dump survivor details"
+                            ),
+                            action="store_true"),
 
         # sysadmin / console cowboy / hacker shit
         parser.add_argument('--initialize', dest='initialize', default=False,
@@ -432,6 +477,10 @@ class AdministrationObject:
         if self.options.settlement is not None:
             self.work_with_settlement()
 
+        # work with survivor
+        if self.options.survivor is not None:
+            self.work_with_survivor()
+
         return 0
 
 
@@ -483,12 +532,15 @@ class AdministrationObject:
         )
 
         # password reset business logic
-        approval = "Y"
         if not force:
-            msg = " Reset password? Type YES to reset: "
+            msg = " Reset password? [YES]: "
             approval = input(msg)
 
-        if len(approval) > 0 and approval[0].upper() == 'Y':
+        # default to yes
+        if len(approval) == 0:
+            approval = 'Y'
+
+        if approval[0].upper() == 'Y':
             user_object.update_password('password')
             print(' Password has been reset!\n')
         else:
@@ -591,9 +643,12 @@ class AdministrationObject:
 
         um_object.dump()
 
-        # finally, if we're dumping settlements, do it now
+        # finally, if we're dumping settlements/survivors, do it now
         if self.options.user_settlements:
             um_object.dump_settlements()
+
+        if self.options.user_survivors:
+            um_object.dump_survivors()
 
 
     #
@@ -603,16 +658,24 @@ class AdministrationObject:
     def work_with_settlement(self):
         """ In which we perform settlement maintenance based on self.options."""
 
-        # first, see if self.options.user it looks like an email address
+        # first, see if self.options.settlement is a valid OID
         if not ObjectId.is_valid(self.options.settlement):
             msg = "'%s' does not look like a valid OID!" % (
                 self.options.settlement
             )
             raise ValueError(msg)
 
-        sm_object = SettlementManagementObject(
+        sm_object = SettlementAdministrationObject(
             oid=ObjectId(self.options.settlement)
         )
+
+        # do operations first
+        if self.options.settlement_remove:
+            sm_object.Settlement.remove()
+        if self.options.settlement_unremove:
+            sm_object.Settlement.unremove()
+
+        # now print the current state stuff
         sm_object.print_header()
 
         if self.options.dump_settlement:
@@ -620,6 +683,31 @@ class AdministrationObject:
 
         if self.options.settlement_event_log:
             sm_object.dump_event_log()
+
+
+    #
+    #   methods for working with a local survivor
+    #
+
+    def work_with_survivor(self):
+        """ What it sounds like."""
+
+        # first, see if self.options.settlement is a valid OID
+        if not ObjectId.is_valid(self.options.survivor):
+            msg = "'%s' does not look like a valid OID!" % (
+                self.options.survivor
+            )
+            raise ValueError(msg)
+
+        admin_object = SurvivorAdministrationObject(
+            oid=ObjectId(self.options.survivor)
+        )
+        admin_object.print_header()
+
+        if self.options.dump_survivor:
+            print()
+            dump_survivor_to_cli(admin_object._id, detailed=True)
+
 
 
 class UserManagementObject:
@@ -683,6 +771,18 @@ class UserManagementObject:
                 dump_settlement_to_cli(s['_id'])
 
 
+    def dump_survivors(self):
+        """ Dump a CLI summary of the user's survivors. """
+        survivors = utils.mdb.survivors.find({'created_by': self._id})
+        if survivors is not None:
+            ok = input(str(
+                "\n Press a key to dump %s survivors: " % survivors.count()
+            ))
+            print("\n", Style.BOLD, "User survivors:", Style.END)
+            for s in survivors:
+                dump_survivor_to_cli(s['_id'])
+
+
     def print_header(self):
         """ Prints a little header to stdout that says who we're working on."""
 
@@ -691,33 +791,86 @@ class UserManagementObject:
         )
 
 
-class SettlementManagementObject:
-    """ Like the UserManagementObject (above), the SettlementManagementObject
-    is basically a special object used only by admin methods that allows the
-    user to perform settlement maintenance. """
+class AssetAdministrationObject(object):
+    """ The base class used to initialize asset management objects, which are
+    objects that 'wrap' a regular asset object for administrative maintenance
+    purposes (i.e. stuff the normal API/app wouldn't do). """
 
-    def __init__(self, oid=None):
-        """ """
+    def __init__(self, *args, **kwargs):
+        """ Initialize an asset administration object. """
 
-        self._id = ObjectId(oid)
-        self.Settlement = models.settlements.Settlement(_id=self._id)
+        # start it up
+        self.args = args
+        self.kwargs = kwargs
+        self.logger = utils.get_logger()
+
+        # set asset type and collection first
+        if 'Administration' not in type(self).__name__:
+            err = 'Objects must include "Administration" in their name!'
+            raise TypeError(err)
+        self.asset_type = type(self).__name__.split('Administration')[0]
+        self.collection = self.asset_type.lower() + 's'
+
+        # now use args/kwargs to sets self.Survivor, self.Settlement, etc.
+        self._id = ObjectId(self.kwargs['oid'])
+
+        self.model = getattr(models, self.collection)           # models.settlements
+        self.asset_class = getattr(self.model, self.asset_type)  # models.settlements.Settlement
+
+        setattr(
+            self,
+            self.asset_type,
+            self.asset_class(_id=self._id)
+        )
+        self.load()
+
+        # log successful initialization
+        init_msg = 'Initialized adminstration object for %s' % (
+            getattr(self, self.asset_type),
+        )
+        self.logger.info(init_msg)
+
+
+    def load(self):
+        """ Sets attributes of self to be key/value pairs of the asset. """
+
+        record = getattr(
+            getattr(self, self.asset_type),
+            self.collection[:-1]
+        )
+
+        for k, v in record.items():
+            setattr(self, k, v)
 
 
     def print_header(self):
-        """ Prints a little header to stdout about the settlement."""
+        """ Prints a generic header to the CLI that describes the asset. """
 
         print(
-            " Working with settlement",
+            " Working with '%s' record for " % self.collection,
             Style.YELLOW,
-            self.Settlement.settlement['name'],
+            self.name.strip(),
             Style.END,
             self._id,
         )
 
         creator = utils.mdb.users.find_one(
-            {'_id': self.Settlement.settlement['created_by']}
+            {'_id': self.created_by}
         )
         print("  (created by: %s %s)" % (creator['login'], creator['_id']))
+
+
+
+class SurvivorAdministrationObject(AssetAdministrationObject):
+    """ Takes AssetAdministrationObject as its base class; has methods for
+    working with individual survivor records, etc. """
+
+
+
+class SettlementAdministrationObject(AssetAdministrationObject):
+    """ Like the UserManagementObject (above), the SettlementManagementObject
+    is basically a special object used only by admin methods that allows the
+    user to perform settlement maintenance. """
 
 
     def dump_event_log(self):

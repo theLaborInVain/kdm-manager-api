@@ -2589,12 +2589,19 @@ sunstalker = {
         'name': 'Apostle Crown',
         'armor': 3,
         'location': 'head',
-        'keywords': ['item','jewelry','other'],
-        'rules': ['Unique','Accessory'],
+        'keywords': ['item', 'jewelry', 'other'],
+        'rules': ['Unique', 'Accessory'],
         'affinities': {'bottom': 'blue','right':'red'},
-        'desc': 'At the start of your act, if you have any +1 strength tokens, reveal the next 4 monster hit locations and put them back in any order.',
+        'desc': (
+            'At the start of your act, if you have any +1 strength tokens, '
+            'reveal the next 4 monster hit locations and put them back in any '
+            'order.'
+        ),
         'recipes': [
-            {'locations': [{'handle':'sacred_pool', 'level':3}], 'resource_handles': {'legendary_horns': 1, 'phoenix_crest': 1}, },
+            {
+                'locations': [{'handle':'sacred_pool', 'level':3}],
+                'resource_handles': {'legendary_horns': 1, 'phoenix_crest': 1},
+            },
         ],
     },
     'cycloid_scale_armor': {
@@ -2684,7 +2691,11 @@ sunstalker = {
         'type': 'rare_gear',
         'name': 'Eye Patch',
         'keywords': ['item','leather'],
-        'desc': 'While you wear this, you are <b>blind</b> in one eye (-1 accuracy), if you are already <b>blind</b>, gain +2 strength for being a badass instead.',
+        'desc': (
+            'While you wear this, you are <b>blind</b> in one eye '
+            '(-1 accuracy), if you are already <b>blind</b>, gain +2 strength '
+            'for being a badass instead.'
+        ),
         'affinities': {'top': 'green', 'bottom': 'red'},
     },
     "gods_string": {
@@ -2693,7 +2704,10 @@ sunstalker = {
         'name': "God's String",
         'keywords': ['item','other'],
         'rules': ['Unique'],
-        'desc': "When a bow is below God's string, it gains <b>sharp</b>, and its range is increased by 1.",
+        'desc': (
+            "When a bow is below God's string, it gains <b>sharp</b>, and its "
+            "range is increased by 1."
+        ),
         'affinities': {'bottom': 'paired',},
     },
     'ink_blood_bow': {
@@ -2706,7 +2720,10 @@ sunstalker = {
         'speed': 2,
         'accuracy': 7,
         'strength': 8,
-        'desc': """Gains +1 strength for each bleeding token you have. Loses <b>cumbersome</b> when in darkness.""",
+        'desc': (
+            'Gains +1 strength for each bleeding token you have. Loses '
+            '<b>cumbersome</b> when in darkness.'
+        ),
     },
     'ink_sword': {
         'expansion': 'sunstalker',
@@ -2738,6 +2755,18 @@ sunstalker = {
         'expansion': 'sunstalker',
         'type': 'skyreef_sanctuary',
         'name': 'Quiver and Sunstring',
+        'keywords': ['item', 'leather', 'scale'],
+        'affinities': {'left': 'red', 'right': 'blue'},
+        'desc': (
+            'You may carry up to 3 arrow gear cards outside of your grid. '
+            '(All arrows you carry must be different.)'
+        ),
+        'affinity_bonus': {
+            'desc': 'All your bows gain +2 range.',
+            'requires': {
+                'complete': {'blue': 2, 'red': 1},
+            },
+        },
     },
     'shadow_saliva_shawl': {
         'expansion': 'sunstalker',
@@ -2771,6 +2800,16 @@ sunstalker = {
         'expansion': 'sunstalker',
         'type': 'skyreef_sanctuary',
         'name': 'Sky Harpoon',
+        'affinities': {'left': 'red'},
+        'speed': 2,
+        'accuracy': 5,
+        'strength': 5,
+        'rules': ['Reach 3', 'Savage'],
+        'desc': (
+            'Once per showdown, if monster is in reach, roll 1d10. On a '
+            '6+, you skewer it! It suffers 1 wound. Move it up to 3 spaces '
+            'towards you.'
+        ),
     },
     'sun_lure_and_hook': {
         'expansion': 'sunstalker',
@@ -2795,8 +2834,24 @@ sunstalker = {
         'name': 'Sunring Bow',
         'affinities': {'right': 'red', 'left': 'red'},
         'recipes': [
-            {'locations': [{'handle':'sacred_pool', 'level':2}], 'resource_handles': {'bladder': 1, 'phoenix_whisker': 1}, 'resource_types': {'bone': 6} },
+            {
+                'locations': [{'handle':'sacred_pool', 'level':2}],
+                'resource_handles': {'bladder': 1, 'phoenix_whisker': 1},
+                'resource_types': {'bone': 6},
+            },
         ],
+        'speed': 2,
+        'accuracy': 4,
+        'strength': 4,
+        'rules': ['Range: 5', 'Unique', 'Cumbersome'],
+        'keywords': ['weapon', 'ranged', 'two-handed', 'bone'],
+        'affinity_bonus': {
+            'desc': (
+                'On a <b>Perfect hit</b>, do not draw a hit location. Monster '
+                'suffers 1 wound.'
+            ),
+            'requires': { 'puzzle': {'red': 2}},
+        },
     },
     'sunshark_arrows': {
         'expansion': 'sunstalker',
@@ -2805,23 +2860,58 @@ sunstalker = {
         'speed': 1,
         'accuracy': 4,
         'strength': 6,
+        'keywords': ['items', 'ammunition', 'arrow', 'soluble'],
         'rules': ['Sharp','Ammo - Bow'],
-        'desc': """<b>Activation Limit 3:</b> May activate this up to 3 times per showdown (use tokens to track).""",
+        'desc': (
+            '<b>Activation Limit 3:</b> May activate this up to 3 times per '
+            'showdown (use tokens to track).'
+        ),
     },
     'sunshark_bow': {
         'expansion': 'sunstalker',
         'type': 'skyreef_sanctuary',
         'name': 'Sunshark Bow',
+        'keywords': ['weapon', 'melee', 'ranged', 'bow', 'two-handed'],
+        'rules': ['Sharp', 'Range: 1'],
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 0,
+        'affinities': {'bottom': 'red'},
+        'affinity_bonus': {
+            'desc': 'Gains +4 strength and <b>slow</>.',
+            'requires': {
+                'puzzle': {'red': 1},
+                'complete': {'red': 2},
+            }
+        },
     },
     'sunspot_dart': {
         'expansion': 'sunstalker',
         'type': 'skyreef_sanctuary',
         'name': 'Sunspot Dart',
+        'speed': 4,
+        'accuracy': 7,
+        'strength': 3,
+        'affinities': {'right': 'red'},
+        'keywords': ['weapon', 'ranged', 'thrown'],
+        'rules': ['Range: 5', 'Deadly', 'Activation Limit 3'],
+        'desc': (
+            'When you hit, there is an inspiring flash! Survivors adjacent to '
+            'the monster gain +1 survival.'
+        ),
     },
     'sunspot_lantern': {
         'expansion': 'sunstalker',
         'type': 'skyreef_sanctuary',
         'name': 'Sunspot Lantern',
+        'keywords': ['item', 'lantern'],
+        'affinities': {'left': 'green', 'right': 'green'},
+        'rules': ['+1 Accuracy'],
+        'desc': (
+            'You cast a 1 space shadow directly away from the monster. If the '
+            'shadow can be cast in two spaces, decide which space has it '
+            'until you move.'
+        ),
     },
 }
 

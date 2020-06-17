@@ -512,6 +512,9 @@ class Settlement(models.UserAsset):
             )
             output['game_assets']['monster_volumes_options'] = self.get_available_monster_volumes()
 
+            # transitional to their deprecation, epithets as tags
+            output["game_assets"]['tags'] = output['game_assets']['epithets']
+
             if request.log_response_time:
                 stop = datetime.now()
                 duration = stop - request.start_time
@@ -1855,15 +1858,32 @@ class Settlement(models.UserAsset):
     def update_attribute(self):
         """ Assumes a request context and looks for 'attribute' and 'modifier'
         keys in self.params. Uses them to increment (literally adds) the current
-        self.settlement[attribute] value. """
+        self.settlement[attribute] value.
+
+        Since this method only supports integers, non-existing attributes are
+        assumed/defaulted to zero!
+        """
 
         self.check_request_params(['attribute','modifier'])
         attribute = self.params["attribute"]
         modifier = self.params["modifier"]
 
-        self.settlement[attribute] = self.settlement[attribute] + modifier
+        # default non-existing attributes to zero and update
+        new_value = self.settlement.get(attribute, 0) + modifier
+        self.settlement[attribute] = new_value
+
+        # now log it as a settlement event
         attribute_pretty = attribute.title().replace('_',' ')
-        self.log_event("%s updated settlement %s to %s" % (request.User.login, attribute_pretty, self.settlement[attribute]))
+        msg = "%s updated settlement %s to %s"
+        self.log_event(
+            msg % (
+                request.User.login,
+                attribute_pretty,
+                self.settlement[attribute]
+            )
+        )
+
+        # save
         self.save()
 
 
@@ -2319,7 +2339,7 @@ class Settlement(models.UserAsset):
             available_e = s.get_available_endeavors()
             if available_e != []:
                 s_dict = s.serialize(dict, False)
-                s_dict['sheet']['endeavors'] = available_e
+                s_dict['endeavors'] = available_e
                 survivor_endeavors.append(s_dict)
         available['survivors'] = survivor_endeavors
 
@@ -4394,8 +4414,6 @@ class Settlement(models.UserAsset):
 
         elif action == 'set_inspirational_statue':
             self.set_inspirational_statue()
-        elif action == 'set_lantern_research_level':
-            self.set_lantern_research_level()
 
 
         elif action == 'toggle_strain_milestone':

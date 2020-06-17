@@ -6,14 +6,6 @@ kdm_manager = {
         "negative": "Disable",
         "patron_level": 2,
     },
-    "night_mode": {
-        "type": "Interface",
-        "desc": "<b>&beta;</b> UI Color Theme:",
-        "affirmative": "Dead Guardian (high contrast)",
-        "negative": "Glowing Center (default)",
-        "patron_level": 666,
-        'beta': True,
-    },
     "preserve_sessions": {
         "type": "General",
         "desc": "Preserve Sessions?",
@@ -21,6 +13,7 @@ kdm_manager = {
         "negative": "Remove sessions after 24 hours",
         "patron_level": 1,
     },
+
     "random_names_for_unnamed_assets": {
         "type": "New Asset Creation",
         "desc": "Let the Manager choose random names for Settlements/Survivors without names?",
@@ -49,19 +42,24 @@ kdm_manager = {
         "negative": "Hide controls",
         "patron_level": 0,
     },
-#    "update_timeline": {
-#        "type": "Automation",
-#        "desc": "Automatically Update Timeline with Milestone Story Events?",
-#        "affirmative": "Update settlement timelines when milestone conditions are met",
-#        "negative": "Do not automatically update settlement timelines",
-#        "patron_level": 0,
-#    },
     "show_epithet_controls": {
         "type": "Interface - Survivor Sheet",
         "desc": "Use survivor epithets (tags)?",
         "affirmative": "Show controls on Survivor Sheets",
         "negative": "Hide controls and tags on Survivor Sheets",
         "patron_level": 0,
+    },
+
+    # Interface
+    "night_mode": {
+        "type": "Interface",
+#        "desc": "<b>&beta;</b> UI Color Theme:",
+        "desc": "UI Color Theme:",
+        "affirmative": "Dead Guardian (high contrast)",
+        "negative": "Glowing Center (default)",
+        "patron_level": 2,
+#        "patron_level": 666,
+#        'beta': True,
     },
     "show_remove_button": {
         "type": "Interface",

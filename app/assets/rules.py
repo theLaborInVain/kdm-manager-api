@@ -2,37 +2,73 @@ core = {
     'accessory': {
         'name': 'Accessory',
         'type': 'keyword',
-        'desc': """A gear special rule. Accessory gear may be worn in addition to armor on a hit location. Each accessory specifies the hit location it covers.""",
+        'desc': (
+            'A gear special rule. Accessory gear may be worn in addition to '
+            'armor on a hit location. Each accessory specifies the hit '
+            'location it covers.'
+        ),
+    },
+    'activation_limit': {
+        'name': 'Activation Limit: N',
+        'type': 'special_rule',
+        'expansion': 'sunstalker',
+        'desc': (
+            'May activate this up to N times per showdown (use tokens to '
+            'track).'
+        ),
     },
     'ammo_bow': {
         'name': 'Ammo - Bow',
         'type': 'special_rule',
-        'desc': """A gear special rule. You must have a bow in your gear grid to activate this card. Ammo has the range of a bow in your gear grid.""",
+        'desc': (
+            'A gear special rule. You must have a bow in your gear grid '
+            'to activate this card. Ammo has the range of a bow in your '
+            'gear grid.'
+        ),
     },
     'ammuntion': {
         'name': 'Ammunition',
         'type': 'keyword',
-        'desc': """A gear keyword. This gear is ammunition for another weapon gear.""",
+        'desc': (
+            "A gear keyword. This gear is ammunition for another weapon gear."
+        ),
     },
     'archive': {
         'name': 'Archive',
         'type': 'keyword',
-        'desc': """Remove this card from play and return it to the game box. Unless it is recorded into settlement storage or the survivor's record sheet, any archived card is permanently lost.""",
+        'desc': (
+            'Remove this card from play and return it to the game box. Unless '
+            "it is recorded into settlement storage or the survivor's record "
+            "sheet, any archived card is permanently lost."
+        ),
     },
     'arrow': {
         'name': 'Arrow',
         'type': 'keyword',
-        'desc': """A gear keyword. This gear card is an arrow.""",
+        'desc': "A gear keyword. This gear card is an arrow.",
     },
     'balm': {
         'name': 'Balm',
         'type': 'keyword',
-        'desc': """A gear keyword. Balm items work by rubbing them on a survivor's skin.""",
+        'desc': (
+            "A gear keyword. Balm items work by rubbing them on a survivor's "
+            "skin."
+        ),
+    },
+    'blind': {
+        'name': 'Blind',
+        'type': 'special_rule',
+        'expansion': 'sunstalker',
+        'desc': '-1 Accuracy',
     },
     'block': {
-        'name': 'Block X',
+        'name': 'Block N',
         'type': 'special_rule',
-        'desc': """A gear special rule. Spend activation to ignore X hits the next time you are attacked. Lasts until your next act. A survivor may not use block more than once per attack.""",
+        'desc': (
+            'A gear special rule. Spend activation to ignore N hits the next '
+            'time you are attacked. Lasts until your next act. A survivor may '
+            'not use block more than once per attack.'
+        ),
     },
     'bone': {
         'name': 'Bone',
@@ -172,12 +208,20 @@ core = {
     'obstacle': {
         'name': 'Obstacle',
         'type': 'keyword',
-        'desc': """A terrain rule. This terrain blocks survivor and monster field of view. Interrupting ranged weapon attacks and monster targeting. To check if field of view is blocked, draw an imaginary line from the center of the miniature's base to the center of the intended target's base. If the line comes in contact with a space occupied by an obstacle, the field of view is blocked and the target is not In field of view.""",
+        'desc': (
+            'A terrain rule. This terrain blocks survivor and monster field of '
+            'view. Interrupting ranged weapon attacks and monster targeting. '
+            'To check if field of view is blocked, draw an imaginary line from '
+            "the center of the miniature's base to the center of the intended "
+            "target's base. If the line comes in contact with a space occupied "
+            "by an obstacle, the field of view is blocked and the target is "
+            'not In field of view.'
+        ),
     },
     'other': {
         'name': 'Other',
         'type': 'keyword',
-        'desc': """A gear keyword. The effects of this gear are otherworldly.""",
+        'desc': "A gear keyword. The effects of this gear are otherworldly.",
     },
     'outfit': {
         'name': 'Outfit',
@@ -194,11 +238,25 @@ core = {
         'type': 'keyword',
         'desc': """A gear keyword, in certain situations, this can be used to mine minerals.""",
     },
-    'range': {
-        'name': 'Range',
+    'prismatic': {
+        'name': 'Prismatic',
         'type': 'special_rule',
-        'desc': """A gear special rule. Survivors this many or fewer spaces away from a monster may attack with this weapon. Ranged weapons cannot be used If field of view to the monster is blocked (by terrain with the Obstacle rule).""",
-        'related': ['range','obstacle'],
+        'expansion': 'sunstalker',
+        'desc': (
+            'Your complete affinities and incomplete affinity halves count as '
+            'all colors.'
+        ),
+    },
+    'range': {
+        'name': 'Range: N',
+        'type': 'special_rule',
+        'desc': (
+            'A gear special rule. Survivors this many or fewer spaces away '
+            'from a monster may attack with this weapon. Ranged weapons cannot '
+            'be used If field of view to the monster is blocked (by terrain '
+            'with the Obtsacle rule).'
+        ),
+        'related': ['ranged','obstacle'],
     },
     'ranged': {
         'name': 'Ranged',

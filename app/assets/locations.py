@@ -196,7 +196,8 @@ location = {
                 "name": "Dead Guardian",
                 "desc": (
                     "The sleeping predator is gone. Without its protective "
-                    "presence, intelligent monsters draw near.<ul><li>You may "
+                    'presence, intelligent monsters draw near. '
+                    '<ul class="dead_guardian_ul"><li>You may '
                     "only hunt Lvl 3+ monsters</li><li>All departing survivors "
                     "must have 1 gear with the <i>lantern</i> keyword in their "
                     "gear grid.</li><li>If the settlement has the Final "

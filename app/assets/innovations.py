@@ -65,16 +65,29 @@ innovation = {
     "hovel": {
         "name": "Hovel",
         "innovation_type": "home",
-        "consequences": ["partnership","family","bed","shadow_dancing","bloodline","settlement_watch"],
+        "consequences": [
+            "partnership","family","bed","shadow_dancing",
+            "bloodline","settlement_watch"
+        ],
         "departure_buff": "Departing survivors gain +1 survival.",
         "departing_survival_bonus": {"general": 1},
         "survival_limit": 1,
-        'desc': 'The settlement accepts this nightmarish landscape as their home.<br/><b>Departing survivors</b> gain +1 survival.',
+        'desc': (
+            'The settlement accepts this nightmarish landscape as their '
+            'home.<br/><b>Departing survivors</b> gain +1 survival.'
+        ),
     },
     "partnership": {
         "name": "Partnership",
         "innovation_type": "home",
         "endeavors": ['partnership_default'],
+        'desc': (
+            'When you both <b>Arrive</b>, gain survival up to the survival '
+            'limit. Partners may only nominate each other for '
+            '<font class="kdm_font">g</font> <b>Intimacy</b>. When a partner '
+            'dies, the remaining partner gains a random disorder and loses '
+            'this ability.'
+        ),
     },
     "bed": {
         "name": "Bed",
@@ -143,7 +156,7 @@ innovation = {
     "nightmare_training": {
         "name": "Nightmare Training",
         "innovation_type": "education",
-        "consequences": ["round_stone_training"],
+        "consequences": ['arena', "round_stone_training"],
         "endeavors": ['nightmare_training_train'],
     },
     "storytelling": {
@@ -233,7 +246,11 @@ innovation = {
         "name": "Saga",
         "innovation_type": "music",
 #        "survivor_buff": "All newborn survivors gain +2 hunt experience and +2 survival from knowing the epic.",
-        'settlement_buff': "A telling of the settlement's survival set to a soft rhythmic beating of drums.<br/>All newborn survivors gain: +2 Courage, +2 Understanding, +2 Hunt XP.",
+        'settlement_buff': (
+            "A telling of the settlement's survival set to a soft rhythmic "
+            "beating of drums.<br/>All newborn survivors gain: +2 Courage, "
+            "+2 Understanding, +2 Hunt XP."
+        ),
 #        "newborn_survivor": {"hunt_xp": 2, "survival": 2},
         "newborn_survivor": {"hunt_xp": 2, "Courage": 2, "Understanding": 2},
     },
@@ -263,9 +280,22 @@ innovation = {
         "name": "Graves",
         'type': 'principle',
         "principle": "death",
-        "settlement_buff": 'All new survivors gain +1 understanding.<br/>When a survivor dies during the hunt or showdown phase, gain +2 <font class="kdm_font">d</font>.<br/>When a survivor dies during the settlement phase, gain +1 <font class="kdm_font">d</font>.',
+        "settlement_buff": (
+            'All new survivors gain +1 understanding.<br/>'
+            'When a survivor dies during the hunt or showdown phase, gain +2 '
+            '<font class="kdm_font">d</font>.<br/>'
+            'When a survivor dies during the settlement phase, gain +1 '
+            '<font class="kdm_font">d</font>.'
+        ),
         "survivor_buff": "All new survivors gain +1 understanding.",
         "new_survivor": {"Understanding": 1},
+        "desc": (
+            'All new survivors gain +1 understanding.<br/>'
+            'When a survivor dies during the hunt or showdown phase, gain +2 '
+            '<font class="kdm_font">d</font>.<br/>'
+            'When a survivor dies during the settlement phase, gain +1 '
+            '<font class="kdm_font">d</font>.'
+        ),
     },
     "cannibalize": {
         "name": "Cannibalize",
@@ -274,54 +304,103 @@ innovation = {
         "survival_limit": 1,
 #        "settlement_buff": "Whenever a survivor dies, draw one basic resource and add it to the settlement storage.",
         "settlement_buff": "Whenever a survivor dies, draw 1 basic resource and add it to the settlement storage. Do not gain a resource if a survivor is lost, ceases to exist, or is exiled.",
+        'desc': (
+            'Whenever a survivor dies, draw 1 basic resource and add it to '
+            'the settlement storage. Do not gain a resource if a survivor '
+            'is lost, ceases to exist, or is exiled.'
+        ),
     },
     "protect_the_young": {
         "name": "Protect the Young",
         'type': 'principle',
         "principle": "new_life",
-        "settlement_buff": "When rolling on the Intimacy story event, roll twice and pick one result.",
+        "settlement_buff": (
+            "When rolling on the Intimacy story event, roll twice and pick "
+            "one result."
+        ),
+        'desc': (
+            'The children are the future.<br/>'
+            'When rolling on the <b>Intimacy</b> story event, roll twice and '
+            'pick 1 result.'
+        ),
     },
     "survival_of_the_fittest": {
         "name": "Survival of the Fittest",
         'type': 'principle',
         "principle": "new_life",
         "survival_limit": 1,
-        "settlement_buff": "When rolling on the Intimacy story event, roll twice and pick the lowest result. All current and newborn survivors gain +1 strength and evasion.<br/>Once per lifetime, a survivor may reroll a single roll result. They must keep this new result.",
-#        "survivor_buff": "All current and newborn survivors gain +1 strength and evasion.",
+        "settlement_buff": (
+            "When rolling on the Intimacy story event, roll twice and pick the "
+            'lowest result. All current and newborn survivors gain +1 strength '
+            'and evasion.<br/>Once per lifetime, a survivor may reroll a '
+            'single roll result. They must keep this new result.'
+        ),
         "current_survivor": {"Strength": 1, "Evasion": 1},
         "newborn_survivor": {"Strength": 1, "Evasion": 1},
+        'desc': (
+            'When rolling on the <b>Intimacy</b> story event, roll twice and '
+            'pick the lowest result. All current and newborn survivors gain '
+            '+1 strength, +1 evasion.<br/>'
+            'Once per lifetime, a survivor may reroll a single roll result. '
+            'They must keep the new result.'
+        ),
     },
     "collective_toil": {
         "name": "Collective Toil",
         'type': 'principle',
         "principle": "society",
-        "settlement_buff": "At the start of the settlement phase, gain +1 Endeavor for every 10 population.",
+        "settlement_buff": (
+            "At the start of the settlement phase, gain +1 Endeavor for every "
+            "10 population.",
+        ),
+        'desc': (
+            'Your settlement leans into the storm. If everyone holds strong, '
+            'you will triumph.<br/>'
+            'At the start of the settlement phase, gain +1'
+            '<font class="kdm_font">d</font> for every 10 population.'
+        )
     },
     "accept_darkness": {
         "name": "Accept Darkness",
         'type': 'principle',
         "principle": "society",
         "survivor_buff": "Add +2 to all Brain Trauma Rolls.",
+        'desc': (
+            'The settlement no longer fears the darkness. Letting go means '
+            'your resolve cannot be cracked.<br/>'
+            'Add +2 to all <b>Brain Trauma</b> rolls.'
+        ),
     },
     "romantic": {
         "name": "Romantic",
         'type': 'principle',
         "principle": "conviction",
         "survival_limit": 1,
-#        "settlement_buff": "You may innovate one additional time during the settlement phase. In addition, all current and newborn survivors gain +1 understanding.",
-#        "survivor_buff": "All current and newborn survivors gain +1 understanding.",
-#        "current_survivor": {"Understanding": 1},
-#        "newborn_survivor": {"Understanding": 1},
-        "survivor_buff": "When you gain a random fighting art, draw 3 fighting art cards and select 1 to keep.",
+        "survivor_buff": (
+            "When you gain a random fighting art, draw 3 fighting art cards "
+            "and select 1 to keep."
+        ),
+        'desc': (
+            'Believe in the potential for beauty, decency, and ingenuity in '
+            'others.<br/>'
+            'When you gain a random fighting art, draw 3 fighting art cards '
+            'and select 1 to keep.'
+        ),
     },
     "barbaric": {
         "name": "Barbaric",
         'type': 'principle',
         "principle": "conviction",
         "survival_limit": 1,
-        "survivor_buff": "All current and newborn survivors gain +1 permanent Strength.",
+        "survivor_buff": (
+            "All current and newborn survivors gain +1 permanent Strength."
+        ),
         "current_survivor": {"Strength": 1},
         "newborn_survivor": {"Strength": 1},
+        'desc': (
+            'Believe in the power of human strength to overpower any obstacle. '
+            '<br/>All current and newborn survivors gain +1 permanent strength.'
+        ),
     },
 }
 

@@ -375,7 +375,8 @@ product_lines = {
         'name': 'Generic',
         'ui': {'pretty_category': 'Enhancement'},
         'subtitle': (
-            'Adds gear from the KD <i>Generic</i> line.'
+            'Adds gear from the KD <i>Generic</i> line. Includes: '
+            'Swashbuckler.'
         ),
     },
 
