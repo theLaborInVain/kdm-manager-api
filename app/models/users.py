@@ -320,15 +320,22 @@ def import_user(user_data=None):
 
         imported_assets = 0
         logger.warn("Importing %s assets..." % asset_name)
-        for asset in data[bytes(asset_name, 'utf-8')]:
-            imported_assets += 1
-            utils.mdb[asset_name].save(asset)
+        try:
+            for asset in data[bytes(asset_name, 'utf-8')]:
+                imported_assets += 1
+                utils.mdb[asset_name].save(asset)
+        except KeyError:
+            logger.error('No %s assets found in user data!' % asset_name)
         logger.warn("%s %s assets imported." % (imported_assets, asset_name))
 
     # load the important user assets to local
-    import_user_assets("settlements")
-    import_user_assets("settlement_events")
-    import_user_assets("survivors")
+    for asset_collection in [
+        'settlements',
+        'settlement_events',
+        'survivors',
+        'survivor_notes'
+    ]:
+        import_user_assets(asset_collection)
 
     # check for orphan survivors (i.e. ones with no settlement)
     for survivor in utils.mdb.survivors.find():

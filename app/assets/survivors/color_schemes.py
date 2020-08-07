@@ -1,4 +1,27 @@
 standard = {
+    'rulebook_white': {
+        'name':'Rulebook White T',
+        'style': {
+            'color': '#666666',
+            'background': '#fff',
+            'border-color': '#000',
+        },
+    },
+    'rulebook_pink': {
+        'name':'Rulebook Pink',
+        'style': {
+            'color': '#ffffdd',
+            'background': '#F25292',
+            'border-color': '#FE98C0',
+        },
+    },
+    'rulebook_blue': {
+        'name':'Rulebook Blue',
+        'style': {
+            'color': '#000',
+            'background': '#CCE5F3',
+        },
+    },
     'endeavor': {
         'name': 'Endeavor',
         'style': {

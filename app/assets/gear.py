@@ -2143,15 +2143,21 @@ gorm = {
         'name': 'Regeneration Suit',
         'keywords': ['item','gorm'],
         'armor': 2,
-        'location': 'chest',
+        'location': 'body',
         'rules': ['Accessory'],
         'affinities': {'top': 'green', 'left': 'green', 'bottom': 'green'},
         'affinity_bonus': {
-            'desc': 'At the end of the showdown, remove any permanent injuries you suffered this showdown.',
+            'desc': (
+                'At the end of the showdown, remove any permanent injuries '
+                'you suffered this showdown.'
+            ),
             'requires': {'complete': {'green': 2}, 'puzzle': {'green': 1}},
         },
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'stomach_lining': 1, 'jiggling_lard': 1}, },
+            {
+                'locations':['gormery'],
+                'resource_handles': {'stomach_lining': 1, 'jiggling_lard': 1},
+            },
         ],
     },
     'rib_blade': {
@@ -2165,7 +2171,11 @@ gorm = {
         'rules': ['Slow','Deadly'],
         'affinities': {'right': 'blue'},
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'meaty_rib': 1,}, 'resource_types': {'hide':1}, },
+            {
+                'locations':['gormery'],
+                'resource_handles': {'meaty_rib': 1,},
+                'resource_types': {'hide':1},
+            },
         ],
     },
     'riot_mace': {
@@ -3499,7 +3509,11 @@ dragon_king = {
         'strength': 4,
         'keywords': ['weapon','melee','shield','metal'],
         'rules': ['Block 1'],
-        'desc': 'Add <font class="inline_shield">1</font> to all hit locations.<br/><b>Block 1</b>. The first time you block a hit each showdown, gain the priority target token.',
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+            '<br/><b>Block 1</b>. The first time you block a hit each '
+            'showdown, gain the priority target token.'
+        ),
     },
     'blast_sword': {
         'expansion': 'dragon_king',
@@ -3510,15 +3524,18 @@ dragon_king = {
         'strength': 4,
         'keywords': ['weapon','melee','sword','bone'],
         'rules': ['Block 1'],
-        'desc': 'When you spend <font class="kdm_font">a</font> to block with this weapon, gain +1 survival.',
-        'affinities': {'bottom': 'red'},
+        'desc': (
+            'When you spend <font class="kdm_font">a</font> to block with this '
+            'weapon, gain +1 survival.'
+        ),
+        'affinities': {'bottom': 'red', 'top': 'green'},
     },
     'blue_power_core': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
         'name': 'Blue Power Core',
         'keywords': ['item','jewelry'],
-        'desc': 'All nuclear gear cards in your gear grid gain <b>Deadly 2</b>.',
+        'desc': 'All nuclear gear cards in your gear grid gain <b>Deadly 2</b>.'
     },
     'celestial_spear': {
         'expansion': 'dragon_king',
@@ -3530,7 +3547,10 @@ dragon_king = {
         'strength': 4,
         'keywords': ['weapon','melee','spear','metal'],
         'rules': ['Reach 2'],
-        'desc': 'Gain +5 strength when attacking with this weapon if you have a <b>constellation</b>.',
+        'desc': (
+            'Gain +5 strength when attacking with this weapon if you have a '
+            '<b>constellation</b>.'
+        ),
     },
     'dragon_armor_set': {
         'expansion': 'dragon_king',
@@ -3547,49 +3567,130 @@ dragon_king = {
     'dragon_belt': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
-        'name': 'Dragon Belt'
+        'name': 'Dragon Belt',
+        'armor': 4,
+        'location': 'waist',
+        'keywords': ['armor', 'set', 'metal'],
+        'affinities': {'left': 'red', 'bottom': 'blue'},
+        'affinity_bonus': {
+            'desc': (
+                'You are not knocked down from suffering a heavy injury.'
+            ),
+            'requires': {
+                'puzzle': {'blue': 1, 'red': 1},
+            },
+        },
     },
     'dragon_bite_bolt': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
-        'name': 'Dragon Bite Bolt'
+        'name': 'Dragon Bite Bolt',
+        'keywords': ['item', 'ammunition', 'arrow'],
+        'speed': 1,
+        'accuracy': 6,
+        'strength': 6,
+        'rules': ['Slow', 'Ammo - Bow', 'Devastating 1'],
+        'desc': (
+            'If you wound the monster, it suffers <b>knockback 5</b>. Use '
+            'once per showdown.'
+        ),
     },
     'dragon_boots': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
-        'name': 'Dragon Boots'
+        'name': 'Dragon Boots',
+        'armor': 4,
+        'location': 'legs',
+        'keywords': ['armor', 'set', 'metal'],
+        'desc': 'Gain +2 movement during your act.',
+        'affinities': {'top': 'green', 'right': 'red'},
     },
     'dragon_chakram': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
-        'name': 'Dragon Chakram'
+        'name': 'Dragon Chakram',
+        'keywords': ['weapon', 'ranged', 'thrown', 'bone'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 3,
+        'rules': ['Range: 3'],
+        'desc': (
+            'If you hit, the monster gains -1 evasion until the end of the '
+            'round. Limit, once per attack.'
+        ),
     },
     'dragon_gloves': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
-        'name': 'Dragon Gloves'
+        'name': 'Dragon Gloves',
+        'affinities': {'top': 'blue', 'right': 'green'},
+        'armor': 4,
+        'location': 'arms',
     },
     'dragon_mantle': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
-        'name': 'Dragon Mantle'
+        'name': 'Dragon Mantle',
+        'armor': 4,
+        'location': 'body',
+        'keywords': ['armor','set','metal'],
+        'affinities': {
+            'top': 'red', 'right': 'blue', 'bottom': 'green', 'left': 'green'
+        },
+        'affinity_bonus': {
+            'desc': (
+                'At the start of the showdown, you beat your chest mightily '
+                'and gain survival up to the survival limit.'
+            ),
+            'requires': {
+                'puzzle': {'red': 1, 'blue': 1, 'green': 2},
+            },
+        },
     },
     'dragon_vestments': {
         'expansion': 'dragon_king',
         'type': 'rare_gear',
         'name': 'Dragon Vestments',
         'keywords': ['item','silk','other'],
-        'desc': 'Add <font class="inline_shield">1</font> to all hit locations.<br/>When you gain a random fighting art, select a Dragon Trait one instead.',
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+            '<br/>When you gain a random fighting art, select a Dragon '
+            'Trait one instead.'
+        ),
     },
     'dragonskull_helm': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
         'name': 'Dragonskull Helm',
+        'armor': 4,
+        'location': 'head',
+        'keywords': ['armor', 'set', 'bone', 'metal'],
+        'affinities': {'right': 'red', 'left': 'red', 'bottom': 'red'},
+        'affinity_bonus': {
+            'desc': (
+                'Gain +1 to all severe <font class="kdm_font_2">b</font> '
+                'injury roll results. Ignore <b>shattered jaw</b> severe '
+                '<font class="kdm_font_2">b</font> injury result. '
+            ),
+            'requires': {
+                'puzzle': {'red': 2}
+            },
+        },
     },
     'hazmat_shield': {
         'expansion': 'dragon_king',
         'type': 'rare_gear',
-        'name': 'Hazmat Shield'
+        'name': 'Hazmat Shield',
+        'keywords': ['weapon', 'melee', 'shield', 'metal', 'heavy'],
+        'speed': 2,
+        'accuracy': 4,
+        'strength': 7,
+        'rules': ['Block 2'],
+        'desc': (
+            'Add <font class="inline_shield">2</font> to all hit locations. '
+            'When the monster performs <b>Unseen Agony</b> or <b>Meltdown</b>, '
+            'roll 1d10. On a 2+, you suffer no damage.'
+        ),
     },
     'husk_of_destiny': {
         'expansion': 'dragon_king',
@@ -3602,12 +3703,45 @@ dragon_king = {
     'nuclear_knife': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
-        'name': 'Nuclear Knife'
+        'name': 'Nuclear Knife',
+        'keywords': ['weapon', 'melee', 'dagger', 'nuclear'],
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 3,
+        'affinities': {
+            'top': 'blue', 'right': 'red', 'bottom': 'green', 'left': 'blue',
+        },
+        'affinity_bonus': {
+            'desc': (
+                '<font class="kdm_font">a</font>: Edge ignites! Suffer 3 '
+                'brain damage. Your next attack with this weapon gains '
+                '<b>devastating 1</b>. Limit, once per round.'
+            ),
+            'requires': {
+                'puzzle': {'green': 1, 'red': 1, 'blue': 1},
+            },
+        },
     },
     'nuclear_scythe': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
-        'name': 'Nuclear Scythe'
+        'name': 'Nuclear Scythe',
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 4,
+        'affinities': {'top': 'red', 'left': 'blue', 'bottom': 'red'},
+        'keywords': ['weapon', 'melee', 'scythe', 'two-handed', 'nuclear'],
+        'rules': ['Reach 2'],
+        'affinity_bonus': {
+            'desc': (
+                '<font class="kdm_font">a</font>: Edge ignites! Suffer 3 '
+                'brain damage. Your next attack with this weapon gains '
+                '<b>devastating 1</b>. Limit, once per round.'
+            ),
+            'requires': {
+                'puzzle': {'red': 2, 'blue': 1},
+            },
+        },
     },
     'red_power_core': {
         'expansion': 'dragon_king',
@@ -3626,14 +3760,20 @@ dragon_king = {
         'speed': 1,
         'accuracy': 5,
         'strength': 2,
-        'desc': 'Gain +1 speed and +4 strength when attacking with this weapon if you have a <b>Constellation</b>.',
+        'desc': (
+            'Gain +1 speed and +4 strength when attacking with this '
+            'weapon if you have a <b>Constellation</b>.'
+        ),
     },
     'shielded_quiver': {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
         'name': 'Shielded Quiver',
         'keywords': ['item','leather'],
-        'desc': 'You may activate and gain the benefits of each arrow gear in your grid one additional time each showdown.',
+        'desc': (
+            'You may activate and gain the benefits of each arrow gear in '
+            'your grid one additional time each showdown.'
+        ),
     },
     'talon_knife': {
         'expansion': 'dragon_king',
@@ -3645,7 +3785,10 @@ dragon_king = {
         'strength': 4,
         'affinities': {'top': 'blue','left': 'blue'},
         'rules': ['Paired'],
-        'desc': 'If all of your attack rolls hit, gain <b>Savage</b> and <b>Deadly</b> until the end of your attack.',
+        'desc': (
+            'If all of your attack rolls hit, gain <b>Savage</b> and '
+            '<b>Deadly</b> until the end of your attack.'
+        ),
     },
 }
 
@@ -4082,49 +4225,143 @@ flower_knight = {
     'flower_knight_badge': {
         'expansion': 'flower_knight',
         'type': 'sense_memory',
-        'name': 'Flower Knight Badge'
+        'name': 'Flower Knight Badge',
+        'keywords': ['item', 'jewelry', 'badge'],
+        'rules': ['Unique'],
+        'desc': (
+            'At the start of the showdown, draw 1 tactics card and gain +1 '
+            'evasion token.'
+        ),
+        'affinities': {'top': 'blue'},
     },
     'flower_knight_helm': {
         'expansion': 'flower_knight',
         'type': 'rare_gear',
-        'name': 'Flower Knight Helm'
+        'name': 'Flower Knight Helm',
+        'keywords': ['armor','heavy'],
+        'rules': ['+1 Accuracy'],
+        'armor': 3,
+        'location': 'head',
+        'affinities': {'bottom': 'blue'},
+        'affinity_bonus': {
+            'desc': 'While you are being attacked the monster has -1 speed.',
+            'requires': {
+                'puzzle': {'blue': 1},
+                'complete': {'green': 3},
+            },
+        },
     },
     'replica_flower_sword': {
         'expansion': 'flower_knight',
         'type': 'rare_gear',
-        'name': 'Replica Flower Sword'
+        'name': 'Replica Flower Sword',
+        'keywords': ['weapon', 'melee', 'grand', 'sword'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 6,
+        'affinities': {'left': 'green', 'top': 'red', 'right': 'red'},
+        'rules': ['Devastating 1'],
+        'desc': 'You cannot dodge.',
+        'affinity_bonus': {
+            'desc': 'Gains <b>Sharp</b>, +1 Evasion.',
+            'requires': {
+                'puzzle': {'green': 1},
+                'complete': {
+                    'red': 1,
+                    'green': 2,
+                },
+            },
+        },
     },
     'satchel': {
         'expansion': 'flower_knight',
         'type': 'sense_memory',
-        'name': 'Satchel'
+        'name': 'Satchel',
+        'keywords': ['item', 'heavy', 'stinky'],
+        'affinities': {'top': 'green', 'left': 'green', 'bottom': 'green'},
+        'desc': (
+            'You may <b>depart</b> with one resource card. If that resource '
+            'is <b>Perishable</b>, it is not destroyed.'
+        ),
     },
     'sleeping_virus_flower': {
         'expansion': 'flower_knight',
         'type': 'rare_gear',
-        'name': 'Sleeping Virus Flower'
+        'name': 'Sleeping Virus Flower',
+        'keywords': ['item','flammable'],
+        'affinities': {
+            'left': 'blue', 'right': 'blue', 'top': 'blue', 'bottom': 'blue'
+        },
+        'rules': ['+1 Luck', 'Cursed'],
+        'desc': (
+            'When you die, a flower bloomes from your corpse. Add '
+            '<font class="kdm_font">g</font> <b>A Warm Virus</b> to the '
+            'timeline next year. You are the guest.'
+        ),
     },
     'vespertine_arrow': {
         'expansion': 'flower_knight',
         'type': 'sense_memory',
-        'name': 'Vespertine Arrow'
+        'name': 'Vespertine Arrow',
+        'keywords': ['item','ammunition','arrow'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 0,
+        'rules': ['Ammo - Bow', 'Deadly 4'],
+        'desc': (
+            'Archive after use. If your attack misses, place a '
+            '<b>Flower Patch</b> terrain tile adjacent to the monster.'
+        ),
     },
     'vespertine_bow': {
         'expansion': 'flower_knight',
         'type': 'sense_memory',
-        'name': 'Vespertine Bow'
+        'name': 'Vespertine Bow',
+        'keywords': ['weapon', 'ranged', 'bow', 'two-handed', 'other'],
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 6,
+        'rules': ['Range: 5', 'Deadly'],
+        'desc': (
+            'Before each attack, you may choose for Vespertine Bow to have '
+            '<b>slow</b>, +4 accuracy, and <b>Range: 9</b> for that attack.'
+        ),
+        'affinities': {'left': 'blue', 'right': 'green'},
     },
     'vespertine_cello': {
         'expansion': 'flower_knight',
         'type': 'sense_memory',
-        'name': 'Vespertine Cello'
+        'name': 'Vespertine Cello',
+        'keywords': ['item', 'instrument', 'noisy', 'other'],
+        'rules': ['Unique'],
+        'desc': (
+            'At start of showdown, all other survivors with an instrument '
+            'in their gear grid gain +1 luck token.'
+        ),
+        'affinities': {'bottom': 'blue'},
     },
     'vespertine_foil': {
         'expansion': 'flower_knight',
         'type': 'sense_memory',
-        'name': 'Vespertine Foil'
+        'name': 'Vespertine Foil',
+        'keywords': ['weapon', 'melee', 'sword', 'fragile'],
+        'speed': 4,
+        'accuracy': 5,
+        'strength': 1,
+        'affinities': {'left': 'red', 'right': 'blue'},
+        'desc': (
+            'At the beginning of each settlement phase, archive this unless '
+            'you spend 1 Flower resource.'
+        ),
+        'affinity_bonus': {
+            'desc': 'Gains <b>deadly 2</b>.',
+            'requires': {
+                'puzzle': {'blue': 1, 'red': 1},
+            },
+        },
     },
 }
+
 
 lion_knight = {
     'hideous_disguise': {
@@ -4156,7 +4393,11 @@ slenderman = {
         'name': 'Dark Water Vial',
         'keywords': ['item','consumable','gloomy','fragile'],
         'affinities': {'bottom': 'green'},
-        'desc': '<font class="kdm_font">a</font> <b>Consume:</b> You are knocked down and cannot gain bleeding tokens until the end of the round. Use once per showdown.',
+        'desc': (
+            '<font class="kdm_font">a</font> <b>Consume:</b> You are knocked '
+            'down and cannot gain bleeding tokens until the end of the round. '
+            'Use once per showdown.'
+        ),
     },
     'gloom_bracelets': {
         'expansion': 'slenderman',
@@ -4164,8 +4405,13 @@ slenderman = {
         'name': 'Gloom Bracelets',
         'keywords': ['item','jewelry','gloomy','fragile','heavy'],
         'rules': ['Accessory'],
-        'desc': 'When you <b>depart</b>, gain +2 insanity. When you suffer a severe arm injury, archive this card.',
+        'desc': (
+            'When you <b>depart</b>, gain +2 insanity. When you suffer a '
+            'severe arm injury, archive this card.'
+        ),
         'affinities': {'left': 'red', 'right': 'red', 'bottom': 'blue'},
+        'armor': 6,
+        'location': 'arms',
     },
     'gloom_coated_arrow': {
         'expansion': 'slenderman',
@@ -4173,7 +4419,10 @@ slenderman = {
         'name': 'Gloom-Coated Arrow',
         'rules': ['Ammo - Bow','Cumbersome','Deadly'],
         'keywords': ['item','ammunition','arrow','gloomy'],
-        'desc': 'After attempting to wound each hit location, place it on top of the deck instead of in the discard pile. Use once per showdown.',
+        'desc': (
+            'After attempting to wound each hit location, place it on top of '
+            'the deck instead of in the discard pile. Use once per showdown.'
+        ),
         'speed': 5,
         'accuracy': 6,
         'strength': 5,
@@ -4183,9 +4432,14 @@ slenderman = {
         'type': 'light_forging',
         'name': 'Gloom Cream',
         'keywords': ['item','consumable','balm','gloomy','stinky','other'],
-        'affinities': {'left': 'red','top':'blue', 'right':'red', 'bottom': 'blue'},
+        'affinities': {
+            'left': 'red','top':'blue', 'right':'red', 'bottom': 'blue'
+        },
         'affinity_bonus': {
-            'desc': 'When you <b>Depart</b>, gain -3 Hunt XP, -1 understanding. If you have no understanding, die instantly.',
+            'desc': (
+                'When you <b>Depart</b>, gain -3 Hunt XP, -1 understanding. '
+                'If you have no understanding, die instantly.'
+            ),
             'requires': {
                 'complete': {'blue': 2},
                 'puzzle': {'red': 2},
@@ -4202,14 +4456,24 @@ slenderman = {
         'speed': 2,
         'accuracy': 7,
         'strength': 13,
-        'desc': 'When you wound, end your attack (cancel reactions). Gain the monster controller tile and full move the monster directly away from you.',
+        'desc': (
+            'When you wound, end your attack (cancel reactions). Gain the '
+            'monster controller tile and full move the monster directly away '
+            'from you.'
+        ),
     },
     'gloom_katana': {
         'expansion': 'slenderman',
         'type': 'light_forging',
         'name': 'Gloom Katana',
-        'keywords': ['weapon','melee','katana','two-handed','finesse','gloomy','other'],
-        'desc': "Your insanity is added to this weapon's strength. When Gloom Sheath is right of this in your gear grid, Gloom Katana gains <b>Savage</b>.",
+        'keywords': [
+            'weapon','melee','katana','two-handed','finesse','gloomy','other'
+        ],
+        'desc': (
+            "Your insanity is added to this weapon's strength. When Gloom "
+            "Sheath is right of this in your gear grid, Gloom Katana gains "
+            "<b>Savage</b>."
+        ),
         'affinities': {'right': 'paired'},
         'speed': 4,
         'accuracy': 5,
@@ -4221,7 +4485,11 @@ slenderman = {
         'name': 'Gloom Mehndi',
         'keywords': ['item','gloomy','soluble'],
         'affinities': {'left': 'blue', 'right': 'red', 'bottom': 'red'},
-        'desc': 'When you <b>depart</b>, gain <font class="inline_shield">1</font> to all hit locations. When you gain the <b>Crystal Skin</b> ability, gain the <b>Crystal Sword Mold</b> strange resource.',
+        'desc': (
+            'When you <b>depart</b>, gain <font class="inline_shield">1</font> '
+            'to all hit locations. When you gain the <b>Crystal Skin</b> '
+            'ability, gain the <b>Crystal Sword Mold</b> strange resource.'
+        ),
     },
     'gloom_sheath': {
         'expansion': 'slenderman',
@@ -4232,8 +4500,7 @@ slenderman = {
         'affinity_bonus': {
             'desc': 'At the start of your act, gain +1 insanity.',
             'requires': {
-                'puzzle': {'red': 1},
-                'complete': {'blue': 1},
+                'puzzle': {'red': 1},'complete': {'blue': 1},
             },
         },
         'affinities': {'top': 'red'}
@@ -4243,7 +4510,10 @@ slenderman = {
         'type': 'light_forging',
         'name': 'Raptor-Worm Collar',
         'keywords': ['item','jewelry','gloomy'],
-        'desc': 'You may <b>encourage</b> without spending survival. When you <b>encourage</b> a survivor, they suffer 2 brain damage.',
+        'desc': (
+            'You may <b>encourage</b> without spending survival. When you '
+            '<b>encourage</b> a survivor, they suffer 2 brain damage.'
+        ),
         'affinities': {'right': 'red', 'bottom': 'green'},
 
     },

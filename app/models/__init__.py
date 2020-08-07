@@ -1230,14 +1230,19 @@ class UserAsset(object):
                         "%s [%s]" % (self.survivor['name'], self.get_sex()),
                     ])
                 elif d['agent'] == 'user' and action_preposition is not None:
+                    survivor_name_str = "%s [%s]" % (self.survivor['name'], self.get_sex())
                     d['event'] = " ".join([
                         d['created_by_email'],
                         d['action']['word'],
                         d['modified']['attribute']['value_pretty'],
                         d['action']['preposition'],
-                        "%s [%s]" % (self.survivor['name'], self.get_sex()),
-                        d['modified']['attribute']['key_pretty'],
+                        survivor_name_str
                     ])
+
+                    # prevents us from printing the survivor name twice:
+                    if survivor_name_str != d['modified']['attribute']['key_pretty']:
+                        d['event'] += " " + d['modified']['attribute']['key_pretty']
+
                 else:
                     d['event'] = " ".join([
                         "%s [%s]" % (self.survivor['name'], self.get_sex()),

@@ -410,6 +410,7 @@ class Survivor(models.UserAsset):
 
             buff_sources = set()
             buff_list = []
+
             # bonuses come from principles, innovations...
             for attrib in ["principles","innovations"]:
                 for d in self.Settlement.list_assets(attrib):
@@ -420,6 +421,7 @@ class Survivor(models.UserAsset):
                         if d.get("newborn_survivor", None) is not None:
                             buff_list.append(d["newborn_survivor"])
                             buff_sources.add(d["name"])
+
             # ...and also from the campaign definition for now
             if c_dict.get('new_survivor', None) is not None:
                 buff_list.append(c_dict['new_survivor'])
@@ -431,7 +433,11 @@ class Survivor(models.UserAsset):
 
             if buff_list != []:
                 buff_string = utils.list_to_pretty_string(buff_sources)
-                self.log_event(action='apply', key=self.pretty_name(), value='%s bonuses' % buff_string)
+                self.log_event(
+                    action='apply',
+                    key=self.pretty_name(),
+                    value='%s bonuses' % buff_string
+                )
                 apply_buff_list(buff_list)
         else:
             self.log_event("Settlement bonuses where not applied to %s due to user preference." % self.pretty_name())
@@ -488,8 +494,18 @@ class Survivor(models.UserAsset):
             for ai in P.list_assets('abilities_and_impairments'):
                 if ai.get('inheritable', False):
                     self.survivor['inherited'][parent_type]['abilities_and_impairments'].append(ai['handle'])
-                    self.add_game_asset('abilities_and_impairments', ai['handle'], log_event=False)
-                    self.log_event(action="inherit", key=p_log_str, value=ai['name'], agent="automation", event_type="inherit")
+                    self.add_game_asset(
+                        'abilities_and_impairments',
+                        ai['handle'],
+                        log_event=False
+                    )
+                    self.log_event(
+                        action="inherit",
+                        key=p_log_str,
+                        value=ai['name'],
+                        agent="automation",
+                        event_type="inherit"
+                    )
 
             # if this parent happens to be the primary donor (for inheritance)
             # check settlement innovations for ones with a primary_donor_parent

@@ -203,7 +203,7 @@ location = {
                     "gear grid.</li><li>If the settlement has the Final "
                     "Lantern, 1 survivor must depart with it in their gear "
                     "grid.</li></ul><br/><b>The light of inspiration is "
-                    "extinguished. You cannot innovate</b>"
+                    "extinguished. You cannot innovate.</b>"
                 ),
                 "bg_color": "9F99A5",
                 "font_color": "FFF",

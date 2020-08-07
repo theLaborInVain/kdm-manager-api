@@ -533,8 +533,13 @@ class AdministrationObject:
 
         # password reset business logic
         if not force:
-            msg = " Reset password? [YES]: "
-            approval = input(msg)
+            approval = None
+            while approval is None:
+                try:
+                    msg = " Reset password? [YES]: "
+                    approval = input(msg)
+                except EOFError:
+                    pass
 
         # default to yes
         if len(approval) == 0:
