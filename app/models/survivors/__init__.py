@@ -1371,18 +1371,67 @@ class Survivor(models.UserAsset):
         self.check_request_params(['note'])
         note = self.params['note']
 
+        #
+        #   notes have to come in as dicts, so we do some sanity-checking here
+        #
+
+        # enforce dict type
+        if not isinstance(note, dict):
+            self.logger.error('Rejecting attempt to add a note as a string!')
+            raise utils.InvalidUsage(
+                'In 1.14.89 and later, notes must be dict type!',
+                status_code=400
+            )
+
+        # require 'note' key, i.e. the note body
+        malformed_msg = (
+            "The 'note' key/value pair is required! "
+            "Its value may not be blank!."
+        )
+        if note.get('note', None).strip() == '':
+            raise utils.InvalidUsage(malformed_msg, status_code=400)
+
         note_dict = {
             "created_by": request.User._id,
             "created_on": datetime.now(),
             "survivor_id": self.survivor["_id"],
             "settlement_id": self.Settlement.settlement['_id'],
-            "note": note,
+            "note": note['note'],
+            "pinned": note.get('pinned', False)
         }
 
         note_oid = utils.mdb.survivor_notes.insert(note_dict)
         self.log_event(action="add", key="notes", value="a note")
 
-        return Response(response=json.dumps({'note_oid': note_oid}, default=json_util.default), status=200)
+        return Response(response=json.dumps(
+            {'note_oid': note_oid},
+            default=json_util.default),
+            status=200
+        )
+
+
+    def update_note(self):
+        """ Updates a survivor note: we only allow certain attributes to be
+        updated and don't use a data model. All of the business logic and rules
+        are in this function. """
+
+        self.check_request_params(['note'])
+        incoming_note = utils.deserialize_json(self.params['note'])
+
+        mdb_note = utils.mdb.survivor_notes.find_one({
+            '_id': incoming_note['_id']
+        })
+
+        for attrib in ['pinned', 'note']:
+            mdb_note[attrib] = incoming_note[attrib]
+
+        utils.mdb.survivor_notes.save(mdb_note)
+        self.logger.info(
+            '%s UPDATED survivor note %s' % (
+                request.User.login,
+                mdb_note['_id']
+            )
+        )
 
 
     def rm_note(self):
@@ -1390,9 +1439,10 @@ class Survivor(models.UserAsset):
 
         self.check_request_params(['_id'])
         _id = ObjectId(self.params['_id'])
-
         utils.mdb.survivor_notes.remove({'_id': _id})
-#        self.logger.debug("%s Removed a note from %s" % (request.User, self))
+        self.logger.info(
+            '%s REMOVED survivor note %s' % (request.User.login, _id)
+        )
 
 
     def update_affinities(self, aff_dict={}, operation="add"):
@@ -3443,6 +3493,8 @@ class Survivor(models.UserAsset):
                 self.add_note()
             else:
                 return self.add_note()
+        elif action == 'update_note':
+            self.update_note()
         elif action == 'rm_note':
             self.rm_note()
 

@@ -1,6 +1,7 @@
 """ The utilities module used by the API. """
 
 # std lib imports
+from bson import json_util
 from bson.objectid import ObjectId
 import configparser
 from datetime import datetime, timedelta
@@ -11,6 +12,7 @@ from email.mime.text import MIMEText
 import functools
 from html.parser import HTMLParser
 from io import BytesIO
+import json
 import logging
 import os
 import platform
@@ -439,6 +441,15 @@ def decompose_name_string(name):
         output.append(" ".join(name_list[:i]))
 
     return output
+
+
+def deserialize_json(d):
+    """ accepts a dict 'd' that we think might be JSON. Turns it into a normal
+    python dict with python types, etc. """
+
+    str_d = json.dumps(d)
+    dict_d = json.loads(str_d, object_hook=json_util.object_hook)
+    return(dict_d)
 
 
 def get_application_url(strip_http=False):

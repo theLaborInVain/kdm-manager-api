@@ -8,10 +8,12 @@
 
 # standard library imports
 from optparse import OptionParser
+import os
+import pickle
 import sys
 
 # local imports
-from app import utils
+from app import admin, utils
 from app.admin import notifications, panel
 
 
@@ -44,4 +46,22 @@ def get_notifications(method=None):
     return utils.http_501
 
 
+class AdminPickle:
+    """ creates an object that gives us easy methods for working with the
+    so-called admin pickle, which stashes admin stuff on the local file system
+    (which is lame, but using the db for it seemed like overkill. """
 
+    def __init__(self):
+        self.working_dir = os.path.dirname(admin.__file__)
+        self.abs_path = os.path.join(self.working_dir, 'admin.pickle')
+
+        if not os.path.isfile(self.abs_path):
+            self.data = {}
+        else:
+            self.data = pickle.load(open(self.abs_path, "rb"))
+
+    def add_key(self, key, value):
+        """ Adds or overwrites a 'key' in the self.data with 'value'. """
+
+        self.data[key] = value
+        pickle.dump(self.data, open(self.abs_path, "wb" ))

@@ -23,7 +23,7 @@ from pymongo import MongoClient
 # local imports
 from app import API
 from app import models, utils
-from app.admin import clone, patch, purge
+from app.admin import AdminPickle, clone, patch, purge
 
 #
 #   misc. helper methods for CLI admin tasks
@@ -242,6 +242,10 @@ class AdministrationObject:
                             default=None, metavar=5, type=int,
                             help="[DEV] Dumps the last N requests to the CLI.",
                             )
+        parser.add_argument('--dump_users', dest='dump_users',
+                            default=None, metavar=5, type=int,
+                            help="[DEV] Dumps the last N users to the CLI.",
+                            )
         parser.add_argument('--clone_user', dest='clone_user', default=None,
                             help="[DEV] "
                             "Clone one user from production to local.",
@@ -342,9 +346,16 @@ class AdministrationObject:
                                 "[SURVIVOR] "
                                 "Dump survivor details"
                             ),
-                            action="store_true"),
+                            action="store_true")
 
         # sysadmin / console cowboy / hacker shit
+        parser.add_argument('-f', '--force', dest='force', default=False,
+                            help=(
+                                "[SYSADMIN] Add the 'force' option to "
+                                "whatever it is that we're doing"
+                                ),
+                            action="store_true",
+                            )
         parser.add_argument('--initialize', dest='initialize', default=False,
                             help=(
                                 "[SYSADMIN] "
@@ -460,9 +471,13 @@ class AdministrationObject:
         if self.options.dump_requests is not None:
             self.dump_request_logs(self.options.dump_requests)
 
+        # dump users
+        if self.options.dump_users is not None:
+            self.dump_recent_users(self.options.dump_users)
+
         # clone user (by OID) from legacy webapp
         if self.options.clone_user is not None:
-            self.clone_one_user()
+            self.clone_one_user(force=self.options.force)
 
         # clone many users (via API route)
         if self.options.clone_recent_users == True:
@@ -499,6 +514,51 @@ class AdministrationObject:
         for log in logs:
             dump_doc_to_cli(log)
 
+    #
+    #   user browsing
+    #
+
+    def dump_recent_users(self, how_many=1):
+        """ Dumps summary info on recent users. """
+
+        users = utils.mdb.users.find().sort(
+            'latest_activity',
+            -1
+        ).limit(how_many)
+
+        longest_email = 0
+        for user in users:
+            if len(user['login']) > longest_email:
+                longest_email = len(user['login'])
+
+        users.rewind()
+        users.sort('latest_activity', -1)
+
+        # header
+        print(
+            " " * 10,
+            "OID", " " * 11,
+            int(longest_email / 2.2) * " ",
+            "login",
+            int(longest_email / 1.7) * " ",
+            "latest_activity"
+        )
+
+        #   dump
+        for user in users:
+            stub = "[%s]  %s%s%s"
+            spacer = (longest_email + 2) - len(user['login'])
+            print(
+                stub % (
+                    user['_id'],
+                    user['login'],
+                    " " * spacer,
+                    user['latest_activity']
+                )
+            )
+
+        print()
+
 
     #
     #   methods for cloning users from production
@@ -532,8 +592,14 @@ class AdministrationObject:
         )
 
         # password reset business logic
+        approval = None
+
+        # use case 1: the admin wants to force it
+        if force:
+            approval = 'Y'
+
+        # use case 2: no force flag; ask for approval via CLI
         if not force:
-            approval = None
             while approval is None:
                 try:
                     msg = " Reset password? [YES]: "
@@ -541,10 +607,11 @@ class AdministrationObject:
                 except EOFError:
                     pass
 
-        # default to yes
-        if len(approval) == 0:
+        # default to yes, e.g. if we just hit enter
+        if approval is not None and len(approval) == 0:
             approval = 'Y'
 
+        # proceed only with approval
         if approval[0].upper() == 'Y':
             user_object.update_password('password')
             print(' Password has been reset!\n')
@@ -558,11 +625,29 @@ class AdministrationObject:
         """Gets a list of recent production users, iterates through the list
         calling the self.clone_one_user() on each. """
 
+
         # set the request URL, call the method from clone.py:
         prod_api_url = utils.settings.get('server', 'prod_url')
         print("\n API: %s\n Initiating request...\n" % prod_api_url)
 
-        admin_login = input(' Login: ')
+        # try to get the admin's email from the admin pickle
+        admin_login = None
+        a_pickle = AdminPickle()
+        if a_pickle.data.get('admin_login', None) is not None:
+            use_prev = input(
+                ' Authenticate as %s? [YES]: ' % a_pickle.data['admin_login']
+            )
+            if use_prev is not None and len(use_prev) == 0:
+                use_prev = 'Y'
+            if use_prev.upper() == 'Y':
+                admin_login = a_pickle.data.get('admin_login')
+                print(' Login: %s' % admin_login)
+
+        # manually key the admin login if we don't have one
+        if admin_login is None:
+            admin_login = input(' Login: ')
+
+        # always get the password
         admin_password = getpass.getpass(' Password: ')
 
         users = clone.get_recent_users_from_api(
@@ -575,6 +660,12 @@ class AdministrationObject:
             print('\n No recent users to clone! Exiting...\n')
             sys.exit(255)
         print('\n Preparing to clone %s users...\n' % len(users))
+
+        # since we logged in successfully, see if we have an admin email
+        # in the pickle and save this login if we do NOT
+
+        if a_pickle.data.get('admin_login', None) is None:
+            a_pickle.add_key('admin_login', admin_login)
 
         # iterate the results:
         for prod_user in users:
