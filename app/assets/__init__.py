@@ -131,7 +131,7 @@ def list(game_assets=False):
 
     if game_assets:
         for collection_name in output:
-            collectionObject = dump_asset(collection_name, return_type=object)
+            collectionObject = get_game_asset(collection_name, return_type=object)
             if not collectionObject.is_game_asset:
                 output.remove(collection_name)
 

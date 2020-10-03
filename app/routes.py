@@ -9,7 +9,6 @@
 
 """
 
-
 # stdlib
 import json
 
@@ -52,16 +51,12 @@ def stat_api():
         mimetype="application/json"
     )
 
+@API.route("/robots.txt")
+def robots():
+    """ The default return for accessing https://api.kdm-manager.com (or
+    equivalent endpoint), which gets you the API docs. """
+    return flask.send_file("static/html/robots.txt")
 
-@API.route("/settings")
-def get_settings():
-    """ Deprecated: 2019-01-13. Returns the settings object as JSON. """
-    settings_object = utils.settings.Settings()
-    return flask.Response(
-        response=settings_object.jsonify(),
-        status=299,
-        mimetype="application/json",
-    )
 
 
 
@@ -121,17 +116,13 @@ def admin_get_user(action):
 
     user_object = assets.get_user_asset('user', user_record['_id'])
     if isinstance(user_object, flask.Response):
-        return asset_object
+        return user_object
     return user_object.request_response(action)
 
 
-
-
-
-
-
-
-#       documentation
+#
+#   documentation
+#
 
 @API.route("/")
 def index():
@@ -139,13 +130,12 @@ def index():
     equivalent endpoint), which gets you the API docs. """
     return flask.send_file("static/html/docs.html")
 
-
-@API.route("/robots.txt")
-def robots():
-    """ The default return for accessing https://api.kdm-manager.com (or
-    equivalent endpoint), which gets you the API docs. """
-    return flask.send_file("static/html/robots.txt")
-
+@API.route("/change_log")
+@API.route("/change_log.json")
+def funcname():
+    """ Dumps the change log. """
+    return flask.send_file("change_log.json")
+    
 
 @API.route("/docs/<action>/<render_type>")
 def render_documentation(action, render_type=None):
@@ -467,30 +457,6 @@ def serve_avatar_image(image_oid):
     functionality."""
     avatar = utils.GridfsImage(image_oid)
     return avatar.render_response()
-
-
-
-
-
-
-#
-#   the graveyard of deprecated endpoints!
-#
-
-@API.route("/settings.json")
-def get_settings_json():
-    """ Formerly returned the API settings as a JSON file. Deprecated on
-    2019-01-13 and removed in the version one release of the API. """
-    return utils.http_410
-
-@API.route("/new_settlement")
-@crossdomain(origin=['*'], headers='Content-Type')
-def new_settlement_deprecated():
-    """ Formerly used to get options for creating a new settlement.
-    Deprecated in the 1.0.0 release in favor of /game_assets/settlements,
-    which follows convention and looks tidier in the documentation. """
-    return utils.http_410
-
 
 
 #

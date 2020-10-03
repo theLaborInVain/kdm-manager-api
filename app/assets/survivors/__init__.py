@@ -15,14 +15,6 @@
 
 """
 
-# standard library imports
-
-# third part imports
-
-# local imports
-
-
-
 defaults = {
     "Movement": 5,
     "max_bleeding_tokens": 5,

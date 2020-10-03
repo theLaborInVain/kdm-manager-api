@@ -1166,3 +1166,22 @@ than a 200), something went wrong. </p>
 	""",
     },
 }
+
+survivor_management = {
+    "add_note": {
+        "name": "/survivor/add_note/&lt;survivor_id&gt;",
+        "subsection": "survivor_notes_management",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<b>POST</b> an array named <i>note</i> to this route that "
+            "includes the following key/value pairs:"
+            "<table><tr>"
+            "<th>key</th><th>req/optional</th><th>type</th><th>note</th>"
+            "</tr>"
+            "<tr><td>note</td><td>R</td><td>str</td>"
+            "<td>HTML is OK.</td></tr>"
+            "<tr><td>pinned</td><td>O</td><td>bool</td></tr>"
+            "</table>"
+        )
+    },
+}

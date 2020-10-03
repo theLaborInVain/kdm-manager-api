@@ -100,7 +100,6 @@ All routes for working directly with a user follow a <code>/user/&lt;action&gt;/
     },
 
 
-
     #
     #   settlement routes
     #
@@ -246,4 +245,29 @@ order. If you get them back out of order, open a ticket.</p>
         (or removed from them). These are stored with a creation timestamp for
         easy representation in chronological or reverse chron order. """,
     },
+
+
+    #
+    #   survivor management
+    #
+
+    "survivor_management": {
+        "name": "Survivor management",
+        "desc": (
+            "Much like settlement management routes, survivor management "
+            "routes require the Authorization header and follow the "
+            "survivor / operation / OID convention, e.g. "
+            "<code>/survivor/add_note/5f2c78ae84d8860d89594fa8</code>"
+        ),
+    },
+    "survivor_notes_management":{
+        "name": "Survivor notes",
+        "desc": (
+            "Starting with the 1.14.92 release of the API survivor notes "
+            "are enhanced to allow for annotation (e.g. pinning, colors, "
+            "etc.) and an improved level of detail over their previous "
+            "functionality."
+        ),
+    },
+
 }

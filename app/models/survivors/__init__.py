@@ -2571,7 +2571,7 @@ class Survivor(models.UserAsset):
         if return_type == dict:
             output = {}
             for e_handle in e_handles:
-                output[e] = E.get_asset(e_handle)
+                output[e_handle] = E.get_asset(e_handle)
             return output
 
         return e_handles

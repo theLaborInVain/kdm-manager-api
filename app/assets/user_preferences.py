@@ -75,4 +75,11 @@ kdm_manager = {
         "negative": "Hide UI tips",
         "patron_level": 2,
     },
+    "show_dashboard_alerts": {
+        "type": "Interface",
+        "desc": "Display webapp alerts on the Dashboard?",
+        "affirmative": "Show alerts",
+        "negative": "Hide alerts",
+        "patron_level": 2,
+    },
 }
