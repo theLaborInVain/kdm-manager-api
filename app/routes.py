@@ -79,7 +79,7 @@ def get_notifications():
 def panel():
     """ Gets the admin panel. Requires basicAuth. """
     return flask.render_template(
-        'admin_panel.html',
+        '/admin_panel/_main.html',
         user = json.dumps(flask.request.User.user, default=json_util.default),
         api_key = utils.settings.get('keys','api_key'),
     )
@@ -120,6 +120,14 @@ def admin_get_user(action):
     return user_object.request_response(action)
 
 
+@API.route("/admin/releases/<action>", methods=['POST','GET','OPTIONS'])
+@API.basicAuth.login_required
+def admin_releases(action):
+    """ How we work with releases. POST a dict with an 'action' value
+    to take that action. """
+    return admin.releases.do(action)
+
+
 #
 #   documentation
 #
@@ -130,12 +138,14 @@ def index():
     equivalent endpoint), which gets you the API docs. """
     return flask.send_file("static/html/docs.html")
 
+@API.route("/changelog")
+@API.route("/changelog.json")
 @API.route("/change_log")
 @API.route("/change_log.json")
-def funcname():
+def dump_change_log():
     """ Dumps the change log. """
-    return flask.send_file("change_log.json")
-    
+    return admin.releases.do('dump')
+
 
 @API.route("/docs/<action>/<render_type>")
 def render_documentation(action, render_type=None):
@@ -428,7 +438,7 @@ def collection_action(collection, action, asset_id):
     # fail anything without a valid OID right now, rather than spinning up a lot
     #   of machinery only to fail the request later
     if not ObjectId.is_valid(asset_id):
-        err_msg = 'The /%s/%s/ route requires a valid Object ID!',
+        err_msg = 'The /%s/%s/ route requires a valid Object ID!'
         return flask.Response(
             response=err_msg % (collection, action),
             status=400

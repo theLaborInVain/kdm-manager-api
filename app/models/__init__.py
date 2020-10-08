@@ -62,8 +62,108 @@ def log_event_exception_manager(log_event_call):
 
     return wrapper
 
+#
+#   the StructuredObject class starts here!
+#
+
+class StructuredObject(object):
+    """ The base class for all objects with a data model. """
+
+    def __init__(self, *args, **kwargs):
+        """ Default init for structured objects. """
+
+        self.logger = utils.get_logger()
+
+        self.args = args
+        self.kwargs = kwargs
+
+        # set self._id from kwargs, if possible
+        self._id = self.kwargs.get('_id', None)
+        if self._id is not None:
+            self._id = ObjectId(self._id)
 
 
+    def delete(self):
+        """ Deletes the record from MDB. Returns True. """
+        self.logger.warn('Deleting: %s' % self)
+        return self.mdb.delete_one({'_id': self._id})
+
+
+    def update(self, source=None, verbose=False):
+        """ Use self.data_model to update self attribs. Uses self.kwargs by
+        default: pass in an alternate source to use that instead (source must
+        be a dict). """
+
+        # if source isn't given, default to self.kwargs
+        if source is None:
+            source = getattr(self, 'kwargs', None)
+
+        # first, bomb the request out if we don't have self.data_model
+        if getattr(self, 'data_model', None) is None:
+            err = 'StructuredObject type objects must define self.data_model!'
+            raise ValueError(err)
+        elif not isinstance(self.data_model, dict):
+            err = "self.data_model must be a dict type!"
+            raise TypeError(err)
+
+        # sanity check the data model
+        for key, value_type in self.data_model.items():
+            if not isinstance(value_type, type):
+                err = "StructuredObject.data_model key values must be types!"
+                self.logger.error(self.data_model)
+                raise ValueError(err)
+
+        # sanity check the source
+        if not isinstance(source, dict):
+            err = 'StructuredObject update source must be dict type, not %s!'
+            raise TypeError(err % (type(source)))
+
+        for key, value_type in self.data_model.items():
+            # 1.) set all self.record keys to their attribute equivalents
+            setattr(self, key, source.get(key, None))
+
+            # 2.) now, if they're set, check them against the model
+            if getattr(self, key, None) is not None:
+
+                # 3.) first, check for OIDs in Javascript format
+                if isinstance(getattr(self, key), dict):
+                    if source[key].get('$oid', None) is not None:
+                        setattr(self, key, ObjectId(source[key]['$oid']))
+                    elif source[key].get('$date', None) is not None:
+                        setattr(
+                            self,
+                            key,
+                            datetime.utcfromtimestamp(source[key]['$date']/1000)
+                        )
+
+                # 4.) next, check if the value is the right type and try to
+                #   cast it if it is not
+                if not isinstance(getattr(self, key), value_type):
+                    try:
+                        setattr(self, key, value_type(source[key]))
+                    except TypeError:
+                        err = "Could not cast '%s' value to %s type!"
+                        raise TypeError(err % (source[key], value_type))
+
+        if verbose:
+            self.logger.info('Updated %s' % self)
+
+
+    def save(self, verbose=False):
+        """ updates self.record with the current values of the object's
+        attributes using keys from self.data_model as its guide. """
+
+        if getattr(self, 'mdb', None) is None:
+            err = "StructuredObject instances must define self.mdb!"
+            raise ValueError(err)
+
+        self.record = {'_id': ObjectId(self._id)}
+        for key, value in self.data_model.items():
+            self.record[key] = getattr(self, key, None)
+        self.mdb.save(self.record)
+
+        if verbose:
+            self.logger.info('Saved changes to %s' % self)
 
 #
 #   The AssetCollection object starts here!
@@ -970,6 +1070,7 @@ class UserAsset(object):
             'server',
             'info',
             'subscriptions',
+            'kdm-manager',
             'object'
             ]:
 

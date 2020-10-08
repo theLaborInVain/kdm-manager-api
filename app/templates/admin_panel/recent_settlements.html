@@ -1,0 +1,54 @@
+<!-- recent settlement activity -->
+<div class="flex_item_basic users" ng-if="settlements.length >= 1">
+    <div id="recentSettlementsSpinner" class="recent_settlements_spinner hidden">
+        <img src="/static/media/images/loading_io.gif" /><br/>
+        Refreshing...
+    </div>
+    <h2>Recent Settlement Activity</h2>
+    <br/>
+    <div
+        class="settlement"
+        ng-repeat="settlement in settlements"
+        ng-init="eventLogContainer = settlement._id.$oid + '_event_log'"
+    >
+        <button
+            class="toggle_settlement_event_log"
+            ng-if="user.jwt !== undefined"
+            ng-click="getEventLog(settlement); showHide(eventLogContainer)"
+        >
+            View settlement event log
+        </button>
+        <h3 class="settlement_name"><b>{a settlement.name a}</b> <i>LY:</i> {a settlement.lantern_year a} </h3>
+        {a settlement._id.$oid a}<br/><br/>
+        <i>{a campaign_assets[settlement.campaign].name a}</i><br>
+        <span ng-if="settlement.expansions.length >= 1">
+            <i>Expansions:</i>
+            <span ng-repeat="e_handle in settlement.expansions">
+                {a expansion_assets[e_handle].name a}{a $last ? '' : ', ' a}
+            </span>
+        </span>
+        <ul>
+            <li><i>Creator:</i> {a settlement.creator_email a}</li>
+            <li><i>Created:</i> {a settlement.age a} ago</li>
+            <li ng-if="settlement.admins.length > 1"><i>Admins:</i> {a settlement.admins.join(', ') a}</li>
+            <li ng-if="settlement.players.length > 1"><i>Players:</i> {a settlement.players.join(', ') a}</li>
+            <li><i>Survivors:</i> {a settlement.population a}/{a settlement.death_count a}</li>
+        </ul>
+        <div id="{a eventLogContainer a}" class="settlement_event_log hidden">
+            <table class="settlement_event_log">
+                <tr><th>LY</th><th>Event</th></tr>
+                <tr
+                    title="{a l a}"
+                    ng-repeat="l in settlement.event_log"
+                    ng-class-odd="'zebra'"
+                    class="{a l.event_type a}"
+                >
+                    <td>{a l.ly a}</td>
+                    <td>{a l.event a}</td>
+                </tr>
+            </table>
+        </div>
+        <hr ng-if="!$last">
+    </div> <!-- settlement repeater -->
+</div> <!-- flex_item_basic -->
+<!-- END recent settlements -->

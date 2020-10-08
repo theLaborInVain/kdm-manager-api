@@ -700,6 +700,7 @@ api_meta = {
                 datetime.strptime('2016-10-13', '%Y-%m-%d'),
                 units='age'
             ),
+            'panel': settings.get('admin'),
         },
         'server': {
             "hostname": socket.gethostname(),
@@ -713,7 +714,11 @@ api_meta = {
             "copyright": "The Labor in Vain (2015 - %s)" %
                     datetime.now().strftime("%Y"),
         },
-        'subscriptions': create_subscriptions_dict(),
+        'subscriptions': create_subscriptions_dict(),   # remove in v4
+        'kdm-manager':{
+            'user_preferences': settings.get('users'),
+            'subscriptions': create_subscriptions_dict(),
+        },
 #        "admins": list(
 #            mdb.users.find({"admin": {"$exists": True}}).sort('login')
 #        ),

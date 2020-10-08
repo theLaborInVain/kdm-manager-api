@@ -1,28 +1,37 @@
 <!doctype html>
-<html ng-app="adminPanel" ng-controller="globalController" ng-init='user = {{user}}; api_key="{{api_key}}"'>
+<html
+    ng-app="adminPanel"
+    ng-controller="globalController"
+    ng-init='user = {{user}}; api_key="{{api_key}}"'
+>
+
  <title>KDM API - Admin Panel</title>
+
  <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.4/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.4/angular-animate.js"></script>
     <script src="/static/js/adminPanel.js"></script>
+
     <link rel="stylesheet" href="/static/css/adminPanel.css" />
     <link rel="stylesheet" href="/static/css/fonts.css" />
     <link href="https://fonts.googleapis.com/css?family=Ruda&display=swap" rel="stylesheet">
  </head>
 
-
  <body>
 
-
-    <img id="spinner" src="/static/media/images/loading_io.gif">
+    <img
+        id="mainSpinner"
+        class="ng_fade"
+        src="/static/media/images/loading_io.gif"
+        ng-if="ngVisible['mainSpinner']"
+    />
 
     <div class="container">
 
-
         <div class="flex_item_basic">
             <h1>KDM API</h1>
-            <b>API Hostname:</b> {a world.meta.server.hostname a}<br/>
-            <b>API Version:</b> {a world.meta.api.version a}<br/>
+            <b>API Hostname:</b> {a settings.meta.server.hostname a}<br/>
+            <b>API Version:</b> {a settings.meta.api.version a}<br/>
             <b>Last Push:</b> {a github.pushed_at a}<br/>
             <b>Open Issues:</b> {a github.open_issues a}<br/>
 
@@ -42,133 +51,22 @@
                 </button>
             </div>
 
-<!--
-            <b>Administrators:</b>
-            <ul>
-                <li ng-repeat="a in world.meta.admins">{a a.login a} - {a a._id.$oid a}</li>
-            </ul>
--->
-
             <br/>
 
             <h2>Admin Panel</h2>
-            <b>Revision:</b> {a world.meta.object.panel_revision a}<br/>
+            <b>Revision:</b> {a settings.meta.api.panel.panel_revision a}<br/>
             <b>Last Refreshed:</b> {a refreshed a} ({a seconds_since_last_refresh a} seconds ago)<br/>
 
             <br/>
             <a href="/" target="top">API Documentation</a> | 
-            <a href="https://github.com/theLaborInVain/kdm-manager-api" target="top">GitHub</a>
+            <a href="https://github.com/theLaborInVain/kdm-manager-api" target="top">GitHub</a> |
+            <a href="/stat" target="top">settings</a> 
 
         </div>
 
+        {% include 'admin_panel/releases.html' %}
 
-        <!-- alerts controller -->
-        <div class="flex_item_basic" ng-controller="alertsController">
-
-            <!-- initializing_screen -->
-            <div class="initializing_screen" ng-if="scratch.initializing_panel">
-                <img src="/static/media/images/loading_io.gif" >
-                <div>Loading...</div>
-            </div>
-
-            <div class="flex_item_inner" ng-if="scratch.initializing_panel === false">
-                <!-- actual view -->
-                <h2>Alerts!</h2>
-
-                <p ng-if="webappAlerts.length == 0">...no active webapp alerts...</p>
-
-                <div
-                    class="webapp_alert"
-                    ng-repeat="alert in webappAlerts"
-                    title="{a alert._id.$oid a}"
-                >
-                    <div
-                        class="clickable"
-                        ng-click="showHide(alert._id.$oid + '_controls')"
-                    >
-                        <b>{a alert.title a}</b> <span ng-bind-html="alert.body|trustedHTML"></span><br/>
-                        <div
-                            class="alert_footer"
-                        >
-                            <b>release:</b> {a alert.release a}| <b>type:</b> {a alert.sub_type a} | <b>created:</b> {a alert.created_on.$date | date:'yyyy-MM-dd @ h:mma' a} | <b>expires:</b> {a alert.expiration a}
-                        </div>
-                    </div>
-
-                    <div id="{a alert._id.$oid a}_controls" class="clickable hidden">
-                        <div
-                            class="alert_controls"
-                        >
-                            <button class="red_button" ng-click="expireAlert(alert)">Expire Now!</button>
-                        </div>
-                    </div>
-                </div>
-
-                <p ng-click="showHide('createNewAlert')" class="clickable alert">
-                    Click/tap to create a new webapp alert!
-                </p>
-
-
-                <div id="createNewAlert" class="create_webapp_alert hidden">
-
-                    <div class="create_webapp_alert_control_block">
-                        <input class="webapp_alert_title" type="text" ng-model="newAlert.title" placeholder="New Webapp Alert Title!" />
-                        <textarea class="webapp_alert_body" ng-model="newAlert.body">
-                        </textarea>
-                    </div>
-                    <div class="create_webapp_alert_control_block">
-                        <b>Type:</b>
-                        <label>
-                            <input
-                                type="radio"
-                                name="new_alert_type"
-                                ng-model="newAlert.type"
-                                value="kpi"
-                            > 
-                            KPI
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="new_alert_type"
-                                ng-model="newAlert.type"
-                                value="announcement"
-                            > 
-                            Announcement
-                        </label>
-                    </div>
-                    <div class="create_webapp_alert_control_block">
-                        <b>Expiration:</b>
-                        <label>
-                            <input
-                                type="radio"
-                                name="new_alert_expiration"
-                                ng-model="newAlert.expiration"
-                                value="next_release"
-                            > 
-                            Next release
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="new_alert_expiration"
-                                ng-model="newAlert.expiration"
-                                value="manual"
-                            > 
-                            Manual
-                        </label>
-                    </div>
-
-                    <button
-                        ng-if="newAlert.title != null && newAlert.body != null"
-                        ng-click="createAlert()"
-                        class="red_button"
-                    >
-                        CREATE NEW WEBAPP ALERT
-                    </button>
-                </div>
-            </div><!-- flex_item_inner -->
-        </div> <!-- flex_item_basic -->
-
+        {% include 'admin_panel/alerts.html' %}
 
         <!-- user administration! -->
         <div class="flex_item_basic users" ng-controller="userAdminController">
@@ -210,7 +108,7 @@
 
             <div class="users_container">
                 <div
-                    class="user_basic_info clickable"
+                    class="user_basic_info clickable tile"
                     ng-class="{
                         'inactive_user': u.is_active == false,
                         'active_user': u.is_active,
@@ -357,7 +255,7 @@
 
 
             <h3>User Agent Info</h3>
-            <p ng-click="showHide('user_agent_popularity_contest')" class="clickable">
+            <p ng-click="showHide('user_agent_popularity_contest')" class="clickable tile">
                 Click/tap to show/hide the User Agent popularity contest.
             </p>
             <table id="user_agent_popularity_contest" class="hidden">
@@ -371,59 +269,8 @@
         </div><!-- flex item basic -->
 
 
-        <!-- recent settlement activity -->
-        <div class="flex_item_basic users" ng-if="settlements.length >= 1">
-            <div id="recentSettlementsSpinner" class="recent_settlements_spinner hidden">
-                <img src="/static/media/images/loading_io.gif" /><br/>
-                Refreshing...
-            </div>
-            <h2>Recent Settlement Activity</h2>
-            <br/>
-            <div
-                class="settlement"
-                ng-repeat="settlement in settlements"
-                ng-init="eventLogContainer = settlement._id.$oid + '_event_log'"
-            >
-                <button
-                    class="toggle_settlement_event_log"
-                    ng-if="user.jwt !== undefined"
-                    ng-click="getEventLog(settlement); showHide(eventLogContainer)"
-                >
-                    View settlement event log
-                </button>
-                <h3 class="settlement_name"><b>{a settlement.name a}</b> <i>LY:</i> {a settlement.lantern_year a} </h3>
-                {a settlement._id.$oid a}<br/><br/>
-                <i>{a campaign_assets[settlement.campaign].name a}</i><br>
-                <span ng-if="settlement.expansions.length >= 1">
-                    <i>Expansions:</i>
-                    <span ng-repeat="e_handle in settlement.expansions">
-                        {a expansion_assets[e_handle].name a}{a $last ? '' : ', ' a}
-                    </span>
-                </span>
-                <ul>
-                    <li><i>Creator:</i> {a settlement.creator_email a}</li>
-                    <li><i>Created:</i> {a settlement.age a} ago</li>
-                    <li ng-if="settlement.admins.length > 1"><i>Admins:</i> {a settlement.admins.join(', ') a}</li>
-                    <li ng-if="settlement.players.length > 1"><i>Players:</i> {a settlement.players.join(', ') a}</li>
-                    <li><i>Survivors:</i> {a settlement.population a}/{a settlement.death_count a}</li>
-                </ul>
-                <div id="{a eventLogContainer a}" class="settlement_event_log hidden">
-                    <table class="settlement_event_log">
-                        <tr><th>LY</th><th>Event</th></tr>
-                        <tr
-                            title="{a l a}"
-                            ng-repeat="l in settlement.event_log"
-                            ng-class-odd="'zebra'"
-                            class="{a l.event_type a}"
-                        >
-                            <td>{a l.ly a}</td>
-                            <td>{a l.event a}</td>
-                        </tr>
-                    </table>
-                </div>
-                <hr ng-if="!$last">
-            </div> <!-- settlement repeater -->
-        </div> <!-- flex_item_basic -->
+    <!-- RECENT SETTLEMENTS WILL GO HERE -->
+
 
         <div class="flex_item_basic flex_item_double_wide api">
             <h2>API Response Times (last seven days)</h2>
@@ -471,7 +318,7 @@
             <h2>{a world.world.latest_settlement.name a}</h2>
             {a world.world.latest_settlement.comment a}
 
-            <div ng-click="showHide('latest_settlement_detail')" class="clickable">
+            <div ng-click="showHide('latest_settlement_detail')" class="clickable tile">
                 <b>{a world.world.latest_settlement.value.name a}</b><br/>
                 <i>{a world.world.latest_settlement.value.campaign a} - LY {a world.world.latest_settlement.value.lantern_year a}</i>
             </div>
@@ -487,7 +334,7 @@
             <h2>{a world.world.latest_survivor.name a}</h2>
             {a world.world.latest_survivor.comment a}
 
-            <div ng-click="showHide('latest_survivor_detail')" class="clickable">
+            <div ng-click="showHide('latest_survivor_detail')" class="clickable tile">
                 <b>{a world.world.latest_survivor.value.name a}</b> [{a world.world.latest_survivor.value.sex a}]<br/>
                 <i>{a world.world.latest_survivor.value.settlement_name a}</i>
             </div>
@@ -503,7 +350,7 @@
             <h2>{a world.world.latest_fatality.name a}</h2>
             {a world.world.latest_fatality.comment a}
 
-            <div ng-click="showHide('latest_fatality_detail')" class="clickable">
+            <div ng-click="showHide('latest_fatality_detail')" class="clickable tile">
                 <b>{a world.world.latest_fatality.value.name a}</b> [{a world.world.latest_survivor.value.sex a}]<br/>
                 <i>{a world.world.latest_fatality.value.settlement_name a}</i>
             </div>
@@ -519,7 +366,7 @@
             <h2>{a world.world.latest_kill.name a}</h2>
             {a world.world.latest_kill.comment a}
 
-            <div ng-click="showHide('latest_kill_detail')" class="clickable">
+            <div ng-click="showHide('latest_kill_detail')" class="clickable tile">
                 <b>{a world.world.latest_kill.value.raw_name a}</b> ({a world.world.latest_kill.type a})<br/>
                 Killed by the survivors of <i>{a world.world.latest_kill.value.settlement_name a}</i> in LY {a world.world.latest_kill.value.kill_ly a}
             </div>
@@ -616,7 +463,7 @@
             <h2>World Stats</h2>
 
             <div
-                class="world_item clickable"
+                class="world_item clickable tile"
                 ng-repeat="w in world.world"
                 ng-if="w.value_type == 'int' || w.value_type == 'float'" 
             >

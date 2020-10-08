@@ -1,0 +1,345 @@
+<!-- BEGIN releases controller -->
+<div
+    class="flex_item_basic"
+    ng-controller="releasesController"
+>
+    <div
+        class="initializing_screen"
+        ng-if="releasesObject.showLoader !== false"
+    >
+        <img src="/static/media/images/loading_io.gif" >
+        <div>Loading releases info...</div>
+    </div>
+
+    <div
+        class="flex_item_inner"
+        ng-if="releasesObject.showLoader !== true"
+    >
+
+        <h2>{a releasesObject.releases.length a} Releases!</h2>
+
+        <!-- BEGIN add a new release -->
+        <div
+            class="clickable tile"
+            ng-click="
+                ngShowHide('createNewReleaseLauncher');
+            "
+        >
+            <b>+ Create new</b>
+            <div
+                class="ui_arrow"
+                ng-class="{
+                    'invert': ngVisible['createNewReleaseLauncher'] === true,
+                }"
+            >
+                &#x25BC;
+            </div>
+        </div>
+
+        <div
+            id="createNewReleaseLauncher"
+            class="modal_button_raft"
+            ng-if="ngVisible['createNewReleaseLauncher']"
+        >
+            <button
+                class="clickable kd_pink"
+                ng-repeat="platform in releasesObject.platforms"
+                ng-click="
+                    ngShowHide('createNewReleaseLauncher');
+                    createNewRelease(platform.app, user.login);
+                    ngShowHide('editReleaseWorksheet')
+                "
+            >
+                {a platform.app a}
+            </button>
+        </div>
+        <!-- END add a new release -->
+
+        <!-- BEGIN launch releases editor -->
+        <div
+            class="clickable tile admin_panel_release_repeater"
+            ng-repeat="release in releasesObject.releases"
+            title="created: {a release.created_on.$date|date:'EEEE, yyyy-MM-dd HH:mm' a}"
+            ng-click="
+                releasesObject.editingRelease = release;
+                ngShowHide('editReleaseWorksheet')
+            "
+            ng-class="{
+                'kd_blue': release.published,
+            }"
+            ng-if="$index < settings.meta.api.panel.panel_releases_visible"
+        >
+            {a release.platform a}:
+            {a release.version.major a}.{a release.version.minor a}.{a release.version.patch a}
+        </div>
+        <div
+            class="clickable tile right-align"
+            ng-click="
+                settings.meta.api.panel.panel_releases_visible =
+                settings.meta.api.panel.panel_releases_visible + 5
+            "
+            ng-if="
+                settings.meta.api.panel.panel_releases_visible <
+                releasesObject.releases.length
+            "
+        >
+            Show more releases...
+        </div>
+        <!-- END launch releases editor -->
+
+    </div> <!-- flex_item_inner -->
+
+
+    <!-- BEGIN release editor -->
+    <div
+        id="editReleaseWorksheet"
+        class="modal_outer hidden"
+    >
+        <div
+            class="modal_inner"
+        >
+
+            <div
+                ng-if="!releasesObject.editingRelease"
+            >
+                <img src="/static/media/images/loading_io.gif" >
+                <div>Loading release...</div>
+            </div>
+
+            <div
+                class="admin_panel_release_anchor_creator"
+            >
+                <input ng-model="scratch.alink_URL" placeholder="URL" ng-change="updateAlink()"/>
+                <input ng-model="scratch.alink_text" placeholder="text" ng-change="updateAlink()" />
+                <div
+                    ng-bind-html="scratch.alink|trustedHTML"
+                    ng-if="
+                        scratch.alink_URL !== undefined &&
+                        scratch.alink_text !== undefined
+                    "
+                >
+                </div>
+            </div>
+
+            <h3>
+                {a releasesObject.editingRelease.platform a}
+                <span
+                    ng-repeat="bit in ['major', 'minor', 'patch']"
+                >
+                    <input
+                        title"{a bit a}"
+                        class="admin_panel_release_title_version_number"
+                        ng-model="releasesObject.editingRelease.version[bit]"
+                        ng-blur="updateRelease();"
+                    />
+                    <span
+                        ng-if="bit !== 'patch'"
+                    >.</span>
+                </span>
+            </h3>
+            created: {a releasesObject.editingRelease.created_on.$date|date:'EEEE, yyyy-MM-dd HH:mm' a} | 
+            last updated: {a releasesObject.editingRelease.modified_on.$date|date:'EEEE, yyyy-MM-dd HH:mm:ss' a}
+
+            <!-- toolbar -->
+            <div
+                class="admin_panel_edit_release_summary_container"
+            >
+                <div
+                    contenteditable
+                    id="editReleaseWorksheetSummary"
+                    ng-bind-html="releasesObject.editingRelease.summary|trustedHTML"
+                    ng-blur="
+                        releasesObject.editingRelease.summary = exportThis($event);
+                        updateRelease();
+                    "
+                >
+                </div>
+            </div>
+            <div
+                class="admin_panel_edit_release_toolbar"
+            >
+                <!-- HACK CITY! -->
+                <span
+                    ng-if="releasesObject.editingRelease.sections === null"
+                    ng-init="releasesObject.editingRelease.sections = []"
+                ></span>
+
+                <div
+                    ng-repeat="section in [
+                        'Corrections and fixes',
+                        'Enhancements',
+                        'Expansion content',
+                        'Deprecations'
+                    ]"
+                    ng-click="
+                        toggleSection(section);
+                        addItemToSection(section);
+                    "
+                    ng-if="releasesObject.editingRelease.sections.indexOf(section) < 0"
+                    class="clickable admin_panel_edit_release_toolbar_button kd_blue"
+                >
+                    + {a section a}
+                </div>
+            </div><!-- toolbar -->
+
+            <!-- BEGIN main editing bit -->
+
+            <div
+                ng-repeat="sectionName in releasesObject.editingRelease.sections"
+                class="admin_panel_edit_release_section_container"
+            >
+                <h3 class="kd_blue admin_panel_edit_release_section_title">
+                    <b>{a sectionName a}</b>
+                    <span class="clickable" ng-click="toggleSection(sectionName)">
+                        &#10006;
+                    </span>
+                </h3>
+
+                <!-- item repeater and controls -->
+                <div
+                    class="admin_panel_edit_release_item_bar"
+                    ng-repeat="item in releasesObject.editingRelease.items|orderBy:'sort'"
+                    ng-if="item.section === sectionName"
+                >
+                    <div
+                        class="admin_panel_edit_release_item_buttons"
+                    >
+                        <button
+                            ng-click="item.sort = item.sort + 1"
+                        >
+                            &#x25BC;
+                        </button>
+                        <button
+                            class="invert"
+                            ng-click="item.sort = item.sort - 1"
+                        >
+                            &#x25BC;
+                        </button>
+                        <input
+                            type="checkbox"
+                            ng-model="item.feature"
+
+                        />
+                    </div>
+                    <div
+                        id="{a releasesObject.editingRelease._id.$oid + '_item_' + $index a}"
+                        contenteditable
+                        class="admin_panel_edit_release_item_body"
+                        ng-bind-html="item.body|trustedHTML"
+                        ng-blur="
+                            item.body = exportThis($event);
+                        "
+                    >
+                    </div>
+                    <div
+                        ng-if="item.feature === true"
+                        class="admin_panel_edit_release_item_detail_container"
+                        ng-init="initializeFeatureDetail(item)"
+                    >
+                        <div
+                            id="{a 'item_' + item.sort + '_detail_' + $index a}"
+                            class="admin_panel_edit_release_item_detail"
+                            ng-repeat="detail in item.details"
+                            contenteditable
+                            ng-blur="detail.body = exportThis($event)"
+                            ng-bind-html="detail.body|trustedHTML"
+                        >
+                        </div>
+                        <button
+                            ng-click="addDetailToItem(item)"
+                        >&#43 detail </button>
+                    </div>
+                </div>
+
+                <div
+                    class="admin_panel_edit_release_item_bottom_raft"
+                >
+                    <button
+                        class="
+                            kd_yellow modal_button
+                            circle admin_panel_edit_release_add_item
+                        "
+                        ng-click="
+                            newItemId = addItemToSection(sectionName);
+                        "
+                    >
+                        <div>&#43;</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- END main editing bit -->
+
+            <div
+                class="modal_button_raft"
+            >
+
+                <button
+                    id="armDeleteReleaseButton"
+                    class="kd_yellow"
+                    ng-click="
+                        ngShowHide('armDeleteReleaseButton');
+                        ngShowHide('deleteReleaseButton');
+                    "
+                >
+                    DELETE?
+                </button>
+
+                <button
+                    id="deleteReleaseButton"
+                    class="kd_red hidden"
+                    ng-click="
+                        ngShowHide('editReleaseWorksheet');
+                        ngShowHide('deleteReleaseButton');
+                        ngShowHide('armDeleteReleaseButton');
+                        updateRelease('delete');
+                        setReleases();
+                    "
+                >
+                    DELETE!
+                </button>
+
+                <button
+                    ng-class="{
+                        'kd_blue': releasesObject.editingRelease.published,
+                    }"
+                    ng-click="
+                        releasesObject.editingRelease.published = !releasesObject.editingRelease.published;
+                        updateRelease();
+                    "
+                >
+                    Publish
+                </button>
+
+                <button
+                    class="kd_green"
+                    ng-click="
+                        updateRelease();
+                        ngShowHide('editReleaseWorksheet')
+                    "
+                >
+                    Save changes & close
+                </button>
+
+            </div>
+
+            <!-- debug for the worksheet -->
+            <div
+                class="clickable admin_panel_release_worksheet_debug_clicker"
+                ng-click="ngShowHide('editReleaseDebugger');"
+            >
+            </div>
+            <code
+                id="editReleaseDebugger"
+                class="hidden"
+            >
+                {a releasesObject.editingRelease a}
+            </code>
+
+        </div>
+    </div>
+    <!-- END release editor -->
+
+
+</div>
+<!-- END releases controller -->

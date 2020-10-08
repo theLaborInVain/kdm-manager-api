@@ -2148,7 +2148,13 @@ class Survivor(models.UserAsset):
         old_email = self.survivor["email"]
         self.survivor["email"] = new_email
 
-        self.log_event("%s changed the manager of %s to %s." % (request.User.login, old_email, self.survivor["email"]))
+        self.log_event("%s changed the manager of %s from '%s' to '%s'." % (
+            request.User.login,
+            self.survivor['name'],
+            old_email,
+            self.survivor["email"]
+            )
+        )
         self.save()
         return utils.http_200
 

@@ -97,7 +97,7 @@ def get(section=None, query=None, private=False):
         S = Settings("private")
         # this is deprecated
         err = "Use of the 'private' kwarg in settings.get() is deprecated!"
-        S.logger.debug(err)
+        S.logger.warn(err)
 
     if section is not None and query is None:
         return dict(S.config.items(section))

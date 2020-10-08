@@ -1,8 +1,22 @@
-body {background-color: #ddd;}
+:root {
+    --border-default: 0.25rem solid;
+    --boxshadow-default: 0 0 0.5em 0 #aaa;
+    --color-blue: #00A0E9;
+    --color-green: #32A54A;
+    --color-grey: #eee;
+    --color-pink: #DD5C9A;
+    --color-pink-gradient: radial-gradient(#F85699, #DD5C9A);
+    --color-red: #B92426;
+    --color-yellow: #EEC051;
+    --material-design-yellow: #FFFDE7;
+}
+
 a {color: #B57E2F}
 a:hover {color: #D57E2F;}
 a:active {color: #D57E2F;}
 a:visited {color: #B57E2F}
+body {background-color: #ddd;}
+button {cursor: pointer;}
 code {background-color: #eee; font-size: 1.1em; }
 
 
@@ -20,12 +34,43 @@ td.int_key {width: 10%; word-break: inherit;}
 .subscribers_breakdown_table td { }
 
 /*  reusable style / generic style  */
-.clickable {cursor: pointer; background-color: #ffffEF; padding: 3%; }
+.invert {
+    transform: rotate(180deg);
+}
+.ui_arrow {
+    display: inline-block;
+    transition: 0.5s;
+}
+
+.capitalize {text-transform: capitalize;}
+
+/*  clickable styles */
+.clickable {
+    cursor: pointer;
+    transition: 0.25s;
+    outline: none;
+}
+button:active,
+    .clickable:active {
+    transform:translate(0.15vh, 0.15vh);
+}
 .clickable.alert {background-color: #ffEFEF;}
+
 .zebra {background-color: #efefef; }
 .hidden {display: none; }
 .visible {display: inherit; }
+.capitalize {text-transform: capitalize;}
+.right-align {text-align: right; }
 
+/* angularjs animations */
+.ng_fade.ng-enter,
+    .ng_fade_in.ng-enter {transition: 1s linear all; opacity:0;}
+.ng_fade.ng-enter.ng-enter-active,
+    .ng_fade_in.ng-enter-active { opacity:1;}
+.ng_fadeout.ng-leave,
+    .ng_fade.ng-leave {transition: 1s linear all;  opacity:1;}
+.ng_fadeout.ng-leave.ng-leave-active,
+    .ng_fade.ng-leave.ng-leave-active {opacity:0;}
 
 
 /* basic containers - mobile */
@@ -33,11 +78,19 @@ td.int_key {width: 10%; word-break: inherit;}
 .container { display: flex; position: absolute; top: 1%; left: 1%; right: 1%; background-color: #eee; padding: 0.5%; flex-wrap: wrap; align-items: flex-start; }
 .flex_item_basic {background-color: #fff; padding: 1%; margin: 1%; width: 100%; }
 .flex_item_basic h1, .flex_item_basic h2 {margin: 0; }
-
+.tile {
+    background: var(--material-design-yellow);
+    padding: 3%; 
+}
 .initializing_screen {background: #eee; height: 100%; display: flex; flex-direction: column; flex-wrap: nowrap; color: #666; justify-content: center; align-items: center; }
 .initializing_screen img {width: min-content; }
 
-#spinner {position: fixed; bottom: 3%; right: 3%; z-index: 100;}
+#mainSpinner {
+    bottom: 3%;
+    position: fixed;
+    right: 3%;
+    z-index: 100;
+}
 
 
 .users_container {display: flex; flex-direction: column; }
@@ -67,7 +120,6 @@ td.int_key {width: 10%; word-break: inherit;}
 .log_detail { }
 .log_line {padding: 1%; }
 
-.capitalize {text-transform: capitalize;}
 
 .recent_settlements_spinner {float: right; font-size: 7pt; text-align: center; }
 .recent_settlements_spinner img {width: 30px; margin: 0 auto;}
@@ -130,7 +182,155 @@ button.toggle_settlement_event_log {float: right; }
 .api_response_times td {text-align: center; }
 .api_response_times td.url {text-align: left; }
 
-/* wide resoltuion*/
+
+/*  releases */
+.admin_panel_release_anchor_creator {
+    width: 30%;
+    float: right;
+}
+.admin_panel_release_worksheet_debug_clicker {
+    border-right: 5vw solid #eee;
+    border-top: 5vw solid transparent;
+    float: right;
+    margin-top: -6%;
+    height: 0;
+}
+.admin_panel_release_title_version_number {
+    border: 0;
+    font-weight: bold;
+    text-align: center;
+    width: 2rem;
+}
+#editReleaseWorksheetSummary {
+    border: 0;
+    border-left: 2rem solid var(--color-grey);
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+}
+#editReleaseWorksheetSummary:focus {
+    background: var(--material-design-yellow);
+    outline: none;
+}
+
+.admin_panel_edit_release_toolbar {
+    background: var(--color-grey);
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    width: 100%;
+}
+.admin_panel_edit_release_toolbar_button {
+    box-shadow: var(--boxshadow-default);
+    margin-left: 1rem;
+    margin-right: 1rem;
+    padding: 0.25rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    transition: 0.5s;
+}
+.admin_panel_edit_release_section_title {
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    display: flex;
+    font-weight: normal;
+    justify-content: space-between;
+    padding: 0.25rem;
+    padding-left: 0.5rem;
+    padding-right: 1rem;
+}
+.admin_panel_edit_release_item_bar {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0.25rem;
+}
+.admin_panel_edit_release_item_buttons {
+    width: 10%;
+}
+.admin_panel_edit_release_item_body {
+    box-sizing: border-box;
+    padding: 0.25rem;
+    width: 90%;
+}
+.admin_panel_edit_release_item_body:focus,
+    .admin_panel_edit_release_item_detail:focus {
+    background-color: var(--material-design-yellow);
+    outline: none;
+}
+.admin_panel_edit_release_item_detail_container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-left: 12%; 
+    width: 100%;
+}
+.admin_panel_edit_release_item_detail {
+    width:100%; 
+}
+.admin_panel_edit_release_item_bottom_raft {
+    display: flex;
+    justify-content: center;
+}
+
+/*  modal!  */
+.modal_outer {
+    background: rgba(0,0,0,0.9);
+    bottom: 0;
+    height: auto;
+    left: 0;
+    overflow: auto;
+    position: fixed;
+    right: 0;
+    top: 0;
+}
+.modal_inner {
+    background: #fff;
+    margin: 0 auto;
+    margin-top: 1%;
+    padding: 1%;
+    width: 90%;
+}
+.modal_button_raft {
+    display: flex;
+    justify-content: space-evenly;
+    margin: 3%;
+    width: auto;
+}
+.modal_button_raft button,
+    .modal_button {
+    border: var(--border-default);
+    border-radius: 5vw;
+    box-shadow: var(--boxshadow-default);
+    font-family: 'Silverado';
+    font-weight: bold;
+    justify-content: center;
+    letter-spacing: 1px;
+    min-width: 33%;
+    padding: 1rem;
+    width: auto;
+}
+.modal_button.circle {
+    align-items: center;
+    border-radius: 100%;
+    display: flex;
+    font-size: 3rem;
+    height: 3rem;
+    justify-content: center;
+    min-width: auto;
+    padding: 0;
+    width: 3rem;
+}
+.modal_button.circle div {
+    margin-top: -0.5rem;
+}
+.modal_button_raft button:focus,
+    .modal_button:focus {
+    border: 0;
+}
+
+/* wide resolution */
 @media only screen and (min-width: 1050px) and (orientation: landscape) {
 
     /* CSS reset */
@@ -142,4 +342,25 @@ button.toggle_settlement_event_log {float: right; }
 
 }
 
+/*                                                                      */
+/*      Last chance styles! Stuff we want at the end of the cascade     */
+/*                                                                      */
 
+/*  color styles    */
+.kd_blue {
+    background: var(--color-blue);
+    color: #fff;
+} 
+.kd_green {
+    background: var(--color-green);
+    color: #fff;
+} 
+.kd_red {
+    background: var(--color-red);
+    color: #fff
+} 
+.kd_pink {
+    background: var(--color-pink-gradient);
+    color: #fff
+} 
+.kd_yellow {background: var(--color-yellow)} 

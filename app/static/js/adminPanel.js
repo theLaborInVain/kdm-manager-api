@@ -1,7 +1,10 @@
 'use strict'; 
 
+//  public/vanilla JS functions and non-angular stuff
+function sleep (time) {return new Promise((resolve) => setTimeout(resolve, time));}
 
-var myApp = angular.module('adminPanel', []);
+//  admin app starts here!
+var myApp = angular.module('adminPanel', ['ngAnimate']);
 
 // avoid clashes with jinja2
 myApp.config(['$interpolateProvider', function($interpolateProvider) {
@@ -13,10 +16,10 @@ myApp.filter('trustedHTML', function($sce) {return $sce.trustAsHtml;});
 
 myApp.controller('globalController', function($scope, $http, $interval) {
 
-
     $scope.scratch = {};
 
     $scope.now = new Date();
+
     $scope.getAge = function(birthday){ //only does days for now
         var birthday = new Date(birthday);
         var age = $scope.now - birthday;
@@ -56,13 +59,14 @@ myApp.controller('globalController', function($scope, $http, $interval) {
         );
 	}
 
+
     $scope.getEventLog = function(settlement) {
 		// make sure we've got a fresh token
 		$scope.setUserJWT();
 
         settlement.event_log = [
             {event: 'Retrieving settlement Event Log as ' + $scope.user.login + '...'}
-           ]
+        ]
 
         var event_log_req_url = '/settlement/get_event_log/' + settlement._id.$oid;
 		var event_log_promise = $http({
@@ -80,11 +84,59 @@ myApp.controller('globalController', function($scope, $http, $interval) {
 
     };
 
+
+    // UI/UX junk
+
+    $scope.exportThis = function(ngEvent) {
+        // use's $event from ng-click to get the current element's innerHTML
+        // and set that as the value of 'target' (which should be a variable
+        // or something similar).
+
+        if (ngEvent === undefined) {
+            console.error('exportThis(): required $event as first arg');
+        }
+        return ngEvent.target.innerHTML;
+    }
+
+    $scope.setFocus = function(elementId) {
+        var element = document.getElementById(elementId);
+        if (element === null) {
+            console.error("Element '" + elementId + "' is null!");
+        };
+        element.focus();
+    };
+
+    // DEPRECATE THIS
+    // DEPRECATE THIS
+    // DEPRECATE THIS
     $scope.showHide = function(e_id) {
+        console.warn('showHide() is deprecated! Use ngShowHide().');
+        $scope.ngShowHide(e_id);
+    };
+    // DEPRECATE THIS
+    // DEPRECATE THIS
+    // DEPRECATE THIS
+
+    $scope.ngVisible = {}
+    $scope.ngShowHide = function(e_id) {
         var e = document.getElementById(e_id);
         var hide_class = "hidden";
         var visible_class = "visible";
-        if (e === null) {console.error("showHide('" + e_id + "') -> No element with ID value '" + e_id + "' found on the page!"); return false}
+
+        if (!$scope.ngVisible[e_id]) {
+            $scope.ngVisible[e_id] = true;
+        } else {
+            $scope.ngVisible[e_id] = false;
+        };
+
+        //  now figure out if we need to fiddle actual elements
+        if (e === null) {
+            var err = "No element with ID value";
+            console.warn(
+                "showHide('" + e_id + "') -> " + err + " '" + e_id + "' found on the page!");
+            return false;
+        };
+
         if (e.classList.contains(hide_class)) {
             e.classList.remove(hide_class);
             e.classList.add(visible_class);
@@ -92,13 +144,7 @@ myApp.controller('globalController', function($scope, $http, $interval) {
             e.classList.add(hide_class);
             e.classList.remove(visible_class)
         };
-    };
 
-    $scope.showSpinner = function(id) {
-        $("#" + id).fadeIn(3000);
-    };
-    $scope.hideSpinner = function(id) {
-        $("#" + id).fadeOut(3000);
     };
 
     $scope.seconds_since_last_refresh = 0;
@@ -119,10 +165,10 @@ myApp.controller('globalController', function($scope, $http, $interval) {
         );
 
         $scope.retrievingSettlements = true;
-        $scope.showSpinner('recentSettlementsSpinner'); 
+//        $scope.showSpinner('recentSettlementsSpinner'); 
         $http.get('admin/get/settlement_data').then(function(result){
             $scope.settlements = result.data;
-            $scope.hideSpinner('recentSettlementsSpinner');
+//            $scope.hideSpinner('recentSettlementsSpinner');
             $scope.retrievingSettlements = false;
 //            console.warn('[RECENT SETTLEMENTS] Got recent settlements!');
         });
@@ -130,7 +176,7 @@ myApp.controller('globalController', function($scope, $http, $interval) {
 
     setInterval( function init() {
         
-        $scope.showSpinner('spinner');
+        $scope.ngVisible.mainSpinner = true
         $http.get('stat').then(function(result){$scope.settings = result.data;});
         $http.get('https://api.github.com/repos/theLaborInVain/kdm-manager-api').then(function(result){$scope.github = result.data;});
 
@@ -138,10 +184,13 @@ myApp.controller('globalController', function($scope, $http, $interval) {
             $scope.getRecentSettlements();
         };
 
-        $scope.showSpinner('userSpinner');
+//        $scope.showSpinner('userSpinner');
         $scope.scratch.get_user_data_failure = false;
         $http.get('admin/get/user_data').then(
-            function(result){$scope.users = result.data; $scope.hideSpinner('userSpinner')},
+            function(result){
+                $scope.users = result.data;
+//                $scope.hideSpinner('userSpinner')
+            },
             function(result){
                 console.error('Could not retrieve recent user data!');
                 console.error(result);
@@ -151,11 +200,12 @@ myApp.controller('globalController', function($scope, $http, $interval) {
                 $scope.users = undefined;
             }
         );
+
         $http.get('admin/get/logs').then(function(result){$scope.logs = result.data;});
 
         $http.get('world').then(function(result){
             $scope.world = result.data;
-            $scope.hideSpinner('spinner');
+            $scope.ngVisible.mainSpinner = false;
             $scope.refreshed = new Date();
             $scope.seconds_since_last_refresh = 0;
 //            console.log("[MAIN] Refreshed main view!");
@@ -165,8 +215,6 @@ myApp.controller('globalController', function($scope, $http, $interval) {
         }(),
     120000
     )
-
-
 
 
     $scope.copyToClipboard = function(text) {
@@ -180,6 +228,216 @@ myApp.controller('globalController', function($scope, $http, $interval) {
 
 });
 
+//
+// RELEASES!
+//
+myApp.controller('releasesController', function($scope, $http) {
+
+    $scope.releasesObject = {
+        showLoader: true,
+    };
+
+    $scope.init = function() {
+        console.info('Initializing releasesController...');
+        $scope.setReleasePlatforms();
+        $scope.setReleases();
+    };
+
+    // these are the platforms we support; in the API, any API key we
+    // support is a platform
+    $scope.setReleasePlatforms = function() {
+        $scope.releasesObject.showLoader = true;
+        var reqURL = '/admin/get/platforms';
+        var scopeDestination = 'platforms';
+        console.time(reqURL);
+        $http.get(reqURL).then(
+            function(result){
+                console.timeEnd(reqURL);
+                $scope.releasesObject[scopeDestination] = result.data;
+                $scope.releasesObject.showLoader = false;
+            },
+            function(result){
+                console.error('Failed to load releases data! ' + reqURL);
+                console.error(result);
+            }
+        );
+    };
+
+    // get the current releases from the API and load them into scope
+    $scope.setReleases = function() {
+        $scope.releasesObject.showLoader = true;
+        var reqURL = '/admin/releases/dump';
+        var scopeDestination = 'releases';
+        console.time(reqURL);
+        $http.get(reqURL).then(
+            function(result){
+                console.timeEnd(reqURL);
+                $scope.releasesObject[scopeDestination] = result.data;
+                $scope.releasesObject.showLoader = false;
+            },
+            function(result){
+                console.error('Failed to load releases data! ' + reqURL);
+                console.error(result);
+            }
+        );
+    };
+
+    //
+    // methods for working on a release
+    //
+    $scope.getEditingRelease = function() {
+        // a laziness method to get the release that we're editing on back
+        // in the webapp
+        return $scope.releasesObject.editingRelease;
+    };
+
+    $scope.toggleSection = function(sectionName) {
+        // toggles a section in or out of the active post's sections
+        var post = $scope.getEditingRelease();
+        var sectionIndex = post.sections.indexOf(sectionName);
+        if (sectionIndex === -1) {
+            post.sections.push(sectionName)
+        } else {
+            post.sections.splice(sectionIndex,1)
+        }
+        $scope.updateRelease();
+    };
+
+    $scope.addItemToSection = function(sectionName) {
+        // adds a new item to the release's 'items' list; an item is a dict
+        // that we add arbitrary items to
+
+        // first, if we're initializing, do that
+        var post = $scope.getEditingRelease();
+        if (post.items === null) {
+            post.items = [];
+        };
+
+        // now, push the new item
+        var currentItemCount = post.items.length;
+        post.items.push(
+            {
+                'section': sectionName,
+                'sort': currentItemCount +1,
+                'body': '',
+                'feature': false,
+                'details': []
+            }
+        );
+
+        // auto-increment the patch version
+        post.version.patch++;
+
+        // finally, change focus to the new item
+        var newItemId = post._id.$oid + '_item_' + currentItemCount;
+        sleep(400).then(() => {
+            $scope.setFocus(newItemId);
+        });
+    };
+
+    $scope.initializeFeatureDetail = function(item) {
+        console.warn('initializing feature detail!');
+        var post = $scope.getEditingRelease();
+
+        // first time we open a feature, we need to create a detail for it
+        // and fiddle the version numbers
+        if (item.details.length === 0) {
+            console.warn('Initializing feature item details!');
+            $scope.addDetailToItem(item);
+
+            // now, increment the minor version (since this is a feature now)
+            // and decrement the patch, since this is no longer an enhancement
+            post.version.minor++;
+            post.version.patch--;
+        };
+
+    };
+
+    $scope.addDetailToItem = function(item) {
+        var post = $scope.getEditingRelease();
+
+        // push the new detail
+        var currentDetailCount = item.details.length;
+        item.details.push(
+            {
+                'body': '',
+            }
+        );
+
+        // auto-increment the patch version
+        post.version.patch++;
+
+        // finally, change focus to the new detail
+        var newDetailId = 'item_' + item.sort + '_detail_' + currentDetailCount;
+        sleep(400).then(() => {
+            $scope.setFocus(newDetailId);
+        });
+    }
+
+    $scope.updateAlink = function() {
+        $scope.scratch.alink = '<a href="' + $scope.scratch.alink_URL + '">' + $scope.scratch.alink_text + '</a>'
+    }
+
+    $scope.createNewRelease = function(platformName, userLogin) {
+
+        $scope.releasesObject.showLoader = true;
+
+        var reqURL = '/admin/releases/new';
+        var postData = {
+            'platform': platformName,
+            'login': userLogin,
+        }
+
+        console.time(reqURL);
+
+        $http.post(reqURL, postData).then(
+            function(result){
+                console.timeEnd(reqURL);
+                console.warn('Created new release for ' + platformName);
+                $scope.setReleases();
+                $scope.releasesObject.showLoader = false;
+                $scope.releasesObject.editingRelease = result.data;
+            },
+            function(result){
+                console.error('Failed to create new release! ' + reqURL);
+                console.error(result);
+            }
+        );
+    };
+
+    $scope.updateRelease = function(action) {
+        // updates a release via POST
+        if (action === undefined) {
+            action = 'update'
+        };
+
+        var reqURL = '/admin/releases/' + action;
+        var releaseData = $scope.releasesObject.editingRelease
+
+        $scope.releasesObject.showLoader = true;
+        console.time(reqURL);
+
+        $http.post(reqURL, releaseData).then(
+            function(result){
+                console.timeEnd(reqURL);
+                console.warn(action + 'd release ' + releaseData._id.$oid);
+                $scope.setReleases();
+                $scope.releasesObject.editingRelease = result.data;
+                $scope.releasesObject.showLoader = false;
+            },
+            function(result){
+                console.error('Failed to update release!');
+                console.error(result);
+            }
+        );
+        
+    }
+
+    $scope.init();
+
+});
+
+//  Alerts!
 myApp.controller('alertsController', function($scope, $http) {
 
     $scope.scratch = {
@@ -187,12 +445,13 @@ myApp.controller('alertsController', function($scope, $http) {
     };
 
     $scope.getWebappAlerts = function() {
+        var funcName = 'getWebappAlertS()';
         $scope.scratch.initializing_panel = true;
-        console.time('getWebappAlerts()');
+        console.time(funcName);
         $http.get('/get/notifications').then(
             function(result){
                 $scope.webappAlerts = result.data;
-                console.timeEnd('getWebappAlerts()');
+                console.timeEnd(funcName);
                 $scope.scratch.initializing_panel = false;
             },
             function(result){console.error('Could not retrieve webapp alerts!');}
@@ -224,7 +483,6 @@ myApp.controller('alertsController', function($scope, $http) {
     $scope.expireAlert = function(a) {
         $http.post("/admin/notifications/expire", a).then(function(result){
             a.expiration = 'NOW';
-            console.warn(result);
             $scope.getWebappAlerts();
         });
     };
@@ -343,7 +601,6 @@ myApp.controller('userAdminController', function($scope, $http) {
         		$scope.scratch.showLoader = false;
             }
         );
-        
 
 
     };

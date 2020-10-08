@@ -1,5 +1,6 @@
-settings_private.cfg
+admin.pickle
 api_keys.cfg
+settings_private.cfg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,0 +1,106 @@
+<!-- alerts controller -->
+<div class="flex_item_basic" ng-controller="alertsController">
+
+    <!-- initializing_screen -->
+    <div class="initializing_screen" ng-if="scratch.initializing_panel">
+        <img src="/static/media/images/loading_io.gif" >
+        <div>Loading...</div>
+    </div>
+
+    <div class="flex_item_inner" ng-if="scratch.initializing_panel === false">
+        <!-- actual view -->
+        <h2>Alerts!</h2>
+
+        <p ng-if="webappAlerts.length == 0">...no active webapp alerts...</p>
+
+        <div
+            class="webapp_alert"
+            ng-repeat="alert in webappAlerts"
+            title="{a alert._id.$oid a}"
+        >
+            <div
+                class="clickable tile"
+                ng-click="showHide(alert._id.$oid + '_controls')"
+            >
+                <b>{a alert.title a}</b> <span ng-bind-html="alert.body|trustedHTML"></span><br/>
+                <div
+                    class="alert_footer"
+                >
+                    <b>release:</b> {a alert.release a}| <b>type:</b> {a alert.sub_type a} | <b>created:</b> {a alert.created_on.$date | date:'yyyy-MM-dd @ h:mma' a} | <b>expires:</b> {a alert.expiration a}
+                </div>
+            </div>
+
+            <div id="{a alert._id.$oid a}_controls" class="clickable tile hidden">
+                <div
+                    class="alert_controls"
+                >
+                    <button class="red_button" ng-click="expireAlert(alert)">Expire Now!</button>
+                </div>
+            </div>
+        </div>
+
+        <p ng-click="showHide('createNewAlert')" class="clickable tile alert">
+            Click/tap to create a new webapp alert!
+        </p>
+
+
+        <div id="createNewAlert" class="create_webapp_alert hidden">
+
+            <div class="create_webapp_alert_control_block">
+                <input class="webapp_alert_title" type="text" ng-model="newAlert.title" placeholder="New Webapp Alert Title!" />
+                <textarea class="webapp_alert_body" ng-model="newAlert.body">
+                </textarea>
+            </div>
+            <div class="create_webapp_alert_control_block">
+                <b>Type:</b>
+                <label>
+                    <input
+                        type="radio"
+                        name="new_alert_type"
+                        ng-model="newAlert.type"
+                        value="kpi"
+                    > 
+                    KPI
+                </label>
+                <label>
+                    <input
+                        type="radio"
+                        name="new_alert_type"
+                        ng-model="newAlert.type"
+                        value="announcement"
+                    > 
+                    Announcement
+                </label>
+            </div>
+            <div class="create_webapp_alert_control_block">
+                <b>Expiration:</b>
+                <label>
+                    <input
+                        type="radio"
+                        name="new_alert_expiration"
+                        ng-model="newAlert.expiration"
+                        value="next_release"
+                    > 
+                    Next release
+                </label>
+                <label>
+                    <input
+                        type="radio"
+                        name="new_alert_expiration"
+                        ng-model="newAlert.expiration"
+                        value="manual"
+                    > 
+                    Manual
+                </label>
+            </div>
+
+            <button
+                ng-if="newAlert.title != null && newAlert.body != null"
+                ng-click="createAlert()"
+                class="red_button"
+            >
+                CREATE NEW WEBAPP ALERT
+            </button>
+        </div>
+    </div><!-- flex_item_inner -->
+</div> <!-- flex_item_basic -->

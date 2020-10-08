@@ -14,7 +14,7 @@ import sys
 
 # local imports
 from app import admin, utils
-from app.admin import notifications, panel
+from app.admin import notifications, panel, releases
 
 
 def get_data(resource=None):
@@ -27,8 +27,13 @@ def get_data(resource=None):
         return panel.get_settlement_data()
     elif resource == 'logs':
         return panel.serialize_system_logs()
+    elif resource == 'platforms':
+        return panel.get_platforms()
 
-    raise utils.InvalidUsage("Resource '%s' does not exist!", status_code=400)
+    raise utils.InvalidUsage(
+        "Resource '%s' does not exist!" % resource,
+        status_code=400
+    )
 
 
 def get_notifications(method=None):

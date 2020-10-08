@@ -122,6 +122,22 @@ def get_user_data():
     return json.dumps(d, default=json_util.default)
 
 
+def get_platforms():
+    """ Returns a JSON representation (it's a list) of platforms that we
+    support with this API, including itself. The items in the list are
+    dictionaries."""
+
+    output = []
+    api_keys_dict = utils.get_api_keys()
+    for api_key in api_keys_dict:
+        output.append({
+            'app': api_keys_dict[api_key],
+            'api_key': api_key
+        })
+
+    return json.dumps(output, default=json_util.default)
+
+
 def serialize_system_logs():
     """ Returns JSON represent application/system log output. """
 
