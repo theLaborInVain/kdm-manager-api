@@ -713,15 +713,30 @@ api_meta = {
             "about": "https://github.com/theLaborInVain/kdm-manager-api",
             "copyright": "The Labor in Vain (2015 - %s)" %
                     datetime.now().strftime("%Y"),
+            "license": {
+                'url': (
+                    "https://github.com/theLaborInVain/"
+                    "kdm-manager-api/blob/master/LICENSE"
+                ),
+                'type': 'MIT license',
+                'disclaimer': (
+                    "The license covers application code in this "
+                    "repository only. The license does not and cannot pertain "
+                    "to the game assets (in the /app/assets folder), which "
+                    "are the sole property of Adam Poots Games, LLC. and "
+                    "which are presented here without authorization."
+                ),
+                'text': open(
+                    os.path.join(API.root_path, '..', 'LICENSE'),
+                    'r'
+                ).read(),
+            },
         },
         'subscriptions': create_subscriptions_dict(),   # remove in v4
         'kdm-manager':{
             'user_preferences': settings.get('users'),
             'subscriptions': create_subscriptions_dict(),
         },
-#        "admins": list(
-#            mdb.users.find({"admin": {"$exists": True}}).sort('login')
-#        ),
         "object": {},
     },
 }

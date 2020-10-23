@@ -6,3 +6,27 @@
         url('/static/fonts/329BC2_0_0.ttf') format('truetype');
 }
 
+
+html {
+    font-family: 'Ruda';
+}
+
+.silverado {
+    font-family: 'Silverado';
+}
+.silverado.number {
+    letter-spacing: -0.1rem; 
+}
+.ruda {
+    font-family: 'Ruda';
+}
+
+.font_small {
+    font-size: var(--font-small);
+}
+.font_medium {
+    font-size: var(--font-medium);
+}
+.font_large {
+    font-size: var(--font-large);
+}

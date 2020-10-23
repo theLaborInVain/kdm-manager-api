@@ -2996,6 +2996,7 @@ white_box = {
             },
         ],
     },
+
     'brave_dirndl': {
         'name': 'Brave Dirndl',
         'expansion': 'oktoberfest_aya',
@@ -3051,7 +3052,6 @@ white_box = {
             'When you depart with  <font class="inline_shield">1</font> or '
             'less at each hit location (after all other departing bonuses), '
             'add armor equal to your courage to all hit locations.'
-
         ),
         'recipes': [
             {
@@ -3079,7 +3079,50 @@ white_box = {
     },
 
     # Halloween White Speaker 2019
-
+    'black_ghost_dagger': {
+        'name': 'Black Ghost Dagger',
+        'expansion': 'halloween_white_speaker_2019',
+        'keywords': ['weapon', 'melee', 'dagger', 'metal', 'other'],
+        'affinities': {'top': 'blue', 'bottom': 'red'},
+        'speed': 3,
+        'accuracy': 7,
+        'strength': 2,
+        'desc': 'Gains <b>Sharp</b> when attacking &#127875; monsters.',
+        'affinity_bonus': {
+            'desc': 'Gains <b>Deflect 1</b>',
+            'requires': {
+                'puzzle': {
+                    'red': 1,
+                    'blue': 1,
+                },
+            }
+        },
+        'recipes': [
+            {
+                'resource_handles': {
+                    'dark_water': 3,
+                    'iron': 2,
+                },
+                'crafting_process': [
+                    (
+                        'Boil <b>Nightmare Corn</b> in Dark Water over '
+                        '<b>Heat</b> to create syrup infused with paranoia.'
+                    ),
+                    (
+                        'Isolate a <b>survivor with +10 insanity</b> in a '
+                        '<b>hovel</b> with the dagger. Their deranged '
+                        'outbursts will chip the dagger, revealing its final '
+                        'shape.'
+                    ),
+                    (
+                        'A survivor with <b>Blotted Out consumes</b> the '
+                        'syrup. Their inevitable regurgitation of of syrup '
+                        'and fearful bile is used to patinate the weapon.'
+                    ),
+                ],
+            },
+        ],
+    },
 }
 
 

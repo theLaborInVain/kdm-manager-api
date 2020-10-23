@@ -120,14 +120,6 @@ def admin_get_user(action):
     return user_object.request_response(action)
 
 
-@API.route("/admin/releases/<action>", methods=['POST','GET','OPTIONS'])
-@API.basicAuth.login_required
-def admin_releases(action):
-    """ How we work with releases. POST a dict with an 'action' value
-    to take that action. """
-    return admin.releases.do(action)
-
-
 #
 #   documentation
 #
@@ -137,15 +129,6 @@ def index():
     """ The default return for accessing https://api.kdm-manager.com (or
     equivalent endpoint), which gets you the API docs. """
     return flask.send_file("static/html/docs.html")
-
-@API.route("/changelog")
-@API.route("/changelog.json")
-@API.route("/change_log")
-@API.route("/change_log.json")
-def dump_change_log():
-    """ Dumps the change log. """
-    return admin.releases.do('dump')
-
 
 @API.route("/docs/<action>/<render_type>")
 def render_documentation(action, render_type=None):
@@ -211,7 +194,55 @@ def render_documentation(action, render_type=None):
 
 
 
+#
+#   dev blog
+#
+
+@API.route("/blog")
+def blog_index():
+    """ the index for the blog. """
+    return flask.render_template(
+        '/blog/index.html',
+        version=utils.settings.get('api','version')
+    )
+
+@API.route("/blog/<action>/<request>")
+def blog_content(action, request):
+    """ We only support a couple of actions for this. """
+
+    output = {
+        'version': utils.settings.get('api','version'),
+    }
+    output[action] = request
+
+    return flask.render_template(
+        '/blog/%s.html' % action,
+        **output
+    )
+
+
+#
+#   releases! public first, then admin endpoints
+#
+
+@API.route("/releases/<action>")
+def releases_public(action):
+    """ Public endpoints re: the releases application. """
+    return admin.releases.public_router(action)
+
+
+@API.route("/admin/releases/<action>", methods=['POST','GET','OPTIONS'])
+@API.basicAuth.login_required
+def releases_private(action):
+    """ How we work with releases. POST a dict with an 'action' value
+    to take that action. """
+    return admin.releases.private_router(action)
+
+
+
+#
 #   WORLD
+#
 
 @API.route("/world")
 @crossdomain(origin=['*'], headers='Content-Type')

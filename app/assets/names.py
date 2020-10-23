@@ -475,6 +475,7 @@ male = [
 ]
 
 female = [
+    "Aayla",
     "Acacia",
     "Adda",
     "Adrasteia",
@@ -914,6 +915,7 @@ surname = [
     "Butchersbane",
     "Darkheart",
     "Darkhunter",
+    "Darkthrone",
     "Deathstrike",
     "Doomfist",
     "Doomrider",

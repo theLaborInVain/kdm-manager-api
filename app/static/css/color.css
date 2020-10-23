@@ -1,0 +1,35 @@
+.dev_blog_top_nav_bar {
+    background: var(--color-grey);
+}
+.dev_blog_footer {
+    background: var(--color-death-grey);
+    color: #808080;
+}
+
+/*  last chance styles; these are basically overrides   */
+
+.dev_blog_feature_zebra {
+    background: var(--material-design-yellow);
+}
+
+.kd_black {
+    background: #000;
+    color: #fff;
+}
+.kd_blue {
+    background: var(--color-blue);
+    color: #fff;
+}
+.kd_green {
+    background: var(--color-green);
+    color: #fff;
+}
+.kd_red {
+    background: var(--color-red);
+    color: #fff
+}
+.kd_pink {
+    background: var(--color-pink-gradient);
+    color: #fff
+}
+.kd_yellow {background: var(--color-yellow)}

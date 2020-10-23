@@ -1,0 +1,23 @@
+<div
+    id="devBlogTopNavBar"
+    class="dev_blog_top_nav_bar"
+>
+    <div
+        class="dev_blog_top_nav_bar_button_rack"
+    >
+        <div
+            class="clickable dev_blog_top_nav_bar_button"
+            ng-click="loadURL('/blog');"
+        >
+            Home
+        </div>
+        <div
+            class="clickable dev_blog_top_nav_bar_button"
+            ng-repeat="platform in apiData.releases.platforms"
+            ng-click="loadURL('/blog/archive/' + platform.app);"
+        >
+            {a platform.app a}
+        </div>
+    </div>
+
+</div>

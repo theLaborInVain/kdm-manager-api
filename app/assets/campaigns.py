@@ -201,7 +201,11 @@ expansion_campaign = {
     "the_green_knight": {
         "name": "The Green Knight",
         'saviors': True,
-        "subtitle": "A campaign following the 'People of the Lantern' timeline that includes all content required by the Green Knight Armor expansion.",
+        "subtitle": (
+            "A campaign following the 'People of the Lantern' timeline that "
+            "includes all content required by the <b>Green Knight Armor</b> "
+            "expansion."
+        ),
         "survival_actions": ["dodge","encourage","dash","surge",'endure'],
         "always_available": {
             "location": ["Lantern Hoard"],
@@ -212,7 +216,13 @@ expansion_campaign = {
             "innovation": ["sun_language","dragon_speech","radiating_orb"],
         },
         "principles": ["new_life","death","society","conviction"],
-        "milestones": ["first_child","first_death","pop_15","innovations_5","game_over"],
+        "milestones": [
+            "first_child",
+            "first_death",
+            "pop_15",
+            "innovations_5",
+            "game_over"
+        ],
         "nemesis_monsters": ["butcher","kings_man","the_hand","watcher"],
         "special_showdowns": ["kings_man",'the_hand'],
         'final_boss': 'gold_smoke_knight',
@@ -223,11 +233,14 @@ expansion_campaign = {
             "quarries": ["white_lion"],
             "nemesis_monsters": ["butcher"],
             "nemesis_encounters": {'butcher': []},
-            "expansions": ["green_knight_armor", "dung_beetle_knight","flower_knight","lion_knight","gorm"],
+            "expansions": [
+                "green_knight_armor",
+                "dung_beetle_knight",
+                "flower_knight",
+                "lion_knight",
+                "gorm"
+            ],
         },
-#        'help': [
-#            {'type': 'rules', 'tip': '',}
-#        ]
     },
 
     "the_bloom_people": {

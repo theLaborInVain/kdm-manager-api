@@ -812,6 +812,7 @@ class Settlement(models.UserAsset):
         """ Removes a monster from the settlement's list of quarry or nemesis
         monsters. Basically the inverse of the add_monster() method (above)."""
 
+        # get the handle from kwargs or from the request
         if monster_handle is None:
             self.check_request_params(["handle"])
             monster_handle = self.params["handle"]
@@ -820,27 +821,43 @@ class Settlement(models.UserAsset):
         m_dict = self.Monsters.get_asset(monster_handle)
 
         # figure out what type it is or die trying
-        m_type = m_dict['type']
+        m_type = m_dict['sub_type']
         if m_type == 'quarry':
             target_list = self.settlement['quarries']
         elif m_type == 'nemesis':
             target_list = self.settlement['nemesis_monsters']
         else:
-            raise utils.InvalidUsage("%s Unable to process 'rm_monster' operation on asset: %s" % (self, m_dict))
+            # 1.) if we're failing, record the problem asset in the logs
+            err_0 = "%s Unable to process 'rm_monster' operation on asset: %s"
+            self.logger.error(err_0 % (self, m_dict))
+
+            # 2.) return a descriptive, but not fully-detailed, error
+            err_1 = (
+                "Monster asset with type '%s' cannot be removed! "
+                "Supported types are 'quarry' and 'nemesis'."
+            )
+            raise utils.InvalidUsage(
+                err_1 % m_type
+            )
 
         # general handling for both types
         if monster_handle in target_list:
             target_list.remove(monster_handle)
-#            self.logger.debug("%s Removed '%s' handle from settlement %s monsters list." % (self, monster_handle, m_type))
         else:
-            self.logger.error("%s Ignoring attempt to remove non-existing item '%s' from %s" % (self, monster_handle, m_type))
+            err = "%s Ignoring attempt to remove non-existing item '%s' from %s"
+            self.logger.error(err % (self, monster_handle, m_type))
 
         # additional handling for nemeses
         if m_type == 'nemesis' and monster_handle in self.settlement['nemesis_encounters'].keys():
             del self.settlement["nemesis_encounters"][monster_handle]
-#            self.logger.debug("%s Removed '%s' handle from settlement 'nemesis_encounters' dict..." % (self, monster_handle))
 
-        self.log_event(action="rm", key="%s monsters" % m_dict['type'], value=m_dict["name"], event_type="rm_monster")
+        self.log_event(
+            action="rm",
+            key="%s monsters" % m_dict['type'],
+            value=m_dict["name"],
+            event_type="rm_monster"
+        )
+
         self.save()
 
 

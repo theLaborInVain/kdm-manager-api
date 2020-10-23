@@ -1,0 +1,118 @@
+:root {
+    --border-default: 0.25rem solid;
+    --box-shadow-default: 0 0 0.5em 0 #999;
+    --box-shadow-material-design: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    --color-blue: #00A0E9;
+    --color-death-grey: #212121;
+    --color-green: #32A54A;
+    --color-grey: #f2f2f2;
+    --color-pink: #DD5C9A;
+    --color-pink-gradient: radial-gradient(#F85699, #DD5C9A);
+    --color-red: #B92426;
+    --color-yellow: #EEC051;
+    --font-small: 0.6rem;
+    --font-medium: 1rem;
+    --font-large: 1.5rem;
+    --material-design-yellow: #FFFDE7;
+}
+
+/*                                  */
+/*  reusable style / generic style  */
+/*                                  */
+
+a {
+    color: var(--color-blue);
+    font-weight: bold; 
+    text-decoration: none;
+    transition: 1s;
+}
+a:hover {color: var(--color-pink); }
+a:active {color: var(--color-red); }
+a:visited {color: var(--color-yellow); }
+
+body {
+    box-sizing: border-box;
+    margin: 0;
+    width: 100%;
+}
+
+/*  clickable styles */
+.clickable {
+    cursor: pointer;
+    transition: 0.25s;
+    outline: none;
+}
+.selectable {
+    user-select: all;
+}
+button:active,
+    .clickable:active {
+    transform:translate(0.15vh, 0.15vh);
+}
+.clickable.alert {background-color: #ffEFEF;}
+
+/*  style and layout shorthands/one-shots */
+.capitalize {text-transform: capitalize;}
+.hidden {display: none; }
+.invert {transform: rotate(180deg);}
+.right-align {text-align: right; }
+.visible {display: inherit; }
+.zebra {background-color: var(--color-grey) }
+
+/* angularjs animations */
+.ng_fade.ng-enter,
+    .ng_fade_in.ng-enter {transition: 1s linear all; opacity:0;}
+.ng_fade.ng-enter.ng-enter-active,
+    .ng_fade_in.ng-enter-active { opacity:1;}
+.ng_fadeout.ng-leave,
+    .ng_fade.ng-leave {transition: 1s linear all;  opacity:1;}
+.ng_fadeout.ng-leave.ng-leave-active,
+    .ng_fade.ng-leave.ng-leave-active {opacity:0;}
+
+/*  UI arrow */
+.ui_arrow {
+    display: inline-block;
+    transition: 0.5s;
+}
+
+/*                      */
+/*      KD Styles!      */
+/*                      */
+
+.kd_char_sheet_block {
+    border: 0.2rem solid;
+    font-family: 'Silverado';
+    margin: 1rem;
+    padding: 1rem;
+    padding-top: 0.5rem;
+}
+.kd_char_sheet_row {
+    box-sizing: border-box;
+    display: flex;
+    margin: 0 auto;
+    padding: 0.5rem;
+    width: 100%;
+}
+.kd_char_sheet_box {
+    border: 0.2rem solid;
+    height: 0.5rem;
+    width: 0.5rem;
+    min-height: 0.5rem;
+    min-width: 0.5rem;
+}
+.kd_char_sheet_box.checked {
+    background: #000;
+    background-color: #000;
+}
+.kd_char_sheet_box_desc {
+    font-family: 'Ruda';
+    margin-left: 0.5rem;
+    text-transform: capitalize;
+    transition: 1s;
+}
+.kd_char_sheet_box_underline {
+    border-bottom: 0.1rem solid;
+    margin-left: 0.5rem;
+    max-width: 7rem;
+    width: 100%;
+}

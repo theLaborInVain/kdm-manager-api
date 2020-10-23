@@ -1,6 +1,6 @@
 <!doctype html>
 <html
-    ng-app="adminPanel"
+    ng-app="apiUtils"
     ng-controller="globalController"
     ng-init='user = {{user}}; api_key="{{api_key}}"'
 >
@@ -10,14 +10,19 @@
  <head>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.4/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.4/angular-animate.js"></script>
+
+    <script src="/static/js/_global.js"></script>
     <script src="/static/js/adminPanel.js"></script>
 
-    <link rel="stylesheet" href="/static/css/adminPanel.css" />
     <link rel="stylesheet" href="/static/css/fonts.css" />
+    <link rel="stylesheet" href="/static/css/apiUtils.css" />
+    <link rel="stylesheet" href="/static/css/adminPanel.css" />
+    <link rel="stylesheet" href="/static/css/color.css" />
+
     <link href="https://fonts.googleapis.com/css?family=Ruda&display=swap" rel="stylesheet">
  </head>
 
- <body>
+ <body ng-controller="adminPanelController">
 
     <img
         id="mainSpinner"
@@ -58,9 +63,10 @@
             <b>Last Refreshed:</b> {a refreshed a} ({a seconds_since_last_refresh a} seconds ago)<br/>
 
             <br/>
-            <a href="/" target="top">API Documentation</a> | 
+            <a href="/">API Documentation</a> | 
+            <a href="/blog">Development Blog</a> | 
             <a href="https://github.com/theLaborInVain/kdm-manager-api" target="top">GitHub</a> |
-            <a href="/stat" target="top">settings</a> 
+            <a href="/stat">settings</a> 
 
         </div>
 

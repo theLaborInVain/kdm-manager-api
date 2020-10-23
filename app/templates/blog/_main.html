@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html
+    lang="en"
+    ng-app="apiUtils"
+    ng-controller="globalController"
+    ng-init='api_key="{{api_key}}"'
+>
+
+ <title>KDM-Manager: Development Blog</title>
+
+ <head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="content-type" content="text/html; charset=UTF8" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-animate.js"></script>
+
+    <script src="/static/js/_global.js?version={{version}}"></script>
+    <script src="/static/js/devBlog.js?version={{version}}"></script>
+
+    <link rel="stylesheet" href="/static/css/fonts.css?version={{version}}" />
+    <link rel="stylesheet" href="/static/css/apiUtils.css?version={{version}}" />
+    <link rel="stylesheet" href="/static/css/devBlog.css?version={{version}}" />
+    <link rel="stylesheet" href="/static/css/color.css?version={{version}}" />
+    
+    <link href="https://fonts.googleapis.com/css?family=Ruda&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+ </head>
+
+ <body
+    ng-controller="devBlogController"
+    ng-init="setReleases();"
+ >
+
+    {% include 'blog/nav_bar.html' %}
+
+    <!-- show content only if we get apiData in the main $scope -->
+    <div
+        ng-if="apiData.releases"
+        class="dev_blog_content_container"
+    >
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- if we DO NOT get apiData in the main $scope, show a downtime msg -->
+    <div
+        ng-if="!apiData.releases"
+        class="font_medium dev_blog_content_block"
+    >
+        <center>Returning shortly...</center>
+    </div>
+
+    <div
+        class="font_small dev_blog_footer dev_blog_content_block"
+    >
+        Developed and published by
+        <a href="https://thelaborinvain.com">The Labor in Vain</a>.
+
+        <p><i>Bad news travels fast</i></p>
+
+        <p>2015-{a now|date:'yyyy' a}</p>
+
+        <hr/>
+
+        <p>
+            Software development logs and records published on this website do
+            not constitute a Service Level Agreement (SLA) for the
+            applications and platforms to which they pertain.
+        </p>
+
+        <p>
+            Services to which logs and records pertain are provided
+            "as-is" and without any warranty of any kind under the terms of 
+            the <b>{a apiData.stat.info.license.type a}</b>.
+        </p>
+
+        <p>
+            <a ng-href="apiData.stat.info.license.url">Additional terms</a>
+            apply to the intellectual property distributed
+            with the software.
+        </p>
+
+        <hr/>
+
+        <p>
+            This website, as well as the services and software it describes,
+            are neither supported by nor affiliated with 
+            <a href="https://kingdomdeath.com" target="top">Kingdom Death</a> or
+            with Adam Poots Games, LLC.
+        </p>
+
+    </div>
+
+ </body>
+
+</html>

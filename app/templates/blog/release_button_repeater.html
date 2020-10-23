@@ -1,0 +1,64 @@
+<!-- button repeater -->
+<span
+    class="hidden"
+    ng-init="
+        scratch.maxReleasesToShow = 3;
+        scratch.visibleReleases = 0;
+    "
+>
+    HACK CITY!!!
+</span>
+
+<div
+    class="clickable dev_blog_release_link_button"
+    ng-repeat="
+        release in apiData.releases[releaseType] | filter: buttonRepeaterFilter as filteredReleases
+    "
+    ng-click="loadURL('/blog/release/' + release._id.$oid);"
+    ng-if="$index < scratch.maxReleasesToShow"
+    ng-init="scratch.visibleReleases = scratch.visibleReleases + 1"
+>
+    <div
+        class="font_medium dev_blog_release_link_button_title"
+    >
+
+        <div
+            class="dev_blog_release_link_button_title_app"
+        >
+            {a release.platform a}
+        </div>
+
+        <div
+            class="dev_blog_release_link_button_title_version silverado number"
+        >
+            {a release.version.major a}.{a release.version.minor a}.{a release.version.patch a}
+        </div>
+
+    </div>
+
+    <div
+        ng-if="release.published"
+        class="font_small dev_blog_release_link_detail"
+    >
+        published on {a release.published_on.$date|date:'yyyy-MM-dd' a};
+        includes {a release.items.length a} updates/fixes.
+    </div>
+
+    <div
+        ng-if="!release.published"
+        class="font_small dev_blog_release_link_detail"
+    >
+        created on {a release.created_on.$date|date:'yyyy-MM-dd' a};
+        includes {a release.items.length a} updates/fixes.
+    </div>
+
+
+</div> <!-- button repeater -->
+
+<div
+    class="clickable capsule dev_blog_release_link_show_more_button kd_yellow"
+    ng-if="scratch.maxReleasesToShow < filteredReleases.length"
+    ng-click="scratch.maxReleasesToShow = scratch.maxReleasesToShow + 1"
+>
+    Show more releases...
+</div>

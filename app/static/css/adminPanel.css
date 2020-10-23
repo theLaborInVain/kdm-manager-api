@@ -1,20 +1,3 @@
-:root {
-    --border-default: 0.25rem solid;
-    --boxshadow-default: 0 0 0.5em 0 #aaa;
-    --color-blue: #00A0E9;
-    --color-green: #32A54A;
-    --color-grey: #eee;
-    --color-pink: #DD5C9A;
-    --color-pink-gradient: radial-gradient(#F85699, #DD5C9A);
-    --color-red: #B92426;
-    --color-yellow: #EEC051;
-    --material-design-yellow: #FFFDE7;
-}
-
-a {color: #B57E2F}
-a:hover {color: #D57E2F;}
-a:active {color: #D57E2F;}
-a:visited {color: #B57E2F}
 body {background-color: #ddd;}
 button {cursor: pointer;}
 code {background-color: #eee; font-size: 1.1em; }
@@ -32,45 +15,6 @@ td.int_key {width: 10%; word-break: inherit;}
 
 .subscribers_breakdown_table {width: auto; margin: 0 0 0 10px; border-collapse: collapse;}
 .subscribers_breakdown_table td { }
-
-/*  reusable style / generic style  */
-.invert {
-    transform: rotate(180deg);
-}
-.ui_arrow {
-    display: inline-block;
-    transition: 0.5s;
-}
-
-.capitalize {text-transform: capitalize;}
-
-/*  clickable styles */
-.clickable {
-    cursor: pointer;
-    transition: 0.25s;
-    outline: none;
-}
-button:active,
-    .clickable:active {
-    transform:translate(0.15vh, 0.15vh);
-}
-.clickable.alert {background-color: #ffEFEF;}
-
-.zebra {background-color: #efefef; }
-.hidden {display: none; }
-.visible {display: inherit; }
-.capitalize {text-transform: capitalize;}
-.right-align {text-align: right; }
-
-/* angularjs animations */
-.ng_fade.ng-enter,
-    .ng_fade_in.ng-enter {transition: 1s linear all; opacity:0;}
-.ng_fade.ng-enter.ng-enter-active,
-    .ng_fade_in.ng-enter-active { opacity:1;}
-.ng_fadeout.ng-leave,
-    .ng_fade.ng-leave {transition: 1s linear all;  opacity:1;}
-.ng_fadeout.ng-leave.ng-leave-active,
-    .ng_fade.ng-leave.ng-leave-active {opacity:0;}
 
 
 /* basic containers - mobile */
@@ -247,7 +191,14 @@ button.toggle_settlement_event_log {float: right; }
     padding: 0.25rem;
 }
 .admin_panel_edit_release_item_buttons {
-    width: 10%;
+    align-items: center; 
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    min-width: 10%;
+}
+.admin_panel_edit_release_item_buttons * {  /* the buttons */
+    height: 100%; 
 }
 .admin_panel_edit_release_item_body {
     box-sizing: border-box;
@@ -307,7 +258,7 @@ button.toggle_settlement_event_log {float: right; }
     font-weight: bold;
     justify-content: center;
     letter-spacing: 1px;
-    min-width: 33%;
+    min-width: 25%;
     padding: 1rem;
     width: auto;
 }
@@ -315,7 +266,7 @@ button.toggle_settlement_event_log {float: right; }
     align-items: center;
     border-radius: 100%;
     display: flex;
-    font-size: 3rem;
+    font-size: 3.5rem;
     height: 3rem;
     justify-content: center;
     min-width: auto;
@@ -341,26 +292,3 @@ button.toggle_settlement_event_log {float: right; }
     .flex_item_double_wide {width: 100%; }
 
 }
-
-/*                                                                      */
-/*      Last chance styles! Stuff we want at the end of the cascade     */
-/*                                                                      */
-
-/*  color styles    */
-.kd_blue {
-    background: var(--color-blue);
-    color: #fff;
-} 
-.kd_green {
-    background: var(--color-green);
-    color: #fff;
-} 
-.kd_red {
-    background: var(--color-red);
-    color: #fff
-} 
-.kd_pink {
-    background: var(--color-pink-gradient);
-    color: #fff
-} 
-.kd_yellow {background: var(--color-yellow)} 

@@ -1,0 +1,139 @@
+{% extends 'blog/_main.html' %}
+
+{% block content %}
+
+<div
+    class="dev_blog_content_block"
+    ng-init="setReleaseObject('{{release}}')"
+    ng-if="apiData.releases.all"
+>
+
+    <div
+        ng-if="releaseObject === undefined"
+        class="dev_blog_content_block_loader"
+    >
+        <img src="/static/media/images/loading_io.gif" />
+    </div>
+
+    <div
+        ng-if="releaseObject === null"
+        class="dev_blog_content_block_loader"
+    >
+        Could not retrieve release!
+    </div>
+
+    <!-- actual release display starts here! -->
+
+    <h1
+        ng-if="releaseObject"
+    >
+            - {a releaseObject.platform a} -
+    </h1>
+    <h2
+        ng-if="releaseObject"
+    >
+        Version
+        <span class="silverado number">
+            {a releaseObject.version.major a}.{a releaseObject.version.minor a}.{a releaseObject.version.patch a}
+        </span>
+    </h2>
+
+    <div
+        class="dev_blog_content_block text_block zebra"
+        ng-bind-html="releaseObject.summary|trustedHTML"
+    >
+    </div>
+
+    <div
+        class="dev_blog_content_block"
+        ng-if="releaseObject"    
+    >
+        <div
+            class="kd_char_sheet_block"
+        >
+            <div
+                class="kd_char_sheet_row"
+                ng-repeat="dateType in ['created', 'modified', 'published']"
+                ng-init="dateKey = dateType + '_on'"
+            >
+                <div
+                    class="kd_char_sheet_box"
+                    ng-class="{
+                        'checked': releaseObject[dateKey],
+                    }"
+                >
+                </div>
+                <div
+                    class="kd_char_sheet_box_desc"
+                >
+                    {a dateType a}:
+                </div>
+                <div
+                    class="kd_char_sheet_box_underline"
+                    ng-if="!releaseObject[dateKey]"
+                >
+                </div>
+                <div
+                    class="silverado number"
+                    ng-if="releaseObject[dateKey]"
+                >
+                    {a releaseObject[dateKey].$date|date:'yyyy-MM-dd &nbsp; HH:mm:ss' a}
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="dev_blog_content_block"
+        ng-repeat="sectionTitle in releaseObject.sections"
+    >
+        <h3>{a sectionTitle a}</h3>
+
+        <div
+            ng-repeat="
+                itemDict in releaseObject.items |
+                filter: {section: sectionTitle} as filteredReleases
+            "
+            ng-if="itemDict.body !== ''"
+            ng-class-even="'zebra'"
+            ng-class="{
+                'dev_blog_feature_zebra': itemDict.feature,
+            }"
+            class="dev_blog_release_item_container"
+        >
+            <div
+                class="dev_blog_release_item_number"
+            >
+                {a $index + 1 a}
+            </div>
+            <div
+                class="dev_blog_release_item_body"
+                ng-bind-html="itemDict.body|trustedHTML"
+            >
+            </div>
+            <ul
+                class="dev_blog_release_item_details_container"
+                ng-if="itemDict.feature"
+            >
+                <li
+                    class="dev_blog_release_item_detail"
+                    ng-repeat="detail in itemDict.details"
+                    ng-bind-html="detail.body|trustedHTML"
+                >
+                </li>
+            </ul>
+        </div><!-- item repeater/container -->
+
+    </div> <!-- section repeater -->
+
+</div>
+
+<div
+    class="clickable capsule kd_yellow"
+    ng-click="loadURL('/blog')"
+>
+    Return to index
+</div>
+
+{% endblock %}

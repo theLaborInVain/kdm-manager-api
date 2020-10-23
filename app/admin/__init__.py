@@ -27,8 +27,6 @@ def get_data(resource=None):
         return panel.get_settlement_data()
     elif resource == 'logs':
         return panel.serialize_system_logs()
-    elif resource == 'platforms':
-        return panel.get_platforms()
 
     raise utils.InvalidUsage(
         "Resource '%s' does not exist!" % resource,

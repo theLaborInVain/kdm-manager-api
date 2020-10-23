@@ -1,31 +1,13 @@
-'use strict'; 
+myApp.controller('adminPanelController', function($scope, $http, $interval) {
 
-//  public/vanilla JS functions and non-angular stuff
-function sleep (time) {return new Promise((resolve) => setTimeout(resolve, time));}
-
-//  admin app starts here!
-var myApp = angular.module('adminPanel', ['ngAnimate']);
-
-// avoid clashes with jinja2
-myApp.config(['$interpolateProvider', function($interpolateProvider) {
-  $interpolateProvider.startSymbol('{a');
-  $interpolateProvider.endSymbol('a}');
-}]);
-
-myApp.filter('trustedHTML', function($sce) {return $sce.trustAsHtml;});
-
-myApp.controller('globalController', function($scope, $http, $interval) {
-
-    $scope.scratch = {};
-
-    $scope.now = new Date();
-
-    $scope.getAge = function(birthday){ //only does days for now
-        var birthday = new Date(birthday);
-        var age = $scope.now - birthday;
-        return Math.round(age / (1000 * 60 * 60 * 24));
+    // the "last refreshed" counter
+    $scope.seconds_since_last_refresh = 0;
+    $scope.updateCounter = function() {
+        $scope.seconds_since_last_refresh++; 
     };
+    $interval($scope.updateCounter, 1000);
 
+    // DEPRECATED - replace this with flask 
 	$scope.setUserJWT = function() {
 		// sets $scope.user.jwt to a valid JWToken
 		if ($scope.user.plaintext_password === undefined) {
@@ -59,7 +41,6 @@ myApp.controller('globalController', function($scope, $http, $interval) {
         );
 	}
 
-
     $scope.getEventLog = function(settlement) {
 		// make sure we've got a fresh token
 		$scope.setUserJWT();
@@ -85,28 +66,6 @@ myApp.controller('globalController', function($scope, $http, $interval) {
     };
 
 
-    // UI/UX junk
-
-    $scope.exportThis = function(ngEvent) {
-        // use's $event from ng-click to get the current element's innerHTML
-        // and set that as the value of 'target' (which should be a variable
-        // or something similar).
-
-        if (ngEvent === undefined) {
-            console.error('exportThis(): required $event as first arg');
-        }
-        return ngEvent.target.innerHTML;
-    }
-
-    $scope.setFocus = function(elementId) {
-        var element = document.getElementById(elementId);
-        if (element === null) {
-            console.error("Element '" + elementId + "' is null!");
-        };
-        element.focus();
-    };
-
-    // DEPRECATE THIS
     // DEPRECATE THIS
     // DEPRECATE THIS
     $scope.showHide = function(e_id) {
@@ -115,43 +74,7 @@ myApp.controller('globalController', function($scope, $http, $interval) {
     };
     // DEPRECATE THIS
     // DEPRECATE THIS
-    // DEPRECATE THIS
 
-    $scope.ngVisible = {}
-    $scope.ngShowHide = function(e_id) {
-        var e = document.getElementById(e_id);
-        var hide_class = "hidden";
-        var visible_class = "visible";
-
-        if (!$scope.ngVisible[e_id]) {
-            $scope.ngVisible[e_id] = true;
-        } else {
-            $scope.ngVisible[e_id] = false;
-        };
-
-        //  now figure out if we need to fiddle actual elements
-        if (e === null) {
-            var err = "No element with ID value";
-            console.warn(
-                "showHide('" + e_id + "') -> " + err + " '" + e_id + "' found on the page!");
-            return false;
-        };
-
-        if (e.classList.contains(hide_class)) {
-            e.classList.remove(hide_class);
-            e.classList.add(visible_class);
-        } else {
-            e.classList.add(hide_class);
-            e.classList.remove(visible_class)
-        };
-
-    };
-
-    $scope.seconds_since_last_refresh = 0;
-    $scope.updateCounter = function() {
-        $scope.seconds_since_last_refresh++; 
-    };
-    $interval($scope.updateCounter, 1000);
 
     $scope.getRecentSettlements = function() {
 //        console.warn('[RECENT SETTLEMENTS] Getting recent settlements...');
@@ -221,12 +144,8 @@ myApp.controller('globalController', function($scope, $http, $interval) {
         window.prompt("Copy User OID to clipboard:", text);
     };
 
-    // initialize
-
-//    window.setInterval($scope.initialize(), 5000);
-
-
 });
+
 
 //
 // RELEASES!
@@ -237,49 +156,10 @@ myApp.controller('releasesController', function($scope, $http) {
         showLoader: true,
     };
 
+    // init method
     $scope.init = function() {
         console.info('Initializing releasesController...');
-        $scope.setReleasePlatforms();
         $scope.setReleases();
-    };
-
-    // these are the platforms we support; in the API, any API key we
-    // support is a platform
-    $scope.setReleasePlatforms = function() {
-        $scope.releasesObject.showLoader = true;
-        var reqURL = '/admin/get/platforms';
-        var scopeDestination = 'platforms';
-        console.time(reqURL);
-        $http.get(reqURL).then(
-            function(result){
-                console.timeEnd(reqURL);
-                $scope.releasesObject[scopeDestination] = result.data;
-                $scope.releasesObject.showLoader = false;
-            },
-            function(result){
-                console.error('Failed to load releases data! ' + reqURL);
-                console.error(result);
-            }
-        );
-    };
-
-    // get the current releases from the API and load them into scope
-    $scope.setReleases = function() {
-        $scope.releasesObject.showLoader = true;
-        var reqURL = '/admin/releases/dump';
-        var scopeDestination = 'releases';
-        console.time(reqURL);
-        $http.get(reqURL).then(
-            function(result){
-                console.timeEnd(reqURL);
-                $scope.releasesObject[scopeDestination] = result.data;
-                $scope.releasesObject.showLoader = false;
-            },
-            function(result){
-                console.error('Failed to load releases data! ' + reqURL);
-                console.error(result);
-            }
-        );
     };
 
     //
@@ -421,9 +301,9 @@ myApp.controller('releasesController', function($scope, $http) {
             function(result){
                 console.timeEnd(reqURL);
                 console.warn(action + 'd release ' + releaseData._id.$oid);
-                $scope.setReleases();
                 $scope.releasesObject.editingRelease = result.data;
                 $scope.releasesObject.showLoader = false;
+                $scope.setReleases();
             },
             function(result){
                 console.error('Failed to update release!');
@@ -437,6 +317,7 @@ myApp.controller('releasesController', function($scope, $http) {
 
 });
 
+
 //  Alerts!
 myApp.controller('alertsController', function($scope, $http) {
 
@@ -445,7 +326,7 @@ myApp.controller('alertsController', function($scope, $http) {
     };
 
     $scope.getWebappAlerts = function() {
-        var funcName = 'getWebappAlertS()';
+        var funcName = 'getWebappAlerts()';
         $scope.scratch.initializing_panel = true;
         console.time(funcName);
         $http.get('/get/notifications').then(

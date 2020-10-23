@@ -5,7 +5,9 @@
 >
     <div
         class="initializing_screen"
-        ng-if="releasesObject.showLoader !== false"
+        ng-if="
+            releasesObject.showLoader !== false
+        "
     >
         <img src="/static/media/images/loading_io.gif" >
         <div>Loading releases info...</div>
@@ -13,10 +15,10 @@
 
     <div
         class="flex_item_inner"
-        ng-if="releasesObject.showLoader !== true"
+        ng-if="apiData.releases.all"
+        ng-init="releasesObject.showLoader = false"
     >
-
-        <h2>{a releasesObject.releases.length a} Releases!</h2>
+        <h2>{a apiData.releases.all.length a} Releases!</h2>
 
         <!-- BEGIN add a new release -->
         <div
@@ -43,7 +45,7 @@
         >
             <button
                 class="clickable kd_pink"
-                ng-repeat="platform in releasesObject.platforms"
+                ng-repeat="platform in apiData.releases.platforms"
                 ng-click="
                     ngShowHide('createNewReleaseLauncher');
                     createNewRelease(platform.app, user.login);
@@ -58,7 +60,7 @@
         <!-- BEGIN launch releases editor -->
         <div
             class="clickable tile admin_panel_release_repeater"
-            ng-repeat="release in releasesObject.releases"
+            ng-repeat="release in apiData.releases.all"
             title="created: {a release.created_on.$date|date:'EEEE, yyyy-MM-dd HH:mm' a}"
             ng-click="
                 releasesObject.editingRelease = release;
@@ -80,7 +82,7 @@
             "
             ng-if="
                 settings.meta.api.panel.panel_releases_visible <
-                releasesObject.releases.length
+                apiData.releases.all.length
             "
         >
             Show more releases...
@@ -112,12 +114,16 @@
                 <input ng-model="scratch.alink_URL" placeholder="URL" ng-change="updateAlink()"/>
                 <input ng-model="scratch.alink_text" placeholder="text" ng-change="updateAlink()" />
                 <div
-                    ng-bind-html="scratch.alink|trustedHTML"
                     ng-if="
                         scratch.alink_URL !== undefined &&
                         scratch.alink_text !== undefined
                     "
+                    class="selectable"
                 >
+                    <span
+                        ng-bind-html="scratch.alink|trustedHTML"
+                    >
+                    </span>
                 </div>
             </div>
 
@@ -166,6 +172,7 @@
 
                 <div
                     ng-repeat="section in [
+                        'Administration',
                         'Corrections and fixes',
                         'Enhancements',
                         'Expansion content',
@@ -215,7 +222,17 @@
                         >
                             &#x25BC;
                         </button>
+                        <button
+                            class="kd_pink"
+                            ng-click="
+                                releasesObject.editingRelease.items.splice($index, 1);
+                                releasesObject.editingRelease.version.patch = releasesObject.editingRelease.version.patch - 1;
+                            "
+                        >
+                            &#10006;
+                        </button>
                         <input
+                            title="Click to make this patch a feature (increments minor version)"
                             type="checkbox"
                             ng-model="item.feature"
 
@@ -311,6 +328,14 @@
                     Publish
                 </button>
 
+                <button
+                    class="kd_green"
+                    ng-click="
+                        updateRelease();
+                    "
+                >
+                    Save
+                </button>
                 <button
                     class="kd_green"
                     ng-click="

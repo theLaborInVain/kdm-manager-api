@@ -454,19 +454,6 @@ product_lines = {
         "ui": {"pretty_category": "White Box"},
         "released": datetime(2016, 8, 4),
         'basic_hunt_event': ['dead_warrior'],
-        'help': [
-            {
-                'type': 'store',
-                'tip': (
-                    'Though she ships in a White Box, Percival is expansion '
-                    'content, <a '
-                    'href="https://shop.kingdomdeath.com/products/percival-1" '
-                    'target="top">according to the Kingdom Death store</a>. '
-                    'For this reason, Percival is separate from other White '
-                    'Box content in the Manager.'
-                ),
-            },
-        ],
     },
 
     "sword_hunter": {
@@ -478,6 +465,9 @@ product_lines = {
 
     "oktoberfest_aya": {
         "name": "Oktoberfest Aya",
+        'subtitle': (
+            'Includes crafting recipes that require <b>Lonely Tree</b>.'
+        ),
         "ui": {"pretty_category": "White Box"},
         "released": datetime(2019, 10, 31),
         'help': [
@@ -495,6 +485,14 @@ product_lines = {
         ],
     },
 
+    "halloween_white_speaker_2019": {
+        "name": "Halloween White Speaker",
+        'subtitle': (
+            'Includes crafting recipes that require <b>Slenderman</b>.'
+        ),
+        "ui": {"pretty_category": "White Box"},
+        "released": datetime(2019, 10, 31),
+    },
 
 
 

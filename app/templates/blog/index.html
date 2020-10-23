@@ -1,0 +1,109 @@
+{% extends 'blog/_main.html' %}
+
+{% block content %}
+
+
+<div
+    class="dev_blog_title_splash"
+>
+    <h1>KDM-Manager</h1>
+    <h2>Development Blog</H2>
+</div>
+
+
+<div
+    class="dev_blog_content_block hidden"
+>
+    Alerts will go here.
+</div>
+
+<!-- 
+
+    current, upcoming repeater block!
+
+-->
+
+<div
+    class="dev_blog_content_block"
+    ng-repeat="releaseType in ['current', 'upcoming']"
+    ng-class-odd="'zebra'"
+>
+    <h3 class="font_medium">{a releaseType a} releases!</h3>
+
+    <!-- loader -->
+    <div
+        ng-if="apiData.releases[releaseType] === undefined"
+        class="dev_blog_content_block_loader"
+    >
+        <img src="/static/media/images/loading_io.gif" />
+    </div>
+
+    <!-- none/null warning -->
+    <div
+        class="clickable font_medium"
+        ng-if="
+            apiData.releases[releaseType] &&
+            apiData.releases[releaseType].length === 0
+        "
+    >
+        <center ng-if="releaseType === 'current'">
+            No published releases found!
+        </center>
+        <center ng-if="releaseType !== 'current'">
+            No releases found!
+        </center>
+    </div>
+
+    <!-- button corral -->
+    <div
+        class="dev_blog_release_link_corral"
+        ng-if="apiData.releases[releaseType].length > 0"
+    >
+
+        {% include 'blog/release_button_repeater.html' %}
+
+    </div> <!-- button corral -->
+
+</div> <!-- releaseType repeater (outermost) -->
+
+
+<!--
+
+    ABOUT block
+
+-->
+
+<div
+    class="dev_blog_content_block latest_releases zebra"
+>
+    <div
+        class="dev_blog_about_block"
+    >
+        <p>Project development tracked on this blog is also managed in GitHub!</p>
+        <p>Report issues, request enhancements and get involved!</p>
+        <ul>
+            <li>
+                <a href="https://github.com/toconnell/kdm-manager">
+                    KDM-Manager
+                </a>
+            </li>
+            <li>
+                <a href="https://github.com/theLaborInVain/kdm-manager-api">
+                    The KDM API
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+<div
+    class="font_small dev_blog_content_block"
+>
+    <img
+        class="dev_blog_logo"
+        src="/static/media/images/the_labor_in_vain_logo-01.png"
+    />
+</div>
+
+{% endblock %}
