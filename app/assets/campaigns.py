@@ -1,7 +1,4 @@
-#!/usr/bin/python2.7
-
 from app.assets import monsters as monster_assets
-
 
 #
 #   This assets file is more complicated than others, since a lot of it drives
@@ -9,10 +6,10 @@ from app.assets import monsters as monster_assets
 #   interact with lesser game assets.
 #
 
-
 #
 #   default and baseline ("standard") campaign assets
 #
+
 
 _default_timeline = [
     {"year": 0, },
@@ -68,6 +65,13 @@ _default_survivor_attribute_milestones = {
     ],
 }
 
+_default_milestones = [
+    "first_child",
+    "first_death",
+    "pop_15",
+    "innovations_5",
+    "game_over"
+]
 
 _milestone_story_events = {
     "first_child": {
@@ -131,7 +135,7 @@ core_campaign = {
             "innovations": ["sun_language","dragon_speech","radiating_orb"],
         },
         "principles": ["new_life","death","society","conviction"],
-        "milestones": ["first_child","first_death","pop_15","innovations_5","game_over"],
+        "milestones": _default_milestones,
         "special_showdowns": ['kings_man','the_hand'],
         "nemesis_monsters": ["butcher","kings_man","the_hand",'watcher'],
         'final_boss': 'gold_smoke_knight',
@@ -159,29 +163,49 @@ core_campaign = {
     "people_of_the_skull": {
         "name": "People of the Skull",
         'saviors': True,
-        "subtitle": "Always displays the alternate rules and endeavors on p.213 of the core game manual on the Campaign Summary view.",
+        "subtitle": (
+            "Always displays the alternate rules and endeavors on p.213 of the "
+            "core game manual on the Campaign Summary view."
+        ),
         "survival_actions": ["dodge","encourage","dash","surge",'endure'],
         "always_available": {
             "location": ["Lantern Hoard"],
             "innovation": ["Language"],
         },
         "special_rules": [
-            {"name": "People of the Skull",
-             "desc": "Survivors can only place weapons and armor with the <b>bone</b> keyword in their gear grid. The people of the skull ignore the <b>Frail</b> rule.",
-             "bg_color": "E3DAC9",
-             "font_color": "333"},
-            {"name": "People of the Skull",
-             "desc": "When you name a survivor, if they have the word bone or skull in their name, in addition to +1 survival, players choose to gain +1 permanent accuracy, evasion, strength, luck or speed.",
-             "bg_color": "E3DAC9",
-             "font_color": "333"},
-            {"name": "Black Skull",
-             "desc": "If a weapon or armor is made with the Black Skull resource, a survivor may place it in their gear grid despite being iron.",
-             "bg_color": "333",
-             "font_color": "efefef"},
+            {
+                "name": "People of the Skull",
+                "desc": (
+                    "Survivors can only place weapons and armor with the "
+                    "<b>bone</b> keyword in their gear grid. The people of the "
+                    "skull ignore the <b>Frail</b> rule."
+                ),
+                 "bg_color": "E3DAC9",
+                 "font_color": "333"},
+            {
+                "name": "People of the Skull",
+                "desc": (
+                    "When you name a survivor, if they have the word bone or "
+                    "skull in their name, in addition to +1 survival, players "
+                    "choose to gain +1 permanent accuracy, evasion, strength, "
+                    "luck or speed."
+                ),
+                 "bg_color": "E3DAC9",
+                 "font_color": "333"},
+            {
+                "name": "Black Skull",
+                "desc": (
+                    "If a weapon or armor is made with the Black Skull "
+                    "resource, a survivor may place it in their gear grid "
+                    "despite being iron."
+                ),
+                 "bg_color": "333",
+                 "font_color": "efefef"
+            },
         ],
         "endeavors": ['potskull_skull_ritual'],
         "principles": ["new_life","death","society","conviction"],
-        "milestones": ["first_child","first_death","pop_15","innovations_5","game_over"],
+        "milestones": _default_milestones,
         "nemesis_monsters": ["butcher","kings_man","the_hand","watcher"],
         "special_showdowns": ["kings_man",'the_hand'],
         'final_boss': 'gold_smoke_knight',
@@ -216,13 +240,7 @@ expansion_campaign = {
             "innovation": ["sun_language","dragon_speech","radiating_orb"],
         },
         "principles": ["new_life","death","society","conviction"],
-        "milestones": [
-            "first_child",
-            "first_death",
-            "pop_15",
-            "innovations_5",
-            "game_over"
-        ],
+        "milestones": _default_milestones,
         "nemesis_monsters": ["butcher","kings_man","the_hand","watcher"],
         "special_showdowns": ["kings_man",'the_hand'],
         'final_boss': 'gold_smoke_knight',
@@ -253,9 +271,12 @@ expansion_campaign = {
             'events': ['fk_crones_tale'],
         },
         "principles": ["new_life","death","society","conviction"],
-        "milestones": ["first_child","first_death","pop_15","innovations_5","game_over"],
+        "milestones": _default_milestones,
         "endeavors": ['bloom_people_forest_run'],
-        "settlement_buff": "All survivors are born with +1 permanent luck, +1 permanent green affinity and -2 permanent red affinities.",
+        "settlement_buff": (
+            "All survivors are born with +1 permanent luck, +1 permanent green "
+            "affinity and -2 permanent red affinities."
+        ),
         "newborn_survivor": {
             "affinities": {"red": -2, "green": 1,},
             "Luck": 1,
@@ -274,15 +295,30 @@ expansion_campaign = {
             "nemesis_encounters": {'butcher': []},
         },
         'help': [
-            {'type': 'rules', 'tip': """
-When starting a new "The Bloom People" campaign, any survivors who are not created with parents, including the first generation of survivors, whether added manually or via the "First Story" macro during settlement creation, do not benefit from the campaign's intrinsic settlement bonus.<br/> &nbsp; The rule states that "All survivors are born with +1 permanent luck, +1 permanent green affinity and -2 permanent red affinities," and founding survivors are not born.""",
+            {
+                'type': 'rules',
+                'tip': (
+                    'When starting a new "The Bloom People" campaign, any '
+                    'survivors who are not created with parents, including the '
+                    'first generation of survivors, whether added manually or '
+                    'via the "First Story" macro during settlement creation, '
+                    "do not benefit from the campaign's intrinsic settlement "
+                    'bonus.<br/> &nbsp; The rule states that "All survivors '
+                    'are born with +1 permanent luck, +1 permanent green '
+                    'affinity and -2 permanent red affinities," and founding'
+                    'survivors are not born.'
+                ),
             }
         ]
     },
 
     "people_of_the_sun": {
         "name": "People of the Sun",
-        "survivor_special_attributes": ['potsun_purified','potsun_sun_eater','potsun_child_of_the_sun'],
+        "survivor_special_attributes": [
+            'potsun_purified',
+            'potsun_sun_eater',
+            'potsun_child_of_the_sun'
+        ],
         "survival_actions": ["dodge","overcharge","embolden","dash"],
         "forbidden": {
             "locations": ["lantern_hoard","exhausted_lantern_hoard"],
@@ -290,7 +326,14 @@ When starting a new "The Bloom People" campaign, any survivors who are not creat
             "events": ["ss_promise_under_the_sun"],
         },
         "principles": ["potsun_new_life","death","society","conviction"],
-        "milestones": ["first_child","first_death","pop_15","innovations_8","nemesis_defeat","game_over"],
+        "milestones": [
+            "first_child",
+            "first_death",
+            "pop_15",
+            "innovations_8",
+            "nemesis_defeat",
+            "game_over"
+        ],
         "timeline": [
             {"year": 0,  },
             {"year": 1,
@@ -333,9 +376,17 @@ When starting a new "The Bloom People" campaign, any survivors who are not creat
         "name": "People of the Stars",
         "dragon_traits": "1.3.1",
         "survival_actions": ["dodge","encourage","dash","surge"],
-        'survivor_special_attributes': ['potstars_scar','potstars_noble_surname','potstars_reincarnated_surname'],
+        'survivor_special_attributes': [
+            'potstars_scar',
+            'potstars_noble_surname',
+            'potstars_reincarnated_surname'
+        ],
         "forbidden": {
-            "locations": ["lantern_hoard", "dragon_armory","exhausted_lantern_hoard"],
+            "locations": [
+                "lantern_hoard",
+                "dragon_armory",
+                "exhausted_lantern_hoard"
+            ],
             "innovations": ["language","lantern_oven","clan_of_death","family"],
             'events': ['dk_glowing_crater'],
         },
@@ -344,8 +395,20 @@ When starting a new "The Bloom People" campaign, any survivors who are not creat
             "Bold": "Awake",
             "Insight": "Awake",
         },
+        'courage_ai_radio_raft': False,
+        'understanding_ai_radio_raft': False,
         "special_rules": [
-            {"name": "Removed Story Events", "desc": "If an event or card would cause you to add/trigger <b>Hands of Heat</b>, <b>Regal Visit</b>, <b>Armored Strangers</b>, <b>Watched</b>, or <b>Nemesis Encounter - Watcher</b>, do nothing instead.", "bg_color": "673AB7", "font_color": "FFF"},
+            {
+                "name": "Removed Story Events",
+                "desc": (
+                    "If an event or card would cause you to add/trigger "
+                    "<b>Hands of Heat</b>, <b>Regal Visit</b>, <b>Armored "
+                    "Strangers</b>, <b>Watched</b>, or <b>Nemesis Encounter - "
+                    "Watcher</b>, do nothing instead."
+                ),
+                "bg_color": "673AB7",
+                "font_color": "FFF"
+            },
         ],
         "principles": ["new_life","death","society","conviction"],
         "milestones": ["first_child","first_death","pop_15","game_over"],

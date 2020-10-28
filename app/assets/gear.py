@@ -930,6 +930,7 @@ core = {
     'hollowpoint_arrow': {
         'type': 'plumery',
         'name': 'Hollowpoint Arrow',
+        'keywords': ['item','ammunition','arrow'],
         'speed': 1,
         'accuracy': 6,
         'strength': 11,

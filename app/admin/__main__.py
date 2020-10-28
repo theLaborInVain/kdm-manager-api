@@ -243,7 +243,7 @@ class AdministrationObject:
                             help="[DEV] Dumps the last N requests to the CLI.",
                             )
         parser.add_argument('--dump_users', dest='dump_users',
-                            default=None, metavar=5, type=int,
+                            default=3, metavar=5, type=int,
                             help="[DEV] Dumps the last N users to the CLI.",
                             )
         parser.add_argument('--clone_user', dest='clone_user', default=None,
