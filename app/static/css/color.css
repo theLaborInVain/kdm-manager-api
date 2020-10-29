@@ -6,7 +6,12 @@
     color: #808080;
 }
 
+.kd_char_sheet_warning:before {
+    color: #F496BD
+}
+
 /*  last chance styles; these are basically overrides   */
+
 
 .dev_blog_feature_zebra {
     background: var(--material-design-yellow);
@@ -29,7 +34,7 @@
     color: #fff
 }
 .kd_pink {
-    background: var(--color-pink-gradient);
+    background: var(--color-kd-pink-gradient);
     color: #fff
 }
 .kd_yellow {background: var(--color-yellow)}

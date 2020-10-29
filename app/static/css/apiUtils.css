@@ -6,8 +6,8 @@
     --color-death-grey: #212121;
     --color-green: #32A54A;
     --color-grey: #f2f2f2;
-    --color-pink: #DD5C9A;
-    --color-pink-gradient: radial-gradient(#F85699, #DD5C9A);
+    --color-pink: #F04D8C;
+    --color-kd-pink-gradient: radial-gradient(#F06DbC, #DD5C9A);
     --color-red: #B92426;
     --color-yellow: #EEC051;
     --font-small: 0.6rem;
@@ -115,4 +115,21 @@ button:active,
     margin-left: 0.5rem;
     max-width: 7rem;
     width: 100%;
+}
+.kd_char_sheet_warning:before {
+    content: "!";
+    font-family: "Arial";
+    font-size: 4vh;
+    font-weight: bold;
+    margin-right: 1rem; 
+    line-height: 0; 
+}
+.kd_char_sheet_warning {
+    align-items: center;
+    border-radius: 1rem;
+    display: flex;
+    font-family: "Ruda";
+    margin: 1rem auto;
+    padding: 1rem;
+    width: fit-content; 
 }

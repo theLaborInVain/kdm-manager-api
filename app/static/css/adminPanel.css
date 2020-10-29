@@ -182,7 +182,7 @@ button.toggle_settlement_event_log {float: right; }
     font-weight: normal;
     justify-content: space-between;
     padding: 0.25rem;
-    padding-left: 0.5rem;
+    padding-left: 1rem;
     padding-right: 1rem;
 }
 .admin_panel_edit_release_item_bar {
@@ -258,7 +258,7 @@ button.toggle_settlement_event_log {float: right; }
     font-weight: bold;
     justify-content: center;
     letter-spacing: 1px;
-    min-width: 25%;
+    min-width: 20%;
     padding: 1rem;
     width: auto;
 }

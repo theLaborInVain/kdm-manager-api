@@ -39,6 +39,13 @@
     </h2>
 
     <div
+        ng-if="!releaseObject.published"
+        class="kd_pink kd_char_sheet_warning"
+    >
+        This release is currently under development!
+    </div>
+
+    <div
         class="dev_blog_content_block text_block zebra"
         ng-bind-html="releaseObject.summary|trustedHTML"
     >
@@ -51,6 +58,7 @@
         <div
             class="kd_char_sheet_block"
         >
+
             <div
                 class="kd_char_sheet_row"
                 ng-repeat="dateType in ['created', 'modified', 'published']"
@@ -81,8 +89,12 @@
                 </div>
 
             </div>
+
+
         </div>
     </div>
+
+
 
     <div
         class="dev_blog_content_block"
