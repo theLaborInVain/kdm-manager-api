@@ -40,7 +40,7 @@
 
     <div
         ng-if="!releaseObject.published"
-        class="kd_pink kd_char_sheet_warning"
+        class="kd pink rulebook_warning"
     >
         This release is currently under development!
     </div>
@@ -48,6 +48,7 @@
     <div
         class="dev_blog_content_block text_block zebra"
         ng-bind-html="releaseObject.summary|trustedHTML"
+        ng-if="releaseObject.published"
     >
     </div>
 
@@ -56,28 +57,28 @@
         ng-if="releaseObject"    
     >
         <div
-            class="kd_char_sheet_block"
+            class="kd worksheet_block"
         >
 
             <div
-                class="kd_char_sheet_row"
+                class="kd worksheet_row"
                 ng-repeat="dateType in ['created', 'modified', 'published']"
                 ng-init="dateKey = dateType + '_on'"
             >
                 <div
-                    class="kd_char_sheet_box"
+                    class="kd checkbox"
                     ng-class="{
                         'checked': releaseObject[dateKey],
                     }"
                 >
                 </div>
                 <div
-                    class="kd_char_sheet_box_desc"
+                    class="kd checkbox_desc"
                 >
                     {a dateType a}:
                 </div>
                 <div
-                    class="kd_char_sheet_box_underline"
+                    class="kd worksheet_underline"
                     ng-if="!releaseObject[dateKey]"
                 >
                 </div>
@@ -93,8 +94,6 @@
 
         </div>
     </div>
-
-
 
     <div
         class="dev_blog_content_block"
@@ -142,7 +141,7 @@
 </div>
 
 <div
-    class="clickable capsule kd_yellow"
+    class="clickable capsule kd yellow"
     ng-click="loadURL('/blog')"
 >
     Return to index

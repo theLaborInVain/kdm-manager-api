@@ -26,9 +26,7 @@ li {
     width: 100%;
 }
 .dev_blog_top_nav_bar_button {
-    font-size: var(--font-small);
     margin: 0.5rem; 
-    max-width: 35%;
     transition: 1s;
 }
 .dev_blog_top_nav_bar_button:hover {
@@ -187,9 +185,6 @@ li {
         font-size: 20px; 
     }
 
-    .dev_blog_top_nav_bar_button {
-        font-size: var(--font-medium);
-    }
     .dev_blog_title_splash {
         margin-bottom: 5rem;
         margin-top: 7rem; 
@@ -219,9 +214,6 @@ li {
     and (min-width: 1050px)
     and (orientation: landscape) {
 
-    .dev_blog_top_nav_bar_button {
-        font-size: var(--font-medium);
-    }
     .dev_blog_content_container {
         max-width: 900px;
         margin: 0 auto;

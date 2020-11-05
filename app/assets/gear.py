@@ -3085,6 +3085,13 @@ white_box = {
         'expansion': 'halloween_white_speaker_2019',
         'keywords': ['weapon', 'melee', 'dagger', 'metal', 'other'],
         'affinities': {'top': 'blue', 'bottom': 'red'},
+        'footnote': {
+            'char': '1',
+            'desc': (
+                "This gains +10 strength when attacking a monster with 10+ "
+                "toughness."
+            ),
+        },
         'speed': 3,
         'accuracy': 7,
         'strength': 2,

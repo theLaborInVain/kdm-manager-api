@@ -18,6 +18,7 @@ import flask
 from flask_httpauth import HTTPBasicAuth
 import flask_jwt_extended
 import pymongo
+import werkzeug
 
 # create the app
 API = flask.Flask(__name__)
@@ -49,7 +50,7 @@ API.default_methods = [
     s in
     settings.get('api', 'default_methods').split(',')
 ]
-#API.debug.info('API initialized with default methods: %s', API.default_methods)
+
 
 #   Javascript Web Token! DO NOT import jwt (i.e. pyjwt) here!
 JWT = flask_jwt_extended.JWTManager(API)
@@ -115,7 +116,20 @@ def after_request(response):
 @API.errorhandler(404)
 def four_oh_four(e):
     """ Default 404 for the API, which gets a lot of bogus endpoint spam. """
+
     return utils.http_404
+
+
+@API.errorhandler(werkzeug.exceptions.MethodNotAllowed)
+def method_not_allowed(e):
+    """ We don't want to be emailed about requests where we don't support
+    the method. """
+
+    err = "%s endpoint does not support the '%s' method!"
+    return flask.Response(
+        response = err % (flask.request.path, flask.request.method),
+        status = e.code
+    )
 
 
 @API.errorhandler(Exception)
@@ -128,23 +142,24 @@ def general_exception(exception):
 
     In non-production environments, we just raise it to the Flask debugger."""
 
-    API.logger.warn('Flask caught an unhandled exception!')
+    logger = utils.get_logger(log_name='error')
+    logger.error('Flask caught an unhandled exception!')
 
     # in the criminal justice system, database failure is especially heinous
     if isinstance(exception, pymongo.errors.ServerSelectionTimeoutError):
-        API.logger.error('The database is unavailable!')
+        logger.error('The database is unavailable!')
         utils.email_exception(exception)
 
     if socket.getfqdn() != API.settings.get('server', 'prod_fqdn'):
         err = "'%s' is not production! Raising exception..." % socket.getfqdn()
-        API.logger.warn(err)
+        logger.warn(err)
         raise exception
 
     try:
         utils.email_exception(exception)
     except Exception as e:
-        API.logger.error('An exception occurred while sending the alert email!')
-        API.logger.exception(e)
+        logger.error('An exception occurred while sending the alert email!')
+        logger.exception(e)
 
     try:
         return flask.Response(response=exception.msg, status=500)

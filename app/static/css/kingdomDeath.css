@@ -1,0 +1,117 @@
+/*                                  */
+/*  the Kingdom Death style sheet!  */
+/*                                  */
+
+
+/*  fonts   */
+@font-face {
+    font-family: 'Silverado';
+    src: url('/static/fonts/329BC2_0_0.eot?#iefix') format('embedded-opentype'),
+        url('/static/fonts/329BC2_0_0.woff') format('woff'),
+        url('/static/fonts/329BC2_0_0.woff2') format('woff2'),
+        url('/static/fonts/329BC2_0_0.ttf') format('truetype');
+}
+.silverado {
+    font-family: 'Silverado';
+}
+.silverado.number {
+    letter-spacing: -0.1rem;
+}
+
+/*  kd CSS variables    */
+.kd {
+    --border-checkbox: 0.1rem solid;
+    --border-worksheet: 0.5rem solid;
+    --color-kd-blue: #00A0E9;
+    --color-kd-death-grey: #212121;
+    --color-kd-green: #32A54A;
+    --color-kd-grey: #f2f2f2;
+    --color-kd-pink: #F35295;
+    --color-kd-pink-gradient: radial-gradient(#F06DbC, #F35295);
+    --color-kd-red: #B92426;
+    --color-kd-yellow: #EEC051;
+    --color-kd-yellow-gradient: radial-gradient(#fEf0a1, #EEC051);
+}
+
+
+/*                      */
+/*  worksheet styles    */
+/*                      */
+
+.kd.worksheet_block {
+    border: var(--border-worksheet);
+    margin: 1rem;
+    padding: 1rem;
+    padding-top: 0.5rem;
+}
+.kd.worksheet_row {
+    align-items: center; 
+    box-sizing: border-box;
+    display: flex;
+    margin: 0 auto;
+    padding: 0.5rem;
+    width: 100%;
+}
+.kd.worksheet_row.caption {
+    display: block;
+    font-size: var(--font-small);
+}
+.kd.checkbox {
+    border: var(--border-checkbox);
+    height: 0.5rem;
+    width: 0.5rem;
+    min-height: 0.5rem;
+    min-width: 0.5rem;
+}
+.kd.checkbox.checked {
+    background: #000;
+    background-color: #000;
+}
+.kd.checkbox_desc {
+    font-family: 'Ruda';
+    margin-left: 0.5rem;
+    text-transform: capitalize;
+    transition: 1s;
+}
+.kd.worksheet_underline {
+    border-bottom: 0.1rem solid;
+    margin-left: 0.5rem;
+    max-width: 7rem;
+    width: 100%;
+}
+
+/*  the pink rulebook warning bubble    */
+.kd.rulebook_warning:before {
+    color: #F99BC0;
+    content: "!";
+    font-family: "Arial";
+    font-size: 3rem;
+    font-weight: bold;
+    margin-right: 1rem; 
+    line-height: 0; 
+}
+.kd.rulebook_warning {
+    align-items: center;
+    border-radius: 1rem;
+    display: flex;
+    font-family: "Ruda";
+    margin: 1rem auto;
+    padding: 1rem;
+    width: fit-content; 
+}
+
+
+/*  background and button styles    */
+div .kd.pink,
+    button .kd.pink {
+    background-color: var(--color-kd-pink);
+    background: var(--color-kd-pink-gradient);
+    color: #fff;
+}
+
+div .kd.yellow,
+    button .kd.yellow {
+    background-color: var(--color-kd-yellow);
+    background: var(--color-kd-yellow-gradient);
+    color: #000;
+}

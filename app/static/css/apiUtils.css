@@ -21,6 +21,8 @@
 /*                                  */
 
 a {
+    background: none;
+    background-color: none;
     color: var(--color-blue);
     font-weight: bold; 
     text-decoration: none;
@@ -73,63 +75,4 @@ button:active,
 .ui_arrow {
     display: inline-block;
     transition: 0.5s;
-}
-
-/*                      */
-/*      KD Styles!      */
-/*                      */
-
-.kd_char_sheet_block {
-    border: 0.2rem solid;
-    font-family: 'Silverado';
-    margin: 1rem;
-    padding: 1rem;
-    padding-top: 0.5rem;
-}
-.kd_char_sheet_row {
-    box-sizing: border-box;
-    display: flex;
-    margin: 0 auto;
-    padding: 0.5rem;
-    width: 100%;
-}
-.kd_char_sheet_box {
-    border: 0.2rem solid;
-    height: 0.5rem;
-    width: 0.5rem;
-    min-height: 0.5rem;
-    min-width: 0.5rem;
-}
-.kd_char_sheet_box.checked {
-    background: #000;
-    background-color: #000;
-}
-.kd_char_sheet_box_desc {
-    font-family: 'Ruda';
-    margin-left: 0.5rem;
-    text-transform: capitalize;
-    transition: 1s;
-}
-.kd_char_sheet_box_underline {
-    border-bottom: 0.1rem solid;
-    margin-left: 0.5rem;
-    max-width: 7rem;
-    width: 100%;
-}
-.kd_char_sheet_warning:before {
-    content: "!";
-    font-family: "Arial";
-    font-size: 4vh;
-    font-weight: bold;
-    margin-right: 1rem; 
-    line-height: 0; 
-}
-.kd_char_sheet_warning {
-    align-items: center;
-    border-radius: 1rem;
-    display: flex;
-    font-family: "Ruda";
-    margin: 1rem auto;
-    padding: 1rem;
-    width: fit-content; 
 }

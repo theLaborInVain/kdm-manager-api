@@ -14,9 +14,6 @@ html {
 .silverado {
     font-family: 'Silverado';
 }
-.silverado.number {
-    letter-spacing: -0.1rem; 
-}
 .ruda {
     font-family: 'Ruda';
 }

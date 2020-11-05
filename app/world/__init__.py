@@ -1105,10 +1105,18 @@ class World(object):
 
         Release 1.0.0 update: this still hasn't been refactored since
         kdm-manager V1, which is insane. This really needs to be fixed.
+
+        2020-11-04 update: added some debugging support, but have not yet
+        refactored this in any meaningful way.
         """
 
         p_assets = principles_mod.Assets()
         mep_dict = p_assets.get_mutually_exclusive_principles()
+
+        if self.query_debug:
+            mep_meth = "models.principles.get_mutually_exclusive_principles()"
+            self.logger.debug("%s output:" % mep_meth)
+            self.logger.debug(mep_dict)
 
         popularity_contest = {}
         for principle in list(mep_dict.keys()):
@@ -1121,6 +1129,7 @@ class World(object):
             sample_set = utils.mdb.settlements.find(
                 {"principles": {"$in": all_options} }
             ).count()
+
             popularity_contest[principle] = {
                 "sample_size": sample_set,
                 "options": []

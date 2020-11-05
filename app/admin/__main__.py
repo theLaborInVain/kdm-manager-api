@@ -243,7 +243,7 @@ class AdministrationObject:
                             help="[DEV] Dumps the last N requests to the CLI.",
                             )
         parser.add_argument('--dump_users', dest='dump_users',
-                            default=3, metavar=5, type=int,
+                            default=False, metavar=5, type=int,
                             help="[DEV] Dumps the last N users to the CLI.",
                             )
         parser.add_argument('--clone_user', dest='clone_user', default=None,
@@ -472,7 +472,7 @@ class AdministrationObject:
             self.dump_request_logs(self.options.dump_requests)
 
         # dump users
-        if self.options.dump_users is not None:
+        if self.options.dump_users:
             self.dump_recent_users(self.options.dump_users)
 
         # clone user (by OID) from legacy webapp

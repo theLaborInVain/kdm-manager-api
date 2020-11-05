@@ -132,6 +132,10 @@ button.toggle_settlement_event_log {float: right; }
     width: 30%;
     float: right;
 }
+.admin_panel_release_link_selector {
+    background: none;
+    background-color: none; 
+}
 .admin_panel_release_worksheet_debug_clicker {
     border-right: 5vw solid #eee;
     border-top: 5vw solid transparent;

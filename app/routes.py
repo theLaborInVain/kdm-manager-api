@@ -57,6 +57,12 @@ def robots():
     equivalent endpoint), which gets you the API docs. """
     return flask.send_file("static/html/robots.txt")
 
+@API.route("/kingdomDeath.css")
+@crossdomain(origin=['*'])
+def kd_css():
+    """ The standard, single source of truth for KD styles. """
+    return flask.send_file("static/css/kingdomDeath.css")
+
 
 
 
@@ -506,6 +512,7 @@ def serve_avatar_image(image_oid):
 #
 
 @API.route('/static/<sub_dir>/<path:path>')
+@crossdomain(origin=['*'])
 def route_to_static(path, sub_dir):
     """ Generic /static/* endpoints served here."""
     return flask.send_from_directory('static/%s' % sub_dir, path)

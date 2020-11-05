@@ -492,7 +492,7 @@ When another survivor dies on the showdown board, place a token where they died.
 
     # lion knight
     'ageless_apprentice': {
-        'desc': 'When yu gain Hunt XP, you may decide not to gain it.<br/>When you <b>depart</b>, you may rotate up to 3 gear cards in your gear grid. This changes the location of their affinities and arrows. Otherwise, the gear functions normally.',
+        'desc': 'When you gain Hunt XP, you may decide not to gain it.<br/>When you <b>depart</b>, you may rotate up to 3 gear cards in your gear grid. This changes the location of their affinities and arrows. Otherwise, the gear functions normally.',
         'expansion': 'lion_knight',
         'name': 'Ageless Apprentice',
     },

@@ -31,6 +31,7 @@ class Assets(models.AssetCollection):
                 ['Collective Toil', 'collective_toil']
             ),
 
+        This is ONLY USED BY world.py. DO NOT use this elsewhere.
         """
 
         innovations_mod = models.innovations.Assets()
@@ -44,6 +45,14 @@ class Assets(models.AssetCollection):
                     option
                 ]
                 alternatives.append(alternatives_list)
-            output[p_dict["name"]] = tuple(alternatives)
+
+            if p_dict['name'] in output.keys():
+                final_alternatives = alternatives
+                for alt_list in output[p_dict['name']]:
+                    if alt_list not in final_alternatives:
+                        final_alternatives.append(alt_list)
+                output[p_dict['name']] = tuple(final_alternatives)
+            else:
+                output[p_dict["name"]] = tuple(alternatives)
 
         return output
