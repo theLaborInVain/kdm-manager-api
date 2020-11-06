@@ -231,7 +231,8 @@ def blog_content(action, request):
 #   releases! public first, then admin endpoints
 #
 
-@API.route("/releases/<action>")
+@API.route("/releases/<action>", methods=['POST','GET','OPTIONS'])
+@crossdomain(origin=['*'])
 def releases_public(action):
     """ Public endpoints re: the releases application. """
     return admin.releases.public_router(action)

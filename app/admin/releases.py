@@ -34,14 +34,23 @@ def public_router(action):
     if action in ['dump', 'releases','all']:
         output = list(utils.mdb.releases.find().sort('created_on', -1))
     elif action in ['latest', 'current']:
-        output = []
-        for platform in platforms:
-            latest = utils.mdb.releases.find_one(
-                {'platform': platform['app'], 'published': True},
-                sort=[( 'published_on', pymongo.DESCENDING )]
-            )
-            if latest is not None:
-                output.append(latest)
+
+        if flask.request.method == 'POST':
+            platform = flask.request.get_json().get('platform', None)
+            if platform is not None:
+                output = utils.mdb.releases.find_one(
+                    {'platform': platform, 'published': True},
+                    sort=[( 'published_on', pymongo.DESCENDING )]
+                )
+        else:
+            output = []
+            for platform in platforms:
+                latest = utils.mdb.releases.find_one(
+                    {'platform': platform['app'], 'published': True},
+                    sort=[( 'published_on', pymongo.DESCENDING )]
+                )
+                if latest is not None:
+                    output.append(latest)
     elif action in ['upcoming']:
         output = []
         for platform in platforms:
