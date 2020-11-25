@@ -1580,7 +1580,8 @@ class Settlement(models.UserAsset):
 
         # 7.) increment LY, if necessary
         if self.params.get('increment_ly', False):
-            self.set_current_ly(self.get_current_ly() + 1)
+            if not self.get_current_ly() >= self.get_max_ly():
+                self.set_current_ly(self.get_current_ly() + 1)
 
         self.save()
 
@@ -2000,53 +2001,6 @@ class Settlement(models.UserAsset):
             S.update_attribute(attribute, modifier)
 
 
-    def update_timeline_with_story_events(self):
-        """ LEGACYWEBAPP PORT
-	This runs during Settlement normalization to automatically add story
-        events to the Settlement timeline when the threshold for adding the
-        event has been reached. """
-
-        pass
-#        updates_made = False
-
-#        milestones_dict = self.get_api_asset("game_assets", "milestones_dictionary")
-
-#        for m_key in self.get_campaign("dict")["milestones"]:
-
-#            m_dict = milestones_dict[m_key]
-
-#            event = self.get_event(m_dict["story_event"])
-
-            # first, if the milestone has an 'add_to_timeline' key, create a
-            # string from that key to determine whether we've met the criteria
-            # for adding the story event to the timeline. The string gets an
-            # eval below
-#            add_to_timeline = False
-#            if "add_to_timeline" in milestones_dict[m_key].keys():
-#                add_to_timeline = eval(milestones_dict[m_key]["add_to_timeline"])
-
-            # now, here's our real logic
-#            condition_met = False
-#            if m_key in self.settlement["milestone_story_events"]:
-#                condition_met = True
-#            elif add_to_timeline:
-#                condition_met = True
-
-
-            # final evaluation:
-#            if condition_met and event["handle"] not in self.get_story_events("handles"):
-#                self.logger.debug("[%s] automatically adding %s story event to LY %s" % (self.User, event["name"], se
-#lf.get_ly()))
-#                event.update({"ly": self.get_ly(),})
-#                self.add_timeline_event(event)
-#                self.log_event('Automatically added <b><font class="kdm_font">g</font> %s</b> to LY %s.' % (event["na
-#me"], self.get_ly()))
-#                updates_made = True
-
-#        return updates_made
-
-
-
     #
     #   set methods
     #
@@ -2197,9 +2151,11 @@ class Settlement(models.UserAsset):
         del self.settlement['timeline'][new_ly['year']]
         self.settlement['timeline'].insert(new_ly['year'], new_ly)
 
-        self.log_event("%s updated Timeline events for Lantern Year %s." % (request.User.login, new_ly['year']))
+        err = "%s updated Timeline events for Lantern Year %s."
+        self.log_event(
+            err % (request.User.login, new_ly['year'])
+        )
         self.save()
-
 
 
     def toggle_strain_milestone(self):
@@ -2369,12 +2325,18 @@ class Settlement(models.UserAsset):
                 if event_dict.get('handle', None) is not None:
                     event_asset = self.Events.get_asset(event_dict['handle'])
                     if event_asset.get('endeavors',None) is not None:
-                        eligible_endeavor_handles = get_eligible_endeavors(event_asset['endeavors'])
+                        eligible_endeavor_handles = get_eligible_endeavors(
+                            event_asset['endeavors']
+                        )
                         if len(eligible_endeavor_handles) >= 1:
                             event_asset['endeavors'] = eligible_endeavor_handles
                             available['settlement_events'].append(event_asset)
                 else:
-                    self.logger.warn("%s Timeline event dictionary does not have a handle key! Dict was: %s" % (self, event_dict))
+                    err = (
+                        "%s Timeline event dictionary does not have a handle "
+                        "key! Dict was: %s"
+                    ) % (self, event_dict)
+                    self.logger.warn(err)
 
         # return a tuple, if we're returning the total as well
         if return_total:
@@ -2939,7 +2901,6 @@ class Settlement(models.UserAsset):
         return self.settlement.get('monster_volumes', [])
 
 
-
     def get_parents(self):
         """ Returns a list of survivor couplings, based on the 'father'/'mother'
         attributes of all survivors in the settlement. """
@@ -2990,7 +2951,17 @@ class Settlement(models.UserAsset):
         City, bruh. """
 
         return [
-            {"level": 1, "bgcolor": "#D4D8E1", "name": "Aggression Overload", "subtitle": "Add an attack roll to an attack.", "desc": "During your attack, after making your attack rolls but before drawing hit locations, you may roll the Death Die as an additional attack roll."},
+            {
+                "level": 1,
+                "bgcolor": "#D4D8E1",
+                "name": "Aggression Overload",
+                "subtitle": "Add an attack roll to an attack.",
+                "desc": (
+                    "During your attack, after making your attack rolls but "
+                    "before drawing hit locations, you may roll the Death Die "
+                    "as an additional attack roll."
+                ),
+            },
             {"level": 2, "bgcolor": "#C6CED9", "name": "Acceleration", "subtitle": "Add +1d10 movement to a move action.", "desc": "Before moving, you may roll the Death Die and add the result to your movement for one move action this round."},
             {"level": 3, "bgcolor": "#B9CAD4", "name": "Uninhibited Rage", "subtitle": "Add +1d10 strength to a wound attempt.", "desc": "After a wound attempt is rolled you may roll the Death Die and add the result to the strength of your wound attempt."},
             {"level": 4, "bgcolor": "#AEC0CE", "name": "Legs Locked", "desc": "When you gian the Death Die, you you stand. While you have the Death Die, you cannot be knocked down for any reason."},
@@ -3004,7 +2975,9 @@ class Settlement(models.UserAsset):
         They're sorted in reverse chronological, because the idea is that you're
         goign to turn this list into JSON and then use it in the webapp. """
 
-        notes = utils.mdb.settlement_notes.find({"settlement": self.settlement["_id"]}).sort("created_on",-1)
+        notes = utils.mdb.settlement_notes.find(
+            {"settlement": self.settlement["_id"]}
+        ).sort("created_on",-1)
         if notes is None:
             return []
         return [n for n in notes]
@@ -3610,6 +3583,14 @@ class Settlement(models.UserAsset):
         for ly in self.settlement['timeline']:
             if int(ly['year']) == int(target_ly):
                 return copy(ly)
+
+        err = (
+            'get_timeline_year() error! Attempted to get LY %s, '
+            'but could not find it in the settlement timeline! '
+        )
+        self.logger.error(err % target_ly)
+        self.logger.error('Returning empty dictionary...')
+        return {}
 
 
     def get_timeline_monster_event_options(self, context=None):

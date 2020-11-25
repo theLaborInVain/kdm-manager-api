@@ -1114,6 +1114,10 @@ class User(models.UserAsset):
 
     #
     #   baseline/normalize
+    #       these appear here in order. When we initialize a user, we go
+    #           1. baseline()
+    #           2. bug_Fixes()
+    #           3. normalize()
     #
 
     def baseline(self):
@@ -1128,7 +1132,6 @@ class User(models.UserAsset):
             self.user['notifications'] = {}
             self.logger.info("%s Baselined 'notifications' key into user dict." % self)
             self.perform_save = True
-
 
 
     def bug_fixes(self):
@@ -1155,6 +1158,14 @@ class User(models.UserAsset):
         if not 'subscriber' in self.user.keys():
             self.user['subscriber'] = {'level': 0}
             self.logger.warn("%s Added 'subscriber' dict to user!" % self)
+            self.perform_save = True
+
+        if isinstance(self.user['subscriber']['level'], str):
+            warn = "%s Subscriber 'level' is str type! Normalizing to int..."
+            self.logger.warn(warn % self)
+            self.user['subscriber']['level'] = int(
+                self.user['subscriber']['level']
+            )
             self.perform_save = True
 
         if self.perform_save:

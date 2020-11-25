@@ -1105,6 +1105,17 @@ class UserAsset(object):
         return int(self.settlement["lantern_year"])
 
 
+    def get_max_ly(self):
+        """ Returns the integer value of the final LY of the campaign. """
+
+        if self.collection == "survivors":
+            ly = self.Settlement.settlement['timeline'][-1]['year']
+        else:
+            ly = self.settlement['timeline'][-1]['year']
+
+        return int(ly)
+
+
     def get_mdb_doc(self):
         """ Retrieves the asset's MDB document. Raises a special exception if it
         cannot for some reason. """

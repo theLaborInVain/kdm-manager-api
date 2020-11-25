@@ -494,6 +494,11 @@ product_lines = {
         "released": datetime(2019, 10, 31),
     },
 
+    "halloween_ringtail_vixen_2020": {
+        'name': 'Halloween Ringtail Vixen',
+        'ui': {'pretty_category': 'White Box'},
+        'release': datetime(2020, 10, 31),
+    },
 
 
     # Vignettes of Death
