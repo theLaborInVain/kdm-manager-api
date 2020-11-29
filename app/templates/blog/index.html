@@ -28,7 +28,7 @@
     ng-repeat="releaseType in ['current', 'upcoming']"
     ng-class-odd="'zebra'"
 >
-    <h3 class="font_medium">{a releaseType a} releases!</h3>
+    <h3 class="font_medium kd capsule">{a releaseType a} releases!</h3>
 
     <!-- loader -->
     <div
@@ -100,11 +100,13 @@
 <div
     class="font_small dev_blog_content_block"
 >
+
     <img
         class="dev_blog_logo"
         src="/static/media/images/the_labor_in_vain_logo-01.png"
         ng-click="loadUrl('https://thelaborinvain.com')"
     />
+
 </div>
 
 {% endblock %}

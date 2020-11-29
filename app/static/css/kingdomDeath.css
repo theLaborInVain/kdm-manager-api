@@ -18,8 +18,22 @@
     letter-spacing: -0.1rem;
 }
 
+html.kd {
+    font-family: 'Ruda', Arial;
+}
+
+html.kd h1,
+    html.kd h2,
+    html.kd h3,
+    html.kd h4,
+    html.kd h5,
+    html.kd h6 {
+    font-family: 'Raleway', Arial;
+}
+
 /*  kd CSS variables    */
 .kd {
+    --box-shadow-default: 0 0 0.5em 0 #999;
     --border-checkbox: 0.1rem solid;
     --border-worksheet: 0.5rem solid;
     --color-kd-blue: #00A0E9;
@@ -102,6 +116,25 @@
 
 
 /*  background and button styles    */
+
+button.capsule {
+    width: 100%; 
+}
+.capsule {
+    background: #666;
+    border-radius: 5vw;
+    box-shadow: var(--box-shadow-default);
+    color: #fff;
+    margin: 0 auto;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+    padding: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    text-align: center;
+    width: 50%;
+}
+
 div .kd.pink,
     button .kd.pink {
     background-color: var(--color-kd-pink);
@@ -114,4 +147,18 @@ div .kd.yellow,
     background-color: var(--color-kd-yellow);
     background: var(--color-kd-yellow-gradient);
     color: #000;
+}
+
+
+.kd.title {
+    font-family: 'Silverado';
+    font-weight: normal;
+    text-align: center;
+    text-transform: uppercase;
+}
+.kd.title:before {
+    content: "- ";
+}
+.kd.title:after {
+    content: " -";
 }

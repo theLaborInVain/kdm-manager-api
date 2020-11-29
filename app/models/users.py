@@ -144,9 +144,17 @@ def reset_password():
     new_password = request.get_json().get('password', None)
     recovery_code = request.get_json().get('recovery_code', None)
 
-    for v in [user_login, new_password, recovery_code]:
-        if v is None:
-            return Response(response="Password reset requests require a login, password and a recovery code.", status=400)
+    for var_name, var_desc in [
+        (user_login, 'Login'),
+        (new_password, 'Password'),
+        (recovery_code, 'Recovery code')
+    ]:
+        if var_name is None:
+            err = (
+                "Password reset requests require a login, password and a "
+                "recovery code. (%s missing.)"
+            ) % var_desc
+            return Response(response=err, status=400)
 
     user = utils.mdb.users.find_one({'login': user_login, 'recovery_code': recovery_code})
     if user is None:

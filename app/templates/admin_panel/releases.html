@@ -18,62 +18,88 @@
         ng-if="apiData.releases.all"
         ng-init="releasesObject.showLoader = false"
     >
-        <h2>{a apiData.releases.all.length a} Releases!</h2>
 
-        <!-- BEGIN add a new release -->
+        <h2 class="kd title">Blog of Death</h2>
+
         <div
-            class="clickable tile"
+            class="clickable kd worksheet_block"
             ng-click="
                 ngShowHide('createNewReleaseLauncher');
             "
         >
-            <b>+ Create new</b>
-            <div
-                class="ui_arrow"
-                ng-class="{
-                    'invert': ngVisible['createNewReleaseLauncher'] === true,
-                }"
-            >
-                &#x25BC;
-            </div>
-        </div>
 
-        <div
-            id="createNewReleaseLauncher"
-            class="modal_button_raft"
-            ng-if="ngVisible['createNewReleaseLauncher']"
-        >
-            <button
-                class="clickable kd_pink"
-                ng-repeat="platform in apiData.releases.platforms"
-                ng-click="
-                    ngShowHide('createNewReleaseLauncher');
-                    createNewRelease(platform.app, user.login);
-                    ngShowHide('editReleaseWorksheet')
-                "
+            <div
+                class="kd worksheet_row"
             >
-                {a platform.app a}
-            </button>
-        </div>
-        <!-- END add a new release -->
+
+                <div
+                    class="kd checkbox"
+                    ng-class="{
+                        'checked': ngVisible['createNewReleaseLauncher'] === true,
+                    }"
+                ></div>
+                <div class="kd checkbox_desc">Create post</div>
+
+            </div>
+
+
+            <div
+                id="createNewReleaseLauncher"
+                class="modal_button_raft"
+                ng-if="ngVisible['createNewReleaseLauncher']"
+            >
+                <button
+                    class="clickable kd_pink"
+                    ng-repeat="platform in apiData.releases.platforms"
+                    ng-click="
+                        ngShowHide('createNewReleaseLauncher');
+                        createNewRelease(platform.app, user.login);
+                        ngShowHide('editReleaseWorksheet')
+                    "
+                >
+                    {a platform.app a}
+                </button>
+            </div>
+
+        </div><!-- worksheet_block -->
 
         <!-- BEGIN launch releases editor -->
         <div
-            class="clickable tile admin_panel_release_repeater"
-            ng-repeat="release in apiData.releases.all"
-            title="created: {a release.created_on.$date|date:'EEEE, yyyy-MM-dd HH:mm' a}"
-            ng-click="
-                releasesObject.editingRelease = release;
-                ngShowHide('editReleaseWorksheet')
-            "
-            ng-class="{
-                'kd_blue': release.published,
-            }"
-            ng-if="$index < settings.meta.api.panel.panel_releases_visible"
+            class="kd worksheet_block"
         >
-            {a release.platform a}:
-            {a release.version.major a}.{a release.version.minor a}.{a release.version.patch a}
-        </div>
+            <div
+                class="clickable kd worksheet_row"
+                ng-repeat="release in apiData.releases.all"
+                title="created: {a release.created_on.$date|date:'EEEE, yyyy-MM-dd HH:mm' a}"
+                ng-click="
+                    releasesObject.editingRelease = release;
+                    ngShowHide('editReleaseWorksheet')
+                "
+                ng-if="$index < settings.meta.api.panel.panel_releases_visible"
+            >
+
+                <div
+                    class="kd checkbox"
+                    ng-class="{
+                        'checked': release.published,
+                    }"
+                >
+                </div>
+
+                <div
+                    class="kd checkbox_desc"
+                >
+                    <b>
+                    {a release.published_on.$date|date:'yyyy-MM-dd' a}
+                    </b>
+                    {a release.platform a}:
+                    {a release.version.major a}.{a release.version.minor a}.{a release.version.patch a}
+                </div>
+
+            </div><!-- worksheet_row -->
+
+        </div><!-- worksheet block -->
+
         <div
             class="clickable tile right-align"
             ng-click="
@@ -87,7 +113,6 @@
         >
             Show more releases...
         </div>
-        <!-- END launch releases editor -->
 
     </div> <!-- flex_item_inner -->
 

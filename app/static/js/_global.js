@@ -14,7 +14,7 @@ myApp.config(['$interpolateProvider', function($interpolateProvider) {
 
 myApp.filter('trustedHTML', function($sce) {return $sce.trustAsHtml;});
 
-myApp.controller('globalController', function($scope, $http, $interval, $q) {
+myApp.controller('globalController', function($scope, $http, $interval, $q, $timeout) {
 
 
     // inject some date calc methods into the root scope
@@ -47,9 +47,6 @@ myApp.controller('globalController', function($scope, $http, $interval, $q) {
 	
 	$scope.ngVisible = {};
     $scope.ngShowHide = function(e_id) {
-        var e = document.getElementById(e_id);
-        var hide_class = "hidden";
-        var visible_class = "visible";
 
         if (!$scope.ngVisible[e_id]) {
             $scope.ngVisible[e_id] = true;
@@ -58,20 +55,35 @@ myApp.controller('globalController', function($scope, $http, $interval, $q) {
         };
 
         //  now figure out if we need to fiddle actual elements
-        if (e === null) {
-            var err = "No element with ID value";
-            console.warn(
-                "showHide('" + e_id + "') -> " + err + " '" + e_id + "' found on the page!");
-            return false;
-        };
 
-        if (e.classList.contains(hide_class)) {
-            e.classList.remove(hide_class);
-            e.classList.add(visible_class);
-        } else {
-            e.classList.add(hide_class);
-            e.classList.remove(visible_class)
-        };
+        $timeout (
+            function() {
+                var hide_class = "hidden";
+                var visible_class = "visible";
+
+                try {
+                    var e = document.getElementById(e_id);
+                } catch(err) {
+                    console.error(err);
+                    return false;
+                };
+
+                if (e === null) {
+                    var err = "No element with ID value";
+                    console.warn(
+                        "showHide('" + e_id + "') -> " + err + " '" + e_id + "' found on the page!");
+                    return false;
+                };
+
+                if (e.classList.contains(hide_class)) {
+                    e.classList.remove(hide_class);
+                    e.classList.add(visible_class);
+                } else {
+                    e.classList.add(hide_class);
+                    e.classList.remove(visible_class)
+                };
+            } //function()
+        ); // $timeout
 
     };
 

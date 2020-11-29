@@ -35,8 +35,10 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
                 console.timeEnd(jwt_req_url)
             }, function errorCallback(response) {
                 console.error(response);
-                console.timeEnd(jwt_req_url)
-                return undefined;
+                console.timeEnd(jwt_req_url);
+                $scope.ngShowHide('adminPasswordInputError');
+                var err = response.status + " - " + response.data
+                document.getElementById('adminPasswordInputErrorMsg').innerHTML = err;
             }
         );
 	}

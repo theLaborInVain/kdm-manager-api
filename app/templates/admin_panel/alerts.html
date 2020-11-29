@@ -1,5 +1,8 @@
 <!-- alerts controller -->
-<div class="flex_item_basic" ng-controller="alertsController">
+<div
+    class="flex_item_basic"
+    ng-controller="alertsController"
+>
 
     <!-- initializing_screen -->
     <div class="initializing_screen" ng-if="scratch.initializing_panel">
@@ -7,7 +10,9 @@
         <div>Loading...</div>
     </div>
 
-    <div class="flex_item_inner" ng-if="scratch.initializing_panel === false">
+    <div
+        class="flex_item_inner"
+    >
         <!-- actual view -->
         <h2>Alerts!</h2>
 
@@ -39,68 +44,111 @@
             </div>
         </div>
 
-        <p ng-click="showHide('createNewAlert')" class="clickable tile alert">
+
+        <!--
+
+            create a new alert; laucher and modal controls
+
+        -->
+
+        <div
+            ng-click="ngShowHide('createNewAlert')"
+            class="clickable kd pink rulebook_warning"
+        >
             Click/tap to create a new webapp alert!
-        </p>
-
-
-        <div id="createNewAlert" class="create_webapp_alert hidden">
-
-            <div class="create_webapp_alert_control_block">
-                <input class="webapp_alert_title" type="text" ng-model="newAlert.title" placeholder="New Webapp Alert Title!" />
-                <textarea class="webapp_alert_body" ng-model="newAlert.body">
-                </textarea>
-            </div>
-            <div class="create_webapp_alert_control_block">
-                <b>Type:</b>
-                <label>
-                    <input
-                        type="radio"
-                        name="new_alert_type"
-                        ng-model="newAlert.type"
-                        value="kpi"
-                    > 
-                    KPI
-                </label>
-                <label>
-                    <input
-                        type="radio"
-                        name="new_alert_type"
-                        ng-model="newAlert.type"
-                        value="announcement"
-                    > 
-                    Announcement
-                </label>
-            </div>
-            <div class="create_webapp_alert_control_block">
-                <b>Expiration:</b>
-                <label>
-                    <input
-                        type="radio"
-                        name="new_alert_expiration"
-                        ng-model="newAlert.expiration"
-                        value="next_release"
-                    > 
-                    Next release
-                </label>
-                <label>
-                    <input
-                        type="radio"
-                        name="new_alert_expiration"
-                        ng-model="newAlert.expiration"
-                        value="manual"
-                    > 
-                    Manual
-                </label>
-            </div>
-
-            <button
-                ng-if="newAlert.title != null && newAlert.body != null"
-                ng-click="createAlert()"
-                class="red_button"
-            >
-                CREATE NEW WEBAPP ALERT
-            </button>
         </div>
+
+
+        <div
+            id="createNewAlert"
+            class="hidden modal_outer"
+        >
+
+            <div
+                class="modal_inner create_new_alert_controls"
+            >
+
+                <h3 class="kd title">New Alert</h3>
+                <div class="create_webapp_alert_control_block">
+
+                    <input
+                        class="webapp_alert_title"
+                        type="text"
+                        ng-model="newAlert.title"
+                        placeholder="New Webapp Alert Title!"
+                    />
+
+                    <textarea
+                        class="webapp_alert_body"
+                        ng-model="newAlert.body"
+                    >
+                    </textarea>
+
+                </div>
+
+                <h3 class="kd title">Alert Type</h3>
+                <div
+                    class="kd worksheet_block"
+                >
+                    <div
+                        class="clickable kd worksheet_row"
+                        ng-repeat="alert_type in ['kpi','announcement']"
+                        ng-click="newAlert.type = alert_type"
+                    >
+                        <div
+                            class="kd checkbox"
+                            ng-class="{
+                                'checked': newAlert.type === alert_type
+                            }"
+                        >
+                        </div>
+                        <div
+                            class="kd checkbox_desc"
+                        >
+                            {a alert_type a}
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="kd title">Expiration</h3>
+                <div
+                    class="kd worksheet_block"
+                >
+                    <div
+                        class="clickable kd worksheet_row"
+                        ng-repeat="alert_exp in ['next_release','manual']"
+                        ng-click="newAlert.expiration = alert_exp"
+                    >
+                        <div
+                            class="kd checkbox"
+                            ng-class="{
+                                'checked': newAlert.expiration === alert_exp
+                            }"
+                        >
+                        </div>
+                        <div
+                            class="kd checkbox_desc"
+                        >
+                            {a alert_exp a}
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    ng-disabled="
+                        newAlert.title === null ||
+                        newAlert.body === null
+                    "
+                    ng-click="createAlert()"
+                    class="clickable capsule kd pink"
+                >
+                    CREATE NEW WEBAPP ALERT
+                </button>
+
+            </div><!-- modal_inner -->
+
+        </div><!-- modal_outer -->
+
     </div><!-- flex_item_inner -->
+
 </div> <!-- flex_item_basic -->

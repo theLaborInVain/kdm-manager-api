@@ -8,8 +8,10 @@
  <title>KDM API - Admin Panel</title>
 
  <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.4/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.4/angular-animate.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-animate.js"></script>
 
     <script src="/static/js/_global.js"></script>
     <script src="/static/js/adminPanel.js"></script>
@@ -18,6 +20,8 @@
     <link rel="stylesheet" href="/static/css/apiUtils.css" />
     <link rel="stylesheet" href="/static/css/adminPanel.css" />
     <link rel="stylesheet" href="/static/css/color.css" />
+
+    <link rel="stylesheet" href="/kingdomDeath.css" />
 
     <link href="https://fonts.googleapis.com/css?family=Ruda&display=swap" rel="stylesheet">
  </head>
@@ -34,14 +38,89 @@
     <div class="container">
 
         <div class="flex_item_basic">
+
+            <!-- admin panel corner detail -->
+            <div
+                class="clickable corner"
+                ng-click="ngShowHide('adminPanelReleaseDetails')"
+            >
+            </div>
+
+            <div
+                id="adminPanelReleaseDetails"
+                class="hidden modal_outer"
+                ng-if="ngVisible['adminPanelReleaseDetails']"
+            >
+
+                <div class="modal_inner admin_panel_release_details"/>
+
+                    <h2 class="kd title">KDM API</h2> 
+                    <div
+                        class="kd worksheet_block"
+                    >
+                        <div class="kd_worksheet_row">
+                            <b>Panel Revision:</b> {a settings.meta.api.panel.panel_revision a}
+                        </div>
+                        <div class="kd_worksheet_row">
+                            <b>Last Refreshed:</b> {a refreshed a} ({a seconds_since_last_refresh a} seconds ago)
+                        </div>
+                        <div class="kd_worksheet_row">
+                            <b>Last Push:</b> {a github.pushed_at a}
+                        </div>
+                        <div class="kd_worksheet_row">
+                            <b>Open API Issues:</b> {a github.open_issues a}
+                        </div>
+                    </div> <!-- worksheet block -->
+
+                    <h2 class="kd title">Resources</h2> 
+                    <div
+                        class="kd worksheet_block"
+                    >
+                        <div
+                            ng-repeat="(href, desc) in {
+                                '/stat': 'API Settings',
+                                '/': 'API Documentation',
+                                '/blog': 'Development Blog',
+                                '/https://github.com/theLaborInVain/kdm-manager-api': 'GitHub',
+                            }"
+                            class="kd worksheet_row"
+                        >
+                            <div
+                                class="kd checkbox checked"
+                            >
+                            </div>
+                            <div
+                                class="kd checkbox_desc"
+                            >
+                                <a ng-href="href">{a desc a}</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        ng-click="ngShowHide('adminPanelReleaseDetails')"
+                        class="clickable capsule kd yellow"
+                    >
+                        Close
+                    </button>
+
+                </div><!-- modal inner -->
+
+            </div><!-- modal outer -->
+
+            <!-- main admin panel info -->
+
             <h1>KDM API</h1>
             <b>API Hostname:</b> {a settings.meta.server.hostname a}<br/>
             <b>API Version:</b> {a settings.meta.api.version a}<br/>
-            <b>Last Push:</b> {a github.pushed_at a}<br/>
-            <b>Open Issues:</b> {a github.open_issues a}<br/>
 
             <!-- set admin user JWT/password -->
-            <div class="text_input_container" ng-if="user.jwt === undefined">
+
+            <form
+                class="text_input_container zebra"
+                ng-if="user.jwt === undefined"
+            >
+
                 <input
                     type="password"
                     class="text_input_input"
@@ -49,24 +128,27 @@
                     ng-model="user.plaintext_password"
                 />
                 <button
+                    type="submit"
                     class="text_input_button"
-                    ng-click="setUserJWT()"
+                    ng-click="
+                        setUserJWT();
+                        $event.stopPropagation();
+                    "
                 >
-                    Set
+                    Set JWT
                 </button>
+
+            </form>
+
+            <div
+                ng-if="user.jwt === undefined"
+                class="hidden error_text_block"
+                id="adminPasswordInputError"
+            >
+                <b>Authorization Error!</b>
+                <span id="adminPasswordInputErrorMsg"></span>
             </div>
 
-            <br/>
-
-            <h2>Admin Panel</h2>
-            <b>Revision:</b> {a settings.meta.api.panel.panel_revision a}<br/>
-            <b>Last Refreshed:</b> {a refreshed a} ({a seconds_since_last_refresh a} seconds ago)<br/>
-
-            <br/>
-            <a href="/">API Documentation</a> | 
-            <a href="/blog">Development Blog</a> | 
-            <a href="https://github.com/theLaborInVain/kdm-manager-api" target="top">GitHub</a> |
-            <a href="/stat">settings</a> 
 
         </div>
 
@@ -74,205 +156,7 @@
 
         {% include 'admin_panel/alerts.html' %}
 
-        <!-- user administration! -->
-        <div class="flex_item_basic users" ng-controller="userAdminController">
-
-            <div id="userSpinner" class="bg_spinner" ng-if="scratch.showLoader === true">
-                <img src="/static/media/images/loading_io.gif" >
-            </div>
-
-            <h2>User Administration</h2>
-            <b>Registered Users:</b> {a world.world.total_users.value a}<br/>
-            <b>Subscribers:</b> {a world.world.total_subscribers.value a}
-
-            <table class="subscribers_breakdown_table">
-                <tr ng-repeat="t in world.world.subscribers_by_level.value">
-                    <td><i>Lvl. {a t.level a}:</i></td>
-                    <td>{a t.count a}</td>
-                </tr>
-            </table>
-
-            <h3>Recent User Activity </h3>
-
-            <b title="Active during the last {a users.meta.active_user_horizon a} minutes">
-                Active user count:
-            </b>
-            {a users.meta.active_user_count a}
-            <br/>
-
-            <b title="Active during the last {a users.meta.recent_user_horizon a} hours">
-            Recent user count:
-            </b>
-            {a users.meta.recent_user_count a}
-            <br/>
-            
-            <div id="userFailure" ng-if="scratch.get_user_data_failure == true">
-                <hr/>
-                <p><b>Could not refresh recent user data!</b></p>
-                <code>{a scratch.get_user_data_failure_msg a}</code>
-            </div>
-
-            <div class="users_container">
-                <div
-                    class="user_basic_info clickable tile"
-                    ng-class="{
-                        'inactive_user': u.is_active == false,
-                        'active_user': u.is_active,
-                        'signed_out_user': u.latest_action=='signed out',
-                        'inactive_subscriber': u.is_active == false && u.subscriber.level > 0,
-                        'active_subscriber': u.is_active && u.subscriber.level > 0,
-                        'signed_out_subscriber': u.latest_action=='signed out' && u.subscriber.level > 0,
-                    }"
-                    ng-repeat="u in users.user_info"
-                    ng-click="showHide('user_' + u._id.$oid);"
-                >
-                    <h2 class="user_basic_info_login">
-                        {a u.login a}
-                        <span
-                            ng-if="u.latest_action == 'signed out'"
-                            style="font-weight: normal"
-                        >
-                            (signed out)
-                        </span>
-                    </h2>
-
-                    <div
-                        class="user_detail hidden"
-                        id="user_{a u._id.$oid a}"
-                        title="Click again to close and copy OID to clipboard."
-                    >
-                        <b>Latest User Agent:</b> {a u.latest_user_agent a}<br/>
-                        <b>Latest Activity:</b> {a u.latest_activity_age a} ago<br/>
-                        <b>Latest Action:</b> {a u.latest_action a}<br/>
-                        <b>Active:</b> {a u.is_active a}<br/>
-
-                        <div
-                            class="user_detail_button_raft"
-                        >
-                            <button
-                                ng-click="copyToClipboard(u._id.$oid);"
-                            >
-                                Copy OID
-                            </button>
-                            <button
-                                ng-if="user.jwt"
-                                ng-click="
-                                    scratch.searchUserEmail = u.login;
-                                    getUser();
-                                "
-                            >
-                                Edit user 
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            <h3>Edit user</h3>
-            <div
-                class="error_text_block"
-                ng-if="!user.jwt"
-            >
-                [set '{a user.login a}' password to work with users]
-            </div>
-
-            <div class="text_input_container" ng-if="!scratch.showLoader && user.jwt">
-                <input
-                    class="text_input_input"
-                    type="email"
-                    placeholder="search for a user"
-                    ng-model="scratch.searchUserEmail"
-                />
-                <button
-                    class="text_input_button"
-                    ng-disabled="scratch.searchUserEmail === undefined"
-                    ng-click="getUser()"
-                >
-                    Search!
-                </button>
-            </div>
-
-            <div 
-                class="work_with_user_container"
-                ng-if="workWithUser !== undefined"
-            >
-                <div class="error_text_block" ng-if="workWithUser.user.login === null">
-                    [user not found!]
-                </div>
-
-                <div class="user_info_block" ng-if="workWithUser !== undefined && workWithUser.user.login !== null">
-
-                    <button
-                        class="close_work_with_user"
-                        ng-click="closeWorkWithUser()"  
-                    >
-                     X
-                    </button>
-
-                    <h4>{a workWithUser.user.login a}</h4>
-                    
-                    <div class="user_info_block user_info_block_header">
-                        <img
-                            class="profile_gravatar"
-                            src="https://www.gravatar.com/avatar/{a workWithUser.user.gravatar_hash a}"
-                        />
-                        <div>
-	                		<b>OID:</b> {a workWithUser.user._id.$oid a}<br/>
-        		            <b>User Age:</b> {a workWithUser.user.age a}<br/>
-    	        	        <b>Created On:</b> {a workWithUser.user.created_on.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
-    	        	        <b>Latest Sign-in:</b> {a workWithUser.user.latest_sign_in.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
-	                		<b>Settlements created:</b> {a workWithUser.user.settlements_created a}<br/>
-	                		<b>Survivors created:</b> {a workWithUser.user.survivors_created a}<br/>
-                        </div>
-                     </div>
-
-					<div
-                        class="user_info_block" ng-if="workWithUser.user.subscriber.level > 0">
-                        <i>{a world.meta.subscriptions[workWithUser.user.subscriber.level_handle].desc a}</i><br/>
-						<b>Subscriber for:</b> {a workWithUser.user.subscriber.age a} <br/>
-						<b>Subscriber level:</b> {a workWithUser.user.subscriber.level a} <br/>
-						<b>Subscription set on:</b> {a workWithUser.user.subscriber.updated_on.$date |date:'yyyy-MM-dd' a} <br/>
-					</div>
-
-					<div class="user_info_block set_subscriber_container">
-                        <b>Set subscriber level:</b>
-                        <div
-                            class="set_subscriber_toggle"
-                            ng-class="{
-                                'current_sub_level': workWithUser.user.subscriber.level == sub_level.level
-                            }"
-                            ng-repeat="sub_level in world.meta.subscriptions"
-                            ng-click="
-                                setSubscriptionLevel(workWithUser, sub_level);
-                            "
-                        >
-                            <div
-                                class="kd_check_box"
-                                ng-class="{'checked': workWithUser.user.subscriber.level == sub_level.level}"
-                            ></div>
-                            {a sub_level.desc a}
-                        </div> <!-- subscription level repeater -->
-					</div>
-
-                </div>
-
-            </div> <!-- work with user -->
-
-
-            <h3>User Agent Info</h3>
-            <p ng-click="showHide('user_agent_popularity_contest')" class="clickable tile">
-                Click/tap to show/hide the User Agent popularity contest.
-            </p>
-            <table id="user_agent_popularity_contest" class="hidden">
-                <tr><th>UA String</th><th>&nbsp; # &nbsp; </th></tr>
-                <tr ng-repeat="ua in users.user_agent_stats" ng-class-even="'zebra'">
-                    <td>{a ua.latest_user_agent a}:</td><td>{a ua.count a}</td>
-                </tr>
-            </table>
-
-
-        </div><!-- flex item basic -->
+        {% include 'admin_panel/users.html' %}
 
 
     <!-- RECENT SETTLEMENTS WILL GO HERE -->

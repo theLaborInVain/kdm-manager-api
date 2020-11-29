@@ -82,21 +82,6 @@ li {
     text-align: center;  
     width: fit-content;
 }
-.dev_blog_content_block h3,
-    .capsule {
-    background: #666;
-    border-radius: 5vw;
-    box-shadow: var(--box-shadow-default);
-    color: #fff;
-    margin: 0 auto;
-    margin-bottom: 2rem;
-    margin-top: 2rem;
-    padding: 0.5rem;
-    padding-left: 1rem;
-    padding-right: 1rem; 
-    text-align: center; 
-    width: 50%; 
-}
 .dev_blog_content_block_loader {
     box-sizing: border-box;
     display: flex;
