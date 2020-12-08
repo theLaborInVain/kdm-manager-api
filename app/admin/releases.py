@@ -14,7 +14,7 @@ import flask
 import pymongo
 
 # local imports
-from app import models, utils
+from app import API, models, utils
 
 
 def public_router(action):
@@ -25,9 +25,13 @@ def public_router(action):
     # set platforms first, since actions below depend on knowing what platforms
     #   we support
     platforms = []
-    api_keys_dict = utils.get_api_keys()
-    for api_key in api_keys_dict:
-        platforms.append({'app': api_keys_dict[api_key], 'api_key': api_key})
+    for key, app_dict in API.config['KEYS'].items():
+        platforms.append(
+            {
+                'app': app_dict['owner'],
+                'api_key': key
+            }
+        )
 
     # 1.) first handle misc./public actions that return lists
     output = None

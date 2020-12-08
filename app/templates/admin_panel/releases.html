@@ -123,7 +123,7 @@
         class="modal_outer hidden"
     >
         <div
-            class="modal_inner"
+            class="modal_inner edit_release_worksheet_container"
         >
 
             <div
@@ -143,10 +143,10 @@
                         scratch.alink_URL !== undefined &&
                         scratch.alink_text !== undefined
                     "
-                    class="selectable"
+                    class="selectable admin_panel_release_link_selector_container"
                 >
                     <span
-                        class="admin_panel_release_link_selector"
+                        class="clickable admin_panel_release_link_selector"
                         ng-bind-html="scratch.alink|trustedHTML"
                     >
                     </span>
@@ -202,7 +202,9 @@
                         'Corrections and fixes',
                         'Enhancements',
                         'Expansion content',
-                        'Deprecations'
+                        'Deprecations',
+                        'Version 3',
+                        'Version 4',
                     ]"
                     ng-click="
                         toggleSection(section);
@@ -218,11 +220,38 @@
             <!-- BEGIN main editing bit -->
 
             <div
+                ng-init="
+                    sectionId = sectionName + 'section';
+                    ngShow(sectionId);
+                "
                 ng-repeat="sectionName in releasesObject.editingRelease.sections"
                 class="admin_panel_edit_release_section_container"
             >
-                <h3 class="kd_blue admin_panel_edit_release_section_title">
-                    <b>{a sectionName a}</b>
+                <h3
+                    class="kd_blue admin_panel_edit_release_section_title"
+                >
+                    <div
+                        ng-click="ngShowHide(sectionId)"
+                        class="clickable kd worksheet_row"
+                    >
+
+                        <div
+                            class="kd checkbox"
+                            ng-class="{
+                                'checked': ngVisible[sectionId], 
+                            }"
+                        >
+                        </div>
+
+                        <div
+                            class="kd checkbox_desc"
+                        >
+                            {a sectionName a} -
+                            {a (releasesObject.editingRelease.items|filter:{section:sectionName, feature:true}).length a} features /
+                            {a (releasesObject.editingRelease.items|filter:{section:sectionName, feature:false}).length a} items 
+                        </div>
+
+                    </div>
                     <span class="clickable" ng-click="toggleSection(sectionName)">
                         &#10006;
                     </span>
@@ -230,9 +259,13 @@
 
                 <!-- item repeater and controls -->
                 <div
+                    id='{a sectionName a}section'
                     class="admin_panel_edit_release_item_bar"
                     ng-repeat="item in releasesObject.editingRelease.items|orderBy:'sort'"
-                    ng-if="item.section === sectionName"
+                    ng-if="
+                        item.section === sectionName &&
+                        ngVisible[sectionId]
+                    "
                 >
                     <div
                         class="admin_panel_edit_release_item_buttons"
@@ -292,10 +325,13 @@
                             ng-click="addDetailToItem(item)"
                         >&#43 detail </button>
                     </div>
-                </div>
+
+
+                </div><!-- item repeater -->
 
                 <div
                     class="admin_panel_edit_release_item_bottom_raft"
+                    ng-if="ngVisible[sectionId]"
                 >
                     <button
                         class="
@@ -309,7 +345,8 @@
                         <div>&#43;</div>
                     </button>
                 </div>
-            </div>
+
+            </div><!-- section repeater -->
 
             <!-- END main editing bit -->
 

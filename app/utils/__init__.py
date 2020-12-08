@@ -49,52 +49,48 @@ class noUser:
         self.login="admin@kdm-manager.com"
         self._id = "666"
 
+# CONSTANTS
+YMD = "%Y-%m-%d"
+YMDHMS = "%Y-%m-%d %H:%M:%S"
 
 #
 #   Application logging is all here. Do not fiddle with logging anywhere else!
 #
 
-log_root_dir = os.path.join(
-    API.root_path,
-    '..',
-    settings.get('server', 'log_root_dir')
-)
-
-
 def get_logger(log_level=None, log_name=None):
     """ Initialize a logger, specifying a new file if necessary. """
 
-    logger = logging.getLogger(__name__)
+    # defaults
+    log_root_dir = os.path.join(API.root_path, '..', 'logs')
+    if log_level is None:
+        if API.config['DEBUG']:
+            log_level = 'DEBUG'
+        else:
+            log_level = 'INFO'
+    if log_name is None:
+        log_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+    if log_name == '':
+        log_name = 'default'
 
-    if len(logger.handlers):    # if we're initializing a log, kill sother
-        logger.handlers = []    # handlers are open, so the latest init wins
+    logger = logging.getLogger(__name__)
+    logger.setLevel(log_level)
+
+    if len(logger.handlers):    # if we're initializing a log, kill other
+        logger.handlers = []    # open handles, so the latest init wins
 
     if not len(logger.handlers):    # if it's not already open, open it
-
-        # set the file name or default to the script asking for the logger
-        log_file_name = log_name
-        if log_name is None:
-            log_file_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-        log_handler_level = log_level
-
-        # do the same for log level, defaulting to the server's 'log_level'
-        if log_handler_level is None:
-            logger.setLevel(settings.get("server", "log_level"))
-        else:
-            logger.setLevel(log_handler_level)
 
         # now check the logging root, create it if it's not there
         if not os.path.isdir(log_root_dir):
             os.mkdir(log_root_dir)
 
         # create the path and add it to the handler
-        log_path = os.path.join(log_root_dir, log_file_name + ".log")
+        log_path = os.path.join(log_root_dir, log_name + ".log")
         logger_fh = logging.FileHandler(log_path)
 
         #   set the formatter and add it via addHandler()
         formatter = logging.Formatter(
-            '[%(asctime)s] %(levelname)s:\t%(message)s',
-            ymdhms
+            '[%(asctime)s] %(levelname)s:\t%(message)s', YMDHMS
         )
         logger_fh.setFormatter(formatter)
         logger.addHandler(logger_fh)
@@ -115,30 +111,7 @@ def check_api_key():
             flask.request.api_key
             )
         )
-        logger.warn(API.keys)
 
-
-def get_api_keys():
-    """ Looks for an API keys file and tries to read it."""
-
-    cfg_file = os.path.join(
-        API.root_path,
-        '..',
-        settings.get('api', 'api_keys_file')
-    )
-    if not os.path.isfile(cfg_file):
-        raise OSError("API keys file '%s' does not exist!" % cfg_file)
-
-    keys_file = configparser.ConfigParser()
-    keys_file.optionxform=str
-    keys_file.read(cfg_file)
-
-    keys = keys_file._sections['webapps']
-
-    logger = get_logger()
-    logger.info("Loaded %s API keys" % len(keys))
-
-    return keys
 
 
 #
@@ -330,7 +303,7 @@ def record_response_time(response):
 
     mdb.api_response_times.insert({
         "api_key": flask.request.api_key,
-        'api_key_owner': API.keys.get(
+        'api_key_owner': API.config['KEYS'].get(
             flask.request.api_key,
             '[UNKNOWN] ' + urlparse(str(flask.request.referrer)).netloc
         ),
@@ -704,8 +677,8 @@ api_meta = {
         },
         'server': {
             "hostname": socket.gethostname(),
-            "debug": settings.get('server', 'debug'),
-            'log_level': settings.get('server', 'debug'),
+            "debug": API.config['DEBUG'],
+            'log_level': API.config['DEBUG'],
             'os': platform.platform(),
             'ipv4': get_host_ip(),
         },

@@ -3,7 +3,12 @@
 /*                                  */
 
 
-/*  fonts   */
+/*  
+
+    fonts 
+
+*/
+
 @font-face {
     font-family: 'Silverado';
     src: url('/static/fonts/329BC2_0_0.eot?#iefix') format('embedded-opentype'),
@@ -18,6 +23,31 @@
     letter-spacing: -0.1rem;
 }
 
+@font-face {
+    font-family: 'kdm-font-10';
+    src: url('/static/fonts/kdm-font-10.eot?#iefix') format('embedded-opentype'),
+        url('/static/fonts/kdm-font-10.ttf') format('truetype'),
+        url('/static/fonts/kdm-font-10-webfont.woff') format('woff'),
+        url('/static/fonts/kdm-font-10-webfont.woff2') format('woff2');
+}
+.kdm_font, .kdm_font_10 {font-family: 'kdm-font-10'; }
+
+@font-face {
+    font-family: 'kdm-font-2';
+    src: url('/static/fonts/kdm-font-2.eot?#iefix') format('embedded-opentype'),
+        url('/static/fonts/kdm-font-2.ttf') format('truetype'),
+        url('/static/fonts/kdm-font-2-webfont.woff') format('woff'),
+        url('/static/fonts/kdm-font-2-webfont.woff2') format('woff2');
+}
+.kdm_font_2, .kdm_font_hit_locations {font-family: 'kdm-font-2'; }
+
+
+/*
+
+    CSS RESET - this is where we class elements specifically
+
+*/
+
 html.kd {
     font-family: 'Ruda', Arial;
 }
@@ -31,12 +61,19 @@ html.kd h1,
     font-family: 'Raleway', Arial;
 }
 
+button.kd {
+    border: 0; 
+}
+
 /*  kd CSS variables    */
 .kd {
     --box-shadow-default: 0 0 0.5em 0 #999;
     --border-checkbox: 0.1rem solid;
     --border-worksheet: 0.5rem solid;
+    --color-kd-black: #111;
+    --color-kd-black-gradient: radial-gradient(circle, #333, #000);
     --color-kd-blue: #00A0E9;
+    --color-kd-blue-gradient: radial-gradient(#60DAF5, #40AFD3);
     --color-kd-death-grey: #212121;
     --color-kd-green: #32A54A;
     --color-kd-grey: #f2f2f2;
@@ -73,9 +110,9 @@ html.kd h1,
 .kd.checkbox {
     border: var(--border-checkbox);
     height: 0.5rem;
-    width: 0.5rem;
     min-height: 0.5rem;
     min-width: 0.5rem;
+    width: 0.5rem;
 }
 .kd.checkbox.checked {
     background: #000;
@@ -101,15 +138,15 @@ html.kd h1,
     font-family: "Arial";
     font-size: 3rem;
     font-weight: bold;
-    margin-right: 1rem; 
     line-height: 0; 
+    margin-right: 1rem; 
 }
 .kd.rulebook_warning {
     align-items: center;
-    border-radius: 1rem;
+    border-radius: 2rem;
     display: flex;
     font-family: "Ruda";
-    margin: 1rem auto;
+    margin: 1rem;
     padding: 1rem;
     width: fit-content; 
 }
@@ -120,10 +157,12 @@ html.kd h1,
 button.capsule {
     width: 100%; 
 }
-.capsule {
+.kd.capsule,
+    .capsule {
     background: #666;
     border-radius: 5vw;
     box-shadow: var(--box-shadow-default);
+    box-sizing: border-box;
     color: #fff;
     margin: 0 auto;
     margin-bottom: 2rem;
@@ -135,17 +174,29 @@ button.capsule {
     width: 50%;
 }
 
+.kd.capsule.full_width,
+    .capsule.full_width {
+    width: 100%;
+    width: -webkit-fill-available;
+}
+
+.kd.blue {
+    background: var(--color-kd-blue-gradient);
+    background-color: var(--color-kd-blue);
+    color: #fff;
+}
+
 div .kd.pink,
     button .kd.pink {
-    background-color: var(--color-kd-pink);
     background: var(--color-kd-pink-gradient);
+    background-color: var(--color-kd-pink);
     color: #fff;
 }
 
 div .kd.yellow,
     button .kd.yellow {
-    background-color: var(--color-kd-yellow);
     background: var(--color-kd-yellow-gradient);
+    background-color: var(--color-kd-yellow);
     color: #000;
 }
 

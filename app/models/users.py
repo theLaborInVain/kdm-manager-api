@@ -262,7 +262,7 @@ def token_to_object(request, strict=True):
         if strict:
             decoded = jwt.decode(
                 auth_token,
-                API.confing['SECRET_KEY'],
+                API.config['SECRET_KEY'],
                 verify=True
             )
             user_dict = dict(json.loads(decoded["identity"]))
@@ -276,7 +276,8 @@ def token_to_object(request, strict=True):
     except Exception as e:
         logger.exception(e)
 
-    raise utils.InvalidUsage("Incoming JWT could not be processed!", status_code=422)
+    err = "Incoming JWT could not be processed!"
+    raise utils.InvalidUsage(err, status_code=422)
 
 
 #

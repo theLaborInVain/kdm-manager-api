@@ -49,6 +49,7 @@ from app.models import (
     strain_milestones,
     survival_actions,
     survivors,
+    versions,
     weapon_masteries,
     weapon_proficiency,
     weapon_specializations,
@@ -131,7 +132,7 @@ class Settlement(models.UserAsset):
     @utils.metered
     def __init__(self, *args, **kwargs):
         self.collection="settlements"
-        self.object_version=0.81
+        self.object_version=0.82
         models.UserAsset.__init__(self,  *args, **kwargs)
 
         self.init_asset_collections()
@@ -221,7 +222,6 @@ class Settlement(models.UserAsset):
             # sheet
             "name": request.json.get("name", None),
             "campaign": request.json.get("campaign", "people_of_the_lantern"),
-            "rules":                    'core_1_5',
             "lantern_year":             0,
             "population":               0,
             "death_count":              0,
@@ -236,6 +236,7 @@ class Settlement(models.UserAsset):
             "storage":                  [],
             "custom_epithets":          [],
             "strain_milestones":        [],
+            "version":                  'core_1_5',
         }
 
 
@@ -482,6 +483,7 @@ class Settlement(models.UserAsset):
             output["game_assets"].update(self.get_available_assets(disorders))
             output['game_assets'].update(self.get_available_assets(endeavors))
             output['game_assets'].update(self.get_available_assets(strain_milestones))
+            output['game_assets'].update(self.get_available_assets(versions))
 
             # options (i.e. decks)
             output["game_assets"]["pulse_discoveries"] = self.get_pulse_discoveries()
@@ -1832,6 +1834,27 @@ class Settlement(models.UserAsset):
             )
 
         self.save()
+
+
+    def set_version(self):
+        """ Replaces the current 'version' key (which is a str handle) with one
+        from the request params. """
+
+        # initialize
+        self.check_request_params(["version"])
+        new_version = self.params["version"]
+
+        try:
+            v_object = versions.Version(handle=new_version)
+        except:
+            err = "Version '%s' is not a known version handle!"
+            raise utils.InvalidUsage(err % new_version)
+
+        self.settlement['version'] = new_version
+        self.log_event(action="set", key="Version", value=v_object.version)
+        self.save()
+
+
 
 
     def update_all_survivors(self, operation=None, attrib_dict={}, exclude_dead=False):
@@ -3724,6 +3747,20 @@ class Settlement(models.UserAsset):
                 self.settlement[req_dict] = {}
                 self.perform_save = True
 
+        # make sure we have a version; the lowest 'version' we support is
+        #   'core_1_5', so set that as the default; if the settlement has
+        #   a 'rules' key, normalize it to 'version'
+        if not "version" in self.settlement.keys():
+            self.logger.info("Creating 'rules' key for %s" % (self))
+            self.settlement["rules"] = 'core_1_5'
+            self.perform_save = True
+
+        if 'rules' in self.settlement.keys():
+            self.logger.info("Converting 'rules' key for %s" % (self))
+            self.settlement['version'] = self.settlement['rules']
+            del self.settlement['rules']
+            self.perform_save = True
+
 
         #
         #   updates/changes/fixes to assets
@@ -3773,10 +3810,6 @@ class Settlement(models.UserAsset):
             self.settlement["expansions"] = []
             self.perform_save = True
 
-        if not "rules" in self.settlement.keys():
-            self.logger.info("Creating 'rules' key for %s" % (self))
-            self.settlement["rules"] = 'core_1_5'
-            self.perform_save = True
 
         # Duck Typing!
 
@@ -4207,19 +4240,28 @@ class Settlement(models.UserAsset):
         min_sl = self.get_survival_limit("min")
         if self.settlement["survival_limit"] < min_sl:
             self.settlement["survival_limit"] = min_sl
-            self.log_event("Survival Limit automatically increased to %s" % min_sl, event_type="sysadmin")
+            self.log_event(
+                "Survival Limit automatically increased to %s" % min_sl,
+                event_type="sysadmin"
+            )
             self.perform_save = True
 
         min_pop = self.get_population("min")
         if self.settlement["population"] < min_pop:
             self.settlement["population"] = min_pop
-            self.log_event("Settlement Population automatically increased to %s" % min_pop, event_type="sysadmin")
+            self.log_event(
+                "Population automatically increased to %s" % min_pop,
+                event_type="sysadmin"
+            )
             self.perform_save = True
 
         min_death_count = self.get_death_count("min")
         if self.settlement["death_count"] < min_death_count:
             self.settlement["death_count"] = min_death_count
-            self.log_event("Settlement Death Count automatically increased to %s" % min_death_count, event_type="sysadmin")
+            self.log_event(
+                "Death Count automatically increased to %s" % min_death_count,
+                event_type="sysadmin"
+            )
             self.perform_save = True
 
 
@@ -4412,6 +4454,8 @@ class Settlement(models.UserAsset):
 
         elif action == 'set_inspirational_statue':
             self.set_inspirational_statue()
+        elif action == 'set_version':
+            self.set_version()
 
 
         elif action == 'toggle_strain_milestone':

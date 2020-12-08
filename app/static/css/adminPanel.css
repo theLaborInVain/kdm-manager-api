@@ -166,12 +166,23 @@ button.toggle_settlement_event_log {float: right; }
 
 /*  releases */
 .admin_panel_release_anchor_creator {
-    width: 30%;
+    display: flex;
+    flex-wrap: wrap;
     float: right;
+    justify-content: space-evenly;
+    width: 30%;
+}
+.admin_panel_release_anchor_creator input {
+    width: 45%; 
+}
+.admin_panel_release_link_selector_container {
+    display: grid; 
+    margin: 1rem;
+    width: 100%;  
 }
 .admin_panel_release_link_selector {
-    background: none;
-    background-color: none; 
+    background: var(--material-design-yellow);
+    padding: 1rem;
 }
 .admin_panel_release_worksheet_debug_clicker {
     border-right: 5vw solid #eee;
@@ -197,7 +208,6 @@ button.toggle_settlement_event_log {float: right; }
     background: var(--material-design-yellow);
     outline: none;
 }
-
 .admin_panel_edit_release_toolbar {
     background: var(--color-grey);
     box-sizing: border-box;
@@ -283,6 +293,9 @@ button.toggle_settlement_event_log {float: right; }
     margin: 0.3rem;
     padding: 1rem;
 }
+.modal_inner.edit_release_worksheet_container {
+    max-width: 80rem; 
+}
 .modal_button_raft {
     display: flex;
     justify-content: space-evenly;
@@ -314,7 +327,7 @@ button.toggle_settlement_event_log {float: right; }
     width: 3rem;
 }
 .modal_button.circle div {
-    margin-top: -0.5rem;
+    margin-top: 0.4rem 0 1rem 0.1rem;
 }
 .modal_button_raft button:focus,
     .modal_button:focus {
@@ -326,7 +339,6 @@ button.toggle_settlement_event_log {float: right; }
 
     /* CSS reset */
     h1 {font-size: 5vw; }
-    html {font-size: 12pt; }
 
     .flex_item_basic {flex-grow: 1; width: 30%; }
     .flex_item_double_wide {width: 100%; }

@@ -13,36 +13,31 @@
 from datetime import datetime, timedelta
 import socket
 
-# third party imports
+# second party imports
 import flask
 from flask_httpauth import HTTPBasicAuth
 import flask_jwt_extended
 import pymongo
 import werkzeug
 
+# app imports
+import config
+
 # create the app
-API = flask.Flask(__name__)
+API = flask.Flask(__name__, instance_relative_config=True)
+API.config.from_object(config.Config)
+API.config.from_pyfile('secret.py')
 
 # import the settings module and add it
 from app import assets, utils
 from app.utils import settings
 from app.utils import crossdomain
 
+# fiddle the loggers; remove the default to avoid handle conflicts
+API.logger.removeHandler(flask.logging.default_handler)
+API.logger = utils.get_logger(log_name="server")
+
 API.settings = settings
-
-# update the config items used by flask
-API.config.update(
-    DEBUG=API.settings.get("server", "debug"),
-    TESTING=API.settings.get("server", "debug"),
-)
-
-API.logger.addHandler(utils.get_logger(log_name="server"))
-API.config['SECRET_KEY'] = API.settings.get(
-    "keys",
-    "secret_key",
-)
-
-API.keys = utils.get_api_keys()
 
 #   set default methods, log about it
 API.default_methods = [
@@ -92,7 +87,7 @@ def before_request():
 
     # set a flag on the request if it's a good key
     flask.request.api_key_valid = False
-    if API.keys.get(flask.request.api_key, None) is not None:
+    if API.config['KEYS'].get(flask.request.api_key, None) is not None:
         flask.request.api_key_valid = True
 
     if socket.getfqdn() != API.settings.get('server', 'prod_fqdn'):

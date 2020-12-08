@@ -19,6 +19,7 @@ from bson import json_util
 # flask!
 import flask
 import flask_jwt_extended
+import jinja2
 
 #
 #   app imports
@@ -31,8 +32,6 @@ from app.models import names, users
 from app.utils import crossdomain
 
 #import world
-
-
 
 #
 #   browser-facing endpoints, e.g. stat, documentation, etc..
@@ -88,6 +87,7 @@ def panel():
         '/admin_panel/_main.html',
         user = json.dumps(flask.request.User.user, default=json_util.default),
         api_key = utils.settings.get('keys','api_key'),
+        # **API.config,
     )
 
 
@@ -221,10 +221,13 @@ def blog_content(action, request):
     }
     output[action] = request
 
-    return flask.render_template(
-        '/blog/%s.html' % action,
-        **output
-    )
+    try:
+        return flask.render_template(
+            '/blog/%s.html' % action,
+            **output
+        )
+    except jinja2.exceptions.TemplateNotFound:
+        return utils.http_404
 
 
 #

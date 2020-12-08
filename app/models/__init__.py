@@ -440,7 +440,7 @@ class AssetCollection(object):
         if asset is None and backoff_to_name:
             asset = copy(self.get_asset_from_name(handle))
 
-        # if the asset is still None, see if we want to raise an expception
+        # if the asset is still None, we want to raise an expception
         if asset is None and raise_exception_if_not_found:
             if not backoff_to_name:
                 msg = "The handle '%s' could not be found in %s!" % (
@@ -452,7 +452,7 @@ class AssetCollection(object):
                 msg = "After backoff to name lookup, asset handle '%s' is not\
                 in %s and could not be retrieved." % (handle, self.get_names())
                 self.logger.error(msg)
-            raise utils.InvalidUsage(msg)
+            raise utils.InvalidUsage(msg, status_code=500)
 
         # finally, return the asset (or the NoneType)
         return asset
