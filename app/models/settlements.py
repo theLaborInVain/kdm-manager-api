@@ -2976,7 +2976,7 @@ class Settlement(models.UserAsset):
         return [
             {
                 "level": 1,
-                "bgcolor": "#D4D8E1",
+                "bgcolor": "#E1F3FD",
                 "name": "Aggression Overload",
                 "subtitle": "Add an attack roll to an attack.",
                 "desc": (
@@ -2985,10 +2985,49 @@ class Settlement(models.UserAsset):
                     "as an additional attack roll."
                 ),
             },
-            {"level": 2, "bgcolor": "#C6CED9", "name": "Acceleration", "subtitle": "Add +1d10 movement to a move action.", "desc": "Before moving, you may roll the Death Die and add the result to your movement for one move action this round."},
-            {"level": 3, "bgcolor": "#B9CAD4", "name": "Uninhibited Rage", "subtitle": "Add +1d10 strength to a wound attempt.", "desc": "After a wound attempt is rolled you may roll the Death Die and add the result to the strength of your wound attempt."},
-            {"level": 4, "bgcolor": "#AEC0CE", "name": "Legs Locked", "desc": "When you gian the Death Die, you you stand. While you have the Death Die, you cannot be knocked down for any reason."},
-            {"level": 5, "bgcolor": "#9DB2C3", "name": "Metabolic Surrender", "desc": "Any time during the showdown,  you may roll the Death Die. Gain twice that much survival. This round, ignore the negative effects of permanent injuries, impairments, disorders and negative attributes (including tokens). At the end of the round, you die."},
+            {
+                "level": 2,
+                "bgcolor": "#D8F2FF",
+                "name": "Acceleration",
+                "subtitle": "Add +1d10 movement to a move action.",
+                "desc": (
+                    "Before moving, you may roll the Death Die and add the "
+                    "result to your movement for one move action this round."
+                ),
+            },
+            {
+                "level": 3,
+                "bgcolor": "#CEEDFE",
+                "name": "Uninhibited Rage",
+                "subtitle": "Add +1d10 strength to a wound attempt.",
+                "desc": (
+                    "After a wound attempt is rolled you may roll the Death "
+                    "Die and add the result to the strength of your wound "
+                    "attempt."
+                ),
+            },
+            {
+                "level": 4,
+                "bgcolor": "#C4E8FF",
+                "name": "Legs Locked",
+                "desc": (
+                    "When you gian the Death Die, you you stand. While you "
+                    "have the Death Die, you cannot be knocked down for any "
+                    "reason."
+                )
+            },
+            {
+                "level": 5,
+                "bgcolor": "#AFDCFD",
+                "name": "Metabolic Surrender",
+                "desc": (
+                    "Any time during the showdown, you may roll the Death Die. "
+                    "Gain twice that much survival. This round, ignore the "
+                    "negative effects of permanent injuries, impairments, "
+                    "disorders and negative attributes (including tokens). "
+                    "At the end of the round, you die."
+                )
+            },
         ]
 
 
