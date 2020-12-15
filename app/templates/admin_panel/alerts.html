@@ -136,23 +136,25 @@
                     </div>
                 </div>
 
-                <button
-                    ng-disabled="
-                        newAlert.title === null ||
-                        newAlert.body === null
-                    "
-                    ng-click="createAlert()"
-                    class="clickable capsule kd pink"
-                >
-                    CREATE NEW WEBAPP ALERT
-                </button>
+                <center>
+                    <button
+                        ng-disabled="
+                            newAlert.title === null ||
+                            newAlert.body === null
+                        "
+                        ng-click="createAlert()"
+                        class="clickable capsule kd pink"
+                    >
+                        CREATE NEW WEBAPP ALERT
+                    </button>
 
-                <button
-                    ng-click="ngHide('createNewAlert')"
-                    class="clickable capsule kd"
-                >
-                    Close
-                </button>
+                    <button
+                        ng-click="ngHide('createNewAlert')"
+                        class="clickable capsule kd"
+                    >
+                        Close
+                    </button>
+                </center>
 
             </div><!-- modal_inner -->
 

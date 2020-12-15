@@ -336,7 +336,12 @@ class Settlement(models.UserAsset):
             for event in script["timeline_events"]:
                 self.add_timeline_event(event)
 
-        self.log_event(action="apply", key="settlement", value=script["name"], event_type='sysadmin')
+        self.log_event(
+            action="apply",
+            key="settlement",
+            value=script["name"],
+            event_type='sysadmin'
+        )
 
 
     def normalize(self):
@@ -1851,10 +1856,14 @@ class Settlement(models.UserAsset):
             raise utils.InvalidUsage(err % new_version)
 
         self.settlement['version'] = new_version
-        self.log_event(action="set", key="Version", value=v_object.version)
+        self.log_event(
+            action="set",
+            key="Version",
+            value=v_object.version,
+            event_type='sysadmin'
+        )
+
         self.save()
-
-
 
 
     def update_all_survivors(self, operation=None, attrib_dict={}, exclude_dead=False):

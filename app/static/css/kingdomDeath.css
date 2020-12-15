@@ -161,6 +161,7 @@ button.capsule {
 }
 .kd.capsule,
     .capsule {
+    align-self: center;
     background: #666;
     border-radius: 5vw;
     box-shadow: var(--box-shadow-default);

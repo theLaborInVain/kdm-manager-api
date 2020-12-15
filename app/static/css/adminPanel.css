@@ -200,7 +200,7 @@ button.toggle_settlement_event_log {float: right; }
 #editReleaseWorksheetSummary {
     border: 0;
     border-left: 2rem solid var(--color-grey);
-    margin-top: 0.5rem;
+    margin-top: 1rem;
     margin-bottom: 0.5rem;
     padding: 0.5rem;
 }
@@ -292,7 +292,6 @@ button.toggle_settlement_event_log {float: right; }
     border-radius: 0.3rem;
     margin: 0.3rem;
     padding: 1rem;
-    text-align: center; 
 }
 .modal_button_raft {
     display: flex;
@@ -325,7 +324,7 @@ button.toggle_settlement_event_log {float: right; }
     width: 3rem;
 }
 .modal_button.circle div {
-    margin-top: 0.4rem 0 1rem 0.1rem;
+    margin: 0.4rem 0 1rem 0.1rem;
 }
 .modal_button_raft button:focus,
     .modal_button:focus {
