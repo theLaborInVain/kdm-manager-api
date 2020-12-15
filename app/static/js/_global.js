@@ -44,47 +44,62 @@ myApp.controller('globalController', function($scope, $http, $interval, $q, $tim
         }
         return ngEvent.target.innerHTML;
     }
-	
-	$scope.ngVisible = {};
-    $scope.ngShowHide = function(e_id) {
 
-        if (!$scope.ngVisible[e_id]) {
-            $scope.ngVisible[e_id] = true;
-        } else {
-            $scope.ngVisible[e_id] = false;
+
+    $scope.getElement = function(elementId) {
+        try {
+            var element = document.getElementById(elementId);
+        } catch(err) {
+            console.error(err);
+            throw 'Could not find element: ' + elementId;
         };
+        if (element === undefined || element === null) {
+            var err = "No element with ID value";
+            throw err;
+        } else {
+            return element
+        };
+        throw 'ngShowHide encountered an error!';
+    }
 
-        //  now figure out if we need to fiddle actual elements
+    //
+    //  ngShow/ngHide/ngShowHide ; this is real similar to kdmManager.js
+    //
 
+	$scope.ngVisible = {};
+    $scope.ngHiddenClass = "hidden";
+    $scope.ngVisibleclass = "visible";
+
+    $scope.ngShow = function(elementId) {
+        $scope.ngVisible[elementId] = true;
         $timeout (
             function() {
-                var hide_class = "hidden";
-                var visible_class = "visible";
+                var element = $scope.getElement(elementId);
+                element.classList.remove($scope.ngHiddenClass);
+                element.classList.add($scope.ngVisibleClass);
+            }
+        );
+    };
 
-                try {
-                    var e = document.getElementById(e_id);
-                } catch(err) {
-                    console.error(err);
-                    return false;
-                };
+    $scope.ngHide = function(elementId) {
+        $scope.ngVisible[elementId] = false;
+        $timeout (
+            function() {
+                var element = $scope.getElement(elementId);
+                element.classList.remove($scope.ngVisibleClass);
+                element.classList.add($scope.ngHiddenClass);
+            }
+        );
+    };
 
-                if (e === null) {
-                    var err = "No element with ID value";
-                    console.warn(
-                        "showHide('" + e_id + "') -> " + err + " '" + e_id + "' found on the page!");
-                    return false;
-                };
-
-                if (e.classList.contains(hide_class)) {
-                    e.classList.remove(hide_class);
-                    e.classList.add(visible_class);
-                } else {
-                    e.classList.add(hide_class);
-                    e.classList.remove(visible_class)
-                };
-            } //function()
-        ); // $timeout
-
+    $scope.ngShowHide = function(elementId) {
+        // a toggle wrapper for ngShow and ngHide that uses ngVisible to
+        // determine which function to run
+        if (!$scope.ngVisible[elementId]) {
+            $scope.ngShow(elementId);
+        } else {
+            $scope.ngHide(elementId);
+        };
     };
 
     $scope.setFocus = function(elementId) {

@@ -17,6 +17,7 @@ from bson.objectid import ObjectId
 from copy import copy
 from datetime import datetime, timedelta
 import gridfs
+import io
 import os
 import pickle
 import random
@@ -26,10 +27,11 @@ from urllib.parse import urlparse
 
 # third party imports
 from dateutil.relativedelta import relativedelta
-from flask import Response, request
+import flask
 from hashlib import md5
 import json
 import jwt
+import werkzeug
 from werkzeug.security import safe_str_cmp, generate_password_hash, check_password_hash
 
 # local imports
@@ -140,9 +142,9 @@ def reset_password():
     up the user, changes its password, removes the code from the user and saves
     it back to the mdb. """
 
-    user_login = request.get_json().get('username', None)
-    new_password = request.get_json().get('password', None)
-    recovery_code = request.get_json().get('recovery_code', None)
+    user_login = flask.request.get_json().get('username', None)
+    new_password = flask.request.get_json().get('password', None)
+    recovery_code = flask.request.get_json().get('recovery_code', None)
 
     for var_name, var_desc in [
         (user_login, 'Login'),
@@ -154,11 +156,11 @@ def reset_password():
                 "Password reset requests require a login, password and a "
                 "recovery code. (%s missing.)"
             ) % var_desc
-            return Response(response=err, status=400)
+            return flask.Response(response=err, status=400)
 
     user = utils.mdb.users.find_one({'login': user_login, 'recovery_code': recovery_code})
     if user is None:
-        return Response(
+        return flask.Response(
             response="The password recovery code supplied is not valid for user '%s'." % (user_login),
             status="400"
         )
@@ -171,14 +173,14 @@ def reset_password():
 
 def initiate_password_reset():
     """ Attempts to start the mechanism for resetting a user's password.
-    Unlike a lot of methods, this one handles the whole request processing and
+    Unlike a lot of methods, this one handles the whole flask.request processing and
     is very...self-contained. """
 
     # first, validate the post
-    incoming_json = request.get_json()
+    incoming_json = flask.request.get_json()
     user_login = incoming_json.get('username', None)
     if user_login is None:
-        return Response(
+        return flask.Response(
             response = "A valid user email address must be included in password reset requests!",
             status = 400
         )
@@ -189,7 +191,7 @@ def initiate_password_reset():
     # next, validate the user
     user = utils.mdb.users.find_one({"login": user_login})
     if user is None:
-        return Response(
+        return flask.Response(
             response = "'%s' is not a registered email address." % user_login,
             status = 404
         )
@@ -466,6 +468,91 @@ class User(models.UserAsset):
         return self.user["_id"]
 
 
+    def export(self, return_type=None):
+        """ This supercedes everything that happens in the legacy webapp's
+        'get_user' CGI and facilitates "cloning" users from one environment
+        to another.
+
+        All returns should be flask responses.
+
+        THIS CODE WAS ALL PORTED FROM THE LEGACY WEBAPP ON 2020-12-09 AND
+        IS IN NEED OF A REFACTOR. PLEASE REFACTOR IT.
+        """
+
+        if API.config['ENVIRONMENT'].get('is_production', False):
+            if not flask.request.user.User.is_admin():
+                err = 'Only API admins may export users!'
+                raise utils.InvalidUsage(err, 401)
+        else:
+            warn = 'API is non-prod. Skipping admin check for user export...'
+            self.logger.warn(warn)
+
+        self.logger.debug("%s Beginning user export..." % self)
+
+        created_by = {'created_by': self.user['_id']}
+        assets_dict = {
+            "user": self.user,
+            "settlements": list(utils.mdb.settlements.find(created_by)),
+            "settlement_events": list(
+                utils.mdb.settlement_events.find(created_by)
+            ),
+            "survivor_notes": list(utils.mdb.survivor_notes.find(created_by)),
+            "survivors": [],
+            "avatars": [],
+        }
+
+        # get all survivors (including those created by other users) for the
+        #   user's settlements; then get all survivors created by the user.
+        for s in assets_dict["settlements"]:
+            assets_dict["settlement_events"].extend(
+                utils.mdb.settlement_events.find({"settlement_id": s["_id"]})
+            )
+            survivors = utils.mdb.survivors.find({"settlement": s["_id"]})
+            assets_dict["survivors"].extend(survivors)
+        other_survivors = utils.mdb.survivors.find(created_by)
+        for s in other_survivors:
+            if s not in assets_dict["survivors"]:
+                assets_dict["survivors"].append(s)
+
+        msg = "%s Exported %s survivors!"
+        self.logger.debug(msg % (self, len(assets_dict["survivors"])))
+
+        # now we have to go to GridFS to get avatars
+        for s in assets_dict["survivors"]:
+            if "avatar" in s.keys():
+                try:
+                    img = gridfs.GridFS(utils.mdb).get(ObjectId(s["avatar"]))
+                    img_dict = {
+                        "blob": img.read(),
+                        "_id": ObjectId(s["avatar"]),
+                        "content_type": img.content_type,
+                        "created_by": img.created_by,
+                        "created_on": img.created_on,
+                    }
+                    assets_dict["avatars"].append(img_dict)
+                except gridfs.errors.NoFile:
+                    err = "Could not retrieve avatar for survivor %s"
+                    self.logger.error(err % s["_id"])
+
+        for key in assets_dict.keys():
+            msg = "%s Added %s '%s' assets to user export..."
+            self.logger.debug(msg % (self, len(assets_dict[key]), key))
+
+        # now we (finally) do returns:
+        if return_type in ['pickle', None]:
+            dump = io.BytesIO()
+            pickle.dump(assets_dict, dump)
+            dump.seek(0)
+            return flask.send_file(
+                dump,
+                as_attachment=True,
+                attachment_filename='export.pickle',
+                mimetype='application/octet-stream'
+            )
+
+        return assets_dict
+
+
     def serialize(self, return_type=None):
         """ Creates a dictionary meant to be converted to JSON that represents
         everything that the front-end might need to know about a user. """
@@ -563,7 +650,7 @@ class User(models.UserAsset):
         # finally, assuming we're still here, go ahead and save/return 200
         self.save()
 
-        return Response(response=msg, status=200)
+        return flask.Response(response=msg, status=200)
 
 
     def set_current_settlement(self):
@@ -614,13 +701,6 @@ class User(models.UserAsset):
             self.save(verbose=False)
 
 
-
-
-    def set_patron_attributes(self, level=None, beta=None):
-        """ Deprecated in release 1.0.0. Remove at 1.0.1 and later. """
-        raise RuntimeError('This method is not supported in the 1.0.0 release!')
-
-
     def set_preferences(self):
         """ Expects a request context and will not work without one. Iterates
         thru a list of preference handles and sets them. """
@@ -637,7 +717,7 @@ class User(models.UserAsset):
                 if p is None:
                     raise utils.InvalidUsage("Nah, bro: individual preference hashes/dicts should follow this syntax: {handle: 'preference_handle', value: true}")
             self.user['preferences'][handle] = value
-#            self.logger.info("%s Set '%s' = %s'" % (request.User.login, handle, value))
+#            self.logger.info("%s Set '%s' = %s'" % (flask.request.User.login, handle, value))
 
         self.save()
 
@@ -663,7 +743,7 @@ class User(models.UserAsset):
         # support updates from params, but check if we're an admin
         if hasattr(self, 'params') and 'level' in self.params:
             level = self.params['level']
-            if request.User.user.get('admin', None) is None:
+            if flask.request.User.user.get('admin', None) is None:
                 raise utils.InvalidUsage('Only API admins can do this!')
 
         # sanity check first
@@ -1006,15 +1086,15 @@ class User(models.UserAsset):
                     )
 
                     # in case the admin panel hits it before the actual user
-                    if not hasattr(request, 'User'):
-                        request.User = utils.noUser()
+                    if not hasattr(flask.request, 'User'):
+                        flask.request.User = utils.noUser()
 
                     msg = msg.safe_substitute(
                         settlement_name=s['name'],
                         settlement_age = asset_age.days,
                         settlement_dict = s,
-                        user_email = request.User.login,
-                        user_id = request.User._id,
+                        user_email = flask.request.User.login,
+                        user_id = flask.request.User._id,
                     )
                     e = utils.mailSession()
                     e.send(
@@ -1196,14 +1276,17 @@ class User(models.UserAsset):
         self.get_request_params()
 
         if action == "get":
-            return Response(response=self.serialize(), status=200, mimetype="application/json")
+            return flask.Response(response=self.serialize(), status=200, mimetype="application/json")
         elif action == "dashboard":
-            return Response(response=self.serialize('dashboard'), status=200, mimetype="application/json")
+            return flask.Response(response=self.serialize('dashboard'), status=200, mimetype="application/json")
+        elif action == "export":
+            return self.export()
+
         elif action == "set":
             return self.set_attrib()
 
         elif action == 'set_subscriber_level':
-            return Response(
+            return flask.Response(
                 response=self.set_subscriber_level(),
                 status=200,
                 mimetype="application/json"
@@ -1222,7 +1305,7 @@ class User(models.UserAsset):
 
         # social?
         elif action == "get_friends":
-            return Response(
+            return flask.Response(
                 response=self.get_friends('JSON'),
                 status=200,
                 mimetype="application/json"
@@ -1236,7 +1319,7 @@ class User(models.UserAsset):
 
 
         # finish successfully; generic
-        return Response(
+        return flask.Response(
             response="Completed '%s' action successfully!" % action,
             status=200
         )

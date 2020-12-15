@@ -488,6 +488,23 @@ myApp.controller('userAdminController', function($scope, $http) {
 
     };
 
+    $scope.exportUser = function(userLogin) {
+        // hits the /admin/user_asset/export end point and posts a login
+        // to it; gets the pickle back
+
+        var form = document.createElement("form");
+        form.method = "POST";
+        form.action = "/admin/user_asset/export";
+        var a_input = document.createElement("input");
+        a_input.name = 'login';
+        a_input.value =  userLogin;
+        form.appendChild(a_input);
+        document.body.appendChild(form);
+        form.submit();
+
+    };
+
+
     $scope.init = function() {
         console.info('Initializing userAdminController...')
     };

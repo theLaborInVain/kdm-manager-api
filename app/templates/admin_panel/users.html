@@ -72,6 +72,7 @@
 
                 <div
                     class="user_detail_button_raft"
+                    ng-click="$event.stopPropagation()"
                 >
                     <button
                         ng-click="copyToClipboard(u._id.$oid);"
@@ -87,6 +88,9 @@
                     >
                         Edit user 
                     </button>
+                    <button ng-click="exportUser(u.login)">
+                        Export
+                    </input>
                 </div>
 
             </div>

@@ -113,7 +113,12 @@ def admin_get_user(action):
 
     utils.check_api_key()
 
-    user_login = flask.request.get_json().get('login', None)
+    # try to get the 'login' var from POST JSON; fallback to form content
+    try:
+        user_login = flask.request.get_json().get('login', None)
+    except AttributeError:
+        user_login = flask.request.form.get('login', None)
+
     user_record = utils.mdb.users.find_one({'login': user_login})
 
     # die if we can't find the user record in MDB
@@ -121,10 +126,10 @@ def admin_get_user(action):
         return utils.http_404
 
     user_object = assets.get_user_asset('user', user_record['_id'])
+
     if isinstance(user_object, flask.Response):
         return user_object
     return user_object.request_response(action)
-
 
 #
 #   documentation

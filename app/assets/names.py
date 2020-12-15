@@ -979,6 +979,7 @@ surname = [
     "White",
     "Winchester",
     "Winter",
+    "Winterkalt",
     "Wolff",
     "Wormboiler",
     "Zhu",

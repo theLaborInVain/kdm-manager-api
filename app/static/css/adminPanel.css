@@ -292,9 +292,7 @@ button.toggle_settlement_event_log {float: right; }
     border-radius: 0.3rem;
     margin: 0.3rem;
     padding: 1rem;
-}
-.modal_inner.edit_release_worksheet_container {
-    max-width: 80rem; 
+    text-align: center; 
 }
 .modal_button_raft {
     display: flex;
@@ -340,16 +338,19 @@ button.toggle_settlement_event_log {float: right; }
     /* CSS reset */
     h1 {font-size: 5vw; }
 
-    .flex_item_basic {flex-grow: 1; width: 30%; }
+    .flex_item_basic {flex-grow: 1; width: 25%; }
     .flex_item_double_wide {width: 100%; }
 
     .modal_inner {
         margin: 1rem auto;
     }
+    .modal_inner.edit_release_worksheet_container {
+        max-width: 80rem; 
+    }
     .modal_inner.work_with_user_container,
-        .modal_inner.admin_panel_release_details 
-    {
-        width: 50%; 
+        .modal_inner.admin_panel_release_details,
+        .modal_inner.create_new_alert_controls {
+        max-width: 50rem;
     }
 
 }

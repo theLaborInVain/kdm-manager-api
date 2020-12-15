@@ -575,6 +575,7 @@ class AdministrationObject:
             raise AttributeError("'%s' is not a valid OID!" % user_oid)
 
         # do it!
+        print('DEPRECATION WARNING!')
         print(" Requesting user OID %s from the legacy webapp!" % user_oid)
         new_oid = clone.one_user_from_legacy_webapp(
             utils.settings.get('legacy', 'webapp_url'),

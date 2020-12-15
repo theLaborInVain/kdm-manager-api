@@ -52,7 +52,7 @@
         -->
 
         <div
-            ng-click="ngShowHide('createNewAlert')"
+            ng-click="ngShow('createNewAlert')"
             class="clickable kd pink rulebook_warning"
         >
             Click/tap to create a new webapp alert!
@@ -62,10 +62,12 @@
         <div
             id="createNewAlert"
             class="hidden modal_outer"
+            ng-click="ngHide('createNewAlert')"
         >
 
             <div
                 class="modal_inner create_new_alert_controls"
+                ng-click="$event.stopPropagation()"
             >
 
                 <h3 class="kd title">New Alert</h3>
@@ -143,6 +145,13 @@
                     class="clickable capsule kd pink"
                 >
                     CREATE NEW WEBAPP ALERT
+                </button>
+
+                <button
+                    ng-click="ngHide('createNewAlert')"
+                    class="clickable capsule kd"
+                >
+                    Close
                 </button>
 
             </div><!-- modal_inner -->
