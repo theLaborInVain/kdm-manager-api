@@ -82,11 +82,7 @@ class World(object):
         NB: if you're trying to fiddle/filter or otherwise futz with final
         output, check the self.list() method. """
 
-        self.logger = utils.get_logger(
-            utils.settings.get("world", "log_level")
-        )
-
-
+        self.logger = utils.get_logger()
         self.query_debug = query_debug
         self.assets = world_assets.GENERAL
 

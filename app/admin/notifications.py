@@ -15,7 +15,7 @@ import json
 from flask import request, Response
 
 # local imports
-from app import utils
+from app import API, utils
 from app.models import users
 
 
@@ -72,7 +72,7 @@ class Alert:
         self.alert['created_on'] = datetime.now()
         self.alert['created_by'] = ObjectId(self.alert['created_by'])
         self.alert['expired'] = False
-        self.alert['release'] = utils.settings.get('api','version')
+        self.alert['release'] = API.config['VERSION']
         self.alert['remote_ip'] = request.remote_addr
 
         # finally, save it and return it
@@ -102,7 +102,3 @@ class Alert:
             status=200,
             mimetype="application/json"
         )
-
-
-
-

@@ -13,14 +13,13 @@ class Config(object):
     DEBUG = True
     ENVIRONMENT = {'is_production': False}
     TESTING = True
+    MDB = "kdm-manager"
+    PORT = 8013
     PRODUCTION = {
-        'app_fqdn': 'advanced-kdm-manager.c.kdm-manager.internal'
+        'app_fqdn': 'advanced-kdm-manager.c.kdm-manager.internal',
+        'url': 'https://api.kdm-manager.com'
     }
+    VERSION = "1.37.273"
 
-    def __init__(self):
-        """ Do some things whenever we initialize this module. """
-
-        if socket.getfqdn() == self.PRODUCTION['app_fqdn']:
-            self.ENVIRONMENT['is_production'] = True
-
-        pass
+    if socket.getfqdn() == PRODUCTION['app_fqdn']:
+        self.ENVIRONMENT['is_production'] = True

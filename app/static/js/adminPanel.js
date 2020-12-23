@@ -7,6 +7,11 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
     };
     $interval($scope.updateCounter, 1000);
 
+    // ui/ux helpers
+    $scope.copyToClipboard = function(text) {
+        window.prompt("Copy User OID to clipboard:", text);
+    };
+
     // DEPRECATED - replace this with flask 
 	$scope.setUserJWT = function() {
 		// sets $scope.user.jwt to a valid JWToken
@@ -99,8 +104,62 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
         });
     };
 
+
+    //
+    //  Alerts
+    //
+
+    $scope.getWebappAlerts = function() {
+        var funcName = 'getWebappAlerts()';
+        $scope.scratch.initializing_panel = true;
+        console.time(funcName);
+        $http.get('/get/notifications').then(
+            function(result){
+                $scope.webappAlerts = result.data;
+                console.timeEnd(funcName);
+                $scope.scratch.initializing_panel = false;
+            },
+            function(result){console.error('Could not retrieve webapp alerts!');}
+        );
+    };
+
+    // initialize the newAlert "worksheet"
+    $scope.newAlert = {
+        expiration: 'next_release',
+        type: 'kpi',
+        title: null,
+        body: null,
+        created_by: $scope.user._id.$oid,
+    }
+
+    $scope.createAlert = function() {
+        console.warn($scope.newAlert);
+        $http.post("/admin/notifications/new", $scope.newAlert).then(function(result){
+            console.warn(result);
+            $scope.getWebappAlerts();
+            $scope.newAlert.title = null;
+            $scope.newAlert.body = null;
+            $scope.showHide('createNewAlert');
+        });
+    };
+
+    $scope.expireAlert = function(a) {
+        // expire an alert in the API; reload alerts from API
+        $http.post("/admin/notifications/expire", a).then(function(result){
+            a.expiration = 'NOW';
+            $scope.getWebappAlerts();
+        });
+    };
+
+
+    //
+    // general init
+    //
+
     setInterval( function init() {
-        
+       
+        $scope.getWebappAlerts();
+
         $scope.ngVisible.mainSpinner = true
         $http.get('stat').then(function(result){$scope.settings = result.data;});
         $http.get('https://api.github.com/repos/theLaborInVain/kdm-manager-api').then(function(result){$scope.github = result.data;});
@@ -140,11 +199,6 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
         }(),
     120000
     )
-
-
-    $scope.copyToClipboard = function(text) {
-        window.prompt("Copy User OID to clipboard:", text);
-    };
 
 });
 
@@ -320,73 +374,7 @@ myApp.controller('releasesController', function($scope, $http) {
 });
 
 
-//  Alerts!
-myApp.controller('alertsController', function($scope, $http) {
 
-    $scope.scratch = {
-        initializing_panel: true,
-    };
-
-    $scope.getWebappAlerts = function() {
-        var funcName = 'getWebappAlerts()';
-        $scope.scratch.initializing_panel = true;
-        console.time(funcName);
-        $http.get('/get/notifications').then(
-            function(result){
-                $scope.webappAlerts = result.data;
-                console.timeEnd(funcName);
-                $scope.scratch.initializing_panel = false;
-            },
-            function(result){console.error('Could not retrieve webapp alerts!');}
-        );
-    };
-
-    // initialize
-    $scope.newAlert = {
-        expiration: 'next_release',
-        type: 'kpi',
-        title: null,
-        body: null,
-        created_by: $scope.user._id.$oid,
-    }
-
-    // methods
-
-    $scope.createAlert = function() {
-        console.warn($scope.newAlert);
-        $http.post("/admin/notifications/new", $scope.newAlert).then(function(result){
-            console.warn(result);
-            $scope.getWebappAlerts();
-            $scope.newAlert.title = null;
-            $scope.newAlert.body = null;
-            $scope.showHide('createNewAlert');
-        });
-    };
-
-    $scope.expireAlert = function(a) {
-        $http.post("/admin/notifications/expire", a).then(function(result){
-            a.expiration = 'NOW';
-            $scope.getWebappAlerts();
-        });
-    };
-
-
-    // run the alerts panel init job at intervals
-    setInterval( function init() {
-        console.info('Initializing alerts panel...');
-
-        if ($scope.user._id === undefined) {
-            console.error("Admin user '" + $scope.user.login + "' _id is undefined!");
-            console.warn($scope.user);
-        };
-
-        $scope.getWebappAlerts();
-
-        return init;
-        }(),
-    120000
-    )
-})
 
 myApp.controller('userAdminController', function($scope, $http) {
 

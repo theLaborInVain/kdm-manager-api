@@ -10,6 +10,6 @@ from app import API
 if __name__ == '__main__':
     API.run(
         host="0.0.0.0",
-        port=API.settings.get('server', 'port'),
+        port=API.config['PORT'],
         ssl_context='adhoc'
     )

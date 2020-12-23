@@ -37,130 +37,9 @@
 
     <div class="container">
 
-        <div class="flex_item_basic">
-
-            <!-- admin panel corner detail -->
-            <div
-                class="clickable corner"
-                ng-click="ngShowHide('adminPanelReleaseDetails')"
-            >
-            </div>
-
-            <div
-                id="adminPanelReleaseDetails"
-                class="hidden modal_outer"
-                ng-if="ngVisible['adminPanelReleaseDetails']"
-            >
-
-                <div class="modal_inner admin_panel_release_details"/>
-
-                    <h2 class="kd title">KDM API</h2> 
-                    <div
-                        class="kd worksheet_block"
-                    >
-                        <div class="kd_worksheet_row">
-                            <b>Panel Revision:</b> {a settings.meta.api.panel.panel_revision a}
-                        </div>
-                        <div class="kd_worksheet_row">
-                            <b>Last Refreshed:</b> {a refreshed a} ({a seconds_since_last_refresh a} seconds ago)
-                        </div>
-                        <div class="kd_worksheet_row">
-                            <b>Last Push:</b> {a github.pushed_at a}
-                        </div>
-                        <div class="kd_worksheet_row">
-                            <b>Open API Issues:</b> {a github.open_issues a}
-                        </div>
-                    </div> <!-- worksheet block -->
-
-                    <h2 class="kd title">Resources</h2> 
-                    <div
-                        class="kd worksheet_block"
-                    >
-                        <div
-                            ng-repeat="(href, desc) in {
-                                '/stat': 'API Settings',
-                                '/': 'API Documentation',
-                                '/blog': 'Development Blog',
-                                '/https://github.com/theLaborInVain/kdm-manager-api': 'GitHub',
-                            }"
-                            class="kd worksheet_row"
-                        >
-                            <div
-                                class="kd checkbox checked"
-                            >
-                            </div>
-                            <div
-                                class="kd checkbox_desc"
-                            >
-                                <a ng-href="href">{a desc a}</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button
-                        ng-click="ngShowHide('adminPanelReleaseDetails')"
-                        class="clickable capsule kd yellow"
-                    >
-                        Close
-                    </button>
-
-                </div><!-- modal inner -->
-
-            </div><!-- modal outer -->
-
-            <!-- main admin panel info -->
-
-            <h1>KDM API</h1>
-            <b>API Hostname:</b> {a settings.meta.server.hostname a}<br/>
-            <b>API Version:</b> {a settings.meta.api.version a}<br/>
-
-            <!-- set admin user JWT/password -->
-
-            <form
-                class="text_input_container zebra"
-                ng-if="user.jwt === undefined"
-            >
-
-                <input
-                    type="password"
-                    class="text_input_input"
-                    placeholder="{a user.login a} password"
-                    ng-model="user.plaintext_password"
-                />
-                <button
-                    type="submit"
-                    class="text_input_button"
-                    ng-click="
-                        setUserJWT();
-                        $event.stopPropagation();
-                    "
-                >
-                    Set JWT
-                </button>
-
-            </form>
-
-            <div
-                ng-if="user.jwt === undefined"
-                class="hidden error_text_block"
-                id="adminPasswordInputError"
-            >
-                <b>Authorization Error!</b>
-                <span id="adminPasswordInputErrorMsg"></span>
-            </div>
-
-
-        </div>
-
+        {% include 'admin_panel/admin.html' %}
         {% include 'admin_panel/releases.html' %}
-
-        {% include 'admin_panel/alerts.html' %}
-
         {% include 'admin_panel/users.html' %}
-
-
-    <!-- RECENT SETTLEMENTS WILL GO HERE -->
-
 
         <div class="flex_item_basic flex_item_double_wide api">
             <h2>API Response Times (last seven days)</h2>
@@ -208,7 +87,7 @@
             <h2>{a world.world.latest_settlement.name a}</h2>
             {a world.world.latest_settlement.comment a}
 
-            <div ng-click="showHide('latest_settlement_detail')" class="clickable tile">
+            <div ng-click="ngShowHide('latest_settlement_detail')" class="clickable tile">
                 <b>{a world.world.latest_settlement.value.name a}</b><br/>
                 <i>{a world.world.latest_settlement.value.campaign a} - LY {a world.world.latest_settlement.value.lantern_year a}</i>
             </div>
@@ -224,7 +103,7 @@
             <h2>{a world.world.latest_survivor.name a}</h2>
             {a world.world.latest_survivor.comment a}
 
-            <div ng-click="showHide('latest_survivor_detail')" class="clickable tile">
+            <div ng-click="ngShowHide('latest_survivor_detail')" class="clickable tile">
                 <b>{a world.world.latest_survivor.value.name a}</b> [{a world.world.latest_survivor.value.sex a}]<br/>
                 <i>{a world.world.latest_survivor.value.settlement_name a}</i>
             </div>
@@ -240,7 +119,7 @@
             <h2>{a world.world.latest_fatality.name a}</h2>
             {a world.world.latest_fatality.comment a}
 
-            <div ng-click="showHide('latest_fatality_detail')" class="clickable tile">
+            <div ng-click="ngShowHide('latest_fatality_detail')" class="clickable tile">
                 <b>{a world.world.latest_fatality.value.name a}</b> [{a world.world.latest_survivor.value.sex a}]<br/>
                 <i>{a world.world.latest_fatality.value.settlement_name a}</i>
             </div>
@@ -256,7 +135,7 @@
             <h2>{a world.world.latest_kill.name a}</h2>
             {a world.world.latest_kill.comment a}
 
-            <div ng-click="showHide('latest_kill_detail')" class="clickable tile">
+            <div ng-click="ngShowHide('latest_kill_detail')" class="clickable tile">
                 <b>{a world.world.latest_kill.value.raw_name a}</b> ({a world.world.latest_kill.type a})<br/>
                 Killed by the survivors of <i>{a world.world.latest_kill.value.settlement_name a}</i> in LY {a world.world.latest_kill.value.kill_ly a}
             </div>
@@ -359,7 +238,7 @@
             >
                 <div
                     title="{a w.comment a}"
-                    ng-click="showHide(w.handle + '_tooltip')"
+                    ng-click="ngShowHide(w.handle + '_tooltip')"
                 >
                     <div class="world_key">{a w.name a} ({a w.value_type a}):</div>
                     <div class="world_value">{a w.value a}</div>

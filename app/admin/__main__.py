@@ -9,10 +9,11 @@
 """
 # standard library imports
 import argparse
-import getpass
 from collections import OrderedDict
+import itertools
 import socket
 import sys
+import threading
 import time
 
 # third party imports
@@ -23,7 +24,7 @@ from pymongo import MongoClient
 # local imports
 from app import API
 from app import models, utils
-from app.admin import AdminPickle, clone, patch, purge
+from app.admin import clone, patch, pickle_login, purge
 
 #
 #   misc. helper methods for CLI admin tasks
@@ -50,8 +51,8 @@ def stat():
     """ Summarizes the state of the API. """
     output_str = ["", "*", " "*7, "API:"]
     api_str = []
-    for key in ['version', 'mdb']:
-        api_str.append("%s: %s" % (key, API.settings.get('api', key)))
+    for key in ['VERSION', 'MDB']:
+        api_str.append("%s: %s" % (key, API.config[key]))
     output_str.append(", ".join(api_str))
     print(" ".join(output_str) + "\n")
 
@@ -73,7 +74,7 @@ def initialize():
     """
 
     logger = utils.get_logger()
-    MongoClient().drop_database(utils.settings.get('api','mdb'))
+    MongoClient().drop_database(API.config['MDB'])
     logger.critical("Initialized database!")
 
 
@@ -246,21 +247,34 @@ class AdministrationObject:
                             default=False, metavar=5, type=int,
                             help="[DEV] Dumps the last N users to the CLI.",
                             )
-        parser.add_argument('--clone_user', dest='clone_user', default=None,
-                            help="[DEV] "
-                            "Clone one user from production to local.",
-                            metavar="565f3d67421aa95c4af1e230")
-        parser.add_argument('--clone_recent_users', dest='clone_recent_users',
-                            default=False, action="store_true",
-                            help="[DEV] "
-                            "Clone recent production users to local."),
+
+        clone_params = parser.add_mutually_exclusive_group()
+        clone_params.add_argument(
+            '--clone_user',
+            action="store_true",
+            dest='clone_user',
+            default=False,
+            help = (
+                "[CLONE] Clone one user from production to local (requires "
+                "--user to be an email address)."
+            ),
+       )
+        clone_params.add_argument(
+            '--clone_recent_users',
+            action="store_true",
+            dest='clone_recent_users',
+            default=False,
+            help="[CLONE] Clone recent production users to local.",
+        )
+
 
         #   admin (users)
         parser.add_argument('--user', dest='user', default=None,
                             help="Work with a user",
                             metavar="toconnell@tyrannybelle.com")
         parser.add_argument('--reset_password', dest='reset_pw', default=None,
-                            help="[USER] Reset a user's password (manually)",
+                            help="[USER] Reset a user's password (manually) "
+                            "(requires --user).",
                             action='store_true')
         parser.add_argument("--admin", dest="user_admin", default=False,
                             action="store_true",
@@ -361,7 +375,7 @@ class AdministrationObject:
                                 "[SYSADMIN] "
                                 "Initialize the mdb database, '%s'"
                             ) % (
-                                utils.settings.get('api','mdb'),
+                                API.config['MDB'],
                             ), action="store_true",
                             )
         parser.add_argument('--patch', dest='apply_patch',
@@ -386,25 +400,6 @@ class AdministrationObject:
                             action="store_true", default=False)
 
         self.options = parser.parse_args()
-        self.validate_args()
-
-
-    #
-    #   methods for working with the arguments passed to the object
-    #
-
-    def validate_args(self):
-        """ This is our general-purpose sanity-checker. """
-
-        # 1.) too many clones:
-        if (
-            self.options.clone_user is not None
-            and self.options.clone_recent_users == True):
-            msg = (
-                "The '--clone_user' and '--clone_recent_users' arguments may"
-                "not be used together!"
-            )
-            raise AttributeError(msg)
 
 
     def process_args(self):
@@ -476,12 +471,12 @@ class AdministrationObject:
             self.dump_recent_users(self.options.dump_users)
 
         # clone user (by OID) from legacy webapp
-        if self.options.clone_user is not None:
+        if self.options.clone_user:
             self.clone_one_user(force=self.options.force)
 
         # clone many users (via API route)
         if self.options.clone_recent_users == True:
-            self.clone_many_users()
+            self.clone_many_users(pickle_auth=True)
 
 
         # work with user
@@ -564,23 +559,17 @@ class AdministrationObject:
     #   methods for cloning users from production
     #
 
-    def clone_one_user(self, user_oid=None, force=False):
+    def clone_one_user(self, user_email=None, force=False):
         """ Clones one user. Prompts to reset password. """
 
-        # first, override 'user_oid' kwarg if we've got CLI input
-        if self.options.clone_user is not None:
-            user_oid = self.options.clone_user
-
-        if not ObjectId.is_valid(user_oid):
-            raise AttributeError("'%s' is not a valid OID!" % user_oid)
+        prod_api_url = API.config['PRODUCTION']['url']
+        print("\n KDM-API: %s\n Initiating request..." % prod_api_url)
 
         # do it!
-        print('DEPRECATION WARNING!')
-        print(" Requesting user OID %s from the legacy webapp!" % user_oid)
-        new_oid = clone.one_user_from_legacy_webapp(
-            utils.settings.get('legacy', 'webapp_url'),
-            utils.settings.get('keys', 'legacy_webapp_admin_key'),
-            user_oid
+        new_oid = clone.get_one_user_from_api(
+            prod_api_url,
+            pickle_auth = True,
+            u_login = self.options.user
         )
 
         # initialize the user as an object
@@ -622,66 +611,67 @@ class AdministrationObject:
 
 
     @utils.metered
-    def clone_many_users(self):
+    @pickle_login
+    def clone_many_users(self, **kwargs):
         """Gets a list of recent production users, iterates through the list
         calling the self.clone_one_user() on each. """
-
-
         # set the request URL, call the method from clone.py:
-        prod_api_url = utils.settings.get('server', 'prod_url')
-        print("\n API: %s\n Initiating request...\n" % prod_api_url)
-
-        # try to get the admin's email from the admin pickle
-        admin_login = None
-        a_pickle = AdminPickle()
-        if a_pickle.data.get('admin_login', None) is not None:
-            use_prev = input(
-                ' Authenticate as %s? [YES]: ' % a_pickle.data['admin_login']
-            )
-            if use_prev is not None and len(use_prev) == 0:
-                use_prev = 'Y'
-            if use_prev.upper() == 'Y':
-                admin_login = a_pickle.data.get('admin_login')
-                print(' Login: %s' % admin_login)
-
-        # manually key the admin login if we don't have one
-        if admin_login is None:
-            admin_login = input(' Login: ')
-
-        # always get the password
-        admin_password = getpass.getpass(' Password: ')
+        prod_api_url = API.config['PRODUCTION']['url']
 
         users = clone.get_recent_users_from_api(
             prod_api_url,
-            admin_login,
-            admin_password
+            admin_login = kwargs['admin_login'],
+            admin_password = kwargs['admin_password'],
         )
 
         if len(users) == 0:
             print('\n No recent users to clone! Exiting...\n')
             sys.exit(255)
-        print('\n Preparing to clone %s users...\n' % len(users))
 
-        # since we logged in successfully, see if we have an admin email
-        # in the pickle and save this login if we do NOT
-
-        if a_pickle.data.get('admin_login', None) is None:
-            a_pickle.add_key('admin_login', admin_login)
-
-        # iterate the results:
+        # now, iterate over users and do each on a thread
+        threads = []
         for prod_user in users:
-            oid = prod_user['_id']['$oid']
-            self.clone_one_user(oid, force=True)
-
-        # summarize what we did:
-        for cloned_user in users:
-            print("  %s - %s " % (
-                cloned_user['_id']['$oid'],
-                cloned_user['login']
-                )
+            clone_thread = threading.Thread(
+                target=clone.get_one_user_from_api,
+                args = (prod_api_url,),
+                kwargs = {
+                    'u_login': prod_user['login'],
+                    'admin_login': kwargs['admin_login'],
+                    'admin_password': kwargs['admin_password'],
+                    'force': True
+                },
+                daemon=True,
             )
+            threads.append(clone_thread)
+            clone_thread.start()
 
-        print('\n\tDone!\n')
+        finished_threads = 0
+
+        def animate():
+            """ spin a little spinner. """
+            for c in itertools.cycle(['|', '/', '-', '\\']):
+                if finished_threads == len(threads):
+                    break
+                sys.stdout.write('\r Cloning %s users... ' % len(users) + c)
+                sys.stdout.flush()
+                time.sleep(0.1)
+            sys.stdout.write('\r Done!                \n\n')
+
+            # summarize what we did:
+            for cloned_user in users:
+                print("  %s - %s " % (
+                    cloned_user['_id']['$oid'],
+                    cloned_user['login']
+                    )
+                )
+            print()
+
+        t = threading.Thread(target=animate)
+        t.start()
+
+        for thread in threads:
+            thread.join()
+            finished_threads += 1
 
 
     #
@@ -981,6 +971,6 @@ class SettlementAdministrationObject(AssetAdministrationObject):
 
 
 if __name__ == '__main__':
-    stat()
+    #stat()
     ADMIN_OBJECT = AdministrationObject()
     ADMIN_OBJECT.process_args()

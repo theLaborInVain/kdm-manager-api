@@ -82,6 +82,7 @@ button.kd {
     --color-kd-pink: #F35295;
     --color-kd-pink-gradient: radial-gradient(#F06DbC, #F35295);
     --color-kd-red: #B92426;
+    --color-kd-silver-gradient: radial-gradient(#FFF, #efefef, #DaDbDb);
     --color-kd-yellow: #EEC051;
     --color-kd-yellow-gradient: radial-gradient(#fEf0a1, #EEC051);
 }
@@ -183,6 +184,11 @@ button.capsule {
     width: -webkit-fill-available;
 }
 
+.kd.black {
+    background: var(--color-kd-black-gradient);
+    background-color: #000;
+    color: #fff;
+}
 .kd.blue {
     background: var(--color-kd-blue-gradient);
     background-color: var(--color-kd-blue);
@@ -200,6 +206,11 @@ div .kd.yellow,
     button .kd.yellow {
     background: var(--color-kd-yellow-gradient);
     background-color: var(--color-kd-yellow);
+    color: #000;
+}
+.kd.silver {
+    background: var(--color-kd-silver-gradient);
+    background-color: #EEE;
     color: #000;
 }
 

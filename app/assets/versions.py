@@ -33,7 +33,7 @@ VERSIONS = {
     'core_1_6': {
         'major': 1,
         'minor': 6,
-        'released': datetime(2021,12,31),
+        'released': datetime(2020,11,27),
         'desc': 'Version 1.6, announced Black Friday 2020.'
     },
 }

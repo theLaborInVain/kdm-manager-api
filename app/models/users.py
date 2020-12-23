@@ -31,8 +31,13 @@ import flask
 from hashlib import md5
 import json
 import jwt
+import pymongo
 import werkzeug
-from werkzeug.security import safe_str_cmp, generate_password_hash, check_password_hash
+from werkzeug.security import (
+    safe_str_cmp,
+    generate_password_hash,
+    check_password_hash
+)
 
 # local imports
 from app import API, models, utils
@@ -293,11 +298,13 @@ def import_user(user_data=None):
     string representation of a pickle.
     """
 
+    data = None
+
     # coerce incoming data to dict or die trying.
     if isinstance(user_data, bytes):
         data = pickle.loads(user_data, encoding='bytes')
 
-    if os.path.isfile(user_data):
+    if data is None and os.path.isfile(user_data):
         data = pickle.load(open(user_data, 'rb'))
 
     if data is None:
@@ -305,18 +312,18 @@ def import_user(user_data=None):
 
     # clean up the raw data
     for foreign_attr in ['current_session']:
-        if data[b'user'].get(foreign_attr, False):
-            del data[b'user'][foreign_attr]
+        if data['user'].get(foreign_attr, False):
+            del data['user'][foreign_attr]
 
     # start the import and check to see if we're doing something stupid
     msg = "Importing user %s [%s]" % (
-        data[b'user']['login'],
-        data[b'user']['_id']
+        data['user']['login'],
+        data['user']['_id']
     )
     logger.warn(msg)
 
     try:
-        new_user_oid = utils.mdb.users.save(data[b'user'])
+        new_user_oid = utils.mdb.users.save(data['user'])
     except pymongo.errors.DuplicateKeyError:
         err = "User login '%s' exists under a different user ID!"
         raise pymongo.errors.DuplicateKeyError(err)
@@ -332,7 +339,7 @@ def import_user(user_data=None):
         imported_assets = 0
         logger.warn("Importing %s assets..." % asset_name)
         try:
-            for asset in data[bytes(asset_name, 'utf-8')]:
+            for asset in data[asset_name]:
                 imported_assets += 1
                 utils.mdb[asset_name].save(asset)
         except KeyError:
@@ -362,22 +369,22 @@ def import_user(user_data=None):
 
     # next import avatars
     imported_avatars = 0
-    for avatar in data[b"avatars"]:
-        if gridfs.GridFS(utils.mdb).exists(avatar[b"_id"]):
-            gridfs.GridFS(utils.mdb).delete(avatar[b"_id"])
-            logger.info("Removed object %s from local GridFS." % avatar[b"_id"])
+    for avatar in data["avatars"]:
+        if gridfs.GridFS(utils.mdb).exists(avatar["_id"]):
+            gridfs.GridFS(utils.mdb).delete(avatar["_id"])
+            logger.info("Removed object %s from local GridFS." % avatar["_id"])
             gridfs.GridFS(utils.mdb).put(
-                avatar[b"blob"],
-                _id=avatar[b"_id"],
-                content_type=avatar[b"content_type"],
-                created_by=avatar[b"created_by"],
-                created_on=avatar[b"created_on"]
+                avatar["blob"],
+                _id=avatar["_id"],
+                content_type=avatar["content_type"],
+                created_by=avatar["created_by"],
+                created_on=avatar["created_on"]
             )
             imported_avatars += 1
         logger.info("Imported %s avatars!" % imported_avatars)
 
     # legacy webapp: clean up sessions
-    culled = utils.mdb.sessions.remove({"login": data[b"user"]["login"]})
+    culled = utils.mdb.sessions.remove({"login": data["user"]["login"]})
     if culled['n'] > 0:
         logger.info(
             "Removed %s session(s) belonging to incoming user!" % culled['n']

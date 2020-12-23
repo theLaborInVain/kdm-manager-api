@@ -39,7 +39,7 @@ from app.utils import settings
 crossdomain = crossdomain_module.crossdomain
 
 #   Mongo!
-mdb = MongoClient()[settings.get("api", "mdb")]
+mdb = MongoClient()[API.config['MDB']]
 
 # the noUser class is used when emailing errors where we don't have an
 # authenticated user. This was missing from the 1.0.0 release and broke the
@@ -668,7 +668,7 @@ def create_subscriptions_dict():
 api_meta = {
     "meta": {
         "api": {
-            "version": settings.get("api", "version"),
+            "version": API.config['VERSION'],
             "age": get_time_elapsed_since(
                 datetime.strptime('2016-10-13', '%Y-%m-%d'),
                 units='age'
