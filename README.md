@@ -13,12 +13,10 @@ The API used by [https://kdm-manager.com](https://kdm-manager.com) and related
 developed, supported by or otherwise affiliated with Kingdom Death or Adam 
 Poots Games, LLC.**
 
+
 # About
 
 Please read the information below before cloning or forking this repository.
-
-For more general information about this project, please refer to
-[the 'About' section of the project's development blog](http://kdm-manager.blogspot.com/p/credits-and-acknowledgements.html).
 
 
 ## Licensing and permission
@@ -36,7 +34,6 @@ are presented here without authorization.
 Please use
 [GitHub's Issues utility](https://github.com/theLaborInVain/kdm-manager-api/issues)
 to report issues to the repository maintainer.
-
 
 
 # Installation instructions
@@ -93,6 +90,7 @@ requests for https://api.kdm-manager.com
 
 From there, run `server.sh` as root to manage deployment operations, e.g. start,
 stop, restart, etc.
+
 
 ## System administration
 
