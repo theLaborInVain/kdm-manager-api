@@ -41,6 +41,7 @@ from app.models import (
     endeavors,
     epithets,
     fighting_arts,
+    gear,
     names,
     saviors,
     settlements,
@@ -2441,13 +2442,49 @@ class Survivor(models.UserAsset):
             self.save()
 
 
+    def set_sword_oath(self):
+        """ From the Echoes of Death 3 expansion; 'sword_oath' is a dict that we
+        save on the survivor, similar to a special campaign attrib. """
+
+        self.check_request_params(['sword', 'wounds'])
+
+        # initialize it if we don't have it
+        if self.survivor.get('sword_oath', None) is None:
+            self.survivor['sword_oath'] = {}
+
+        self.survivor['sword_oath']['sword'] = str(self.params['sword'])
+        self.survivor['sword_oath']['wounds'] = int(self.params['wounds'])
+
+        # look up the gear handle
+        gear_module = gear.Assets()
+        sword = gear_module.get_asset(self.survivor['sword_oath']['sword'])
+
+        msg = (
+            "%s updated Sword Oath values for %s. Sword is '%s' and wounds "
+            "are set to %s."
+        ) % (
+            request.User.login,
+            self.pretty_name(),
+            sword['name'],
+            self.survivor['sword_oath']['wounds']
+        )
+
+        self.log_event(msg)
+
+        self.save()
+
+
     def set_weapon_proficiency_type(self, handle=None):
         """ Sets the self.survivor["weapon_proficiency_type"] string to a
         handle. """
 
         if self.params.get('unset', None) is not None:
             self.survivor['weapon_proficiency_type'] = None
-            self.log_event('%s unset weapon proficiency type for %s.' % (request.User.login, self.pretty_name()))
+            msg = '%s unset weapon proficiency type for %s.' % (
+                request.User.login,
+                self.pretty_name()
+            )
+            self.log_event(msg)
             self.save()
             return True
 
@@ -2459,11 +2496,18 @@ class Survivor(models.UserAsset):
         h_dict = W.get_asset(handle)
 
         if self.survivor['weapon_proficiency_type'] == handle:
-            self.logger.debug("%s No change to Weapon Proficiency type. Ignoring..." % self)
+            self.logger.debug(
+                "%s No change to Weapon Proficiency type. Ignoring..." % self
+            )
             return True
 
         self.survivor["weapon_proficiency_type"] = handle
-        self.log_event("%s set weapon proficiency type to '%s' for %s" % (request.User.login, h_dict["handle"], self.pretty_name()))
+        msg = "%s set weapon proficiency type to '%s' for %s" % (
+            request.User.login,
+            h_dict["handle"],
+            self.pretty_name()
+        )
+        self.log_event(msg)
         self.save()
 
 
@@ -3492,6 +3536,10 @@ class Survivor(models.UserAsset):
             self.set_attribute_detail()
         elif action == "update_attribute":
             self.update_attribute()
+
+        # stuff that should honestly just be handled dynamically
+        elif action == 'set_sword_oath':
+            self.set_sword_oath()
 
         # notes
         elif action == 'add_note':

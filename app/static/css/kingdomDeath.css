@@ -99,12 +99,18 @@ button.kd {
     padding-top: 0.5rem;
 }
 .kd.worksheet_row {
-    align-items: center; 
+    align-items: baseline; 
     box-sizing: border-box;
     display: flex;
     margin: 0 auto;
     padding: 0.5rem;
     width: 100%;
+}
+.kd.worksheet_row.checkbox_container {
+    flex-wrap: wrap; 
+}
+.kd.worksheet_row.checkbox_container * {
+    margin: 0.1rem; 
 }
 .kd.worksheet_row.caption {
     display: block;
@@ -121,11 +127,21 @@ button.kd {
     background: #000;
     background-color: #000;
 }
-.kd.checkbox_desc {
+.kd.checkbox.red {
+    border-color: var(--color-kd-red);
+}
+.kd.checkbox.red.checked {
+    background: var(--color-kd-red);
+    background-color: var(--color-kd-red);
+}
+.kd.checkbox_desc,
+ .kd.checkbox_title {
     font-family: 'Ruda';
     margin-left: 0.5rem;
-    text-transform: capitalize;
     transition: 1s;
+}
+.kd.checkbox_title {
+    text-transform: capitalize;
 }
 .kd.worksheet_underline {
     border-bottom: 0.1rem solid;
@@ -195,6 +211,9 @@ button.capsule {
     color: #fff;
 }
 
+.kd.pink_text {
+    color: var(--color-kd-pink);
+}
 div .kd.pink,
     button .kd.pink {
     background: var(--color-kd-pink-gradient);

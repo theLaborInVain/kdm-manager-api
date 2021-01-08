@@ -40,47 +40,7 @@
         {% include 'admin_panel/admin.html' %}
         {% include 'admin_panel/releases.html' %}
         {% include 'admin_panel/users.html' %}
-
-        <div class="flex_item_basic flex_item_double_wide api">
-            <h2>API Response Times (last seven days)</h2>
-            <table class="api_response_times">
-            <tr>
-                <th>Method</th>
-                <th>Route</th>
-                <th>#</th>
-                <th>24Hrs</th>
-                <th>Avg.</th>
-                <th>Min</th>
-                <th>Max</th>
-            </tr>
-            <tr ng-repeat="r in world.world.api_response_times.value">
-                <td>{a r._id.method a}</td>
-                <td class="url"><code>/{a r._id.url a}</code></td>
-                <td>{a r.count a}</td>
-                <td>{a r.last_24_avg | limitTo:5 a}</td>
-                <td ng-class="{'warning': r.avg_time >= 2, 'error': r.avg_time >=4}">{a r.avg_time | limitTo:5 a}</td>
-                <td ng-class="{'warning': r.min_time >= 2, 'error': r.min_time >=4}">{a r.min_time | limitTo:5 a}</td>
-                <td ng-class="{'warning': r.max_time >= 2, 'error': r.max_time >=4}">{a r.max_time | limitTo:5 a}</td>
-            </tr>
-            </table>
-        </div>
-
-
-        <div class="flex_item_basic world" ng-if="world.world.current_hunt.value != null">
-            <h2>{a world.world.current_hunt.name a}</h2>
-            {a world.world.current_hunt.comment a}<hr/>
-
-            <b>Settlement:</b> <i>{a world.world.current_hunt.value.settlement.name a}</i> (LY: {a world.world.current_hunt.value.settlement.lantern_year a})<br/>
-            <b>Quarry:</b> {a world.world.current_hunt.value.settlement.current_quarry a}<br/>
-            <b>Departing Survivors:</b>
-            <table>
-                <tr
-                    ng-repeat="s in world.world.current_hunt.value.survivors"
-                >
-                    <td>{a s.name a}</td><td class="int_key">{a s.sex a}</td>
-                </tr>
-            </table>
-        </div>
+        {% include 'admin_panel/api_response_times.html' %}
 
         <!-- main 'latest' box -->
         <div class="flex_item_basic world">

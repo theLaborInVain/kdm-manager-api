@@ -214,22 +214,23 @@ def blog_index():
     """ the index for the blog. """
     return flask.render_template(
         '/blog/index.html',
-        version=utils.settings.get('api','version')
+        **API.config
     )
 
 @API.route("/blog/<action>/<request>")
 def blog_content(action, request):
-    """ We only support a couple of actions for this. """
+    """ This is typically going to be something like, e.g. /blog/release/<oid>,
+    so the general idea is that we make a tiny dict where that would become
+    {'release': <oid>} and go back as args to the 'release.html' template. """
 
-    output = {
-        'version': utils.settings.get('api','version'),
-    }
+    output = {}
     output[action] = request
 
     try:
         return flask.render_template(
             '/blog/%s.html' % action,
-            **output
+            **output,
+            **API.config
         )
     except jinja2.exceptions.TemplateNotFound:
         return utils.http_404

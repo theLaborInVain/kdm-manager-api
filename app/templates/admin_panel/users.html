@@ -145,9 +145,10 @@
                 [user not found!]
             </div>
 
-            <div class="user_info_block" ng-if="workWithUser !== undefined && workWithUser.user.login !== null">
-
-
+            <div 
+                class="user_info_block"
+                ng-if="workWithUser !== undefined && workWithUser.user.login !== null"
+            >
                 <h4>{a workWithUser.user.login a}</h4>
             
                 <div class="user_info_block user_info_block_header">
@@ -175,8 +176,9 @@
     				<b>Subscription set on:</b> {a workWithUser.user.subscriber.updated_on.$date |date:'yyyy-MM-dd' a} <br/>
 	    		</div>
 
-                <h3 class="kd title">Subscription</h3>
 		    	<div class="kd worksheet_block">
+
+                    <h3 class="kd title">Subscription</h3>
 
                     <div
                         class="clickable kd worksheet_row"
@@ -202,12 +204,24 @@
 
                 </div>
 
-                <button
-                    class="clickable capsule kd yellow"
-                    ng-click="closeWorkWithUser()"  
+                <div
+                    class="kd worksheet_block"
                 >
-                 Close
-                </button>
+                    <h3 class="kd title">Info</h3>
+                
+                    This is a placeholder! We're going to add the ability to
+                    view a user's settlements and event log stuff soon.
+
+                </div><!-- worksheet block -->
+
+                <center>
+                    <button
+                        class="clickable capsule kd yellow"
+                        ng-click="closeWorkWithUser()"  
+                    >
+                    Close
+                    </button>
+                </center>
 
             </div> <!-- modal inner-->
         </div> <!-- modal outer -->

@@ -527,7 +527,7 @@ def html_file_to_template(rel_path):
     """
     tmp_file = os.path.join(
         API.root_path,
-        API.settings.get('api','templates_dir'),
+        'templates',
         rel_path
     )
     return Template(open(tmp_file, "rb").read().decode())

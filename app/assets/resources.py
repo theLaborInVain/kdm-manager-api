@@ -1,3 +1,15 @@
+"""
+
+    All resources (including vermin, strange, etc.) are recorded here.
+
+    Expansions follow in their own, separate dictionary.
+
+    WARNING: this file was ported from v2 of kdm-manager and is a MESS.
+    It needs PEP8 clean-up at a minimum, and features a bunch of placeholder
+    and to-do and deprecated stuff. YHBW.
+
+"""
+
 core_resources = {
 
     # basic resources
@@ -1455,9 +1467,32 @@ expansions = {
         'name': 'Warbling Bloom',
         'keywords': ['flower','hide'],
         'rules': ['Perishable'],
-        'desc': '<b class="special-rule">Perishable.</b> <br/>You may plant this during the settlement phase to archive it and gain +1 population. The survivor is born with the <b class="disorder">Flower Addiction</b> disorder and a face just like the Warbling Bloom\'s.',
+        'desc': (
+            '<b class="special-rule">Perishable.</b> <br/>You may plant this '
+            'during the settlement phase to archive it and gain +1 population. '
+            'The survivor is born with the <b class="disorder">Flower '
+            "Addiction</b> disorder and a face just like the Warbling Bloom's."
+        ),
         'copies': 2,
-        'rules_text': 'You may plant this during the settlement phase to archive it and gain +1 population. The survivor is born with the <b class="disorder">Flower Addiction</b> disorder and a face just like the Warbling Bloom\'s.'
+        'rules_text': (
+            'You may plant this during the settlement phase to archive it and '
+            'gain +1 population. The survivor is born with the '
+            '<b class="disorder">Flower Addiction</b> disorder and a face just '
+            "like the Warbling Bloom's."
+        ),
+    },
+
+
+    # Echoes of Death 3
+    'fiddler_crab_spider' : {
+        'name': 'Fiddler Crab Spider',
+        'expansion': 'echoes_of_death_3',
+        'type': 'vermin',
+        'keywords': ['hide', 'vermin', 'consumable'],
+        'desc': (
+            '<b>Consume:</b> Archive this and gain the <b>Armored Fist</b> '
+            'fighting art.'
+        ),
     },
 
 }

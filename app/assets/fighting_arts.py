@@ -1,7 +1,12 @@
 fighting_art = {
     'ambidexterous': {
-        'desc': 'All melee weapons in your gear grid gain <b>paired</b> (add the speed of the second weapon when attacking with the first).<br/>Ambidexterous cannot be used if there are any shields, two-handed or heavy gear in your gear grid.',
-        'name': 'Ambidexterous'
+        'name': 'Ambidexterous',
+        'desc': (
+            'All melee weapons in your gear grid gain <b>paired</b> '
+            '(add the speed of the second weapon when attacking with the '
+            'first).<br/> Ambidexterous cannot be used if there are any '
+            'shields, two-handed or heavy gear in your gear grid.'
+        ),
     },
     'berserker': {
         'desc': 'Once per showdown, you may spend <font class="kdm_font">a</font> to suffer <b>bash</b> and the <b>frenzy</b> brain trauma.',
@@ -373,10 +378,25 @@ secret_fighting_art = {
         'name': "Beast of Caratosis",
     },
     "bone_whisperer": {
-        'desc': """\
-When another survivor dies on the showdown board, place a token where they died. If you pass over it, remove the token and eat their skull. <b>Heal</b> your survivor and roll 1d10 + your Hunt XP:<br/><table><tr class="zebra"><td class="roll">1-3</td><td class="result">You feel amazing! Gain +1 permanent movement, speed and evasion.</td></tr><tr><td class="roll">4-8</td><td class="result">Gain +1 permanent strength.</td></tr><tr class="zebra"><td class="roll">9-18</td><td class="result">You gain a fighting art and +5 survival.</td></tr><tr><td class="roll">19+</td><td class="result">You run away into exile. At the end of the showdown, you are gone forever.</td></tr></table>
-        """,
         'name': "Bone Whisperer",
+        'desc': (
+            'When another survivor dies on the showdown board, place a token '
+            'where they died. If you pass over it, remove the token and eat '
+            'their skull. <b>Heal</b> your survivor and roll 1d10 + your '
+            'Hunt XP:<br/>'
+            '<table>'
+                '<tr class="zebra">'
+                '<td class="roll">1-3</td><td class="result">You feel amazing! '
+                'Gain +1 permanent movement, speed and evasion.</td></tr>'
+                '<tr><td class="roll">4-8</td><td class="result">Gain +1 '
+                'permanent strength.</td></tr>'
+                '<tr class="zebra"><td class="roll">9-18</td><td '
+                'class="result">You gain a fighting art and +5 survival.</td>'
+                '</tr><tr><td class="roll">19+</td><td class="result">You run '
+                'away into exile. At the end of the showdown, you are gone '
+                'forever.</td></tr>'
+            '</table>'
+        ),
     },
     "lucernaes_lantern": {
         'desc': "You may <b>Concentrate</b>. If you do, perform <b>Lucernae's Lantern</b> at the start of your next act.<br/><b>Lucernae's Lantern:</b> You reach into the dream and excise a screeching skull, darker than darkness. It hurtles at the monster.<br/>Reveal hit locations equal to half your blue affinities (rounded down) one at a time. The mosnter suffers a critical wound at any locations with critical wound effects. (Ignore the effects of trap.) Then reshuffle the hit location deck. Gain +6 Hunt XP.",
@@ -699,4 +719,64 @@ strain_fighting_art = {
         ),
     },
 
+    # echoes of death 3 - Black Friday 2020
+    'armored_fist': {
+        'name': 'Armored Fist',
+        'expansion': 'echoes_of_death_3',
+        'strain_milestone': 'ashen_claw_strain',
+        'type': 'strain',
+        'desc': (
+            '<b>Requires Fist & Tooth Proficiency.</b><br/>'
+            'Your <b>Fist & Tooth</b> attacks gain strength equal to the '
+            'current armor value of your arms hit location.'
+        ),
+    },
+    'dark_manifestation': {
+        'name': 'Dark Manifestation',
+        'expansion': 'echoes_of_death_3',
+        'strain_milestone': 'carnage_worms',
+        'type': 'strain',
+        'desc': (
+            'Once per round, at the start of your act, you may spend the '
+            'requisite <font class="kd pink_text">insanity</font> to '
+            'perform one of the following abilities:'
+            '<table>'
+                '<tr><td class="roll kd pink_text">3</td><td class="result">'
+                'Gain +2 strength until the end of the round.</td></tr>'
+                '<tr><td class="roll kd pink_text">6</td><td class="result">'
+                'Perform <b>Block 1</b>.</td></tr>'
+                '<tr><td class="roll kd pink_text">13</td><td class="result">'
+                'If adjacent to the monster, roll 1d10. On a 6+, you touch the'
+                'monster, it suffers 1 wound.</td></tr>'
+            '</table>'
+        ),
+    },
+    'stockist': {
+        'name': 'Stockist',
+        'expansion': 'echoes_of_death_3',
+        'strain_milestone': 'material_feedback_strain',
+        'type': 'strain',
+        'desc': (
+            'You may <b>Concentrate</b>. If you do, perform <b>Stock Shot</b> '
+            'at the start of your next act. <br/>'
+            '<b>Stock Shot:</b> Activate a bow in your gear grid and attack '
+            "the monster. For this attack, your bow's <b>Range</b> and "
+            'strength are equal to the number of resources in the settlement '
+            'storage. Limit once per showdown phase.'
+        ),
+    },
+    'sword_oath': {
+        'name': 'Sword Oath',
+        'expansion': 'echoes_of_death_3',
+        'strain_milestone': 'sweat_stained_oath',
+        'type': 'strain',
+        'desc': (
+            'When you gain this, write the name of any sword gear on your '
+            'record sheet.  Note each time you wound with the named sword. '
+            '<br/> If you have wounded 18+ times with this sword, it gains '
+            '<b>Devastating 1</b> and <b>Sentient</b> while you have it '
+            'equipped. When you suffer the <b>flee</b> brain trauma, lose '
+            'this fighting art.'
+        ),
+    },
 }

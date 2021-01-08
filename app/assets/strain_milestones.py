@@ -45,7 +45,7 @@ echoes_of_death = {
 }
 
 
-echoes_of_death_two = {
+echoes_of_death_2 = {
     'hyper_cerebellum': {
         'name': "Hyper Cerebellum",
         'expansion': 'echoes_of_death_2',
@@ -75,6 +75,42 @@ echoes_of_death_two = {
         'milestone_condition': (
             'When a survivor in a settlement with Ocular Parasites gains the '
             '<b>Extra Sense</b> fighting art.'
+        ),
+    },
+}
+
+echoes_of_death_3 = {
+    'ashen_claw_strain': {
+        'name': 'Ashen Claw Strain',
+        'expansion': 'echoes_of_death_3',
+        'milestone_condition': (
+            'The survivors are defeated by the Gold Smoke Knight. '
+            '(Check for this at the end of your campaign.)'
+        ),
+    },
+    'carnage_worm': {
+        'name': 'Carnage Worm',
+        'expansion': 'echoes_of_death_3',
+        'milestone_condition': (
+            'A <b>Crazed</b> survivor witnesses a settlement with '
+            '<b>Cannibalize</b> endeavor 8 times at <b>Sacrifice</b> in a '
+            'single langern year.'
+        ),
+    },
+    'material_feedback_strain': {
+        'name': 'Material Feedback Strain',
+        'expansion': 'echoes_of_death_3',
+        'milestone_condition': (
+            'A survivor archives 4 resources from their <b>Hoarder</b> '
+            'disorder.'
+        ),
+    },
+    'sweat_stained_oath': {
+        'name': 'Sweat Stained Oath',
+        'expansion': 'echoes_of_death_3',
+        'milestone_condition': (
+            'A survivor gains a sword during the hunt or showdown and '
+            'uses it to deliver the killing blow that lantern year.'
         ),
     },
 }

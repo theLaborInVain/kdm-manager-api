@@ -414,6 +414,32 @@ product_lines = {
         ],
     },
 
+    "echoes_of_death_3": {
+        "released": datetime(2020, 11, 27), # Black Friday 2020
+        "name": "Echoes of Death 3",
+        "ui": {"pretty_category": "Enhancement"},
+        "flair": {
+            "color": "333",
+            "bgcolor": "fafafa",
+        },
+        'strain_milestones': [
+            'ashen_claw_strain',
+            'carnage_worms',
+            'material_feedback_strain',
+            'sweat_stained_oath',
+        ],
+        'help': [
+            {
+                'type': 'gear',
+                'tip': (
+                    'The <b>Twilight Sword</b> cannot be named by survivors '
+                    'with the <b>Sword Oath</b> Fighting Art because it does '
+                    'not have the <i>sword</i> keyword.'
+                ),
+            },
+        ],
+    },
+
 
     # white box
     "tenth_anniversary_white_speaker": {
