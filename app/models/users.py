@@ -487,7 +487,7 @@ class User(models.UserAsset):
         """
 
         if API.config['ENVIRONMENT'].get('is_production', False):
-            if not flask.request.user.User.is_admin():
+            if not flask.request.User.is_admin():
                 err = 'Only API admins may export users!'
                 raise utils.InvalidUsage(err, 401)
         else:
