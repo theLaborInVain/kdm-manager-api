@@ -68,10 +68,15 @@ button.kd {
 /*  kd CSS variables    */
 .kd {
     --box-shadow-default: 0 0 0.5em 0 #999;
+    --box-shadow-inset: inset 0.1em 0.1em 0.2em 0 #999;
     --border-checkbox: 0.1rem solid;
     --border-worksheet: 0.5rem solid;
+    --color-kd-affinity-blue: #1C99CD;
+    --color-kd-affinity-green: #4CB848;
+    --color-kd-affinity-red: #CD2027;
     --color-kd-black: #111;
     --color-kd-black-gradient: radial-gradient(circle, #333, #000);
+    --color-kd-bleeding-token: radial-gradient(at right 50%, #f00, #992426);
     --color-kd-blue: #00A0E9;
     --color-kd-blue-gradient: radial-gradient(#60DAF5, #40AFD3);
     --color-kd-death-grey: #212121;
@@ -194,12 +199,39 @@ button.capsule {
     width: 50%;
 }
 
+input.kd.capsule,
+    button.kd.capsule {
+    margin: 1rem; 
+}
+input.kd.capsule {
+    background: #fff;
+    background-color: #fff; 
+    border: 0;
+    box-shadow: var(--box-shadow-inset);
+    color: #000;  
+}
+
 .kd.capsule.full_width,
     .capsule.full_width {
     width: 100%;
     width: -webkit-fill-available;
 }
 
+.kd.affinity_red {
+    background: var(--color-kd-affinity-red);
+    border-color: var(--color-kd-affinity-red);
+    color: #fff;
+}
+.kd.affinity_blue {
+    background: var(--color-kd-affinity-blue);
+    border-color: var(--color-kd-affinity-blue);
+    color: #fff;
+}
+.kd.affinity_green {
+    background: var(--color-kd-affinity-green);
+    border-color: var(--color-kd-affinity-green);
+    color: #fff;
+}
 .kd.black {
     background: var(--color-kd-black-gradient);
     background-color: #000;

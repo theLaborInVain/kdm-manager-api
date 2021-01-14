@@ -254,10 +254,33 @@ order. If you get them back out of order, open a ticket.</p>
     "survivor_management": {
         "name": "Survivor management",
         "desc": (
-            "Much like settlement management routes, survivor management "
+            "<p>Much like settlement management routes, survivor management "
             "routes require the Authorization header and follow the "
             "survivor / operation / OID convention, e.g. "
-            "<code>/survivor/add_note/5f2c78ae84d8860d89594fa8</code>"
+            "<code>/survivor/add_note/5f2c78ae84d8860d89594fa8</code></p>"
+            "<p>For most of the endpoints here, in any JSON you <b>POST</b>, "
+            "you can include the the <code>serialize_on_response</code> key "
+            "with a Boolean 'true' value:</p>"
+            """<pre><code>{
+    serialize_on_response: true,
+    whatever: other_stuff,
+    ...
+}</code></pre>"""
+            "<p>This will cause the route to return a serialized "
+            "representation of the survivor that is similar to what you would "
+            "get from the main <code>/survivor/get/&lt;survivor_id&gt; </code> "
+            "route, potentially allowing you to save some time and/or make "
+            "fewer calls to the API.</p>"
+            "<p>These routes are private and require authentication.</p>"
+        ),
+    },
+    "survivor_gear_management":{
+        "name": "Survivor gear",
+        "desc": (
+            "The API supports a basic set of methods for tracking "
+            "survivor gear. Typically this involves using gear handles (see "
+            "above) and adding them to lists or dictionaries on the survivor "
+            "record."
         ),
     },
     "survivor_notes_management":{

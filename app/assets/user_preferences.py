@@ -53,13 +53,10 @@ kdm_manager = {
     # Interface
     "night_mode": {
         "type": "Interface",
-#        "desc": "<b>&beta;</b> UI Color Theme:",
         "desc": "UI Color Theme:",
         "affirmative": "Dead Guardian (high contrast)",
         "negative": "Glowing Center (default)",
         "patron_level": 2,
-#        "patron_level": 666,
-#        'beta': True,
     },
     "show_remove_button": {
         "type": "Interface",

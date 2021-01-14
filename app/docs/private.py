@@ -1168,20 +1168,137 @@ than a 200), something went wrong. </p>
 }
 
 survivor_management = {
+    "survivor_get": {
+        "name": "/survivor/get/&lt;survivor_id&gt;",
+        "methods": ["GET", "OPTIONS"],
+        "desc": (
+            '<p>Retrieves a JSON representation of the survivor with OID '
+            '<i>&lt;survivor_id&gt;</i>.</p>'
+            '<p>As with other <code>GET</code> type routes, this one returns '
+            "a lot of info, but what you typically want is in the "
+            '<code>sheet</code> element:</p>'
+            """<pre><code>{
+  "meta": {...},
+  "sheet": {
+    "_id": {
+      "$oid": "5febfb74d174525f6eca199b"
+    },
+    "meta": {...},
+    "email": "toconnell@thelaborinvain.com",
+    "born_in_ly": 0,
+    "created_on": {
+      "$date": 1609279252167
+    },
+    "created_by": {
+      "$oid": "5fad50306515930c165b006f"
+    },
+    "settlement": {
+      "$oid": "5febfb73d174525f6eca1998"
+    },
+    ...
+}</code></pre>"""
+	),
+    },
+    "survivor_get_lineage": {
+        "name": "/survivor/get_lineage/&lt;survivor_id&gt;",
+        "methods": ["GET", "OPTIONS"],
+        "desc": (
+            '<p>This endpoint returns non-game-related data about a '
+            'survivor, including their complete event log, i.e. the log '
+            'of changes and updates to the survivor.</p>'
+            '<p>The JSON that comes back from this endpoint <i>does not</i> '
+            "include the survivor's OID, so be careful with your local scope "
+            'when iterating through lists of survivors and calling this '
+            'endpoint.</p>'
+        ),
+    },
+    "survivor_get_survival_actions": {
+        "name": "/survivor/get_survival_actions/&lt;survivor_id&gt;",
+        "methods": ["GET", "OPTIONS"],
+        "desc": (
+            '<p>This endpoint is deprecated.</p>'
+            '<p>Please use the <code>survival_actions</code> element returned '
+            'by the <code>/survivor/get/&lt;survivor_id&gt;</code> instead.</p>'
+        ),
+    },
+
+    # survivor gear management
+    "add_cursed_item": {
+        "name": "/survivor/add_cursed_item/&lt;survivor_id&gt;",
+        "subsection": "survivor_gear_management",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            '<p><b>POST</b> some JSON that includes a gear handle to add it to '
+            "the survivor's list of cursed items:</p>"
+            "<code>{handle: 'thunder_maul'}</code>"
+        ),
+    },
+    "rm_cursed_item": {
+        "name": "/survivor/rm_cursed_item/&lt;survivor_id&gt;",
+        "subsection": "survivor_gear_management",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p>The reverse of the previous method. <b>POST</b> a gear handle "
+            "to remove it:</p>"
+            "<code>{handle: 'blue_lantern'}</code>"
+        )
+    },
+    "set_gear_grid": {
+        "name": "/survivor/set_gear_grid/&lt;survivor_id&gt;",
+        "subsection": "survivor_gear_management",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            '<p><b>POST</b> an array named <code>gear_grid</code> that '
+            'includes between one (1) and nine (9) key/value pairs '
+            'where the key is a gear grid location and the value is a '
+            'gear handle:</p>'
+            """<pre><code>{'gear_grid': {
+    'top_left': 'bone_blade',    'top_middle': 'bone_blade',    'top_right': 'bone_blade',
+    'middle_left': 'bone_blade', 'middle_middle': 'bone_blade', 'middle_right': 'bone_blade',
+    'bottom_left': 'bone_blade', 'bottom_middle': 'bone_blade', 'bottom_right': 'bone_blade',
+    }
+}</code></pre>"""
+            '<p>Yes, I am aware that the central location is named '
+            '"middle_middle": you laugh now, but you will thank me '
+            'when you are able to programmatically iterate the table '
+            'in one or two lines of code.</p>'
+        )
+    },
+
+    # notes
     "add_note": {
         "name": "/survivor/add_note/&lt;survivor_id&gt;",
         "subsection": "survivor_notes_management",
         "methods": ["POST", "OPTIONS"],
         "desc": (
-            "<b>POST</b> an array named <i>note</i> to this route that "
+            "<b>POST</b> an array named <code>note</code> to this route that "
             "includes the following key/value pairs:"
             "<table><tr>"
             "<th>key</th><th>req/optional</th><th>type</th><th>note</th>"
             "</tr>"
             "<tr><td>note</td><td>R</td><td>str</td>"
             "<td>HTML is OK.</td></tr>"
-            "<tr><td>pinned</td><td>O</td><td>bool</td></tr>"
+            "<tr><td>pinned</td><td>O</td><td>bool</td><td></td></tr>"
             "</table>"
+        )
+    },
+    "update_note": {
+        "name": "/survivor/update_note/&lt;survivor_id&gt;",
+        "subsection": "survivor_notes_management",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<b>POST</b> a note (in JSON format) back to this endpoint "
+            "to update it. Note JSON that does not include the <i>_id</i>, "
+            "attribute will be rejected!"
+        )
+    },
+    "rm_note": {
+        "name": "/survivor/rm_note/&lt;survivor_id&gt;",
+        "subsection": "survivor_notes_management",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<b>POST</b> a note's OID to this endpoint to remove it: "
+            "<code>{_id: 5fbe989f6515932455f4c5da}</code>."
         )
     },
 }

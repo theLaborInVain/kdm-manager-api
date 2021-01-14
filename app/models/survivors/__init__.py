@@ -734,13 +734,6 @@ class Survivor(models.UserAsset):
     #   update/set methods
     #
 
-
-    def add_custom_ai(self, ai_name=None, ai_desc=None, ai_type=None):
-        """ Adds a custom A&I to the survivor. """
-
-        raise Exception("NOT IMPLEMENTED!!")
-
-
     def add_cursed_item(self, handle=None):
         """ Adds a cursed item to a survivor. Does a bit of biz logic, based on
         the asset dict for the item.
@@ -1172,6 +1165,43 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    def set_gear_grid(self):
+        """ Updates the survivor's 'gear_grid' attribute, which is a dictionary
+        of grid locations:
+
+        {
+            'top_left': 'bone_blade',
+            'top_middle': 'rawhide_headband',
+            'middle_left': 'brain_mint',
+            'center': 'bug_trap',
+            'bottom_right': 'lantern_gauntlets'
+        }
+
+        We don't do updates with this method, i.e. whatever we pull from the
+        params sets the whole grid.
+        """
+
+        self.check_request_params(['gear_grid'])
+
+        # check the keys for invalid keys
+        valid_keys = [
+            'top_left',     'top_middle',       'top_right',
+            'middle_left',  'middle_middle',    'middle_right',
+            'bottom_left',  'bottom_middle',    'bottom_right'
+        ]
+
+        for location_key in self.params['gear_grid']:
+            if location_key not in valid_keys:
+                err = "The Gear Grid location keys '%s' is not supported!"
+                raise utils.InvalidUsage(err % location_key)
+
+        # if we're still here, set it and save it
+        self.survivor['gear_grid'] = self.params['gear_grid']
+
+        self.log_event()
+        self.save()
+
+
     def set_many_game_assets(self):
         """ Much like the set_many_attributes() route/method, this one WILL ONLY
         WORK WITH A REQUEST object present.
@@ -1532,26 +1562,11 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-
     def update_bleeding_tokens(self, modifier=None):
-        """ Adds 'modifier' to the survivor["bleeding_tokens"]. Cannot go below
-        zero, e.g. by adding a negative number, or above
-        survivor["max_bleeding_tokens"]. Fails gracefully in either case. """
+        """ DEPRECATED 2021-01-13. """
 
-        if modifier is None:
-            self.check_request_params(['modifier'])
-            modifier = int(self.params["modifier"])
-
-        current_value = self.survivor["bleeding_tokens"]
-        self.survivor['bleeding_tokens'] = current_value + modifier
-
-        if self.survivor["bleeding_tokens"] > 0:
-            self.survivor["bleeding_tokens"] = 0
-        elif self.survivor["bleeding_tokens"] > self.survivor["max_bleeding_tokens"]:
-            self.survivor["bleeding_tokens"] = self.survivor["max_bleding_tokens"]
-
-        self.log_event('%s set %s bleeding tokens to %s.' % (request.User.login, self.survivor.pretty_name(), self.survivor["bleeding_tokens"]))
-        self.save()
+        msg = 'This endpoint is deprecated. Use set_bleeding_tokens() instead'
+        self.logger.warn(msg)
 
 
     def update_returning_survivor_years(self, add_year=None, save=True):
@@ -1575,20 +1590,19 @@ class Survivor(models.UserAsset):
 
     def update_survival(self, modifier=None, save=True):
         """ Adds 'modifier' to survivor["survival"]. Respects settlement rules
-        about whether to enforce the Survival Limit. Will not go below zero. """
+        about whether to enforce the Survival Limit. Will not go below zero.
+
+        Important! This method is only used internally by the API and we
+        intentionally DO NOT expose it to external users.
+        """
 
         if modifier is None:
-            self.check_request_params(["modifier"])
-            modifier = int(self.params["modifier"])
+            raise utils.InvalidUsage("The 'modifier' kwarg is required!")
 
-        return self.set_survival(value = self.survivor['survival'] + modifier, save=save)
-
-#        self.survivor["survival"] = new_survival
-#        self.log_event(action="add", key="Survival", value=modifier)
-
-#        self.apply_survival_limit()
-#        if save:
-#            self.save()
+        return self.set_survival(
+            value = self.survivor['survival'] + modifier,
+            save=save
+        )
 
 
 
@@ -2072,12 +2086,19 @@ class Survivor(models.UserAsset):
 
         self.survivor['bleeding_tokens'] = value
 
+        # enforce min/max
         if self.survivor["bleeding_tokens"] < 0:
             self.survivor["bleeding_tokens"] = 0
         elif self.survivor["bleeding_tokens"] > self.survivor["max_bleeding_tokens"]:
-            self.survivor["bleeding_tokens"] = self.survivor["max_bleding_tokens"]
+            self.survivor["bleeding_tokens"] = self.survivor["max_bleeding_tokens"]
 
-        self.log_event('%s set %s bleeding tokens to %s.' % (request.User.login, self.pretty_name(), self.survivor["bleeding_tokens"]))
+        self.log_event(
+            '%s set %s bleeding tokens to %s.' % (
+                request.User.login,
+                self.pretty_name(),
+                self.survivor["bleeding_tokens"]
+            )
+        )
 
         if save:
             self.save()
@@ -3465,18 +3486,11 @@ class Survivor(models.UserAsset):
             return self.return_json()
         elif action == "get_lineage":
             return self.get_lineage()
-        elif action == "get_survival_actions":
-            sa = self.get_survival_actions("JSON")
-            return json.dumps(sa, default=json_util.default)
 
 
         # controllers with biz logic - i.e. fancy-pants methods
         elif action == "controls_of_death":
             self.controls_of_death()
-        elif action == "update_bleeding_tokens":
-            self.update_bleeding_tokens()
-        elif action == "set_bleeding_tokens":
-            self.set_bleeding_tokens()
 
         # add/rm assets
         elif action == "add_favorite":
@@ -3499,33 +3513,31 @@ class Survivor(models.UserAsset):
         elif action == "toggle_fighting_arts_level":
             self.toggle_fighting_arts_level()
 
-        # Cursed item methods
-        elif action == "add_cursed_item":
-            self.add_cursed_item()
-        elif action == "rm_cursed_item":
-            self.rm_cursed_item()
-
         # savior stuff
         elif action == "set_savior_status":
             self.set_savior_status()
 
         # misc sheet operations
+        elif action == "set_constellation":
+            self.set_constellation()
         elif action == "set_name":
             self.set_name()
         elif action == "set_email":
             return self.set_email()     # because we're doing server-side validation
         elif action == "set_retired":
             self.set_retired()
-        elif action == "set_sex":
-            self.set_sex()
+        elif action == 'set_parent':
+            self.set_parent()
         elif action == "set_partner":
             self.set_partner()
-        elif action == "set_constellation":
-            self.set_constellation()
-        elif action == "set_weapon_proficiency_type":
-            self.set_weapon_proficiency_type()
+        elif action == "set_sex":
+            self.set_sex()
         elif action == 'set_special_attribute':
             self.set_special_attribute()
+        elif action == 'set_sword_oath':
+            self.set_sword_oath()
+        elif action == "set_weapon_proficiency_type":
+            self.set_weapon_proficiency_type()
 
         # sheet attribute operations
         elif action == "set_attribute":
@@ -3537,9 +3549,6 @@ class Survivor(models.UserAsset):
         elif action == "update_attribute":
             self.update_attribute()
 
-        # stuff that should honestly just be handled dynamically
-        elif action == 'set_sword_oath':
-            self.set_sword_oath()
 
         # notes
         elif action == 'add_note':
@@ -3568,11 +3577,8 @@ class Survivor(models.UserAsset):
             self.toggle_boolean()
 
         # survival
-        elif action == "update_survival":
-            self.update_survival()
         elif action == "set_survival":
             self.set_survival()
-
 
         # manager-only / non-game methods
         elif action == "set_avatar":
@@ -3581,29 +3587,41 @@ class Survivor(models.UserAsset):
             self.set_color_scheme()
         elif action == "toggle_sotf_reroll":
             self.toggle_sotf_reroll()
-        elif action == 'set_parent':
-            self.set_parent()
 
         # delete-o! delete-o!
         elif action == 'remove':
             self.remove()
 
+        # deprecated end points - kill these in March 2021
+        elif action == "update_survival":
+            return utils.http_299
+#            self.update_survival()
+        elif action == "update_bleeding_tokens":
+            return utils.http_299
+        elif action == "get_survival_actions":
+            return utils.http_299
+#            sa = self.get_survival_actions("JSON")
+#            return json.dumps(sa, default=json_util.default)
 
         else:
-            # unknown/unsupported action response
-            self.logger.warn("Unsupported survivor action '%s' received!" % action)
-            return utils.http_400
+            # first, if we have a method matching 'action', try to execute it
+            if getattr(self, action, None) is not None:
+                getattr(self,action)()
+            # next, if we don't have a method, return an error
+            else:
+                err = "Unsupported survivor action '%s' received!" % action
+                self.logger.error(err)
+                return utils.http_400
 
 
-
-        # finish successfully
+        # finish successfully if we executed a method but haven't returned
         if self.params.get('serialize_on_response', False):
-            return Response(response=self.serialize(), status=200, mimetype="application/json")
+            return Response(
+                response=self.serialize(),
+                status=200,
+                mimetype="application/json"
+            )
         else:
             return utils.http_200
-
-
-
-
 
 # ~fin

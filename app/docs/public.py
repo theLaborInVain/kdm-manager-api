@@ -9,34 +9,18 @@ dashboard = {
     "stat": {
 	"name": "/stat",
         "methods": ["GET"],
-	"desc": """\
-<p>This is an ultra lightweight version of what you get from <code>/settings</code>.</p>
-<p>This returns fewer details, but comes back in about half as much time
-(about 50ms versus 100ms).</p>
-	""",
-    },
-    "settings_json": {
-	"name": "/settings.json",
-	"desc": """\
-<p><b>DEPRECATED: 2019-01-13.</b> As of April 2019, this route is gone!
-Consider using <code>/stat</code> instead</p>
-	""",
-    },
-    "settings": {
-	"name": "/settings",
-        "methods": ["GET"],
-	"desc": """\
-<p><b>DEPRECATED: 2019-01-13.</b> This route is going away! Consider using\
-<code>/stat</code> instead</p> <p>Represents the API's <code>settings.cfg</code>
-as JSON.</p>
-	""",
+	"desc": (
+            '<p>Returns basic information about the API.<p>'
+            "<p>This can be used as a sort of 'ping' to test it if it's alive "
+            "or as quick way to get the current version, etc.</p>"
+	),
     },
     "world": {
 	"name": "/world",
         "methods": ["GET"],
-	"desc": """\
-<p> Retrieve a JSON representation of aggregate/world stats.</p>
-	""",
+	"desc": (
+            '<p> Retrieve a JSON representation of aggregate/world stats.</p>'
+	),
     },
 }
 
@@ -49,7 +33,7 @@ game_asset_lookups = {
     'game_asset': {
         'name': '/game_asset',
         "methods": ["GET"],
-        'desc': 'Returns a list of available game asset modules.',
+        'desc': '<p>Returns a list of available game asset modules.</p>',
     },
     'game_asset_abilities_and_impairments': {
         'name': '/game_asset/abilities_and_impairments',
