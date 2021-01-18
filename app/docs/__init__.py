@@ -7,6 +7,10 @@
 
 from collections import OrderedDict
 
+from bson import json_util
+
+import json
+
 import app
 from app.docs import public, private, sections
 from app import utils
@@ -57,8 +61,10 @@ class DocumentationObject:
                     self.docs[dict_key] = doc
 
 
-    def dump_sections(self):
+    def dump_sections(self, return_type=None):
         """ Dumps self.sections. """
+        if return_type == 'JSON':
+            return json.dumps(self.sections, default=json_util.default)
         return self.sections
 
 
@@ -123,4 +129,4 @@ class DocumentationObject:
                             docs.append(doc)
                     output[item_type][section][subsection] = docs
 
-        return output
+        return json.dumps(output, default=json_util.default)

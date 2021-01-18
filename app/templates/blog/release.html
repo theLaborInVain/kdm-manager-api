@@ -1,10 +1,6 @@
-{% extends 'blog/_main.html' %}
-
-{% block content %}
-
 <div
     class="dev_blog_content_block"
-    ng-init="setReleaseObject('{{release}}')"
+    ng-init="setReleaseObject('{{request.asset}}')"
     ng-if="apiData.releases.all"
 >
 
@@ -146,5 +142,3 @@
 >
     Return to index
 </div>
-
-{% endblock %}

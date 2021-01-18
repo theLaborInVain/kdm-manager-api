@@ -1617,8 +1617,9 @@ core = {
 
 tenth_anniversary_survivors = {
     'teleric_eye_tac': {
-        'type': 'pattern',
         'name': 'Teleric Eye Tac',
+        'type': 'pattern',
+        'expansion': 'tenth_anniversary_survivors',
         'keywords': ['item', 'jewelry', 'other'],
         'affinities': {'right': 'blue'},
         'desc': (
@@ -1654,6 +1655,7 @@ tenth_anniversary_survivors = {
     },
     'tempered_spear': {
         'type': 'pattern',
+        'expansion': 'tenth_anniversary_survivors',
         'name': 'Tempered Spear',
         'speed': 2,
         'accuracy': 5,
@@ -1706,6 +1708,7 @@ tenth_anniversary_survivors = {
     },
     'plated_shield': {
         'type': 'pattern',
+        'expansion': 'tenth_anniversary_survivors',
         'name': 'Plated Shield',
         'keywords': ['weapon', 'melee', 'shield', 'finesse', 'metal'],
         'speed': 1,
@@ -1741,6 +1744,7 @@ tenth_anniversary_survivors = {
     },
     'tempered_axe': {
         'type': 'pattern',
+        'expansion': 'tenth_anniversary_survivors',
         'name': 'Tempered Axe',
         'keywords': ['weapon', 'melee', 'axe', 'finesse', 'metal'],
         'affinities': {'bottom': 'red'},
@@ -1783,6 +1787,7 @@ tenth_anniversary_survivors = {
     },
     'tempered_dagger': {
         'type': 'pattern',
+        'expansion': 'tenth_anniversary_survivors',
         'name': 'Tempered Dagger',
         'keywords': ['weapon', 'melee', 'dagger', 'finesse', 'metal'],
         'affinities': {'bottom': 'blue'},
@@ -1826,6 +1831,7 @@ tenth_anniversary_survivors = {
     },
     'vault_key_earrings': {
         'type': 'pattern',
+        'expansion': 'tenth_anniversary_survivors',
         'name': 'Vault Key Earrings',
         'keywords': ['item', 'jewelry', 'fragile'],
         'affinities': {'right': 'green'},
@@ -3086,6 +3092,7 @@ white_box = {
     'black_ghost_dagger': {
         'name': 'Black Ghost Dagger',
         'expansion': 'halloween_white_speaker_2019',
+        'type': 'pattern',
         'keywords': ['weapon', 'melee', 'dagger', 'metal', 'other'],
         'affinities': {'top': 'blue', 'bottom': 'red'},
         'footnote': {
@@ -3139,6 +3146,7 @@ white_box = {
     'vixen_tail': {
         'expansion': 'halloween_ringtail_vixen_2020',
         'name': 'Vixen Tail',
+        'type': 'pattern',
         'keywords': ['item','fur','flammable','other'],
         'affinities': {'bottom': 'green'},
         'desc': (
@@ -3170,6 +3178,7 @@ white_box = {
     'brazen_bat': {
         'expansion': 'halloween_ringtail_vixen_2020',
         'name': 'Brazen Bat',
+        'type': 'pattern',
         'keywords': ['weapon','melee','club'],
         'speed': 2,
         'accuracy': 5,
@@ -3198,6 +3207,45 @@ white_box = {
                     (
                         'Crush Dried Acanthus and mix with urine to create a '
                         'sealant.'
+                    ),
+                ],
+            },
+        ],
+    },
+
+    'grim_muffler': {
+        'expansion': 'winter_solstice_lucy',
+        'name': 'Grim Muffler',
+        'type': 'pattern',
+        'keywords': ['item','cloth','fur','heavy'],
+        'armor': 1,
+        'location': 'chest',
+        'affinities': {'right': 'blue'},
+        'rules': ['Accessory'],
+        'desc': (
+            'One of your gear loses the noisy keyword, as you hide it in this '
+            'cloak.'
+        ),
+        'affinity_bonus': {
+            'requires': {'complete': {'blue': 1}},
+            'desc': 'Ignore survival loss from cold hunt events.'
+        },
+        'recipes': [
+            {
+                'gear_handles': {'cloth': 1,},
+                'resource_types': {'hide': 1, 'organ': 1},
+                'crafting_process': [
+                    (
+                        'Harvest healthy tendons from a fresh <b>Organ</b> '
+                        'obtained <b>last showdown</b>.'
+                    ),
+                    (
+                        'Pluck hairs from <b>15 survivors</b>. One fidgets '
+                        'too much, record <b>Bald</b> on their sheet.'
+                    ),
+                    (
+                        "Plug a sleeping survivor's ears with hair and "
+                        'scream to test sound suppression. '
                     ),
                 ],
             },

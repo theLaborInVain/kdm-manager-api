@@ -17,6 +17,12 @@ td.int_key {width: 10%; word-break: inherit;}
 .subscribers_breakdown_table td { }
 
 
+/*  UI/UX, loaders, reusable elements, etc. */
+
+.tiny_loader {
+    width: 1rem; 
+}
+
 /* basic containers - mobile */
 
 .container {
@@ -343,7 +349,9 @@ button.toggle_settlement_event_log {float: right; }
     .modal_inner {
         margin: 1rem auto;
     }
-    .modal_inner.edit_release_worksheet_container {
+    .modal_inner.edit_release_worksheet_container,
+        .modal_inner.api_documentation_editor_container
+        {
         max-width: 80rem; 
     }
     .modal_inner.work_with_user_container,

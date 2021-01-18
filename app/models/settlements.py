@@ -3904,11 +3904,6 @@ class Settlement(models.UserAsset):
                 self.settlement['innovations'].remove(i['handle'])
                 self.logger.warn("%s Removed principle '%s' from innovations list!" % (self, i['name']))
 
-        # 2017-10-05 - legacy data bug
-        if self.settlement.get("expansions", None) is None:
-            self.settlement["expansions"] = []
-            self.perform_save = True
-
         # 2017-10-05 - missing settlement attrib
         if self.settlement.get("expansions", None) is None:
             self.settlement["expansions"] = []

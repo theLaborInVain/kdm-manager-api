@@ -1,11 +1,7 @@
-{% extends 'blog/_main.html' %}
-
-{% block content %}
-
 <div
     class="dev_blog_content_block"
 >
-    <h1> - {{archive}} - </h1>
+    <h1> - {{request.asset}} - </h1>
     <h2> Release Archive </h2>
 
     <div
@@ -20,7 +16,7 @@
         ng-if="apiData.releases.all.length > 0"
 		ng-init="
             releaseType = 'all';
-            scratch.platformFilter = '{{archive}}';
+            scratch.platformFilter = '{{request.asset}}';
         "
     >
         {% include 'blog/release_button_repeater.html' %}
@@ -28,5 +24,3 @@
 
 
 </div>
-
-{% endblock %}

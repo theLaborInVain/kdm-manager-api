@@ -140,7 +140,7 @@ gear = {
         "selectable": False,
     },
     "other": {
-        "name": "other",
+        "name": "Other",
         "font_color": "FFF",
         "color": "FF00FF",
         "selectable": False,

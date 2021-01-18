@@ -1145,7 +1145,12 @@ OID.</p>
 </table>
 <p>For example, to add a new note to a settlement, your <b>POST</b>
 body will, at a minimum, look something like this:</p>
-<code>{author_id: "5a26eb1a4af5ca786d1ed548", note: "Nobody expects the Spanish Inquisition!"}</code>
+<code>
+{
+    author_id: "5a26eb1a4af5ca786d1ed548",
+    note: "Nobody expects the Spanish Inquisition!"
+}
+</code>
 <p><b>Important!</b> This route returns the OID of the
 newly-created note:</p>
 <code>{"note_oid": {"$oid": "5a2812d94af5ca03ef7db6c6"}}</code>

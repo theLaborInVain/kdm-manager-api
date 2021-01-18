@@ -385,6 +385,14 @@ class AdministrationObject:
                                 "Apply a patch (from the patches.py module)."
                             ),
                             )
+        parser.add_argument('--patch_args', dest='patch_args',
+                            metavar="patch_args", default=None,
+                            help=(
+                                "[SYSADMIN] "
+                                "Comma-delimited positional arguments to pass "
+                                "to the patch method being called."
+                            ),
+                            )
         parser.add_argument("--purge_settlements", dest="purge_settlements",
                             help=(
                                 "[SYSADMIN] "
@@ -414,7 +422,11 @@ class AdministrationObject:
             except AttributeError:
                 print(" '%s' is not a known patch! Exiting...\n" % p_name)
                 sys.exit(1)
-            patch_method()
+            if self.options.patch_args:
+                args = self.options.patch_args.split(',')
+                patch_method(*args)
+            else:
+                patch_method()
             print(' Patch applied successfully!\n')
 
 

@@ -1,39 +1,16 @@
-<!DOCTYPE html>
-<html
-    lang="en"
-    ng-app="apiUtils"
-    ng-controller="globalController"
-    ng-init='api_key="{{api_key}}"'
->
+{% extends '_base.html' %}
 
- <title>KDM-Manager: Development Blog</title>
-
- <head>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="content-type" content="text/html; charset=UTF8" />
-
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-animate.js"></script>
-
-    <script src="/static/js/_global.js?version={{VERSION}}"></script>
-    <script src="/static/js/devBlog.js?version={{VERSION}}"></script>
-
-    <link rel="stylesheet" href="/static/css/fonts.css?version={{VERSION}}" />
-    <link rel="stylesheet" href="/static/css/apiUtils.css?version={{VERSION}}" />
+{% block head %}
     <link rel="stylesheet" href="/static/css/devBlog.css?version={{VERSION}}" />
-    <link rel="stylesheet" href="/static/css/color.css?version={{VERSION}}" />
+{% endblock %}
 
-    <link rel="stylesheet" href="/kingdomDeath.css?version={{VERSION}}" />
-    
-    <link href="https://fonts.googleapis.com/css?family=Ruda&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
- </head>
 
- <body
+{% block body %}
+
+<body
     ng-controller="devBlogController"
     ng-init="setReleases();"
- >
+>
 
     {% include 'blog/nav_bar.html' %}
 
@@ -42,7 +19,21 @@
         ng-if="apiData.releases"
         class="dev_blog_content_container"
     >
-        {% block content %}{% endblock %}
+
+        {% if request.endpoint == "blog_index" %}
+            
+            {% include 'blog/index.html' %}
+
+        {% elif request.endpoint == "blog_content" %}
+
+                {% include 'blog/' + request.view + '.html' %}
+
+        {% else %}
+
+            {{ request }}
+
+        {% endif %}
+
     </div>
 
     <!-- if we DO NOT get apiData in the main $scope, show a downtime msg -->
@@ -97,3 +88,5 @@
  </body>
 
 </html>
+
+{% endblock %}

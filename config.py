@@ -11,6 +11,8 @@ import socket
 
 class Config(object):
     DEBUG = True
+    DEV_SSL_CERT = 'deploy/dev_cert.pem'
+    DEV_SSL_KEY = 'deploy/dev_key.pem'
     ENVIRONMENT = {'is_production': False}
     TESTING = True
     MDB = "kdm-manager"
@@ -19,7 +21,7 @@ class Config(object):
         'app_fqdn': 'advanced-kdm-manager.c.kdm-manager.internal',
         'url': 'https://api.kdm-manager.com'
     }
-    VERSION = "1.44.307"
+    VERSION = "1.49.330"
 
     if socket.getfqdn() == PRODUCTION['app_fqdn']:
         ENVIRONMENT['is_production'] = True

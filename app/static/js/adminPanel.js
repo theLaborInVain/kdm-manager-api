@@ -206,15 +206,18 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
 //
 // RELEASES!
 //
-myApp.controller('releasesController', function($scope, $http) {
+myApp.controller('releasesController', function($scope, $rootScope, $http) {
 
-    $scope.releasesObject = {
-        showLoader: true,
-    };
+    // this controller is used by elements that do not share scope in the
+    // actual HTML/DOM, so use $rootScope for any elements shared between
+    // the controllers!
 
     // init method
     $scope.init = function() {
         console.info('Initializing releasesController...');
+        $rootScope.releasesObject = {
+            showLoader: true,
+        };
         $scope.setReleases();
     };
 
@@ -224,7 +227,7 @@ myApp.controller('releasesController', function($scope, $http) {
     $scope.getEditingRelease = function() {
         // a laziness method to get the release that we're editing on back
         // in the webapp
-        return $scope.releasesObject.editingRelease;
+        return $rootScope.releasesObject.editingRelease;
     };
 
     $scope.toggleSection = function(sectionName) {
@@ -316,7 +319,7 @@ myApp.controller('releasesController', function($scope, $http) {
 
     $scope.createNewRelease = function(platformName, userLogin) {
 
-        $scope.releasesObject.showLoader = true;
+        $rootScope.releasesObject.showLoader = true;
 
         var reqURL = '/admin/releases/new';
         var postData = {
@@ -331,8 +334,8 @@ myApp.controller('releasesController', function($scope, $http) {
                 console.timeEnd(reqURL);
                 console.warn('Created new release for ' + platformName);
                 $scope.setReleases();
-                $scope.releasesObject.showLoader = false;
-                $scope.releasesObject.editingRelease = result.data;
+                $rootScope.releasesObject.showLoader = false;
+                $rootScope.releasesObject.editingRelease = result.data;
             },
             function(result){
                 console.error('Failed to create new release! ' + reqURL);
@@ -350,15 +353,15 @@ myApp.controller('releasesController', function($scope, $http) {
         var reqURL = '/admin/releases/' + action;
         var releaseData = $scope.releasesObject.editingRelease
 
-        $scope.releasesObject.showLoader = true;
+        $rootScope.releasesObject.showLoader = true;
         console.time(reqURL);
 
         $http.post(reqURL, releaseData).then(
             function(result){
                 console.timeEnd(reqURL);
                 console.warn(action + 'd release ' + releaseData._id.$oid);
-                $scope.releasesObject.editingRelease = result.data;
-                $scope.releasesObject.showLoader = false;
+                $rootScope.releasesObject.editingRelease = result.data;
+                $rootScope.releasesObject.showLoader = false;
                 $scope.setReleases();
             },
             function(result){
@@ -369,11 +372,18 @@ myApp.controller('releasesController', function($scope, $http) {
         
     }
 
-    $scope.init();
-
 });
 
 
+myApp.controller('apiDocumentationEditorController', function($scope, $http) {
+
+    $scope.init = function() {
+        console.info('Initializing API documentation editor...');
+    };
+
+    $scope.init();
+
+});
 
 
 myApp.controller('userAdminController', function($scope, $http) {

@@ -79,6 +79,8 @@ button.kd {
     --color-kd-bleeding-token: radial-gradient(at right 50%, #f00, #992426);
     --color-kd-blue: #00A0E9;
     --color-kd-blue-gradient: radial-gradient(#60DAF5, #40AFD3);
+    --color-kd-green: #4CB848;
+    --color-kd-green-gradient: radial-gradient(#0d0, #4CB848);
     --color-kd-death-grey: #212121;
     --color-kd-disorder-purple: #766DAC;
     --color-kd-fighting-art-red: #CD4438;
@@ -87,6 +89,7 @@ button.kd {
     --color-kd-pink: #F35295;
     --color-kd-pink-gradient: radial-gradient(#F06DbC, #F35295);
     --color-kd-red: #B92426;
+    --color-kd-red-gradient: (#DC2426, #B92426);
     --color-kd-silver-gradient: radial-gradient(#FFF, #efefef, #DaDbDb);
     --color-kd-yellow: #EEC051;
     --color-kd-yellow-gradient: radial-gradient(#fEf0a1, #EEC051);
@@ -176,11 +179,8 @@ button.kd {
 }
 
 
-/*  background and button styles    */
+/*  capsule styles! These are a main part of reusable UI    */
 
-button.capsule {
-    width: 100%; 
-}
 .kd.capsule,
     .capsule {
     align-self: center;
@@ -198,7 +198,9 @@ button.capsule {
     text-align: center;
     width: 50%;
 }
-
+button.capsule {
+    width: 100%; 
+}
 input.kd.capsule,
     button.kd.capsule {
     margin: 1rem; 
@@ -210,7 +212,6 @@ input.kd.capsule {
     box-shadow: var(--box-shadow-inset);
     color: #000;  
 }
-
 .kd.capsule.full_width,
     .capsule.full_width {
     width: 100%;
@@ -242,19 +243,25 @@ input.kd.capsule {
     background-color: var(--color-kd-blue);
     color: #fff;
 }
-
-.kd.pink_text {
-    color: var(--color-kd-pink);
+.kd.green {
+    background: var(--color-kd-green-gradient);
+    background-color: var(--color-kd-green);
+    color: #fff;
 }
-div .kd.pink,
-    button .kd.pink {
+.kd.pink {
     background: var(--color-kd-pink-gradient);
     background-color: var(--color-kd-pink);
     color: #fff;
 }
-
-div .kd.yellow,
-    button .kd.yellow {
+.kd.pink_text {
+    color: var(--color-kd-pink);
+}
+.kd.red {
+    background: var(--color-kd-red-gradient);
+    background-color: var(--color-kd-red);
+    color: #fff;
+}
+.kd.yellow {
     background: var(--color-kd-yellow-gradient);
     background-color: var(--color-kd-yellow);
     color: #000;

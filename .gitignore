@@ -1,3 +1,5 @@
+dev_cert.pem
+dev_key.pem
 admin.pickle
 settings_private.cfg
 

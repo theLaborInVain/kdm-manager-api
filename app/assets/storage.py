@@ -23,7 +23,10 @@ gear = {
  'gear_recipe': {'name': 'Gear Recipe', 'expansion': 'promo'},
  'gormchymist': {'expansion': 'gorm', 'name': 'Gormchymist'},
  'gormery': {'expansion': 'gorm', 'name': 'Gormery'},
- 'green_knight_armor': {'name': 'Green Knight Armor', 'expansion': 'green_knight_armor'},
+ 'green_knight_armor': {
+    'name': 'Green Knight Armor',
+    'expansion': 'green_knight_armor'
+ },
  'ivory_carver': {'name': 'Ivory Carver', 'expansion': 'promo'},
  'light_forging': {'name': 'Light-Forging', 'expansion': 'slenderman'},
  'manhunter_gear': {'name': 'Manhunter Gear', 'expansion': 'manhunter'},
@@ -33,7 +36,14 @@ gear = {
  'silk_mill': {'expansion': 'spidicules', 'name': 'Silk Mill', },
  'skyreef_sanctuary': { 'expansion': 'sunstalker', 'name': 'Skyreef Sanctuary'},
  'the_sun': {'expansion': 'sunstalker', 'name': 'The Sun'},
- 'wet_resin_crafter': {'expansion': 'dung_beetle_knight','name': 'Wet Resin Crafter'},
+ 'wet_resin_crafter': {
+    'expansion': 'dung_beetle_knight',
+    'name': 'Wet Resin Crafter'
+ },
+
+ # multi-expansion/shared
+ 'pattern': {'name': 'Pattern'},
+
 }
 
 resources = {

@@ -21,23 +21,58 @@ import flask
 import flask_jwt_extended
 import jinja2
 
-#
-#   app imports
-#
-#from api.models import users, settlements, names
 
 #   app module imports
 from app import admin, API, assets, docs, utils, world
 from app.models import names, users
 from app.utils import crossdomain
 
-#import world
 
 #
 #   browser-facing endpoints, e.g. stat, documentation, etc..
 #
 
-#       stat (supersedes deprecated settings routes)
+@API.route("/")
+def index():
+    """ Documentation/general index. """
+    return flask.render_template(
+        '/documentation/_base.html',
+        **API.config
+    )
+
+@API.route("/docs/<action>")
+def get_docs(action):
+    """ get documentation JSON """
+
+    docs_object = docs.DocumentationObject()
+
+    if action == 'sections':
+        return flask.Response(
+            response = docs_object.dump_sections('JSON'),
+            status=200,
+            mimetype = "application/json"
+        )
+
+    return flask.Response(
+        response = docs_object.render_as_json(),
+        status=200,
+        mimetype = "application/json"
+    )
+
+@API.route("/blog/<view>/<asset>")
+def blog_content(view, asset):
+    """ This is typically going to be something like, e.g. /blog/release/<oid>
+    or maybe /blog/archive/api.kdm-manager.com, so the idea is to update the
+    flask.request with the 'view' and the 'asset' and then just do our normal
+    return for the blog. """
+
+    flask.request.view = view
+    flask.request.asset = asset
+
+    return flask.render_template(
+        '/blog/_base.html',
+        **API.config
+    )
 
 @API.route("/stat")
 @crossdomain(origin=['*'])
@@ -131,109 +166,7 @@ def admin_get_user(action):
         return user_object
     return user_object.request_response(action)
 
-#
-#   documentation
-#
 
-@API.route("/")
-def index():
-    """ The default return for accessing https://api.kdm-manager.com (or
-    equivalent endpoint), which gets you the API docs. """
-    return flask.send_file("static/html/docs.html")
-
-@API.route("/docs/<action>/<render_type>")
-def render_documentation(action, render_type=None):
-    """ These routes get you various representations of the contents of the
-    docs module.
-
-    For now, the supported 'action' list includes only the following::
-
-        - get: this basically retrieves all extant documentation
-        - get_documented_endpoints: calls this method of the docs object,
-            which basically returns a set of the currently documented
-            endpoints
-        - get_sections: returns all sections defined in docs.sections
-
-    The only supported 'render_type' is 'json' (case-insensitive).
-
-    """
-
-    response = utils.http_404           # default response
-
-    render_type = render_type.upper()   # case-insensitive: json/JSON
-
-    docs_object = docs.DocumentationObject()
-
-    if action == 'get':
-        if render_type == 'JSON':
-            j = json.dumps(
-                docs_object.render_as_json(),
-                default=json_util.default
-            )
-            response = flask.Response(
-                response=j,
-                status=200,
-                mimetype="application/json"
-            )
-    elif action == 'get_documented_endpoints':
-        output = docs_object.get_documented_endpoints()
-        if render_type == 'JSON':
-            response = flask.Response(
-                response=json.dumps(output),
-                status=200,
-                mimetype="application/json"
-            )
-        elif render_type == 'TEXT':
-            response = flask.Response(
-                response="\n".join(output),
-                status=200,
-                mimetype="application/json"
-            )
-    elif action == 'get_sections':
-        if render_type == 'JSON':
-            j = json.dumps(
-                docs_object.dump_sections(),
-                default=json_util.default
-            )
-            response = flask.Response(
-                response=j,
-                status=200,
-                mimetype="application/json"
-            )
-
-    return response
-
-
-
-#
-#   dev blog
-#
-
-@API.route("/blog")
-def blog_index():
-    """ the index for the blog. """
-    return flask.render_template(
-        '/blog/index.html',
-        **API.config
-    )
-
-@API.route("/blog/<action>/<request>")
-def blog_content(action, request):
-    """ This is typically going to be something like, e.g. /blog/release/<oid>,
-    so the general idea is that we make a tiny dict where that would become
-    {'release': <oid>} and go back as args to the 'release.html' template. """
-
-    output = {}
-    output[action] = request
-
-    try:
-        return flask.render_template(
-            '/blog/%s.html' % action,
-            **output,
-            **API.config
-        )
-    except jinja2.exceptions.TemplateNotFound:
-        return utils.http_404
 
 
 #

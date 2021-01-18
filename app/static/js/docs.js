@@ -1,38 +1,27 @@
 'use strict';
 
-var app = angular.module('APIDocumentation', []);
-
-app.filter('trustedHTML', function($sce) {
-     return $sce.trustAsHtml;
-    }
-);
-
-
-app.controller('rootController', function($scope, $http) {
-
-    $scope.objectKeys = Object.keys;
+myApp.controller('apiDocumentationController', function($scope, $http) {
 
     $scope.init = function() {
-        $http.get('/stat').then(
-            function(result){
-                $scope.stat = result.data;
-                }
-            );
-        $http.get('/docs/get/json').then(
+
+        console.info('Initializing apiDocumentationController...');
+
+        $http.get('/docs/get').then(
             function(result){
                 $scope.docs = result.data;
             }
         );
-        $http.get('/docs/get_sections/json').then(
+        $http.get('/docs/sections').then(
             function(result){
                 $scope.section_lookup = result.data;
             }
         );
     };
 
-
     $scope.init();
 
+
+    $scope.objectKeys = Object.keys;
 
     $scope.toggleAboutBlock = function(){
         var e = document.getElementById('aboutBlock');

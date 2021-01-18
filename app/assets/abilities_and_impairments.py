@@ -788,6 +788,12 @@ expansion_ai = {
         'type': 'curse'
     },
 
+    # winter solstice lucy
+    'bald': {
+        'desc': 'You fidget too much.',
+        'name': 'Bald',
+    },
+
 }
 
 

@@ -307,8 +307,14 @@ mar_2016_expansions = {
 
     # Lion God
     'necromancer': {'expansion': 'lion_god', 'name': 'Necromancer'},
-    'silver_city_explorer': {'expansion': 'lion_god', 'name': 'Silver City Explorer'},
+    'silver_city_explorer': {
+        'expansion': 'lion_god',
+        'name': 'Silver City Explorer'
+    },
     'worm_bait': {'expansion': 'lion_god', 'name': 'Worm Bait'},
+
+    # Winter Solstice Lucy
+    'bald': {'expansion': 'winter_solstice_lucy', 'name': 'Bald'},
 }
 
 mastery = {

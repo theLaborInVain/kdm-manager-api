@@ -368,17 +368,6 @@ expansions_of_death = {
 
 product_lines = {
 
-    # discreet/distinct product lines
-
-    'generic': {
-        'released': datetime(2016, 3, 1),
-        'name': 'Generic',
-        'ui': {'pretty_category': 'Enhancement'},
-        'subtitle': (
-            'Adds gear from the KD <i>Generic</i> line. Includes: '
-            'Swashbuckler.'
-        ),
-    },
 
     # Echoes of Death
 
@@ -482,6 +471,16 @@ product_lines = {
         'basic_hunt_event': ['dead_warrior'],
     },
 
+    'swashbuckler': {
+        'name': 'Swashbuckler',
+        'ui': {'pretty_category': 'White Box'},
+        'released': datetime(2016, 3, 1),
+        'subtitle': (
+            'One of the few figures from the <i>Generic</i> line that also '
+            'includes game content.'
+        ),
+    },
+
     "sword_hunter": {
         "name": "Sword Hunter",
         "ui": {"pretty_category": "White Box"},
@@ -509,6 +508,12 @@ product_lines = {
                 ),
             }
         ],
+    },
+
+    'winter_solstice_lucy': {
+        'name': 'Winter Solstice Lucy',
+        'ui': {'pretty_category': 'White Box'},
+        'release': datetime(2020, 12, 22),
     },
 
     "halloween_white_speaker_2019": {
