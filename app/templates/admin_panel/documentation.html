@@ -1,0 +1,150 @@
+<!-- BEGIN releases controller -->
+<div
+    class="flex_item_basic"
+>
+    <div
+        class="flex_item_inner"
+    >
+        <div
+            class="kd worksheet_block"
+        >
+
+            <!-- BEGIN new release launcher/creator -->
+            <div
+                class="clickable kd worksheet_row"
+                ng-click="
+                    ngShowHide('createNewReleaseLauncher');
+                "
+            >
+
+                <div
+                    class="kd checkbox"
+                    ng-class="{
+                        'checked': ngVisible['createNewReleaseLauncher'] === true,
+                    }"
+                ></div>
+                <div class="kd checkbox_desc">
+                    Create new release
+                </div>
+
+            </div> <!-- worksheet row to launch the new release creator -->
+
+            <div
+                id="createNewReleaseLauncher"
+                class="kd worksheet_row"
+                ng-if="ngVisible['createNewReleaseLauncher']"
+                ng-controller="releasesController"
+            >
+
+                <button
+                    class="clickable kd capsule pink"
+                    ng-repeat="platform in apiData.releases.platforms"
+                    ng-click="
+                        ngHide('createNewReleaseLauncher');
+                        createNewRelease(platform.app, user.login);
+                        ngShow('editReleaseWorksheet')
+                    "
+                >
+                    {a platform.app a}
+                </button>
+
+            </div>
+            <!-- END new release launcher/creator -->
+
+            <!-- open the API documentation editor -->
+            <div
+                class="clickable kd worksheet_row"
+                ng-click="ngShowHide('apiDocumentationEditor');"
+            >
+
+                <div
+                    class="kd checkbox"
+                    ng-class="{
+                        'checked': ngVisible['apiDocumentationEditor'] === true,
+                    }"
+                ></div>
+                <div class="kd checkbox_desc">
+                    Edit API documentation
+                </div>
+
+            </div> <!-- worksheet row to launch the new release creator -->
+
+        </div> <!-- worksheet_block for launching stuff -->
+
+
+        <!-- BEGIN worksheet_block for releases -->
+        <div
+            class="kd worksheet_block"
+            ng-controller="releasesController"
+            ng-init="init();"
+        >
+
+            <div
+                class="kd worksheet_row"
+                ng-if="!apiData.releases.all"
+            >
+                <img
+                    class="tiny_loader"
+                    src="/static/media/images/loading_io.gif"
+                />
+                <div class="kd checkbox_desc">Loading releases info...</div>
+            </div>
+
+            <h3 class="kd title">Releases</h3>
+
+            <div
+                class="clickable kd worksheet_row"
+                ng-repeat="release in apiData.releases.all"
+                title="created: {a release.created_on.$date|date:'EEEE, yyyy-MM-dd HH:mm' a}"
+                ng-click="
+                    releasesObject.editingRelease = release;
+                    ngShowHide('editReleaseWorksheet')
+                "
+                ng-if="$index < settings.meta.api.panel.panel_releases_visible"
+            >
+
+                <div
+                    class="kd checkbox"
+                    ng-class="{
+                        'checked': release.published,
+                    }"
+                >
+                </div>
+
+                <div
+                    class="kd checkbox_desc"
+                >
+                    <b>
+                    {a release.published_on.$date|date:'yyyy-MM-dd' a}
+                    </b>
+                    {a release.platform a}:
+                    {a release.version.major a}.{a release.version.minor a}.{a release.version.patch a}
+                </div>
+
+            </div><!-- worksheet_row -->
+
+            <button
+                class="clickable kd capsule full_width blue"
+                ng-click="
+                    settings.meta.api.panel.panel_releases_visible =
+                        settings.meta.api.panel.panel_releases_visible + 5
+                "
+                ng-if="
+                    settings.meta.api.panel.panel_releases_visible <
+                    apiData.releases.all.length
+                "
+            >
+                Show more releases...
+            </button>
+
+        </div><!-- worksheet block -->
+
+    </div><!-- flex_item_inner -->
+
+</div> <!-- flex_item_basic -->
+
+<!-- END documentation controller -->
+<!-- sub-templates ONLY past this point!!! -->
+
+{% include 'admin_panel/release_editor.html' %}
+{% include 'admin_panel/api_documentation_editor.html' %}

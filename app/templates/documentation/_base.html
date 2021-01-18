@@ -1,0 +1,159 @@
+{% extends '_base.html' %}
+
+{% block head %}
+    <script src="/static/js/docs.js"></script>
+    <link rel="stylesheet" href="/static/css/docs.css" />
+{% endblock %}
+
+
+{% block body%}
+ <body
+    ng-controller="apiDocumentationController"
+ >
+
+    <div class="fixed_nav">
+        <a href="#" ng-click="toggleNav()" class="burger">&#9776;</a>
+        <h1>KD:M API v{{ VERSION }}</h1>
+        <a href="#" ng-click="toggleAboutBlock()">About</span>
+        <a href="https://github.com/theLaborInVain/kdm-manager-api" target="top">GitHub</a> 
+        <a href="https://twitter.com/kdmManager" target="top">Twitter</a> 
+        <a href="https://blog.kdm-manager.com/" target="top">Development blog</a>
+    </div>
+
+
+    <div id="christianSideNav" class="side_nav">
+      <ul class="nav_tree">
+        <li ng-repeat='(type, sections) in docs'>
+
+          <br/>
+          <span
+            ng-click="scrollTo(type + '_routes')"
+            class="clickable nav_tree_type"
+          >
+            {a type a} routes
+          </span>
+
+          <ul>
+            <li ng-repeat='(section_handle, section) in sections' class="nav_tree_section">
+
+              <span
+                ng-click="scrollTo(section_handle + '_section')"
+                class="clickable"
+              >
+                {a section_lookup[section_handle].name a}
+              </span>
+
+              <ul>
+                <li ng-repeat="(subsection_handle, subsection) in section" class="nav_tree_subsection">
+
+                  <span
+                    class="clickable"
+                    ng-click="scrollTo(subsection_handle + '_subsection')"
+                    ng-if="subsection_handle !== '__main__'"
+                  >
+                    {a section_lookup[subsection_handle].name a}
+                  </span>
+
+                  <ul>
+                    <li ng-repeat="doc in subsection">
+                     <span
+                       class="clickable nav_tree_endpoint"
+                       ng-click="scrollTo(doc.handle + '_doc')"
+                       ng-bind-html="doc.name|trustedHTML"
+                     >
+                     </span>
+                    </li>
+                  </ul>
+
+                <li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div id="container">
+
+        <div id="aboutBlock" class="about_block closed">
+            <br/><br/>
+            <a href="https://thelaborinvain.com" target="top">
+                <img src="/static/media/images/the_labor_in_vain_logo-01.png" class="title_logo" />
+            </a>
+            <h3>KD:M API - A RESTful API for <i>Monster</i>, by Kingdom Death</h3>
+            <p>The KDM API at <a href="https://api.kdm-manager.com">https://api.kdm-manager.com</a>
+            is a RESTful API for campaign/settlement management in "Monster" by
+            <a href="http://kingdomdeath.com" target="top">Kingdom Death</a>.</p>
+            <p>The API is maintained by <a href="https://thelaborinvain.com">
+            The Labor in Vain</a> and is neither affiliated with nor
+            authorized by Kingdom Death or Adam Poots Games.</p>
+            <p>Some parts of the API are free to use. Others require an API key.
+            Endpoints that require an API key to access are indicated below by the key
+            (&#x1f511;) icon.</p>
+        </div>
+
+
+        <!-- the left-side push nav -->
+
+
+
+        <div class="block" ng-repeat="type in ['public', 'private']" id="{a type a}_routes">
+
+            <div class="type_header">
+                <h3>{a type a} routes</h3>
+                <p ng-bind-html="sections[type].desc|trustedHTML"></p>
+            </div>
+
+            <div
+                id="{a section_handle a}_section"
+                class="section_container"
+                ng-repeat="(section_handle, section) in docs[type]"
+            >
+
+                <div class="section_header">
+                    <b>{a section_lookup[section_handle].name a}:</b>
+                    <span ng-bind-html="section_lookup[section_handle].desc|trustedHTML"></span>
+                </div>
+
+                <div
+                    id = "{a subsection_handle a}_subsection"
+                    class="subsection_container"
+                    ng-repeat="(subsection_handle, subsection) in section"
+                >
+
+                    <div class="subsection_header" colspan="3" ng-if="subsection_handle !== '__main__'">
+                        <b>{a section_lookup[subsection_handle].name a}:</b> <span ng-bind-html="section_lookup[subsection_handle].desc|trustedHTML"></span> 
+                    </div>
+
+                    <div
+                        id = "{a doc.handle a}_doc"
+                        class="doc_container"
+                        ng-repeat="doc in subsection"
+                    >
+                        <div class="doc_row">
+                            <div class="doc_row_key">Route:</div>
+                            <div class="doc_row_content route" ng-bind-html="doc.name|trustedHTML"></div>
+                        </div>
+                        <div class="doc_row">
+                            <div class="doc_row_key">Methods:</div>
+                            <div class="doc_row_content methods">
+                                <span ng-repeat="method in doc.methods">{a method a}{a $last ? '' : ', ' a}</span>
+                            </div>
+                        </div>
+                        <div class="doc_row">
+                            <div class="doc_row_key">Notes:</div>
+                            <div class="doc_row_content" ng-bind-html="doc.desc|trustedHTML"></div>
+                         </div>
+                    </div>
+
+                </div> <!-- subsection_container -->
+
+            </div><!-- section_container -->
+
+        </div> <!-- block -->
+
+    </div> <!-- container -->
+
+    </body>
+</html>
+{% endblock %}

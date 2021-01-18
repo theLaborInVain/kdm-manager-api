@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html
+    lang="en"
+    ng-app="apiUtils"
+    ng-controller="globalController"
+    ng-init='
+        api_key="{{ api_key }}";
+        VIEW = "{{ request.end_point }}";
+    '
+>
+
+ <title>The KDM API</title>
+
+ <head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="content-type" content="text/html; charset=UTF8" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-animate.js"></script>
+
+    <script src="/static/js/_global.js?version={{VERSION}}"></script>
+    <script src="/static/js/devBlog.js?version={{VERSION}}"></script>
+
+    <link rel="stylesheet" href="/static/css/fonts.css?version={{VERSION}}" />
+    <link rel="stylesheet" href="/static/css/apiUtils.css?version={{VERSION}}" />
+
+    <!-- view-specific -->
+    {% block head %}{% endblock %}
+
+    <link rel="stylesheet" href="/static/css/color.css?version={{VERSION}}" />
+
+    <link rel="stylesheet" href="/kingdomDeath.css?version={{VERSION}}" />
+    
+    <link href="https://fonts.googleapis.com/css?family=Ruda&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+ </head>
+
+ {% block body %}{% endblock %}
+
+</html>
