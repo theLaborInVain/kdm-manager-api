@@ -29,6 +29,7 @@ from PIL import Image
 import random
 
 # third party imports
+import flask
 from flask import request, Response
 
 # local imports
@@ -134,12 +135,16 @@ class Survivor(models.UserAsset):
 
 
     def __repr__(self):
-        return "%s [%s] (%s)" % (self.survivor["name"], self.survivor["sex"], self.survivor["_id"])
+        return "%s [%s] (%s)" % (
+            self.survivor["name"],
+            self.survivor["sex"],
+            self.survivor["_id"]
+        )
 
 
     def __init__(self, *args, **kwargs):
         self.collection="survivors"
-        self.object_version = 0.87
+        self.object_version = 1.01
 
         # initialize AssetCollections for later
         self.AbilitiesAndImpairments = abilities_and_impairments.Assets()
@@ -155,7 +160,17 @@ class Survivor(models.UserAsset):
         self.stats =                ['Movement','Accuracy','Strength','Evasion','Luck','Speed','bleeding_tokens']
         self.game_asset_keys =      ['disorders','epithets','fighting_arts','abilities_and_impairments']
         self.armor_locations =      ['Head', 'Body', 'Arms', 'Waist', 'Legs']
-        self.flags =                ['skip_next_hunt','cannot_use_fighting_arts','cannot_spend_survival','departing','cannot_gain_bleeding_tokens', 'cannot_activate_two_plus_str_gear','cannot_consume','cannot_activate_two_handed_weapons','cannot_be_nominated_for_intimacy']
+        self.flags =                [
+            'cannot_activate_two_handed_weapons',
+            'cannot_activate_two_plus_str_gear',
+            'cannot_consume',
+            'cannot_be_nominated_for_intimacy',
+            'cannot_gain_bleeding_tokens',
+            'cannot_spend_survival',
+            'cannot_use_fighting_arts',
+            'departing',
+            'skip_next_hunt',
+        ]
         self.abs_value_attribs =    ['max_bleeding_tokens', ]
         self.min_zero_attribs =     ["hunt_xp","Courage","Understanding"]
         self.min_one_attribs =      ["Movement"]
@@ -225,13 +240,6 @@ class Survivor(models.UserAsset):
                     self.add_game_asset("abilities_and_impairments", w_dict['master_ai'], save=False)
 
 
-
-    def remove(self):
-        self.survivor['removed'] = datetime.now()
-        self.log_event('%s marked the survivor as removed!' % request.User.user['login'])
-        self.save()
-
-
     def new(self):
         """ Creates a new survivor.
 
@@ -256,14 +264,12 @@ class Survivor(models.UserAsset):
         else:
             attribs = self.new_asset_attribs
 
-#        self.logger.debug(attribs)
 
         #
         #   Can't create a survivor without initializing a settlement! do
         #       that first, and fail bigly if you cannot
         #
 
-#        import settlements  # baby jesus, still crying
         self.Settlement = settlements.Settlement(_id=attribs["settlement"])
         self.settlement_id = self.Settlement.settlement["_id"]
 
@@ -699,6 +705,16 @@ class Survivor(models.UserAsset):
         return json.dumps(output, default=json_util.default)
 
 
+    @models.web_method
+    def remove(self):
+        """ Marks the survivor removed."""
+        self.survivor['removed'] = datetime.now()
+        self.log_event(
+            '%s marked the survivor as removed!' % request.User.user['login']
+        )
+        self.save()
+
+
     def unremove(self):
         """ Deletes the 'removed' attribute. Saves. """
         del self.survivor['removed']
@@ -734,6 +750,7 @@ class Survivor(models.UserAsset):
     #   update/set methods
     #
 
+    @models.web_method
     def add_cursed_item(self, handle=None):
         """ Adds a cursed item to a survivor. Does a bit of biz logic, based on
         the asset dict for the item.
@@ -768,6 +785,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def rm_cursed_item(self, handle=None):
         """ Removes cursed items from the survivor, to include any A&Is that go
         along with that cursed item. Does NOT remove any A&Is that are caused by
@@ -819,6 +837,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def add_favorite(self, user_email=None):
         """Adds the value of the incoming 'user_email' kwarg to the survivor's
         'favorite' attribute (which is a list of users who have favorited the
@@ -829,15 +848,25 @@ class Survivor(models.UserAsset):
             user_email = self.params['user_email']
 
         if user_email in self.survivor['favorite']:
-            self.logger.error("%s User '%s' is already in this survivor's favorite list. Ignoring bogus add request." % (self, user_email))
+            err = (
+                "%s User '%s' is already in this survivor's favorite list. "
+                "Ignoring bogus add request."
+            )
+            self.logger.error(err % (self, user_email))
             return True
         else:
             self.survivor['favorite'].append(user_email)
-            self.log_event('%s added %s to their favorite survivors.' % (user_email, self.pretty_name()))
+            self.log_event(
+                '%s added %s to their favorite survivors.' % (
+                    user_email,
+                    self.pretty_name()
+                )
+            )
 
         self.save()
 
 
+    @models.web_method
     def rm_favorite(self, user_email=None):
         """Removes the value of the incoming 'user_email' kwarg from the
         survivor's 'favorite' attribute (which is a list of users who have
@@ -848,22 +877,29 @@ class Survivor(models.UserAsset):
             user_email = self.params['user_email']
 
         if user_email not in self.survivor['favorite']:
-            self.logger.error("%s User '%s' is not in this survivor's favorite list. Ignoring bogus remove request." % (self, user_email))
+            err = (
+                "%s User '%s' is not in this survivor's favorite list. "
+                "Ignoring bogus remove request."
+            )
+            self.logger.error(err % (self, user_email))
             return True
         else:
             self.survivor['favorite'].remove(user_email)
-            self.log_event('%s removed %s from their favorite survivors.' % (user_email, self.pretty_name()))
+            self.log_event(
+                '%s removed %s from their favorite survivors.' % (
+                    user_email,
+                    self.pretty_name()
+                )
+            )
 
         self.save()
 
 
+    def add_game_asset(self, asset_class=None, asset_handle=None,
+                       apply_related=True, save=True, log_event=True):
 
-    def add_game_asset(self, asset_class=None, asset_handle=None, apply_related=True, save=True, log_event=True):
-        """ Port of the legacy method of the same name.
-
-        Does not apply nearly as much business logic as the legacy webapp
-        method, however, so don't expect a ton of user-friendliness out of this
-        one.
+        """ Allows the addition of 'asset_handle' to the survivor, according to
+        'asset_class'.
 
         If the 'asset_class' value is None, then the method assumes that it is
         being called by a request_response() method and looks for request
@@ -904,14 +940,22 @@ class Survivor(models.UserAsset):
         """
 
         #initialize
-        asset_class, asset_dict = self.asset_operation_preprocess(asset_class, asset_handle)
+        asset_class, asset_dict = self.asset_operation_preprocess(
+            asset_class,
+            asset_handle
+        )
 
 
         # 1.) MAX - check the asset's 'max' attribute:
         # assets WITHOUT a 'max' DO NOT HAVE A MAX
         if asset_dict.get("max", None) is not None:
             if self.survivor[asset_class].count(asset_dict["handle"]) >= asset_dict["max"]:
-                self.logger.warn("%s max for '%s' (%s) has already been reached! Ignoring..." % (self, asset_dict["handle"], asset_class))
+                err = (
+                    "%s max for '%s' (%s) has already been reached! Ignoring..."
+                )
+                self.logger.warn(
+                    err % (self, asset_dict["handle"], asset_class)
+                )
                 return False
 
         # 2.) STATUS - set status flags if they're in the dict
@@ -1007,7 +1051,6 @@ class Survivor(models.UserAsset):
 
 
         #   2.) initialize/import the AssetModule and an AssetCollection object
-#        exec("AssetModule = %s" % asset_class)
         AssetModule = importlib.import_module('app.models.%s' % asset_class)
         A = AssetModule.Assets()
 
@@ -1049,6 +1092,37 @@ class Survivor(models.UserAsset):
         return asset_class, asset_dict
 
 
+    @models.web_method
+    def set_affinities(self):
+        """ New in API release >= 1.50.n. Uses request context params to set
+        the survivor's affinity values. All keys are required:
+
+        {'red': 0, 'green': 1, 'blue': 69}
+
+        Note: missing keys will be considered zeroes! YHBW.
+
+        """
+
+        # no param enforcement here
+        for color in ['red','green','blue']:
+            self.survivor["affinities"][color] = self.params.get(color, 0)
+
+        # log it
+        msg = "%s set %s affinities: red %s, green %s, blue %s."
+        self.log_event(
+            msg % (
+                request.User.login,
+                self.pretty_name(),
+                self.survivor['affinities']['red'],
+                self.survivor['affinities']['green'],
+                self.survivor['affinities']['blue'],
+            )
+        )
+
+        self.save()
+
+
+    @models.web_method
     def set_avatar(self, avatar=None, log_event=True, save=True):
         """ Expects a request context. This port of a legacy app method adds an
         incoming avatar to the GridFS and sets the self.survivor['avatar'] key
@@ -1142,10 +1216,10 @@ class Survivor(models.UserAsset):
         return Response(response=json.dumps({'avatar_oid': avatar_id}, default=json_util.default), status=200)
 
 
-
+    @models.web_method
     def set_color_scheme(self):
-        """ Expects a request context. Sets (or unsets) the survivor's top-level
-        'color_scheme' attribute. """
+        """ Sets (or unsets) the survivor's top-level 'color_scheme' attribute.
+        """
 
         # first, handle unsets
         if 'unset' in self.params and self.survivor.get('color_scheme', None) is not None:
@@ -1165,6 +1239,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_gear_grid(self):
         """ Updates the survivor's 'gear_grid' attribute, which is a dictionary
         of grid locations:
@@ -1202,6 +1277,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_many_game_assets(self):
         """ Much like the set_many_attributes() route/method, this one WILL ONLY
         WORK WITH A REQUEST object present.
@@ -1239,57 +1315,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    def set_partner(self, partner_oid=None, update_partner=True):
-        """ Request context optional. Sets (or unsets) the survivor's partner. """
-
-        if partner_oid is None:
-            self.check_request_params(['partner_id'])
-            partner_oid = self.params['partner_id']
-
-        # handle unset requests first
-        if partner_oid == 'UNSET' and 'partner_id' in self.survivor.keys():
-            # unset the partner, if we're doing that
-            if update_partner:
-                P = Survivor(_id=self.survivor['partner_id'])
-                P.set_partner(partner_oid='UNSET', update_partner=False)
-            # unset the survivor
-            del self.survivor['partner_id']
-            self.log_event("%s no longer has a partner." % self.pretty_name())
-            self.save()
-            return True
-        elif partner_oid == 'UNSET' and not 'partner_id' in self.survivor.keys():
-            self.logger.warn('%s Ignoring bogus request to unset partner...' % self)
-            return True
-
-
-        # now sanity check the incoming OID
-        if not ObjectId.is_valid(partner_oid):
-            raise utils.InvalidUsage("Partner OID '%s' does not appear to be a valid OID!" % partner_oid)
-        partner = utils.mdb.survivors.find_one({"_id": ObjectId(partner_oid)})
-        if partner is None:
-            raise utils.InvalidUsage("Partner OID '%s' does not match the OID of any known survivor!" % partner_oid)
-
-        # ok, we've got a good OID for the new partner, let's check a.) whether
-        # this is the current partner or b.) whether this is an update
-        if partner['_id'] == self.survivor.get('partner_id', None):
-            self.logger.warn("%s Ignoring bogus request to set partner (already set)." % self)
-            return True
-        elif self.survivor.get('partner_id', None) is not None and partner['_id'] != self.survivor['partner_id']:
-            if update_partner:
-                P = Survivor(_id=self.survivor['partner_id'])
-                P.set_partner(partner_oid='UNSET', update_partner=False)
-
-        # set the new partner on the current survivor
-        self.survivor['partner_id'] = ObjectId(partner_oid)
-        self.log_event('%s is partners with %s!' % (self.pretty_name(), partner['name']))
-        self.save()
-
-        # finally, if we're updating the partner, do that
-        if update_partner:
-            P = Survivor(_id=partner['_id'])
-            P.set_partner(partner_oid=self.survivor['_id'], update_partner=False)
-
-
+    @models.web_method
     def replace_game_assets(self):
         """ Much like set_many_game_assets(), this route facilitates The Watcher
         UI/UX and SHOULD ONLY BE USED WITH A REQUEST OBJECT since it pulls all
@@ -1342,7 +1368,6 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-
     def rm_game_asset(self, asset_class=None, asset_handle=None, rm_related=True, save=True):
         """ The inverse of the add_game_asset() method, this one most all the
         same stuff, except it does it in reverse order:
@@ -1351,7 +1376,10 @@ class Survivor(models.UserAsset):
         that is irrelevant.
         """
 
-        asset_class, asset_dict = self.asset_operation_preprocess(asset_class, asset_handle)
+        asset_class, asset_dict = self.asset_operation_preprocess(
+            asset_class,
+            asset_handle
+        )
 
         # 1.) fail gracefully if this is a bogus request
         if asset_dict["handle"] not in self.survivor[asset_class]:
@@ -1396,8 +1424,13 @@ class Survivor(models.UserAsset):
             self.save()
 
 
+    #
+    #   survivor notes!
+    #
+
+    @models.web_method
     def add_note(self):
-        """ Adds a Survivor note to the mdb. Expects a request context. """
+        """ Adds a Survivor note to the mdb."""
 
         self.check_request_params(['note'])
         note = self.params['note']
@@ -1441,6 +1474,7 @@ class Survivor(models.UserAsset):
         )
 
 
+    @models.web_method
     def update_note(self):
         """ Updates a survivor note: we only allow certain attributes to be
         updated and don't use a data model. All of the business logic and rules
@@ -1465,6 +1499,7 @@ class Survivor(models.UserAsset):
         )
 
 
+    @models.web_method
     def rm_note(self):
         """ Removes a Survivor note from the MDB. Expects a request context. """
 
@@ -1475,6 +1510,10 @@ class Survivor(models.UserAsset):
             '%s REMOVED survivor note %s' % (request.User.login, _id)
         )
 
+
+    #
+    #   update methods!
+    #
 
     def update_affinities(self, aff_dict={}, operation="add"):
         """ Set the kwarg 'operation' to either 'add' or 'rm' in order to
@@ -1501,7 +1540,7 @@ class Survivor(models.UserAsset):
                 operation = self.params["operation"]
 
         # sanity check
-        if operation not in ["add","rm"]:
+        if operation not in ["add", "rm"]:
             msg = "The '%s' operation is not supported by the update_affinities() method!" % (operation)
             self.logger.exception(msg)
             raise utils.InvalidUsage(msg, status_code=400)
@@ -1517,6 +1556,8 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+
+    @models.web_method
     def update_attribute(self, attribute=None, modifier=None):
         """ Adds 'modifier' value to self.survivor value for 'attribute'. """
 
@@ -1539,9 +1580,10 @@ class Survivor(models.UserAsset):
             self.logger.exception(msg)
             raise utils.InvalidUsage(msg, status_code=400)
         elif type(self.survivor[attribute]) != int:
-            msg = "%s '%s' attribute is not an int type! (It's a '%s')" % (self, attribute, type(self.survivor[attribute]))
-            self.logger.exception(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
+            msg = "%s '%s' attribute is not an int type! (It's a '%s')"
+            err = msg % (self, attribute, type(self.survivor[attribute]))
+            self.logger.exception(err)
+            raise utils.InvalidUsage(err, status_code=400)
         else:
             pass
 
@@ -1558,7 +1600,13 @@ class Survivor(models.UserAsset):
                 self.survivor[attribute] = 9
 
         # log completion of the update 
-        self.log_event("%s updated %s attribute '%s' to %s" % (request.User.login, self.pretty_name(), attribute, self.survivor[attribute]))
+        self.log_event("%s updated %s attribute '%s' to %s" % (
+                request.User.login,
+                self.pretty_name(),
+                attribute,
+                self.survivor[attribute]
+            )
+        )
         self.save()
 
 
@@ -1610,6 +1658,7 @@ class Survivor(models.UserAsset):
     #   toggles and flags!
     #
 
+    @models.web_method
     def toggle_boolean(self, attribute=None):
         """ This is a generic toggle that will toggle any attribute of the
         survivor that is Boolean. Note that this will only work on attributes
@@ -1641,6 +1690,7 @@ class Survivor(models.UserAsset):
         pass
 
 
+    @models.web_method
     def toggle_damage(self):
         """ toggles survivor damage boxes on/off. Requires a request context. """
 
@@ -1677,6 +1727,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def toggle_fighting_arts_level(self):
         """ Toggles a fighting arts level on or off, e.g. by adding it to or
         removing it from the array for a particular FA's handle.
@@ -1710,21 +1761,26 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def toggle_sotf_reroll(self):
         """ toggles the survivor's Survival of the Fittest once-in-a-lifetime
         reroll on or off. This is self.survivor["sotf_reroll"] and it's a bool
         and it's not part of the data model, so creating it is necessary some
         times. """
 
+        msg = "%s toggled SotF reroll %s for %s"
+
         if not "sotf_reroll" in self.survivor.keys():
             self.survivor["sotf_reroll"] = True
-            self.log_event("%s toggled SotF reroll on for %s" % (request.User.login, self.pretty_name()))
+            self.log_event(msg % (request.User.login, 'on', self.pretty_name()))
         elif self.survivor["sotf_reroll"]:
             self.survivor["sotf_reroll"] = False
-            self.log_event("%s toggled SotF reroll off for %s" % (request.User.login, self.pretty_name()))
+            self.log_event(
+                msg % (request.User.login, 'off', self.pretty_name())
+            )
         elif not self.survivor["sotf_reroll"]:
             self.survivor["sotf_reroll"] = True
-            self.log_event("%s toggled SotF reroll on for %s" % (request.User.login, self.pretty_name()))
+            self.log_event(msg % (request.User.login, 'on', self.pretty_name()))
         else:
             self.logger.error("Unhandled logic in toggle_sotf_reroll() method!")
             raise Exception
@@ -1732,46 +1788,13 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    def toggle_status_flag(self, flag=None):
-        """ Toggles a status flag on or off. Available status flags:
-
-            - cannot_spend_survival
-            - cannot_use_fighting_arts
-            - skip_next_hunt
-            - retired
-
-        If 'flag' is None, this method assumes that it is being called by a the
-        request_response() method and will check for incoming params.
-        """
-
-        if flag is None:
-            self.check_request_params(['flag'])
-            flag = self.params["flag"]
-
-        if flag not in self.flags:
-            msg = "Survivor status flag '%s' cannot be toggled!" % flag
-            raise utils.InvalidUsage(msg, status_code=400)
-
-        flag_pretty = flag.replace("_", " ").capitalize()
-
-        flag_current_status = self.survivor.get(flag, None)
-        if flag_current_status is None:
-            self.survivor[flag] = True
-            self.log_event("%s set '%s' on %s" % (request.User.login, flag_pretty, self.pretty_name()))
-        elif flag_current_status is False:
-            self.survivor[flag] = True
-            self.log_event("%s set '%s' on %s" % (request.User.login, flag_pretty, self.pretty_name()))
-        else:
-            del self.survivor[flag]
-            self.log_event("%s removed '%s' from %s" % (request.User.login, flag_pretty, self.pretty_name()))
-
-        self.save()
 
 
     #
     #   special game controls
     #
 
+    @models.web_method
     def controls_of_death(self):
         """ Manage all aspects of the survivor's death here. This is tied to a
         a number of settlement methods/values, so be cautious with this one. """
@@ -1920,27 +1943,7 @@ class Survivor(models.UserAsset):
     #   set methods!
     #
 
-    def set_affinity(self, color=None, value=None):
-        """ Adds 'modifier' value to self.survivor value for 'attribute'. If the
-        'attrib' kwarg is None, the function assumes that this is part of a call
-        to request_response() and will get request params. """
-
-        if color is None:
-            self.check_request_params(['color','value'])
-            color = self.params["color"]
-            value = int(self.params["value"])
-
-        # sanity check!
-        if color not in self.survivor["affinities"].keys():
-            msg = "%s does not have a '%s' affinity!" % (self, color)
-            self.logger.exception(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
-
-        self.survivor["affinities"][color] = value
-        self.log_event("%s set %s %s affinity to %s" % (request.User.login, self.pretty_name(), color, value))
-        self.save()
-
-
+    @models.web_method
     def set_attribute(self, attrib=None, value=None, save=True):
         """ Adds 'modifier' value to self.survivor value for 'attribute'. If the
         'attrib' kwarg is None, the function assumes that this is part of a call
@@ -1982,12 +1985,8 @@ class Survivor(models.UserAsset):
 
 
     def set_many_attributes(self):
-        """ This is an API-only route and therefore ONLY WORKS IF YOU HAVE
-        request parameters!
-
-        This basically reads a list of attributes to update and then updates
-        them in the order they appear.
-        """
+        """ This basically reads a list of attributes to update and then updates
+        them in the order they appear. """
 
         # initialize from the request
         attr_updates = []
@@ -2035,6 +2034,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_attribute_detail(self, attrib=None, detail=None, value=False, save=True):
         """ Use to update the 'attribute_detail' dictionary for the survivor.
         If this is called without an 'attrib' value, it will assume that it is
@@ -2075,7 +2075,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-
+    @models.web_method
     def set_bleeding_tokens(self, value=None, save=True):
         """ Sets self.survivor['bleeding_tokens'] to 'value', respecting the
         survivor's max and refusing to go below zero. """
@@ -2104,6 +2104,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
+    @models.web_method
     def set_constellation(self, constellation=None, unset=None):
         """ Sets or unsets the survivor's self.survivor["constellation"]. """
 
@@ -2142,7 +2143,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-
+    @models.web_method
     def set_email(self, new_email=None):
         """ Validates an incoming email address and attempts to set it as the
         survivor's new email. It has to a.) be different, b.) look like an email
@@ -2181,6 +2182,7 @@ class Survivor(models.UserAsset):
         return utils.http_200
 
 
+    @models.web_method
     def set_name(self, new_name=None, update_survival=True, save=True):
         """ Sets the survivor's name. Logs it. """
 
@@ -2216,6 +2218,7 @@ class Survivor(models.UserAsset):
             self.update_survival(1, save=save)
 
 
+    @models.web_method
     def set_parent(self, role=None, oid=None):
         """ Sets the survivor's 'mother' or 'father' attribute. """
 
@@ -2242,6 +2245,59 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
+    def set_partner(self, partner_oid=None, update_partner=True):
+        """ Request context optional. Sets (or unsets) the survivor's partner. """
+
+        if partner_oid is None:
+            self.check_request_params(['partner_id'])
+            partner_oid = self.params['partner_id']
+
+        # handle unset requests first
+        if partner_oid == 'UNSET' and 'partner_id' in self.survivor.keys():
+            # unset the partner, if we're doing that
+            if update_partner:
+                P = Survivor(_id=self.survivor['partner_id'])
+                P.set_partner(partner_oid='UNSET', update_partner=False)
+            # unset the survivor
+            del self.survivor['partner_id']
+            self.log_event("%s no longer has a partner." % self.pretty_name())
+            self.save()
+            return True
+        elif partner_oid == 'UNSET' and not 'partner_id' in self.survivor.keys():
+            self.logger.warn('%s Ignoring bogus request to unset partner...' % self)
+            return True
+
+
+        # now sanity check the incoming OID
+        if not ObjectId.is_valid(partner_oid):
+            raise utils.InvalidUsage("Partner OID '%s' does not appear to be a valid OID!" % partner_oid)
+        partner = utils.mdb.survivors.find_one({"_id": ObjectId(partner_oid)})
+        if partner is None:
+            raise utils.InvalidUsage("Partner OID '%s' does not match the OID of any known survivor!" % partner_oid)
+
+        # ok, we've got a good OID for the new partner, let's check a.) whether
+        # this is the current partner or b.) whether this is an update
+        if partner['_id'] == self.survivor.get('partner_id', None):
+            self.logger.warn("%s Ignoring bogus request to set partner (already set)." % self)
+            return True
+        elif self.survivor.get('partner_id', None) is not None and partner['_id'] != self.survivor['partner_id']:
+            if update_partner:
+                P = Survivor(_id=self.survivor['partner_id'])
+                P.set_partner(partner_oid='UNSET', update_partner=False)
+
+        # set the new partner on the current survivor
+        self.survivor['partner_id'] = ObjectId(partner_oid)
+        self.log_event('%s is partners with %s!' % (self.pretty_name(), partner['name']))
+        self.save()
+
+        # finally, if we're updating the partner, do that
+        if update_partner:
+            P = Survivor(_id=partner['_id'])
+            P.set_partner(partner_oid=self.survivor['_id'], update_partner=False)
+
+
+    @models.web_method
     def set_retired(self, retired=None):
         """ Set to true or false. Backs off to request params is 'retired' kwarg
         is None. Does a little user-friendliness/sanity-checking."""
@@ -2253,13 +2309,21 @@ class Survivor(models.UserAsset):
         if type(retired) != bool:
             retired = bool(retired)
 
-        if "retired" in self.survivor.keys() and self.survivor["retired"] == retired:
-            self.logger.warn("%s Already has 'retired' set to '%s'. Ignoring bogus request..." % (self, retired))
+        if (
+            "retired" in self.survivor.keys() and
+            self.survivor["retired"] == retired
+        ):
+            err = "%s Already has 'retired' = '%s'. Ignoring bogus request..."
+            self.logger.warn(err % (self, retired))
             return True
 
         self.survivor["retired"] = retired
         if self.survivor["retired"]:
-            self.log_event("%s has retired %s." % (request.User.login, self.pretty_name()))
+            self.log_event("%s has retired %s." % (
+                request.User.login,
+                self.pretty_name()
+                )
+            )
             self.survivor['retired_in'] = self.get_current_ly()
         else:
             del self.survivor["retired"]
@@ -2267,10 +2331,15 @@ class Survivor(models.UserAsset):
                 del self.survivor['retired_in']
             except:
                 pass
-            self.log_event("%s has taken %s out of retirement." % (request.User.login, self.pretty_name()))
+            self.log_event("%s has taken %s out of retirement." % (
+                    request.User.login,
+                    self.pretty_name()
+                )
+            )
         self.save()
 
 
+    @models.web_method
     def set_savior_status(self, color=None, unset=False):
         """ Makes the survivor a savior or removes all savior A&Is. """
 
@@ -2322,6 +2391,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_sex(self, sex=None):
         """ Sets self.survivor["sex"] attribute. Can only be 'M' or 'F'.
 
@@ -2340,15 +2410,22 @@ class Survivor(models.UserAsset):
             sex = self.params["sex"]
 
         if sex not in ["M","F"]:
-            msg = "Survivor sex must be 'M' or 'F'. Survivor sex cannot be '%s'." % sex
-            self.logger.exception(msg)
+            msg = "'sex' must be 'M' or 'F'. Survivor sex cannot be '%s'."
+            self.logger.exception(msg % sex)
             raise utils.InvalidUsage(msg, status_code=400)
 
         self.survivor["sex"] = sex
-        self.log_event("%s set %s sex to '%s'." % (request.User.login, self.pretty_name(), sex))
+        self.log_event(
+            "%s set %s sex to '%s'." % (
+                request.User.login,
+                self.pretty_name(),
+                sex
+            )
+        )
         self.save()
 
 
+    @models.web_method
     def set_special_attribute(self):
         """ Sets an arbitrary attribute handle on the survivor. Saves. Expects a
         request context. """
@@ -2376,14 +2453,10 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-
+    @models.web_method
     def set_status_flag(self, flag=None, unset=False):
         """ Sets or unsets a status flag, regardless of previous status of that
-        flag. Supported flags include:
-
-            - cannot_spend_survival
-            - cannot_use_fighting_arts
-            - skip_next_hunt
+        flag. Supported flags can be found at self.flags.
 
         If 'flag' is None, this method assumes that it is being called by a the
         request_response() method and will check for incoming params.
@@ -2406,14 +2479,27 @@ class Survivor(models.UserAsset):
 
         if unset and self.survivor.get(flag, None) is not None:
             del self.survivor[flag]
-            self.log_event("%s removed '%s' from %s" % (request.User.login, flag_pretty, self.pretty_name()))
+            self.log_event(
+                "%s removed '%s' from %s" % (
+                    request.User.login,
+                    flag_pretty,
+                    self.pretty_name()
+                )
+            )
         else:
             self.survivor[flag] = True
-            self.log_event("%s set '%s' on %s" % (request.User.login, flag_pretty, self.pretty_name()))
+            self.log_event(
+                "%s set '%s' on %s" % (
+                    request.User.login,
+                    flag_pretty,
+                    self.pretty_name()
+                )
+            )
 
         self.save()
 
 
+    @models.web_method
     def set_survival(self, value=None, save=True):
         """ Sets survivor["survival"] to 'value'. Respects settlement rules
         about whether to enforce the Survival Limit. Will not go below zero. """
@@ -2463,6 +2549,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
+    @models.web_method
     def set_sword_oath(self):
         """ From the Echoes of Death 3 expansion; 'sword_oath' is a dict that we
         save on the survivor, similar to a special campaign attrib. """
@@ -2495,6 +2582,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_weapon_proficiency_type(self, handle=None):
         """ Sets the self.survivor["weapon_proficiency_type"] string to a
         handle. """
@@ -2536,6 +2624,7 @@ class Survivor(models.UserAsset):
     #   defaults and resets
     #
 
+    @models.web_method
     def default_attribute(self, attrib=None):
         """ Defaults a Survivor attribute to its base value, as determined the
         assets.survivors.py module. This absolutely will clobber the current
@@ -2562,6 +2651,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def reset_attribute_details(self, save=True):
         """ Zero-out all attribute_detail values and will overwrite with
         extreme prejudice. """
@@ -2579,6 +2669,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
+    @models.web_method
     def reset_damage(self, save=True):
         """ Remove all damage attribs/bools from the survivor. """
 
@@ -2588,6 +2679,7 @@ class Survivor(models.UserAsset):
 
         if save:
             self.save()
+
 
     #
     #   get methods
@@ -3279,7 +3371,6 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-
     def duck_type(self):
         """ Duck-types certain survivor sheet attributes, e.g. to make sure they
         didn't experience a type change due to bad form input, etc. """
@@ -3470,9 +3561,12 @@ class Survivor(models.UserAsset):
         self.survivor["meta"]["special_attributes_version"] = 1.0
         self.logger.info("Converted survivor special attributes for %s" % (self))
 
+
+
     #
     #   NO METHODS BELOW THIS POINT other than request_response()
     #
+
 
     def request_response(self, action=None):
         """ Initializes params from the request and then response to the
@@ -3562,17 +3656,10 @@ class Survivor(models.UserAsset):
             self.rm_note()
 
 
-        # affinities
-        elif action == "update_affinities":
-            self.update_affinities()
-        elif action == "set_affinity":
-            self.set_affinity()
 
         # status flags!
         elif action == 'set_status_flag':
             self.set_status_flag()
-        elif action == 'toggle_status_flag':
-            self.toggle_status_flag()
         elif action == 'toggle_boolean':
             self.toggle_boolean()
 
@@ -3602,16 +3689,35 @@ class Survivor(models.UserAsset):
             return utils.http_299
 #            sa = self.get_survival_actions("JSON")
 #            return json.dumps(sa, default=json_util.default)
+        elif action == 'toggle_status_flag':
+            return flask.Response(
+                response="Deprecated! Please use 'set_status_flag' instead.",
+                status=299
+            )
+        elif action == "set_affinity":
+            return flask.Response(
+                response="Deprecated! Please use 'set_affinities' instead.",
+                status=299
+            )
+        elif action == "update_affinities":
+            return flask.Response(
+                response="Deprecated! Please use 'set_affinities' instead.",
+                status=299
+            )
 
         else:
             # first, if we have a method matching 'action', try to execute it
+            #   as long as it's not an internal-only method
             if getattr(self, action, None) is not None:
-                getattr(self,action)()
-            # next, if we don't have a method, return an error
+                method = getattr(self, action)
+                if getattr(method, '_web_method'):
+                    method()
+                else:
+                    err = "The %s endpoint is mapped to an internal method!"
+                    return flask.Response(response=err % action, status=400)
             else:
-                err = "Unsupported survivor action '%s' received!" % action
-                self.logger.error(err)
-                return utils.http_400
+                err = "Survivor '%s' is not imlemented!" % action
+                return flask.Response(response = err, status=501)
 
 
         # finish successfully if we executed a method but haven't returned

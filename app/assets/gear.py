@@ -150,13 +150,19 @@ core = {
     'lantern_glaive': {
         'type': 'blacksmith',
         'name': 'Lantern Glaive',
-        'keywords': ['weapon','melee','spear','axe','two-handed','finesse','metal'],
+        'keywords': [
+            'weapon','melee','spear','axe','two-handed','finesse','metal'
+        ],
         'speed': 2,
         'accuracy': 6,
         'strength': 4,
         'rules': ['Reach 2', 'Sharp','Early Iron'],
         'affinities': {'bottom': 'green'},
-        'desc': '<b>Sharp:</b> Add 1d10 strength to each wound attempt.<br/><b>Early Iron:</b> When an attack roll result is 1, cancel any hits and end the attack.',
+        'desc': (
+            '<b>Sharp:</b> Add 1d10 strength to each wound attempt.<br/>'
+            '<b>Early Iron:</b> When an attack roll result is 1, cancel '
+            'any hits and end the attack.'
+        ),
     },
     'lantern_greaves': {
         'type': 'blacksmith',

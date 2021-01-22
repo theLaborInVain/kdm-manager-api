@@ -51,11 +51,21 @@ code,
 .doc_row_key {width: 5em; }
 .doc_row_key,
  .doc_row_content {box-sizing: border-box; padding: 0.5em; }
-.doc_row_content {width: 75%; flex:1; }
+.doc_row_content {flex:1; }
+.doc_row_content code.example {
+    display: block;
+    margin: 1rem; 
+    width: max-content;
+}
 .doc_row_content.route {font-family: monospace; }
 .doc_row_content.methods {font-weight: bold;}
 
-code {background: linear-gradient(to right, #f9c7e7, #fffcdc); font-size: 1.2em; padding: 0.2em; display: inline-block; color: #000; }
+code {
+    background: linear-gradient(to right, #f9c7e7, #fffcdc);
+    color: #000;
+    display: inline-block;
+    padding: 0.2em;
+}
 
 table {border-collapse: collapse; cursor: default; margin: 1.5em; border: 0.2em solid #ccc; }
 table th,

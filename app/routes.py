@@ -45,19 +45,8 @@ def get_docs(action):
     """ get documentation JSON """
 
     docs_object = docs.DocumentationObject()
+    return docs_object.request_response(action)
 
-    if action == 'sections':
-        return flask.Response(
-            response = docs_object.dump_sections('JSON'),
-            status=200,
-            mimetype = "application/json"
-        )
-
-    return flask.Response(
-        response = docs_object.render_as_json(),
-        status=200,
-        mimetype = "application/json"
-    )
 
 @API.route("/blog/<view>/<asset>")
 def blog_content(view, asset):
@@ -229,8 +218,8 @@ def list_game_assets():
         mimetype="application/json"
     )
 
-@API.route("/game_asset/<asset_type>", methods=API.default_methods)
-@API.route("/game_assets/<asset_type>", methods=API.default_methods)
+@API.route("/game_asset/<asset_type>", methods=API.config['DEFAULT_METHODS'])
+@API.route("/game_assets/<asset_type>", methods=API.config['DEFAULT_METHODS'])
 @crossdomain(origin=['*'])
 def lookup_asset(asset_type):
     """ Looks up game asset collection assets. Or, if you GET it, dumps the
@@ -406,7 +395,9 @@ def new_asset(asset_type):
     return assets.new_user_asset(asset_type)
 
 
-@API.route("/<collection>/<action>/<asset_id>", methods=API.default_methods)
+@API.route(
+    "/<collection>/<action>/<asset_id>", methods=API.config['DEFAULT_METHODS']
+)
 @crossdomain(origin=['*'])
 def collection_action(collection, action, asset_id):
     """ This is our major method for retrieving and updating settlements.

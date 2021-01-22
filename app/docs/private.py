@@ -1217,13 +1217,236 @@ survivor_management = {
             'endpoint.</p>'
         ),
     },
-    "survivor_get_survival_actions": {
+    "zz_survivor_get_survival_actions": {
         "name": "/survivor/get_survival_actions/&lt;survivor_id&gt;",
         "methods": ["GET", "OPTIONS"],
         "desc": (
             '<p>This endpoint is deprecated.</p>'
             '<p>Please use the <code>survival_actions</code> element returned '
             'by the <code>/survivor/get/&lt;survivor_id&gt;</code> instead.</p>'
+        ),
+    },
+
+    # survivor shset
+    "survivor_reset_attribute_details": {
+        "name": "/survivor/reset_attribute_details/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "desc": (
+            "<p><b>GET</b> or <b>POST</b> to this endpoint to remove all "
+            "gear and token effects from a survivor's attributes.</p>"
+        )
+    },
+    "survivor_reset_damage": {
+        "name": "/survivor/reset_damage/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "desc": (
+            "<p>Hit this endpoint to reset all damage locations.</p>"
+        )
+    },
+    "survivor_set_attribute": {
+        "name": "/survivor/set_attribute/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p>For this endpoint, you want to <b>POST</b> some JSON that "
+            "includes both <code>attribute</code> and <code>value</code> keys, "
+            "with an integer value for <code>value</code>.</p>"
+            "<p>You can use this one to update pretty much any attribute of "
+            "the survivor sheet that is an integer, and it is essentially the "
+            "same as the <code>set_many_attributes</code> route (except for "
+            "how it only does one attribute at a time).</p>"
+        ),
+        'examples': [
+            '{attribute: "survival", value: 3}',
+            '{attribute: "Head", value: 1}',
+            '{attribute: "Understanding", value: 2}',
+            '{attribute: "hunt_xp", value: 6}'
+        ],
+    },
+    "survivor_set_name": {
+        "name": "/survivor/set_name/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p><b>POST</b> a 'name' value to this endpoint to change the "
+            "survivor's name:</p><code>{name: 'Hungry Basalt'}</code>"
+        )
+    },
+    "survivor_set_sex": {
+        "name": "/survivor/set_sex/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p>This endpoint accepts a one-character-long string of either "
+            "'M' or 'F' and use it to set the survivor's <code>sex</code> "
+            "attribute. </p>"
+            "<p>Note that survivors also have an <code>effective_sex</code> "
+            "attribute that the API changes automatically when certain gear "
+            "and/or A&Is are added to the survivor.</p>"
+            "<code>{'sex': 'F'}</code>"
+        )
+    },
+    "survivor_set_survival": {
+        "name": "/survivor/set_survival/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p><b>POST</b> a 'value' to this endpoint to set the survival "
+            "number:</p> <code>{value: '1'}</code>"
+            "<p>PROTIP: the API will ignore negative numbers and default them "
+            "to zero.</p>"
+        )
+    },
+    "survivor_set_affinities": {
+        "name": "/survivor/set_affinities/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p>This supersedes both <code>set_affinity</code>, and "
+            "<code>update_affinities</code>, which are both deprecated in "
+            "API releases higher than 1.50.n.</p>"
+            "<p>The idea here is to <b>POST</b> some JSON containing one or "
+            "all of the following keys: <code>red</code>, <code>green</code> "
+            "or <code>blue</code>, and for each of those keys to have an "
+            "integer value, e.g.:</p>"
+            "<code>{red: 1, green: 0, blue:4}</code>"
+            "<p>For convenience/laziness-sake, the API allows you to zero out "
+            "an affinity by <i>not</i> setting a value for it.</p>"
+            "<p><b>POST</b> <code>{red: 1, blue: 3}</code>, for example, to "
+            "set he survivor's red affinities to 1, their blue affinities to "
+            "three and their green affinities to zero.</p>"
+        ),
+        'examples': [
+            '{red: 3, blue:1}',
+            '{green: 4, red: 1}',
+            '{blue: 0}'
+        ],
+    },
+    "survivor_set_bleeding_tokens": {
+        "name": "/survivor/set_bleeding_tokens/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p><b>POST</b> an integer to this endpoint to set the "
+            "survivor's <code>bleeding_tokens</code> attribute.</p>"
+            "<p>A couple of things to keep in mind about this attribute:"
+            "<ol><li>It cannot go below zero: the API will default "
+            "negative numbers to zero.</li><li>Each survivor has a "
+            "<code>max_bleeding_tokens</code> value that is determined "
+            "by their Fighting Arts, A&Is, etc. The API will default any "
+            "incoming values that are <i>greater</i> than this number back "
+            "to the <code>max_bleeding_tokens</code> value.</li></ol>"
+        ),
+        'examples': [
+            "<code>{value: 4}</code>",
+        ],
+    },
+    "survivor_set_status_flag": {
+        "name": "/survivor/set_status_flag/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p>The API allows survivors to be 'flagged' with a status, which "
+            "is an attribute that always evaluates to Boolean true if it "
+            "exits, but which can <b>never be False</b>.</p>"
+            "<p>(This may see odd, but as a design pattern, it has its uses as "
+            "an unambigious indicator of status: allowing these types of "
+            "statuses to be false would result in potentially ambigious double "
+            "negatives, etc.)</p>"
+            "<p>To set a flag, simply <b>POST</b> it to this end point:</p>"
+            "<code>{flag: 'cannot_consume'}</code>"
+            "<p>To un-set a flag, <b>POST</b> the flag and the "
+            "<code>unset</code> key:</p>"
+            "<code>{flag: 'cannot_spend_survival', unset: true}</code>."
+            "<p>Supported flags include:</p><table>"
+            "<tr><td>cannot_activate_two_handed_weapons</td></tr>"
+            "<tr><td>cannot_activate_two_plus_str_gear</td></tr>"
+            "<tr><td>cannot_consume</td></tr>"
+            "<tr><td>cannot_be_nominated_for_intimacy</td></tr>"
+            "<tr><td>cannot_gain_bleeding_tokens</td></tr>"
+            "<tr><td>cannot_spend_survival</td></tr>"
+            "<tr><td>cannot_use_fighting_arts</td></tr>"
+            "<tr><td>departing</td></tr>"
+            "<tr><td>skip_next_hunt</td></tr>"
+            "</table>"
+        ),
+        'examples': [
+            '{retired: true}',
+            '{retired: false}',
+        ],
+    },
+    "survivor_set_retired": {
+        "name": "/survivor/set_retired/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p>Takes a Boolean object as the value for a key called "
+            "<code>retired</code>. Rejects anything else.</p>"
+        ),
+        'examples': [
+            '{retired: true}',
+            '{retired: false}',
+        ],
+    },
+    "survivor_set_sword_oath": {
+        "name": "/survivor/set_sword_oath/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p>Starting with release 1.44.307, which adds support for the "
+            "<b>Echoes of Death 3</b> expansion and the <i>Sword Oath</i> "
+            "Fighting Art, the API can also track the sword that a survivor "
+            "nominates as well as the number of wounds.</p>"
+            "<p>Just <b>POST</b> any valid gear handle and the number of "
+            "wounds to this endpoint:</p>"
+        ),
+        'examples': [
+            "<code>{sword: 'bone_blade', wounds: 3}</code>",
+        ],
+    },
+    "survivor_toggle_sotf_reroll": {
+        "name": "/survivor/toggle_sotf_reroll/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "desc": (
+            "<p>Hit this end point to toggle the survivor record's"
+            "<code>sotf_reroll</code> attribute.</p>"
+            "<p>If the record does not have this attribute, accessing this "
+            "endpoint will create it and set it to <code>true</code>.</p>"
+            "<p><b>Warning!<b></p> This attribute, since it is only used with "
+            "certain campaign content, is <b>not</b> part of the survivor data "
+            "modal and <b>cannot</b> be toggled using the "
+            "<code>toggle_boolean</code> endpoint!</p>"
+        ),
+    },
+    # deprecated
+    "zz_toggle_status_flag": {
+        "name": "/survivor/toggle_status_flag/&lt;survivor_id&gt;",
+        "methods": ["GET", "OPTIONS"],
+        "subsection": "survivor_sheet",
+        "desc": (
+            '<p>This endpoint is deprecated.</p>'
+            '<p>Please use the <code>set_status_flag</code> route instead.</p>'
+        ),
+    },
+    "zz_survivor_set_affinity": {
+        "name": "/survivor/set_affinity/&lt;survivor_id&gt;",
+        "methods": ["GET", "OPTIONS"],
+        "subsection": "survivor_sheet",
+        "desc": (
+            '<p>This endpoint is deprecated.</p>'
+            '<p>Please use the <code>set_affinities</code> route instead.</p>'
+        ),
+    },
+    "zz_survivor_update_affinities": {
+        "name": "/survivor/update_affinities/&lt;survivor_id&gt;",
+        "methods": ["GET", "OPTIONS"],
+        "subsection": "survivor_sheet",
+        "desc": (
+            '<p>This endpoint is deprecated.</p>'
+            '<p>Please use the <code>set_affinities</code> route instead.</p>'
         ),
     },
 
@@ -1234,9 +1457,11 @@ survivor_management = {
         "methods": ["POST", "OPTIONS"],
         "desc": (
             '<p><b>POST</b> some JSON that includes a gear handle to add it to '
-            "the survivor's list of cursed items:</p>"
-            "<code>{handle: 'thunder_maul'}</code>"
+            "the survivor's list of cursed items.</p>"
         ),
+        'examples': [
+            "<code>{handle: 'thunder_maul'}</code>",
+        ],
     },
     "rm_cursed_item": {
         "name": "/survivor/rm_cursed_item/&lt;survivor_id&gt;",
@@ -1244,9 +1469,11 @@ survivor_management = {
         "methods": ["POST", "OPTIONS"],
         "desc": (
             "<p>The reverse of the previous method. <b>POST</b> a gear handle "
-            "to remove it:</p>"
-            "<code>{handle: 'blue_lantern'}</code>"
-        )
+            "to remove it.</p>"
+        ),
+        'examples': [
+            "<code>{handle: 'blue_lantern'}</code>",
+        ],
     },
     "set_gear_grid": {
         "name": "/survivor/set_gear_grid/&lt;survivor_id&gt;",
@@ -1267,7 +1494,11 @@ survivor_management = {
             '"middle_middle": you laugh now, but you will thank me '
             'when you are able to programmatically iterate the table '
             'in one or two lines of code.</p>'
-        )
+        ),
+        'examples': [
+            "<code>{top_left: 'bone_blade', 'top_middle': 'rawhide_headband'}</code>",
+            "<code>{middle_middle: 'rawhide_vest', 'bottom_right': 'brain_mint', bottom_left: 'lantern_greaves'}</code>",
+        ],
     },
 
     # notes
@@ -1305,5 +1536,62 @@ survivor_management = {
             "<b>POST</b> a note's OID to this endpoint to remove it: "
             "<code>{_id: 5fbe989f6515932455f4c5da}</code>."
         )
+    },
+
+    # survivor admin
+    "add_favorite": {
+        "name": "/survivor/add_favorite/&lt;survivor_id&gt;",
+        "subsection": "survivor_admin",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            '<p>The API takes a bit of an unusual approach to making a '
+            "survivor a 'favorite' or starred survivor due to the fact that "
+            "users can remove settlements (i.e. the parent record of a "
+            "survivor record). Rather than having the User record contain a "
+            "list of favorite survivors, we actually make a list of users on "
+            "the survivor who have made the survivor one of their favorites."
+            "</p><p>To add a user's OID to the survivor's list of users who "
+            "have starred it, use the <code>users_email</code> key and an "
+            "OID."
+        ),
+        'examples': [
+            "{user_email: 'toconnell@thelaborinvain.com'}"
+        ]
+    },
+    "rm_favorite": {
+        "name": "/survivor/rm_favorite/&lt;survivor_id&gt;",
+        "subsection": "survivor_admin",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p>This is effectively the reverse of the "
+            "<code>add_favorite</code> endpoint (above):</p>"
+        ),
+        'examples': [
+            "{user_email: 'toconnell@thelaborinvain.com'}"
+        ]
+    },
+    "survivor_set_email": {
+        "name": "/survivor/set_email/&lt;survivor_id&gt;",
+        "methods": ["POST", "OPTIONS"],
+        "subsection": "survivor_admin",
+        "desc": (
+            "<p>Sets the survivor's <code>email</code> attribute, which "
+            "determines the 'owner' of the survivor, from an access and "
+            "permissions perspective.</p>"
+            "<p><b>Important!</b> The API allows the creator of a survivor "
+            "and it's owner (as determined by the <code>email</code> "
+            "attribute) to modify it. Anyone else gets a 403.</p>"
+        ),
+        "examples": [
+            "{email: 'toconnell@thelaborinvain.com'}"
+        ],
+    },
+    "survivor_remove": {
+        "name": "/survivor/remove/&lt;survivor_id&gt;",
+        "subsection": "survivor_admin",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "desc": (
+            "<p>Removes the survivor.</p>"
+        ),
     },
 }

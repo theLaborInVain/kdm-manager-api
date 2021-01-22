@@ -144,6 +144,17 @@
                             <div class="doc_row_key">Notes:</div>
                             <div class="doc_row_content" ng-bind-html="doc.desc|trustedHTML"></div>
                          </div>
+                        <div class="doc_row" ng-if="doc.examples">
+                            <div class="doc_row_key">Examples:</div>
+                            <div class="doc_row_content">
+                                <code
+                                    class="example"
+                                    ng-bind-html="ex|trustedHTML"
+                                    ng-repeat="ex in doc.examples"
+                                >
+                                </code>
+                            </div>
+                        </div>
                     </div>
 
                 </div> <!-- subsection_container -->

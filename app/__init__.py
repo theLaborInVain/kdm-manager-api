@@ -39,14 +39,6 @@ API.logger = utils.get_logger(log_name="server")
 
 API.settings = settings
 
-#   set default methods, log about it
-API.default_methods = [
-    s.strip() for
-    s in
-    settings.get('api', 'default_methods').split(',')
-]
-
-
 #   Javascript Web Token! DO NOT import jwt (i.e. pyjwt) here!
 JWT = flask_jwt_extended.JWTManager(API)
 

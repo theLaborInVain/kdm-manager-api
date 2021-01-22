@@ -36,7 +36,10 @@ these routes, <u>all private routes supported by the KD:M API also support the
     #   public routes 
     "user_creation_and_auth": {
         "name": "User creation and auth",
-        "desc": """These public routes are how you want to create new users and authenticate existing ones.""",
+        "desc": (
+            "These public routes are how you want to create new users and "
+            "authenticate existing ones."
+        ),
     },
     "password_reset": {
         "name": "Password reset",
@@ -274,6 +277,13 @@ order. If you get them back out of order, open a ticket.</p>
             "<p>These routes are private and require authentication.</p>"
         ),
     },
+    "survivor_sheet":{
+        "name": "Survivor Sheet",
+        "desc": (
+            "Endpoints documented here are allow a survivor's 'sheet' to "
+            "be managed."
+        ),
+    },
     "survivor_gear_management":{
         "name": "Survivor gear",
         "desc": (
@@ -290,6 +300,15 @@ order. If you get them back out of order, open a ticket.</p>
             "are enhanced to allow for annotation (e.g. pinning, colors, "
             "etc.) and an improved level of detail over their previous "
             "functionality."
+        ),
+    },
+    "survivor_admin":{
+        "name": "Survivor administration",
+        "desc": (
+            "In order to help facilitate 'quality of life' type features, "
+            "the API supports a handful of endpoints that allow users to "
+            "manager survivors by tagging them and setting various "
+            "non-game-related attributes that can be used for sorting, etc."
         ),
     },
 

@@ -42,6 +42,13 @@ from app import models, utils
 #   model decorators
 #
 
+def web_method(func):
+    """ Decorate methods that we do not support a request context and thus
+    are not meant to be called as part of web-facing API work, etc. """
+    func._web_method = True
+    return func
+
+
 def log_event_exception_manager(log_event_call):
     """ This is a decorator for model lookups. Do not use this decorator to
     decorate other methods: it will fail.
