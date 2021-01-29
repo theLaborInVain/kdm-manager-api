@@ -200,7 +200,6 @@ def world_json():
     return response
 
 
-
 #   game asset lookups
 
 @API.route("/game_asset")

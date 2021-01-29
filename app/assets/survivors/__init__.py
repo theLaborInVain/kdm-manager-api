@@ -15,62 +15,6 @@
 
 """
 
-defaults = {
-    "Movement": 5,
-    "max_bleeding_tokens": 5,
-}
-
-
-#
-#   these are the 'macro' options used when creating new settlements. See the
-#   new_settlement_special() method of the settlements.Settlement model/class
-#
-
-specials = {
-    "create_first_story_survivors": {
-        "name": "First Story",
-        "title": 'Four "First Story" Survivors',
-        "desc": 'Two male and two female survivors are randomly generated and automatically added to the <i>Departing Survivors</i> group. Starting gear is added to Settlement Storage.',
-        "current_quarry": "White Lion (First Story)",
-        'showdown_type': 'normal',
-        "random_survivors": [
-            {"sex": "M", "Waist": 1, "departing": True},
-            {"sex": "M", "Waist": 1, "departing": True},
-            {"sex": "F", "Waist": 1, "departing": True},
-            {"sex": "F", "Waist": 1, "departing": True},
-        ],
-        "storage": [
-            {"name": "founding_stone", "quantity": 4},
-            {"name": "cloth", "quantity": 4},
-        ],
-        "timeline_events": [
-            {"ly": 0, "sub_type": "showdown_event", "name": "White Lion (First Story)"},
-        ],
-    },
-
-    "create_seven_swordsmen": {
-        "name": "Seven Swordsmen",
-        "title": "Seven Swordsmen",
-        "desc": 'Seven survivors with the "Ageless" ability and Sword mastery are randomly generated.',
-        "random_survivors": [
-            {"sex": "R", 'abilities_and_impairments': ['ageless','mastery_sword']},
-            {"sex": "R", 'abilities_and_impairments': ['ageless','mastery_sword']},
-            {"sex": "R", 'abilities_and_impairments': ['ageless','mastery_sword']},
-            {"sex": "R", 'abilities_and_impairments': ['ageless','mastery_sword']},
-            {"sex": "R", 'abilities_and_impairments': ['ageless','mastery_sword']},
-            {"sex": "R", 'abilities_and_impairments': ['ageless','mastery_sword']},
-            {"sex": "R", 'abilities_and_impairments': ['ageless','mastery_sword']},
-        ],
-    },
-
-}
-
-
-
-#
-#   the survivors in the BCS PDF
-#
-
 beta_challenge_scenarios = {
     "adam": {
         "name": "Adam",
@@ -154,8 +98,18 @@ beta_challenge_scenarios = {
     "kara_black": {
         "name": "Kara Black",
         'expansion': 'beta_challenge_scenarios',
-        "attribs": {"name": "Kara Black", "survival": 3, "Strength": 1, "fighting_arts": ["leader","tough"], "sex": "F"},
-#        "storage": ["Founding Stone", "Cloth", "Giant Stone Face"],
+        "attribs": {
+            "name": "Kara Black",
+            "survival": 3,
+            "Strength": 1,
+            "fighting_arts": ["leader","tough"],
+            "sex": "F"
+        },
+#        "storage": [
+#            "Founding Stone",
+#            "Cloth",
+#            "Giant Stone Face"
+#        ],
     },
     "messenger_of_the_first_story": {
         "name": "Messenger of the First Story",
@@ -251,4 +205,31 @@ beta_challenge_scenarios = {
         },
     },
 
+}
+
+vignettes_of_death_white_gigalion = {
+    'rock_knight': {
+        'name': 'Rock Knight of Deadrock',
+        'subtitle': 'of Deadrock',
+        'ly': 8,
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'attribs': {
+            'name': 'Rock Knight',
+            'sex': 'F',
+            'Insanity': 6,
+            'Head': 3,
+            'Body': 4,
+            'Waist': 4,
+            'Legs': 4,
+            'survival': 3,
+            'Strength': 1,
+            'Understanding': 2,
+            'disorders': ['squeamish', 'post_traumatic_stress'],
+            'fighting_arts': ['kings_step', 'clutch_fighter'],
+            'Weapon Proficiency': 4,
+            'weapon_proficiency_type': 'club',
+            'hunt_xp': 6,
+            'fixed_survival_actions': ['dodge','encourage','dash'],
+        },
+    },
 }

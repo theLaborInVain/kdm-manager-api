@@ -379,6 +379,27 @@ myApp.controller('apiDocumentationEditorController', function($scope, $http) {
 
     $scope.init = function() {
         console.info('Initializing API documentation editor...');
+        $scope.setUndocumentedMethods();
+    };
+
+    $scope.setUndocumentedMethods = function() {
+        // sets $scope.apiUndocumentedMethods
+        $scope.apiUndocumentedMethods = undefined
+
+        var reqURL = '/docs/get_undocumented_methods';
+
+        console.time(reqURL);
+
+        $http.get(reqURL).then(
+            function(result){
+                console.timeEnd(reqURL);
+                $scope.apiUndocumentedMethods = result.data;
+            },
+            function(result){
+                console.error('Failed to retrieve undocumented methods from API!');
+                console.error(result);
+            }
+        );
     };
 
     $scope.init();

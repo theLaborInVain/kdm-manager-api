@@ -67,10 +67,12 @@ button.kd {
 
 /*  kd CSS variables    */
 .kd {
+    --border-radius-card: 0.8rem;
+    --border-radius-sheet: 0.5rem;
     --box-shadow-default: 0 0 0.5em 0 #999;
     --box-shadow-inset: inset 0.1em 0.1em 0.2em 0 #999;
     --border-checkbox: 0.1rem solid;
-    --border-worksheet: 0.5rem solid;
+    --border-worksheet: 0.3rem solid;
     --color-kd-affinity-blue: #1C99CD;
     --color-kd-affinity-green: #4CB848;
     --color-kd-affinity-red: #CD2027;
@@ -79,6 +81,7 @@ button.kd {
     --color-kd-bleeding-token: radial-gradient(at right 50%, #f00, #992426);
     --color-kd-blue: #00A0E9;
     --color-kd-blue-gradient: radial-gradient(#60DAF5, #40AFD3);
+    --color-kd-card-gradient: radial-gradient(#fff, #fff, #f8f8f8, #fffff9);
     --color-kd-green: #4CB848;
     --color-kd-green-gradient: radial-gradient(#0d0, #4CB848);
     --color-kd-death-grey: #212121;
@@ -102,9 +105,27 @@ button.kd {
 
 .kd.worksheet_block {
     border: var(--border-worksheet);
+    box-sizing: border-box;
+    height: fit-content;  
     margin: 1rem;
     padding: 1rem;
     padding-top: 0.5rem;
+    position: relative;
+}
+.kd.worksheet_block.disabled {
+    pointer-events: none;
+}
+.kd.worksheet_block.disabled:before{
+    content: "";
+    position: absolute;
+    width: 94%;
+    height: 94%;
+    background: #fff;
+    opacity: .7;
+}
+.kd.worksheet_block_title {
+    font-family: 'Silverado';
+    font-size: var(--font-large);
 }
 .kd.worksheet_row {
     align-items: baseline; 
@@ -131,6 +152,12 @@ button.kd {
     min-width: 0.5rem;
     width: 0.5rem;
 }
+.kd.checkbox.tiny {
+    height: 0.25rem;
+    min-height: 0.25rem;
+    min-width: 0.25rem;
+    width: 0.25rem;
+}
 .kd.checkbox.checked {
     background: #000;
     background-color: #000;
@@ -156,6 +183,70 @@ button.kd {
     margin-left: 0.5rem;
     max-width: 7rem;
     width: 100%;
+}
+
+/*  the inline shield style */
+.kd.inline_shield { 
+    background: #000;
+    border-radius: 0 0 0.2rem 0.2rem;
+    color: #fff;
+    display: inline-block; 
+    position: relative;
+    height: 0.6rem;
+    width: 0.8rem;
+}
+.kd.inline_shield:after { 
+    background: #000;
+    border-left: 0.4rem solid; 
+    border-top: 0.5rem solid transparent; 
+    border-right: 0.4rem solid; 
+    content: "";
+    height: 0;
+    left: 0;
+    position: absolute;
+    top: 80%; 
+    width: 0;
+}
+.kd.inline_shield span { /* the number within it */
+    position: absolute;
+    margin-top: 0.05rem;
+    text-align: center;
+    width: 100%;
+    z-index:10;
+}
+
+/*  card-style attributes tablel AI, vignette survivor, etc. */
+.kd.attributes_table {
+    background: linear-gradient(to bottom, rgba(255,0,0,0), rgba(255,0,0,0), #ddd);
+    border-radius: var(--border-radius-card);
+    display: flex;
+    justify-content: space-evenly;
+    margin: 1rem auto 1rem auto;
+    width: 90%;
+}
+.kd.attributes_table .cell,
+.kd.attributes_table .large_cell {
+    align-items: center; 
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0.25rem; 
+}
+.kd.attributes_table .cell {
+    font-size: var(--font-medium);
+    justify-content: center; 
+    width: 10%;
+}
+.kd.attributes_table .cell:nth-child(even){
+    background: #ddd;
+}
+.kd.attributes_table .large_cell {
+    font-size: var(--font-large);
+    width: 20%; 
+}
+.kd.attributes_table .cell .title,
+.kd.attributes_table .large_cell .title {
+    font-size: var(--font-small);
+    margin-top: 0.25rem; 
 }
 
 /*  the pink rulebook warning bubble    */
@@ -203,7 +294,7 @@ button.capsule {
 }
 input.kd.capsule,
     button.kd.capsule {
-    margin: 1rem; 
+    margin: 2rem 1rem 2rem 1rem; 
 }
 input.kd.capsule {
     background: #fff;
@@ -234,36 +325,36 @@ input.kd.capsule {
     color: #fff;
 }
 .kd.black {
+    background: #000;
     background: var(--color-kd-black-gradient);
-    background-color: #000;
     color: #fff;
 }
 .kd.blue {
+    background: var(--color-kd-blue);
     background: var(--color-kd-blue-gradient);
-    background-color: var(--color-kd-blue);
     color: #fff;
 }
 .kd.green {
+    background: var(--color-kd-green);
     background: var(--color-kd-green-gradient);
-    background-color: var(--color-kd-green);
     color: #fff;
 }
 .kd.pink {
+    background: var(--color-kd-pink);
     background: var(--color-kd-pink-gradient);
-    background-color: var(--color-kd-pink);
-    color: #fff;
+    color: #ffffdd;
 }
 .kd.pink_text {
     color: var(--color-kd-pink);
 }
 .kd.red {
+    background: var(--color-kd-red);
     background: var(--color-kd-red-gradient);
-    background-color: var(--color-kd-red);
     color: #fff;
 }
 .kd.yellow {
+    background: var(--color-kd-yellow);
     background: var(--color-kd-yellow-gradient);
-    background-color: var(--color-kd-yellow);
     color: #000;
 }
 .kd.silver {
@@ -284,4 +375,91 @@ input.kd.capsule {
 }
 .kd.title:after {
     content: " -";
+}
+
+
+/*                      */
+/*  survivor cards      */
+/*                      */
+
+.kd.vignette_survivor_card {
+    background: var(--color-kd-card-gradient);
+    border-radius: var(--border-radius-card);
+    box-shadow: var(--box-shadow-default);
+    margin: 1rem auto 1rem auto;
+    padding: 1rem 0 1rem 0;
+    width:  20rem;
+}
+.kd.vignette_survivor_card .ly {
+    align-items: center; 
+    background: var(--color-kd-yellow);
+    border-radius: 0 1.5rem 1.5rem 0;
+    display: flex;
+    font-size: var(--font-small);
+    height: 2.2rem;
+    padding: 0 0.5rem 0 1.5rem;
+    position: absolute; 
+}
+.kd.vignette_survivor_card .title_bar {
+    display: flex;
+    flex-wrap: nowrap; 
+    justify-content: space-between; 
+    height: 2.5rem;
+    width: 100%;
+}
+.kd.vignette_survivor_card .name {
+    text-align: center; 
+    width: 100%; 
+}
+.kd.vignette_survivor_card .name .subtitle {
+    margin-top: 0; 
+}
+.kd.vignette_survivor_card .avatar_bar {
+    display: flex;
+    flex-wrap: no wrap;
+    justify-content: space-between; 
+    min-height: 5rem;
+    width: 100%;
+}
+.kd.vignette_survivor_card .avatar_bar .survival_actions,
+    .kd.vignette_survivor_card .avatar_bar .hit_locations {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--font-small);
+    min-width: 15%;
+}
+.kd.vignette_survivor_card .avatar_bar .survival_actions {
+    margin: 0.25rem 0 0 1rem;
+    opacity: 0.5;
+}
+.kd.vignette_survivor_card .avatar_bar .survival_actions .survival_action{
+    align-items: baseline; 
+    display: flex;
+    margin-bottom: 0.2rem;
+}
+.kd.vignette_survivor_card .avatar_bar .survival_actions .survival_action .checkbox{
+    margin-right: 0.25rem;
+}
+.kd.vignette_survivor_card .avatar_bar .avatar {
+    margin-top: 1.5rem;
+}
+.kd.vignette_survivor_card .avatar_bar .avatar img {
+    width: 9rem; 
+}
+.kd.vignette_survivor_card .avatar_bar .hit_locations {
+    margin: 3rem 1rem 0 0;
+    opacity: 0.7; 
+}
+.kd.vignette_survivor_card .avatar_bar .hit_locations .hit_location {
+    display: flex;
+    justify-content: flex-end; 
+    margin-top: 0.5rem;
+}
+.kd.vignette_survivor_card .avatar_bar .hit_locations .hit_location.insanity {
+    border-bottom: 0.1rem solid;
+}
+.kd.vignette_survivor_card .avatar_bar .hit_locations .hit_location .inline_shield {
+    margin-bottom: 0.5rem;
+    margin-left: 0.2rem;
+    margin-top: -0.1rem;  
 }

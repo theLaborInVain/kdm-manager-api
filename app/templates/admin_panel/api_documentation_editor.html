@@ -1,13 +1,63 @@
 <div
     id="apiDocumentationEditor"
     class="modal_outer hidden"
+    ng-click="ngHide('apiDocumentationEditor')"
     ng-controller="apiDocumentationEditorController"
 >
     <div
         class="modal_inner api_documentation_editor_container"
-        ng-click="ngHide('apiDocumentationEditor')"
+        ng-click="$event.stopPropagation()"
     >
-        docs
+
+        <h3 class="kd title">Undocumented Web Methods</h3>
+
+        <button
+            class="kd capsule yellow"
+            ng-click="setUndocumentedMethods()"
+        >
+            Refresh
+        </button>
+
+        <div
+            class="clickable kd worksheet_block"
+            ng-repeat="(object, objectDict) in apiUndocumentedMethods"
+        >
+
+            <h3 class="capitalize">{a object a} object</h3>
+
+            <div
+                ng-repeat="(method, methodDict) in objectDict"
+                ng-init="methodDetailId = method + 'MethodDetail'"
+                ng-click="ngShowHide(methodDetailId)"
+            >
+                <div class="kd worksheet_row">
+                    <div
+                        class="kd checkbox"
+                        ng-class="{
+                            'checked': ngVisible[methodDetailId],
+                        }"
+                    ></div>
+                    <div
+                        class="kd checkbox_desc"
+                    >
+                        <i>{a method a}()</i>
+                    </div>
+                </div> <!-- worksheet row for method name -->
+                <div
+                    id = "{a methodDetailId a}"
+                    class="hidden"
+                >
+                    <div
+                        class="kd worksheet_row"
+                        ng-repeat="(attrib, desc) in methodDict"
+                    >
+                        &emsp; <i>{a attrib a}</i>: {a desc a}
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
+
 </div>
 <!-- END release editor -->

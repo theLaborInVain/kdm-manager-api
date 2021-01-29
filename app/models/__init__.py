@@ -49,6 +49,29 @@ def web_method(func):
     return func
 
 
+def deprecated(method):
+    """ Decorate object methods with this to log a deprecation warning when
+    they're called. """
+
+    logger = utils.get_logger(log_name='deprecated')
+
+    def wrapped(*args, **kwargs):
+        """ Logs the deprecated method and its caller. """
+
+        warning = "DEPRECATION WARNING! The %s() method is deprecated!"
+        logger.warn(warning % method.__name__)
+
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        logger.warn(
+            "%s() called by %s()" % (method.__name__, calframe[1][3])
+        )
+
+        return method(*args, **kwargs)
+
+    return wrapped
+
+
 def log_event_exception_manager(log_event_call):
     """ This is a decorator for model lookups. Do not use this decorator to
     decorate other methods: it will fail.
@@ -189,21 +212,6 @@ class AssetCollection(object):
     __init__ code in in an individual Asset() object module. """
 
 
-    def __repr__(self):
-        """ Complicated __repr__ for asset collections which are...complex."""
-
-        if not hasattr(self, 'type'):
-            self.logger.warn(
-                "AssetCollection does not have a 'type' attribute!"
-            )
-            return 'AssetCollection object (no type; %s assets)' % (
-                len(self.assets)
-            )
-        return "AssetCollection object '%s' (%s assets)" % (
-            self.type,
-            len(self.assets)
-        )
-
 
     def __init__(self):
         """ All Assets() models must base-class this guy to get access to the
@@ -276,6 +284,24 @@ class AssetCollection(object):
             if hasattr(self, "warn_on_missing_mandatory_attribute"):
                 warn_on = True
             self.enforce_mandatory_attributes(warn_on)
+
+
+    def __repr__(self):
+        """ Complicated __repr__ for asset collections which are...complex."""
+
+        self.logger = utils.get_logger()
+
+        if not hasattr(self, 'type'):
+            self.logger.warn(
+                "AssetCollection does not have a 'type' attribute!"
+            )
+            return 'AssetCollection object (no type; %s assets)' % (
+                len(self.assets)
+            )
+        return "AssetCollection object '%s' (%s assets)" % (
+            self.type,
+            len(self.assets)
+        )
 
 
     def enforce_mandatory_attributes(self, warn_on_missing_attr=False):
@@ -815,6 +841,7 @@ class GameAsset(object):
     # look-up and manipulation methods below
     #
 
+    @deprecated
     def get(self, attrib):
         """ Wrapper method for trying to retrieve asset object attributes.
         Returns a None type value if the requested attrib doesn't exist. """

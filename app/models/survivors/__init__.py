@@ -58,33 +58,19 @@ class Assets(models.AssetCollection):
     from the BCS. In Advanced KD:M and maybe Campaigns of Death, this might have
     to be fleshed out a bit more. """
 
+
     def __init__(self, *args, **kwargs):
+        """ Similar to the very customized __init__ we do for the Settlements
+        object, this 'asset' is a custom collection of asset dictionaries. """
+
+        self.is_game_asset = True
         self.type_override = "survivors"
-        self.assets = survivors.beta_challenge_scenarios
+
+        self.root_module = survivors
+
         models.AssetCollection.__init__(self,  *args, **kwargs)
 
-    def get_specials(self, return_type=dict):
-        """ This returns the 'specials' macro dicts, which are basically simple
-        'scripts' for operating on a settlement at creation time. """
 
-        d = copy(survivors.specials)
-
-        for k in sorted(d.keys()):
-            d[k]["handle"] = k
-
-        if return_type == "JSON":
-            output = []
-            for k in sorted(d.keys()):
-                output.append(d[k])
-            return output
-
-        return d
-
-    def get_defaults(self):
-        """ Returns a dictionary of default attribute values for survivors. """
-
-        d = copy(survivors.defaults)
-        return d
 
 
 
@@ -117,12 +103,20 @@ def create_many_survivors(params):
     output = []
     for m in range(male):
         S = Survivor(new_asset_attribs={
-            'settlement': settlement_id, 'sex': 'M', 'father': father, 'mother': mother, 'public': public,
+            'settlement': settlement_id,
+            'sex': 'M',
+            'father': father,
+            'mother': mother,
+            'public': public,
         })
         output.append(S.serialize(return_type=dict))
     for f in range(female):
         S = Survivor(new_asset_attribs={
-            'settlement': settlement_id, 'sex': 'F', 'father': father, 'mother': mother, 'public': public,
+            'settlement': settlement_id,
+            'sex': 'F',
+            'father': father,
+            'mother': mother,
+            'public': public,
         })
         output.append(S.serialize(return_type=dict))
     return output
@@ -133,6 +127,10 @@ class Survivor(models.UserAsset):
     """ This is the base class for all expansions. Private methods exist for
     enabling and disabling expansions (within a campaign/settlement). """
 
+    DEFAULTS = {
+        "Movement": 5,
+        "max_bleeding_tokens": 5,
+    }
 
     def __repr__(self):
         return "%s [%s] (%s)" % (
@@ -194,8 +192,13 @@ class Survivor(models.UserAsset):
         # this makes the baby jesus cry
         if self.Settlement is None:
             if request and request.collection != 'survivor':
-                self.logger.warn("%s Initializing Settlement object! THIS IS BAD FIX IT" % self)
-            self.Settlement = settlements.Settlement(_id=self.survivor["settlement"], normalize_on_init=False)
+                self.logger.warn(
+                    "%s Initializing Settlement object! THIS IS BAD FIX IT" % self
+                )
+            self.Settlement = settlements.Settlement(
+                _id=self.survivor["settlement"],
+                normalize_on_init=False
+            )
 
         if self.normalize_on_init:
             self.normalize()
@@ -1222,20 +1225,35 @@ class Survivor(models.UserAsset):
         """
 
         # first, handle unsets
-        if 'unset' in self.params and self.survivor.get('color_scheme', None) is not None:
+        if (
+            'unset' in self.params and
+            self.survivor.get('color_scheme', None) is not None
+        ):
             del self.survivor['color_scheme']
-            self.log_event('%s unset the color scheme for %s' % (request.User.login, self.pretty_name()))
+            msg = '%s unset the color scheme for %s'
+            self.log_event(msg % (request.User.login, self.pretty_name()))
             self.save()
             return True
-        elif 'unset' in self.params and self.survivor.get('color_scheme', None) is None:
-            self.logger.warn('%s Ignoring bogus request to unset color scheme...' % self)
+        elif (
+            'unset' in self.params and
+            self.survivor.get('color_scheme', None) is None
+        ):
+            msg = '%s Ignoring bogus request to unset color scheme...' % self
+            self.logger.warn(msg)
             return False
 
         self.check_request_params(['handle'])
         handle = self.params['handle']
         self.survivor['color_scheme'] = handle
         scheme_dict = self.ColorSchemes.get_asset(handle=handle)
-        self.log_event("%s set the color scheme to '%s' for %s." % (request.User.login, scheme_dict['name'], self.pretty_name()))
+        msg = "%s set the color scheme to '%s' for %s."
+        self.log_event(
+            msg % (
+                request.User.login,
+                scheme_dict['name'],
+                self.pretty_name()
+            )
+        )
         self.save()
 
 
@@ -1556,7 +1574,6 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-
     @models.web_method
     def update_attribute(self, attribute=None, modifier=None):
         """ Adds 'modifier' value to self.survivor value for 'attribute'. """
@@ -1610,6 +1627,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.deprecated
     def update_bleeding_tokens(self, modifier=None):
         """ DEPRECATED 2021-01-13. """
 
@@ -1712,7 +1730,8 @@ class Survivor(models.UserAsset):
         ]
 
         if loc not in locations:
-            raise utils.InvalidUsage("The damage location '%s' cannot be toggled!" % loc)
+            err = "The damage location '%s' cannot be toggled!" % loc
+            raise utils.InvalidUsage(err)
 
         #
         #   update
@@ -1949,6 +1968,12 @@ class Survivor(models.UserAsset):
         'attrib' kwarg is None, the function assumes that this is part of a call
         to request_response() and will get request params. """
 
+        # divert to alternate/specialized methods, if they exist
+        if attrib == 'survival':
+            return self.set_survival(value=value)
+        elif attrib == 'bleeding_tokens':
+            return self.set_bleeding_tokens()
+
         if attrib is None:
             self.check_request_params(['attribute','value'])
             attrib = self.params["attribute"]
@@ -1958,8 +1983,6 @@ class Survivor(models.UserAsset):
             else:
                 value = int(self.params["value"])
 
-        if attrib == 'survival':
-            return self.set_survival()
 
         # sanity check!
         if attrib not in self.survivor.keys():
@@ -2229,19 +2252,32 @@ class Survivor(models.UserAsset):
 
         oid = ObjectId(oid)
 
-        if role not in ['father','mother']:
-            utils.InvalidUsage("Parent 'role' value must be 'father' or 'mother'!")
+        if role not in ['father', 'mother']:
+            err = "Parent 'role' value must be 'father' or 'mother'!"
+            raise utils.InvalidUsage(err)
 
         new_parent = utils.mdb.survivors.find_one({"_id": oid})
         if new_parent is None:
-            utils.InvalidUsage("Parent OID '%s' does not exist!" % oid)
+            raise utils.InvalidUsage("Parent OID '%s' does not exist!" % oid)
+        elif new_parent['settlement'] != self.survivor['settlement']:
+            err = 'Parent and child must belong to the same settlement!'
+            raise utils.InvalidUsage(err)
 
         if oid == self.survivor.get(role, None):
-            self.logger.warn("%s %s is already %s. Ignoring request..." % (self, role, new_parent["name"]))
+            err = "%s %s is already %s. Ignoring request..."
+            self.logger.warn(err % (self, role, new_parent["name"]))
             return True
 
         self.survivor[role] = ObjectId(oid)
-        self.log_event("%s updated %s lineage: %s is now %s" % (request.User.login, self.pretty_name(), role, new_parent["name"]))
+        msg = "%s updated %s lineage: %s is now %s"
+        self.log_event(
+            msg % (
+                request.User.login,
+                self.pretty_name(),
+                role,
+                new_parent["name"]
+            )
+        )
         self.save()
 
 
@@ -2626,9 +2662,8 @@ class Survivor(models.UserAsset):
 
     @models.web_method
     def default_attribute(self, attrib=None):
-        """ Defaults a Survivor attribute to its base value, as determined the
-        assets.survivors.py module. This absolutely will clobber the current
-        value, leaving no trace of it. YHBW. """
+        """ This references the DEFAULTS constant to reset values to their
+        defaults. """
 
         if attrib is None:
             self.check_request_params(['attribute'])
@@ -2636,8 +2671,7 @@ class Survivor(models.UserAsset):
 
         # sanity check!
         SA = Assets()
-        defaults = SA.get_defaults()
-        if attrib not in defaults.keys():
+        if attrib not in DEFAULTS.keys():
             msg = "%s does not have a default value!" % (attrib)
             self.logger.exception(msg)
             raise utils.InvalidUsage(msg, status_code=400)
@@ -2646,8 +2680,16 @@ class Survivor(models.UserAsset):
             self.logger.exception(msg)
             raise utils.InvalidUsage(msg, status_code=400)
 
-        self.survivor[attrib] = defaults[attrib]
-        self.log_event("%s defaulted %s '%s' to %s" % (request.User.login, self.pretty_name(), attrib, defaults[attrib]))
+        self.survivor[attrib] = DEFAULTS[attrib]
+        msg = "%s defaulted %s '%s' to %s"
+        self.log_event(
+            msg % (
+                request.User.login,
+                self.pretty_name(),
+                attrib,
+                defaults[attrib]
+            )
+        )
         self.save()
 
 
@@ -3681,28 +3723,31 @@ class Survivor(models.UserAsset):
 
         # deprecated end points - kill these in March 2021
         elif action == "update_survival":
-            return utils.http_299
-#            self.update_survival()
+            return flask.Response(
+                response="Deprecated! Please use 'set_attribute' instead.",
+                status=410
+            )
         elif action == "update_bleeding_tokens":
-            return utils.http_299
+            return flask.Response(
+                response="Deprecated! Please use 'set_attribute' instead.",
+                status=410
+            )
         elif action == "get_survival_actions":
-            return utils.http_299
-#            sa = self.get_survival_actions("JSON")
-#            return json.dumps(sa, default=json_util.default)
+            return utils.http_410
         elif action == 'toggle_status_flag':
             return flask.Response(
                 response="Deprecated! Please use 'set_status_flag' instead.",
-                status=299
+                status=410
             )
         elif action == "set_affinity":
             return flask.Response(
                 response="Deprecated! Please use 'set_affinities' instead.",
-                status=299
+                status=410
             )
         elif action == "update_affinities":
             return flask.Response(
                 response="Deprecated! Please use 'set_affinities' instead.",
-                status=299
+                status=410
             )
 
         else:
@@ -3710,13 +3755,13 @@ class Survivor(models.UserAsset):
             #   as long as it's not an internal-only method
             if getattr(self, action, None) is not None:
                 method = getattr(self, action)
-                if getattr(method, '_web_method'):
+                if getattr(method, '_web_method', False):
                     method()
                 else:
                     err = "The %s endpoint is mapped to an internal method!"
                     return flask.Response(response=err % action, status=400)
             else:
-                err = "Survivor '%s' is not imlemented!" % action
+                err = "Survivor action '%s' is not imlemented!" % action
                 return flask.Response(response = err, status=501)
 
 

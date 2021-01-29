@@ -311,5 +311,14 @@ order. If you get them back out of order, open a ticket.</p>
             "non-game-related attributes that can be used for sorting, etc."
         ),
     },
+    "survivor_relationships":{
+        "name": "Survivor relationships",
+        "desc": (
+            "For purposes of tracking certain types of game assets as well "
+            "as non-game 'meta' type data, the API supports a couple of "
+            "endpoints that allow survivors to be linked, typically by adding "
+            "each other's OIDs to their own records."
+        ),
+    },
 
 }

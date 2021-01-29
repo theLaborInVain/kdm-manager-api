@@ -40,6 +40,7 @@ from app.models import (
     fighting_arts,
     innovations,
     locations,
+    macros,
     milestone_story_events,
     monsters,
     names,
@@ -76,8 +77,7 @@ class Assets(models.AssetCollection):
         Next, we go through their individual self.assets dictionaries and,
         making some minor alterations, add them to our new self.assets.
 
-        Next, we load the available 'specials' (i.e. settlement creation
-        macro jobs) from the survivors asset collection.
+        Next, we load the available macros as an attribute of our little asset.
 
         Finally (and this is really important, so listen to this), we DO NOT
         initialize the base class. This cuts us off from all of the methods and
@@ -89,7 +89,7 @@ class Assets(models.AssetCollection):
         self.is_game_asset = True
         self.assets = {}
 
-        for mod in [campaigns, expansions, survivors]:
+        for mod in [campaigns, expansions]:
 
             mod_string = "%s" % str(mod.__name__).split(".")[2]
             self.assets[mod_string] = []
@@ -104,12 +104,7 @@ class Assets(models.AssetCollection):
                         asset_repr[optional_key] = asset[optional_key]
                 self.assets[mod_string].append(asset_repr)
 
-        S = survivors.Assets()
-        self.assets["specials"] = S.get_specials("JSON")
-
-#        self.type_override = "new_settlement_assets"
-#        models.AssetCollection.__init__(self,  *args, **kwargs)
-
+        self.assets["macros"] = macros.Assets().assets
 
 
 
@@ -155,11 +150,11 @@ class Settlement(models.UserAsset):
         self.Resources = resources.Assets()
         self.Innovations = innovations.Assets()
         self.Locations = locations.Assets()
+        self.Macros = macros.Assets()
         self.Milestones = milestone_story_events.Assets()
         self.Monsters = monsters.Assets()
         self.Names = names.Assets()
         self.Principles = principles.Assets()
-#        self.Storage = storage.Assets()
         self.SpecialAttributes = special_attributes.Assets()
         self.SurvivalActions = survival_actions.Assets()
         self.Survivors = survivors.Assets()
@@ -200,7 +195,6 @@ class Settlement(models.UserAsset):
             )
 
         self.logger.info("%s is creating a new settlement..." % request.User)
-#        self.logger.debug("%s new settlement params: %s" % (request.User, self.params))
 
         settlement = {
             # meta / admin
@@ -277,10 +271,10 @@ class Settlement(models.UserAsset):
         if all_expansions != []:
             self.add_expansions(all_expansions)
 
-        # handle specials, i.e. first story, seven swordsmen, etc.
-        if self.params.get("specials", None) is not None:
-            for special_handle in self.params["specials"]:
-                self.new_settlement_special(special_handle)
+        # handle macros, i.e. first story, seven swordsmen, etc.
+        if self.params.get('macros', None) is not None:
+            for macro_handle in self.params['macros']:
+                self.apply_macro(macro_handle)
 
         # prefab survivors go here
         if self.params.get("survivors", None) is not None:
@@ -298,48 +292,54 @@ class Settlement(models.UserAsset):
         self.save()
 
 
-    def new_settlement_special(self, special_handle):
-        """ Think of these as macros. Basically, you feed this a handle, it
-        checks out the handle and then takes action based on it.
+    @models.web_method
+    def apply_macro(self, handle=None):
+        """ Starting in January 2021, settlement macros can be applied
+        arbitrarily and at will. """
 
-        This method DOES NOT look at the request for input. It...probably
-        never will (i.e. this will always be a child of the new() method.
-        """
+        if handle is None:
+            self.check_request_params(['handle'])
+            handle = self.params["handle"]
 
-        specials = self.Survivors.get_specials()
-        script = copy(specials.get(special_handle, None))
-
-        if script is None:
-            return True
+        macro = self.Macros.get_asset(handle=handle)
 
         # do random survivors
-        if script.get("random_survivors", None) is not None:
-            for s in script["random_survivors"]:
+        if macro.get("random_survivors", None) is not None:
+            for s in macro["random_survivors"]:
                 n = copy(s)
                 n.update({"settlement": self._id})
                 N = survivors.Survivor(new_asset_attribs=n, Settlement=self)
 
         # then storage
-        if script.get("storage", None) is not None:
-            for d in script["storage"]:
+        if macro.get("storage", None) is not None:
+            for d in macro["storage"]:
                 for i in range(d["quantity"]):
                     self.settlement["storage"].append(d["name"])
 
         # quarry
-        if script.get("current_quarry", None) is not None:
-            self.set_current_quarry(script["current_quarry"])
-        if script.get('showdown_type', None) is not None:
-            self.set_showdown_type(script['showdown_type'])
+        if macro.get("current_quarry", None) is not None:
+            self.set_current_quarry(macro["current_quarry"])
+        if macro.get('showdown_type', None) is not None:
+            self.set_showdown_type(macro['showdown_type'])
 
         # events
-        if script.get("timeline_events", None) is not None:
-            for event in script["timeline_events"]:
+        if macro.get("timeline_events", None) is not None:
+            for event in macro["timeline_events"]:
                 self.add_timeline_event(event)
+
+        # update survivors
+        if macro.get('living_survivors', None) is not None:
+            for operation, attrib_dict in macro['living_survivors'].items():
+                self.update_all_survivors(
+                    operation = operation,
+                    attrib_dict = attrib_dict,
+                    exclude_dead = True,
+                )
 
         self.log_event(
             action="apply",
             key="settlement",
-            value=script["name"],
+            value=macro["name"],
             event_type='sysadmin'
         )
 
@@ -414,6 +414,7 @@ class Settlement(models.UserAsset):
             self.save()
 
 
+    @models.web_method
     def remove(self):
         """ Marks the settlement as removed. """
         self.settlement['removed'] = datetime.now()
@@ -868,6 +869,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def add_monster_volume(self):
         """ Adds a Monster Volume string. Forces the self.settlement['monster_volumes']
         to be unique. Expects a request context."""
@@ -889,6 +891,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def rm_monster_volume(self):
         """ Removes a Monster Volume string. Fails gracefully if asked to remove
         a non-existent string. Assumes a request context. """
@@ -908,6 +911,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def add_expansions(self, e_list=[], save=True):
         """ Takes a list of expansion handles and then adds them to the
         settlement, applying Timeline updates, etc. as required by the expansion
@@ -1011,6 +1015,7 @@ class Settlement(models.UserAsset):
             self.save()
 
 
+    @models.web_method
     def rm_expansions(self, e_list=[]):
         """ Takes a list of expansion handles and then removes them them from the
         settlement, undoing Timeline updates, etc. as required by the expansion
@@ -1064,6 +1069,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def add_location(self, loc_handle=None, save=True):
         "Adds a location to the settlement. Expects a request context"""
 
@@ -1105,6 +1111,7 @@ class Settlement(models.UserAsset):
             self.save()
 
 
+    @models.web_method
     def rm_location(self, loc_handle=None, save=True):
         """ Removes a location from the settlement. Requires a request.User
         object, i.e. should not be called unless it is part of a request.  """
@@ -1225,7 +1232,6 @@ class Settlement(models.UserAsset):
             self.save()
 
 
-
     def rm_innovation(self, i_handle=None, save=True):
         """ Removes an innovation from the settlement. Request context is
         optional.
@@ -1273,7 +1279,6 @@ class Settlement(models.UserAsset):
         self.log_event(action="rm", key="innovations", value=i_dict['name'], event_type="rm_innovation")
         if save:
             self.save()
-
 
 
     def add_settlement_admin(self, user_login=None):
@@ -1516,6 +1521,7 @@ class Settlement(models.UserAsset):
     #   misc. methods
     #
 
+    @models.web_method
     def return_survivors(self, aftermath=None):
         """ Returns all survivors with departing=True (i.e. initializes the
         survivor and calls Survivor.return_survivor() on it and then processes
@@ -1597,15 +1603,25 @@ class Settlement(models.UserAsset):
     #   set methods
     #
 
-    def set_abandoned(self):
+    def set_abandoned(self, value=None):
         """ Abandons the settlement by setting self.settlement['abandoned'] to
-        datetime.now(). Logs it. Expects a request context. """
+        datetime.now(). Logs it. Expects a request context.
+        """
 
-        self.settlement['abandoned'] = datetime.now()
-        self.log_event(action='abandon', event_type='abandon_settlement')
+        if value == 'UNSET' and self.settlement.get('abandoned', False):
+            del self.settlement['abandoned']
+            self.log_event(
+                '%s is no longer abandoned.' % self.settlement['name'],
+                event_type='abandon_settlement'
+            )
+        else:
+            self.settlement['abandoned'] = datetime.now()
+            self.log_event(action='abandon', event_type='abandon_settlement')
+
         self.save()
 
 
+    @models.web_method
     def set_current_ly(self, ly=None):
         """ Sets the current Lantern Year. Supports a request context, but does
         not require it. """
@@ -1625,6 +1641,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_inspirational_statue(self):
         """ Set the self.settlement['inspirational_statue'] to a fighting art
         handle. Assumes a request context. """
@@ -1841,6 +1858,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_version(self):
         """ Replaces the current 'version' key (which is a str handle) with one
         from the request params. """
@@ -1882,9 +1900,10 @@ class Settlement(models.UserAsset):
         on the survivors.
         """
 
-        if operation not in ['increment','decrement']:
-            self.logger.exception("update_all_survivors() methods does not support '%s' operations!" % operation)
-            raise Exception
+        if operation not in ['set', 'increment', 'decrement']:
+            err = "update_all_survivors() cannot process '%s' operations!"
+            self.logger.exception(err % operation)
+            raise utils.InvalidUsage(err % operation)
 
         for s in self.survivors:
             if exclude_dead and s.is_dead():
@@ -1903,6 +1922,8 @@ class Settlement(models.UserAsset):
                                 s.rm_game_asset('abilities_and_impairments', ai_handle)
                         else:
                             s.update_attribute(attribute, -modifier)
+                    elif operation == 'set':
+                        s.set_attribute(attribute, modifier)
 
 
     def update_attribute(self):
@@ -2037,18 +2058,32 @@ class Settlement(models.UserAsset):
     #   set methods
     #
 
+    @models.web_method
     def set_attribute(self):
-        """ Assumes a request context and looks for 'attribute' and 'modifier'
-        keys in self.params. Uses them to increment (literally adds) the current
-        self.settlement[attribute] value. """
+        """ Starting in 2021, this is our workhorse method. We're going to start
+        deprecating specialized methods from the perspective of external users
+        and using this method to 'route' out to those specialized (read: chock
+        full of business logic) methods."""
 
         self.check_request_params(['attribute','value'])
         attribute = self.params["attribute"]
         value = self.params["value"]
 
+        # routing to specialized methods!
+        if attribute == 'abandoned':
+            return self.set_abandoned(value=value)
+
+        # generic handling follows
         self.settlement[attribute] = value
         pretty_attribute = attribute.title().replace('_',' ')
-        self.log_event("%s set settlement %s to %s" % (request.User.login, pretty_attribute, self.settlement[attribute]))
+        msg = "%s set settlement %s to %s"
+        self.log_event(
+            msg % (
+                request.User.login,
+                pretty_attribute,
+                self.settlement[attribute]
+            )
+        )
         self.save()
 
 
@@ -4308,7 +4343,7 @@ class Settlement(models.UserAsset):
             self.perform_save = True
 
 
-
+    @models.deprecated
     def migrate_settlement_notes(self):
         """ In the legacy data model, settlement notes were a single string that
         got saved to MDB on the settlement (yikes!). If the settlement has the
@@ -4537,9 +4572,17 @@ class Settlement(models.UserAsset):
         #   finally, the catch-all/exception-catcher
         #
         else:
-            # unknown/unsupported action response
-            self.logger.warn("Unsupported settlement action '%s' received!" % action)
-            return utils.http_400
+            if getattr(self, action, None) is not None:
+                method = getattr(self, action)
+                if getattr(method, '_web_method', False):
+                    method()
+                else:
+                    err = "The %s endpoint is mapped to an internal method!"
+                    return flask.Response(response=err % action, status=400)
+            else:
+                err = "Settlement action '%s' is not imlemented!" % action
+                return flask.Response(response = err, status=501)
+
 
         # support special response types
         if "response_method" in self.params:

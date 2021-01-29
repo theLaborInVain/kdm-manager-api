@@ -465,17 +465,14 @@ include the <code>desc</code>, <code>quantity</code>, etc. of an individual
 game asset (piece of gear or resource or whatever).</p>
         """,
     },
-    "settlement_abandon_settlement_id": {
+    "zz_settlement_abandon_settlement_id": {
         "name": "/settlement/abandon/&lt;settlement_id&gt;",
         "methods": ["POST", "OPTIONS"],
-        "desc": """\
-<p>Hit this route with a <b>POST</b> to mark the settlement as abandoned.</p>
-<p>Your <b>POST</b> does not need to contain anything (but it does need
-to be a <b>POST</b> (<b>GET</b> requests will not abandon the settlement.</p>
-<p>An abandoned settlement has a date/time stamp of when it was
-abandoned as its <code>abandoned</code> attribute and you can use this in your
-UI to separate it out from active settlements.</p>
-        """,
+        "desc": (
+            "<p>As of January 2021, this route is deprecated. Please use the"
+            "<code>set_attribute</code> route (<b>POST</b> "
+            "<code>abandoned</code> as the <code>value</code>) instead.</p>"
+        ),
     },
     "settlement_remove_settlement_id": {
         "name": "/settlement/remove/&lt;settlement_id&gt;",
@@ -497,6 +494,21 @@ the timestap of the mark as removed event and purge the settlement
 	#
 	#	settlement SET attributes
 	#
+    "settlement_set_attribute_settlement_id": {
+        "name": "/settlement/set_attribute/&lt;settlement_id&gt;",
+        "subsection": "settlement_set_attribute",
+        "desc": (
+            "<p><b>POST</b> some JSON containing <code>attribute</code> and "
+            "a <code>value</code> keys where 'attribute' is the Settlement "
+            "attribute you want to set and and 'value' is what you want to set "
+            "it to.</p>"
+        ),
+        'examples': [
+            "{attribute: 'survival_limit', value: 3}",
+            "{attribute: 'abandoned', value: true}",
+            "{attribute: 'abandoned', value: 'UNSET'}",
+        ],
+    },
 
     "settlement_set_last_accessed_settlement_id": {
         "name": "/settlement/set_last_accessed/&lt;settlement_id&gt;",
@@ -522,18 +534,6 @@ default the settlement's name to "UNKNOWN". There are no technical
 reasons (e.g. limitations) for this, but it breaks the display in most
 client apps, so null/empty names are forbidden.</p>
         """,
-    },
-    "settlement_set_attribute_settlement_id": {
-        "name": "/settlement/set_attribute/&lt;settlement_id&gt;",
-        "subsection": "settlement_set_attribute",
-        "desc": """\
-<p><b>POST</b> some basic JSON containing an 'attribute' and a 'value'
-key where 'attribute' is an integer settlement attrib and 'value' is
-the new value:</p>
-<code>{'attribute': 'survival_limit', 'value': 3}</code>
-<p> This route also supports incrementing the <code>population</code>
- and <code>death_count</code> attributes. </p>
-	""",
     },
     "settlement_set_inspirational_statue_settlement_id": {
         "name": "/settlement/set_inspirational_statue/&lt;settlement_id&gt;",
@@ -1250,6 +1250,12 @@ survivor_management = {
         "subsection": "survivor_sheet",
         "methods": ["POST", "OPTIONS"],
         "desc": (
+            "<p><b>Important!</b> As with the Settlement record, this is "
+            "pretty much where you want to start with updates/edits for the "
+            "survivor record <i>before</i> looking into using specialty "
+            "routes.</p>"
+            "<p>Basically, try this one first, and if it doesn get the result "
+            "you want, then look at other endpoints.</p>"
             "<p>For this endpoint, you want to <b>POST</b> some JSON that "
             "includes both <code>attribute</code> and <code>value</code> keys, "
             "with an integer value for <code>value</code>.</p>"
@@ -1263,6 +1269,7 @@ survivor_management = {
             '{attribute: "Head", value: 1}',
             '{attribute: "Understanding", value: 2}',
             '{attribute: "hunt_xp", value: 6}'
+            '{attribute: "bleeding_tokens", value: 3}',
         ],
     },
     "survivor_set_name": {
@@ -1293,6 +1300,8 @@ survivor_management = {
         "subsection": "survivor_sheet",
         "methods": ["POST", "OPTIONS"],
         "desc": (
+            '<p>This endpoint is deprecated.</p>'
+            '<p>Please use the <code>set_attribute</code> route instead.</p>'
             "<p><b>POST</b> a 'value' to this endpoint to set the survival "
             "number:</p> <code>{value: '1'}</code>"
             "<p>PROTIP: the API will ignore negative numbers and default them "
@@ -1329,6 +1338,8 @@ survivor_management = {
         "subsection": "survivor_sheet",
         "methods": ["POST", "OPTIONS"],
         "desc": (
+            '<p>This endpoint is deprecated.</p>'
+            '<p>Please use the <code>set_attribute</code> route instead.</p>'
             "<p><b>POST</b> an integer to this endpoint to set the "
             "survivor's <code>bleeding_tokens</code> attribute.</p>"
             "<p>A couple of things to keep in mind about this attribute:"
@@ -1539,6 +1550,20 @@ survivor_management = {
     },
 
     # survivor admin
+    "survivor_set_color_scheme": {
+        "name": "/survivor/set_color_scheme/&lt;survivor_id&gt;",
+        "methods": ["POST", "OPTIONS"],
+        "subsection": "survivor_admin",
+        "desc": (
+            "<p><b>POST</b> a <code>color_scheme</code> handle to this "
+            "endpoint to set the Survivor Sheet attribute of the same name.</p>"
+            "<p>There are couple of places where you can get a list of "
+            "available color scheme handles:</p>"
+        ),
+        "examples": [
+            "{color_scheme: 'TK'}"
+        ],
+    },
     "add_favorite": {
         "name": "/survivor/add_favorite/&lt;survivor_id&gt;",
         "subsection": "survivor_admin",
@@ -1593,5 +1618,45 @@ survivor_management = {
         "desc": (
             "<p>Removes the survivor.</p>"
         ),
+    },
+
+    # survivor relationships
+    "survivor_set_parent": {
+        "name": "/survivor/set_parent/&lt;survivor_id&gt;",
+        "subsection": "survivor_relationships",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p>In order to set a survivor parent, you have to <b>POST</b> the "
+            "<code>role</code> of the parent, as well as the OID of the "
+            "parent.</p>"
+            "<p>Possible <code>role</code> values are <code>father</code> and "
+            "<code>mother</code>, all lower-case, exactly as they're printed "
+            "here.</p>."
+            "<p><b>POST</b>ing any other <code>role</code> values or an "
+            "invalid OID (of the parent) will get you a 400 back.</p>"
+        ),
+        'examples': [
+            "{role: 'father', oid: '60020d77ea3701e3ef793a6f'}",
+            "{role: 'mother', oid: '51gea3596f57b836f182f691'}"
+        ]
+    },
+    "survivor_set_partner": {
+        "name": "/survivor/set_partner/&lt;survivor_id&gt;",
+        "subsection": "survivor_relationships",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p><b>POST</b> a key/value pair where the value is the OID of "
+            "the partner:</p>"
+            "<code>{partner_id: '89gea3596f57b836f182fabc'}</code>"
+            "<P>Finally, this end point supports a 'magic' value: if you use "
+            "the string <code>UNSET</code> (all caps) as the value for the "
+            "<code>partner_id</code>, this will cause the API To remove the "
+            "<code>partner_id</code> attribute from the survivor compeltely "
+            "(i.e. it will no longer be in the JSON of the serialized "
+            "survivor record.</p>"
+        ),
+        'examples': [
+            "{partner_id: '60020d77ea3701e3ef793a6f'}"
+        ]
     },
 }
