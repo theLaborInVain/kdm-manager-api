@@ -217,6 +217,7 @@ button.kd {
 
 /*  card-style attributes tablel AI, vignette survivor, etc. */
 .kd.attributes_table {
+    align-items: flex-end;
     background: linear-gradient(to bottom, rgba(255,0,0,0), rgba(255,0,0,0), #ddd);
     border-radius: var(--border-radius-card);
     display: flex;
@@ -233,7 +234,8 @@ button.kd {
 }
 .kd.attributes_table .cell {
     font-size: var(--font-medium);
-    justify-content: center; 
+    justify-content: center;
+    height: fit-content;  
     width: 10%;
 }
 .kd.attributes_table .cell:nth-child(even){
@@ -264,7 +266,8 @@ button.kd {
     border-radius: 2rem;
     display: flex;
     font-family: "Ruda";
-    margin: 1rem;
+    margin: 1rem auto 1rem auto;
+    max-width: 50%;
     padding: 1rem;
     width: fit-content; 
 }

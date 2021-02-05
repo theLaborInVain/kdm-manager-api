@@ -1237,7 +1237,6 @@ class UserAsset(object):
 
         # for those who still raw-dog it; force to ASCII:
         if msg is not None:
-#            msg = msg.encode("ascii",'ignore')
             msg = str(msg)
 
         # 0.) method: determine caller method
@@ -1257,7 +1256,6 @@ class UserAsset(object):
         # 3.) key: default the key if we don't get one
         if key is None:
             key = " ".join(method.split("_")[1:])
-#        key = key.encode('ascii','ignore')
         if key == "settlement":
             key = ""
 
@@ -1265,7 +1263,6 @@ class UserAsset(object):
         if value is None:
             value = "UNKNOWN"
         if type(value) != int:
-#            value = value.encode('ascii','ignore')
             value = str(value)
 
         # set 'created_by'

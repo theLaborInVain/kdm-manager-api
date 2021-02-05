@@ -36,9 +36,16 @@ core_disorders = {
         'survivor_effect': 'During the showdown, whenever a survivor (including you) gains a bleeding token, you are knocked down.'
     },
     'hoarder': {
-        'flavor_text': 'You compulsively collect and stash anything you can get your hands on. Every little bit you add to your secret hoard makes your existence feel more real.',
         'name': 'Hoarder',
-        'survivor_effect': 'Whenever you are a <b>returning</b> survivor, archive 1 resource gained from the last showdown and gain +1 courage.'
+        'flavor_text': (
+            'You compulsively collect and stash anything you can get your '
+            'hands on. Every little bit you add to your secret hoard makes '
+            'your existence feel more real.'
+        ),
+        'survivor_effect': (
+            'Whenever you are a <b>returning</b> survivor, archive 1 resource '
+            'gained from the last showdown and gain +1 courage.'
+        ),
     },
     'honorable': {
         'flavor_text': 'You believe in honor and fairness when conducting yourself on the battlefield. It is these strong principles that have kept you alive, and you will not abandon them under any circumstances.',

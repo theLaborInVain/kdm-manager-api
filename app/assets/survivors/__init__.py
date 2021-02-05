@@ -1,17 +1,15 @@
 """
 
-    This is kind of a dumping ground for miscellaneous survivor-related meta
-    and webapp assets.
+    Assets in this file are actual survivor assets from the game, e.g. pre-fab
+    and/or Vignette Survivors from the Vignette expansions.
 
-    This module exists so that a.) it is easier to zero in on specific assets
-    from the file systems and b.) so that we can do imports in other files more
-    legibly, e.g.
+    Assets in the modules within this folder are more like attributes of
+    survivors, but which attach to them the same way game assets would attach,
+    e.g. as attributes.
 
-        from app.assets.survivors import color_schemes
-
-    That said, please DO NOT add any methods here. Those should still go in
-    /app/models/survivors.py under the class object.
-
+    What that means is that they're asset dictionaries but the assets, for
+    example, color schemes or causes of death, etc. that are not actual game
+    assets, but which we want to ultimately manage as if they were.
 
 """
 
@@ -208,6 +206,80 @@ beta_challenge_scenarios = {
 }
 
 vignettes_of_death_white_gigalion = {
+    'breccia': {
+        'name': 'Breccia of Deadrock',
+        'subtitle': 'of Deadrock',
+        'ly': 8,
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'attribs': {
+            'name': 'Breccia',
+            'sex': 'F',
+            'Insanity': 2,
+            'Head': 4,
+            'Body': 4,
+            'Arms': 4,
+            'Waist': 4,
+            'Legs': 4,
+            'survival': 4,
+            'Courage': 1,
+            'Understanding': 5,
+            'abilities_and_impairments': ['whip_specialization', 'tinker'],
+            'fighting_arts': ['mighty_strike'],
+            'Weapon Proficiency': 3,
+            'weapon_proficiency_type': 'whip',
+            'hunt_xp': 5,
+            'fixed_survival_actions': ['dodge','encourage','dash'],
+        },
+    },
+    'gadrock': {
+        'name': 'Gadrock of Deadrock',
+        'subtitle': 'of Deadrock',
+        'ly': 8,
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'attribs': {
+            'name': 'Gadrock',
+            'sex': 'M',
+            'Insanity': 4,
+            'Head': 3,
+            'Body': 3,
+            'Arms': 3,
+            'Waist': 3,
+            'Legs': 3,
+            'survival': 3,
+            'Courage': 6,
+            'Understanding': 2,
+            'abilities_and_impairments': ['stalwart'],
+            'disorders': ['hoarder'],
+            'fighting_arts': ['orator_of_death'],
+            'Weapon Proficiency': 2,
+            'weapon_proficiency_type': 'katar',
+            'hunt_xp': 4,
+            'fixed_survival_actions': ['dodge','encourage','dash'],
+        },
+    },
+    'hungry_basalt': {
+        'name': 'Hungry Basalt of Deadrock',
+        'subtitle': 'of Deadrock',
+        'ly': 8,
+        'expansion': 'vignettes_of_death_white_gigalion',
+        'attribs': {
+            'name': 'Hungry Basalt',
+            'sex': 'M',
+            'Insanity': 3,
+            'Head': 4,
+            'Body': 4,
+            'Arms': 4,
+            'Waist': 4,
+            'Legs': 4,
+            'survival': 3,
+            'Courage': 3,
+            'Understanding': 1,
+            'abilities_and_impairments': ['prepared'],
+            'disorders': ['binge_eating_disorder'],
+            'hunt_xp': 1,
+            'fixed_survival_actions': ['dodge','encourage','dash'],
+        },
+    },
     'rock_knight': {
         'name': 'Rock Knight of Deadrock',
         'subtitle': 'of Deadrock',
@@ -224,6 +296,7 @@ vignettes_of_death_white_gigalion = {
             'survival': 3,
             'Strength': 1,
             'Understanding': 2,
+            'abilities_and_impairments': ['club_specialization'],
             'disorders': ['squeamish', 'post_traumatic_stress'],
             'fighting_arts': ['kings_step', 'clutch_fighter'],
             'Weapon Proficiency': 4,

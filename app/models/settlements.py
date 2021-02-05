@@ -245,9 +245,13 @@ class Settlement(models.UserAsset):
 
         # set the settlement name before we save to MDB
         s_name = settlement['name']
-        if s_name is None and request.User.get_preference("random_names_for_unnamed_assets"):
+        if s_name is None and request.User.get_preference(
+            "random_names_for_unnamed_assets"
+        ):
             s_name = self.Names.get_random_settlement_name()
-        elif s_name is None and not request.User.get_preference("random_names_for_unnamed_assets"):
+        elif s_name is None and not request.User.get_preference(
+            "random_names_for_unnamed_assets"
+        ):
             s_name = "Unknown"
 
         self.settlement['name'] = None
@@ -278,15 +282,12 @@ class Settlement(models.UserAsset):
 
         # prefab survivors go here
         if self.params.get("survivors", None) is not None:
-            for s in self.params["survivors"]:
-                s_dict = copy(self.Survivors.get_asset(s))
-                attribs = s_dict["attribs"]
-                attribs.update({"settlement": self._id})
-                survivors.Survivor(new_asset_attribs=attribs, Settlement=self)
-                if s_dict.get("storage", None) is not None:
-                    self.settlement["storage"].extend(s_dict["storage"])
-                if s_dict.get('expansion', None) is not None:
-                    self.add_expansions([s_dict['expansion']])
+            warn = (
+                'DEPRECATION WARNING: survivors cannot be added during new '
+                'settlement creation!'
+            )
+            self.logger.warn(warn)
+
 
         # log settlement creation and save/exit
         self.save()
@@ -1341,7 +1342,6 @@ class Settlement(models.UserAsset):
         }
 
         note_oid = utils.mdb.settlement_notes.insert(note_dict)
-#        self.logger.debug("[%s] added a settlement note to %s" % (author_email, self))
         return Response(response=json.dumps({'note_oid': note_oid}, default=json_util.default), status=200)
 
 
@@ -1354,9 +1354,45 @@ class Settlement(models.UserAsset):
 
         n_id = ObjectId(n_id)
 
-        n = utils.mdb.settlement_notes.remove({"settlement": self.settlement["_id"], "_id": n_id})
-#        self.logger.debug(n)
-        self.logger.info("%s User '%s' removed a settlement note" % (self, request.User.login))
+        n = utils.mdb.settlement_notes.remove(
+            {
+                "_id": n_id,
+                "settlement": self.settlement["_id"]
+            }
+        )
+        msg = "%s User '%s' removed a settlement note"
+        self.logger.info(msg % (self, request.User.login))
+
+
+    @models.web_method
+    def add_survivor(self):
+        """ Uses the request context to add a pre-fab survivor. Requires a valid
+        'handle' value in the POST. """
+
+        # sanity check first; get the 'handle' from the POST
+        self.check_request_params(['handle'])
+        survivor_handle = self.params['handle']
+
+        # now, copy the asset to start a new MDB survivor record
+        survivor_dict = copy(self.Survivors.get_asset(survivor_handle))
+        attribs = survivor_dict["attribs"]
+        attribs.update(
+            {
+                "settlement": self._id,
+                'vignette_survivor_handle': survivor_handle,
+            }
+        )
+
+        # initialize the survivor using the Survivor object class
+        survivors.Survivor(new_asset_attribs=attribs, Settlement=self)
+
+        # finally, if the incoming survivor is from an expansion, add that
+        # expansion to the settlement expansions 
+        if survivor_dict.get('expansion', None) is not None:
+            self.add_expansions([survivor_dict['expansion']])
+
+        # no settlement event logging here, since everything else we do in this
+        # method has its own settlement event logging...
 
 
     def add_timeline_event(self, e={}, save=True):
