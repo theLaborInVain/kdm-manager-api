@@ -48,6 +48,15 @@ def get_docs(action):
     return docs_object.request_response(action)
 
 
+@API.route("/blog")
+def blog_index():
+    """ the index for the blog. """
+    return flask.render_template(
+        '/blog/_base.html',
+        **API.config
+    )
+
+
 @API.route("/blog/<view>/<asset>")
 def blog_content(view, asset):
     """ This is typically going to be something like, e.g. /blog/release/<oid>

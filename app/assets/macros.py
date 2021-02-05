@@ -17,7 +17,7 @@ add_survivors = {
         "name": "First Story",
         'new_settlement': True,
         "desc": (
-            '<p>Sets the quary to be a White Lion, creates four new survivors '
+            '<p>Sets the quarry to be a White Lion, creates four new survivors '
             'and adds them to the <i>Departing Survivors</i> group.</p>'
         ),
         "summary": [
