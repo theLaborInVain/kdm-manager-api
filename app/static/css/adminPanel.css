@@ -13,9 +13,27 @@ table {border-collapse: collapse; width: 90%; margin: 1.5% auto;}
 td {word-wrap: break-word; word-break: break-all;}
 td.int_key {width: 10%; word-break: inherit;}
 
-.subscribers_breakdown_table {width: auto; margin: 0 0 0 10px; border-collapse: collapse;}
-.subscribers_breakdown_table td { }
+.bold {
+    font-weight: bold;
+}
 
+.subscribers_breakdown_table {
+    border-collapse: collapse;
+    margin: 1rem auto 1rem auto; 
+    width: 95%;
+}
+
+.subscribers_breakdown_table td {
+    border-right: 1px solid #ccc; 
+    text-align: center;
+}
+.subscribers_breakdown_table td:last-child {
+    border: 0; 
+}
+.subscribers_breakdown_table td.tooltip {
+    border-top: 1px solid #ccc;
+    padding: 0.3rem; 
+}
 
 /*  UI/UX, loaders, reusable elements, etc. */
 
@@ -64,7 +82,6 @@ td.int_key {width: 10%; word-break: inherit;}
 }
 
 
-.users_container {display: flex; flex-direction: column; }
 
 /* flex box borders */
 .api {border: 0.2em solid #DDFFDD; }
@@ -80,15 +97,8 @@ td.int_key {width: 10%; word-break: inherit;}
 
 .user_basic_info {width: auto; margin: 2%; display: inline-block; }
 .user_basic_info h2 { font-size: 1em; margin: 0 auto; }
-.active_user {background-color: #EEEEEE; border: 3px solid #9E9E9E; }
-.inactive_user {background-color: #F5F5F5; }
-.signed_out_user {background-color: #FAFAFA; }
-.active_subscriber {background-color: #FFF59D; border: 3px solid #FFC107;}
-.inactive_subscriber {background-color: #FFF9C4; }
-.signed_out_subscriber {background-color: #FFFDE7; }
 .user_detail { padding-left: 1%; padding-top: 1%; font-size: 0.9em; }
 .user_detail_button_raft {margin: 0 auto; display: flex; margin: 1em; background: rgba(0,0,0,0.1); padding: 1em; justify-content: space-between; }
-.log_detail { }
 .log_line {padding: 1%; }
 
 
@@ -292,12 +302,14 @@ button.toggle_settlement_event_log {float: right; }
     position: fixed;
     right: 0;
     top: 0;
+    z-index: 1000;
 }
 .modal_inner {
     background: #fff;
     border-radius: 0.3rem;
     margin: 0.3rem;
     padding: 1rem;
+    z-index: 1001;
 }
 .modal_button_raft {
     display: flex;
@@ -354,9 +366,7 @@ button.toggle_settlement_event_log {float: right; }
         {
         max-width: 80rem; 
     }
-    .modal_inner.work_with_user_container,
-        .modal_inner.admin_panel_release_details,
-        .modal_inner.create_new_alert_controls {
+    .modal_inner.slender_modal {
         max-width: 50rem;
     }
 

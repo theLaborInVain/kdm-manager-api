@@ -14,7 +14,7 @@ import os
 from bson import json_util
 
 # local imports
-from app import utils
+from app import API, utils
 
 
 
@@ -92,7 +92,7 @@ def get_user_data():
             'age'
         )
         if u["latest_activity"] > (datetime.now() - timedelta(
-                minutes=utils.settings.get('users', 'active_user_horizon')
+                minutes = API.config['ACTIVE_USER_HORIZON']
         )):
             active_user_count += 1
             u['is_active'] = True
@@ -104,10 +104,7 @@ def get_user_data():
     # create the final output dictionary
     d = {
         "meta": {
-            "active_user_horizon": utils.settings.get(
-                "users",
-                "active_user_horizon"
-            ),
+            "active_user_horizon": API.config['ACTIVE_USER_HORIZON'],
             "active_user_count": active_user_count,
             "recent_user_horizon": utils.settings.get(
                 "users",

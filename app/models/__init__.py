@@ -36,11 +36,35 @@ from user_agents import parse as ua_parse
 import flask
 
 # local imports
-from app import models, utils
+from app import API, models, utils
 
 #
 #   model decorators
 #
+
+def admin_only(func):
+    """ Checks the request context to see if the requester is an API admin.
+    Returns 401 if they're not. """
+
+    func._admin_only = True
+
+    def wrapped(*args, **kwargs):
+        """ checks admin status. runs the func """
+        logger = utils.get_logger()
+
+        if flask.request:
+            if API.config['ENVIRONMENT'].get('is_production', False):
+                if not flask.request.User.is_admin():
+                    err = 'Only API admins may export users!'
+                    raise utils.InvalidUsage(err, 401)
+            else:
+                warn = 'API is non-prod. Skipping admin check for %s()'
+                logger.warn(warn % func.__name__)
+
+        return func(*args, **kwargs)
+
+    return wrapped
+
 
 def web_method(func):
     """ Decorate methods that we do not support a request context and thus

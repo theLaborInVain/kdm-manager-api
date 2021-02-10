@@ -263,7 +263,10 @@ button.kd {
 }
 .kd.rulebook_warning {
     align-items: center;
+    background: var(--color-kd-pink);
+    background: var(--color-kd-pink-gradient);
     border-radius: 2rem;
+    color: #ffffdd;
     display: flex;
     font-family: "Ruda";
     margin: 1rem auto 1rem auto;

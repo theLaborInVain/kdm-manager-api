@@ -83,27 +83,6 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
     // DEPRECATE THIS
 
 
-    $scope.getRecentSettlements = function() {
-//        console.warn('[RECENT SETTLEMENTS] Getting recent settlements...');
-        $http.get('game_asset/campaigns').then(
-            function(result){$scope.campaign_assets = result.data;},
-            function(result){console.error('Could not retrieve campaign asset definitions!');}
-        );
-        $http.get('game_asset/expansions').then(
-            function(result){$scope.expansion_assets = result.data;},
-            function(result){console.error('Could not retrieve expansion asset definitions!');}
-        );
-
-        $scope.retrievingSettlements = true;
-//        $scope.showSpinner('recentSettlementsSpinner'); 
-        $http.get('admin/get/settlement_data').then(function(result){
-            $scope.settlements = result.data;
-//            $scope.hideSpinner('recentSettlementsSpinner');
-            $scope.retrievingSettlements = false;
-//            console.warn('[RECENT SETTLEMENTS] Got recent settlements!');
-        });
-    };
-
 
     //
     //  Alerts
@@ -152,6 +131,24 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
     };
 
 
+    $scope.getRecentUsers = function() {
+        $scope.users = undefined; 
+        $http.get('admin/get/user_data').then(
+            function(result){
+                $scope.users = result.data;
+            },
+            function(result){
+                console.error('Could not retrieve recent user data!');
+                console.error(result);
+                $scope.hideSpinner('userSpinner');
+                $scope.scratch.get_user_data_failure = true;
+                $scope.scratch.get_user_data_failure_msg = result.data;
+                $scope.users = undefined;
+            }
+        );
+    };
+
+
     //
     // general init
     //
@@ -164,26 +161,10 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
         $http.get('stat').then(function(result){$scope.settings = result.data;});
         $http.get('https://api.github.com/repos/theLaborInVain/kdm-manager-api').then(function(result){$scope.github = result.data;});
 
-        if ($scope.retrievingSettlements != true){
-            $scope.getRecentSettlements();
-        };
 
-//        $scope.showSpinner('userSpinner');
         $scope.scratch.get_user_data_failure = false;
-        $http.get('admin/get/user_data').then(
-            function(result){
-                $scope.users = result.data;
-//                $scope.hideSpinner('userSpinner')
-            },
-            function(result){
-                console.error('Could not retrieve recent user data!');
-                console.error(result);
-                $scope.hideSpinner('userSpinner');
-                $scope.scratch.get_user_data_failure = true;
-                $scope.scratch.get_user_data_failure_msg = result.data;
-                $scope.users = undefined;
-            }
-        );
+
+        $scope.getRecentUsers();
 
         $http.get('admin/get/logs').then(function(result){$scope.logs = result.data;});
 
@@ -414,6 +395,7 @@ myApp.controller('userAdminController', function($scope, $http) {
 
     $scope.closeWorkWithUser = function() {
         delete $scope.workWithUser;
+        $scope.getRecentUsers();
     };
 
     $scope.getUser = function() {
@@ -472,8 +454,6 @@ myApp.controller('userAdminController', function($scope, $http) {
         );
 
         $scope.scratch.showLoader = true;
-        $scope.workWithUser = undefined;
-
 
         var timerName = 'setSubscriptionLevel(' + userLogin + ')'
         console.time(timerName);
@@ -493,14 +473,48 @@ myApp.controller('userAdminController', function($scope, $http) {
 		subscriber_promise.then(
             function successCallback(response) {
                 console.timeEnd(timerName);
-                window.alert(userLogin + ' subscription level updated!');
-                $scope.scratch.searchUserEmail = userLogin;
-                $scope.getUser()
+                userObject.user.subscriber.level = targetSubscriptionLevel;
+        		$scope.scratch.showLoader = false;
             }, function errorCallback(response) {
                 console.error(response);
-                window.alert(response.data);
                 console.timeEnd(timerName);
         		$scope.scratch.showLoader = false;
+            }
+        );
+
+
+    };
+
+    $scope.toggleVerifiedEmail = function(userObject) {
+        // turns the user's 'verified_email' attrib on or off
+
+        var startingValue = userObject.verified_email;
+        var newValue = true;
+
+        if (startingValue) {
+            newValue = false;
+        }
+
+        var reqURL = '/user/set_verified_email/' + userObject._id.$oid
+        console.time(reqURL);
+
+        var promise = $http({
+            method: 'POST',
+            url: reqURL,
+            data: {'value': newValue},
+            headers: {
+                'API-Key': $scope.api_key,
+				'Authorization': $scope.user.jwt,
+            },
+        });
+
+		promise.then(
+            function successCallback(response) {
+                console.timeEnd(reqURL);
+                userObject.verified_email = newValue;
+            }, function errorCallback(response) {
+                console.error(response);
+                console.timeEnd(reqURL);
             }
         );
 
@@ -523,11 +537,5 @@ myApp.controller('userAdminController', function($scope, $http) {
 
     };
 
-
-    $scope.init = function() {
-        console.info('Initializing userAdminController...')
-    };
-
-    $scope.init();
 
 })

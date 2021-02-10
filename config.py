@@ -10,6 +10,7 @@ import os
 import socket
 
 class Config(object):
+    ACTIVE_USER_HORIZON = 15    # minutes
     DEBUG = True
     DEFAULT_METHODS = ['GET','POST','OPTIONS']
     DEV_SSL_CERT = 'deploy/dev_cert.pem'
@@ -22,7 +23,7 @@ class Config(object):
         'app_fqdn': 'advanced-kdm-manager.c.kdm-manager.internal',
         'url': 'https://api.kdm-manager.com'
     }
-    VERSION = "1.55.384"
+    VERSION = "1.56.401"
 
     if socket.getfqdn() == PRODUCTION['app_fqdn']:
         ENVIRONMENT['is_production'] = True

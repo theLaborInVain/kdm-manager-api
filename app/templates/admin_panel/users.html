@@ -1,23 +1,16 @@
 <!-- user administration! -->
-<div class="flex_item_basic users" ng-controller="userAdminController">
+<div class="flex_item_basic" ng-controller="userAdminController">
 
     <div id="userSpinner" class="bg_spinner" ng-if="scratch.showLoader === true">
         <img src="/static/media/images/loading_io.gif" >
     </div>
 
-    <h2>User Administration</h2>
-    <b>Registered Users:</b> {a world.world.total_users.value a}<br/>
-    <b>Subscribers:</b> {a world.world.total_subscribers.value a}
+    <div
+        class="kd worksheet_block"
+    >
 
-    <table class="subscribers_breakdown_table">
-        <tr ng-repeat="t in world.world.subscribers_by_level.value">
-            <td><i>Lvl. {a t.level a}:</i></td>
-            <td>{a t.count a}</td>
-        </tr>
-    </table>
-
-    <h3>Recent User Activity </h3>
-
+        <b>Registered Users:</b> {a world.world.total_users.value a}<br/>
+        <b>Subscribers:</b> {a world.world.total_subscribers.value a}<br/>
     <b title="Active during the last {a users.meta.active_user_horizon a} minutes">
         Active user count:
     </b>
@@ -30,103 +23,118 @@
     {a users.meta.recent_user_count a}
     <br/>
     
-    <div id="userFailure" ng-if="scratch.get_user_data_failure == true">
-        <hr/>
-        <p><b>Could not refresh recent user data!</b></p>
-        <code>{a scratch.get_user_data_failure_msg a}</code>
-    </div>
 
-    <div class="users_container">
-        <div
-            class="user_basic_info clickable tile"
-            ng-class="{
-                'inactive_user': u.is_active == false,
-                'active_user': u.is_active,
-                'signed_out_user': u.latest_action=='signed out',
-                'inactive_subscriber': u.is_active == false && u.subscriber.level > 0,
-                'active_subscriber': u.is_active && u.subscriber.level > 0,
-                'signed_out_subscriber': u.latest_action=='signed out' && u.subscriber.level > 0,
-            }"
-            ng-repeat="u in users.user_info"
-            ng-click="showHide('user_' + u._id.$oid);"
-        >
-            <h2 class="user_basic_info_login">
-                {a u.login a}
-                <span
-                    ng-if="u.latest_action == 'signed out'"
-                    style="font-weight: normal"
+        <table class="subscribers_breakdown_table">
+            <tr>
+                <td
+                    ng-repeat="t in world.world.subscribers_by_level.value"
                 >
-                    (signed out)
-                </span>
-            </h2>
-
-            <div
-                class="user_detail hidden"
-                id="user_{a u._id.$oid a}"
-                title="Click again to close and copy OID to clipboard."
+                    Lvl. {a t.level a}
+                </td>
+            </tr>
+            <tr>
+                <td
+                    class="clickable"
+                    ng-repeat="t in world.world.subscribers_by_level.value"
+                    ng-class-even="'zebra'"
+                    title="{a settings.meta.subscriptions['level_' + t.level].desc a}"
+                    ng-click="scratch.subscriberToolTip = settings.meta.subscriptions['level_' + t.level]"
+                >
+                    {a t.count a}
+                </td>
+            </tr>
+            <tr
+                ng-if="scratch.subscriberToolTip"
             >
-                <b>Latest User Agent:</b> {a u.latest_user_agent a}<br/>
-                <b>Latest Activity:</b> {a u.latest_activity_age a} ago<br/>
-                <b>Latest Action:</b> {a u.latest_action a}<br/>
-                <b>Active:</b> {a u.is_active a}<br/>
-
-                <div
-                    class="user_detail_button_raft"
-                    ng-click="$event.stopPropagation()"
+                <td
+                    colspan="{a world.world.subscribers_by_level.value.length a}"
+                    class="tooltip"
                 >
-                    <button
-                        ng-click="copyToClipboard(u._id.$oid);"
-                    >
-                        Copy OID
-                    </button>
-                    <button
-                        ng-if="user.jwt"
-                        ng-click="
-                            scratch.searchUserEmail = u.login;
-                            getUser();
-                        "
-                    >
-                        Edit user 
-                    </button>
-                    <button ng-click="exportUser(u.login)">
-                        Export
-                    </input>
-                </div>
+                    Lvl. {a scratch.subscriberToolTip.level a}: {a scratch.subscriberToolTip.desc a}
+                </td>
+            </tr>
+        </table>
 
+        <div
+            class="clickable kd worksheet_row"
+            ng-click="ngShowHide('userAgentPopularityContest')"
+        >
+            <div
+                class="kd checkbox"
+                ng-class="{'checked': ngVisible['userAgentPopularityContest']}"
+            >
+            </div>
+            <div
+                class="kd checkbox_desc"
+            >
+                View user Agent popularity contest
             </div>
         </div>
-    </div>
 
-    <h3>Edit user</h3>
-
-    <div
-        class="error_text_block"
-        ng-if="!user.jwt"
-    >
-        [set '{a user.login a}' password to work with users]
-    </div>
+    </div> <!-- worksheet block -->
 
     <div
-        class="text_input_container zebra"
-        ng-if="!scratch.showLoader && user.jwt"
+        class="kd worksheet_block"
+        ng-class="{'disabled': !user.jwt}"
     >
 
-        <input
-            class="text_input_input"
-            type="email"
-            placeholder="search for a user"
-            ng-model="scratch.searchUserEmail"
-        />
+        <h3 class="kd title">User Administration</h3>
 
-        <button
-            class="text_input_button"
-            ng-disabled="scratch.searchUserEmail === undefined"
-            ng-click="getUser()"
+        <div id="userFailure" ng-if="scratch.get_user_data_failure == true">
+            <hr/>
+            <p><b>Could not refresh recent user data!</b></p>
+            <code>{a scratch.get_user_data_failure_msg a}</code>
+        </div>
+
+        <div
+            class="clickable kd worksheet_row"
+            ng-class-even="'zebra'"
+            ng-repeat="u in users.user_info"
+            ng-click = "
+                scratch.searchUserEmail = u.login;
+                getUser();
+            "
         >
-            Search!
-        </button>
+            <div
+                class="kd checkbox"
+                ng-class="{
+                    'checked': u.is_active,
+                }"
+            >
+            </div>
+            <div
+                class="kd checkbox_desc"
+                ng-class="{'bold': u.subscriber.level > 1}"
+            >
+                {a u.login a}
+            </div>
+        </div>
+
+        <form
+            class="text_input_container"
+        >
+            <input
+                class="text_input_input"
+                type="email"
+                placeholder="search for a user"
+                ng-model="scratch.searchUserEmail"
+            />
+
+            <button
+                type="submit"
+                class="text_input_button"
+                ng-disabled="scratch.searchUserEmail === undefined"
+                ng-click="
+                    getUser();
+                    $event.stopPropagation();
+                "
+            >
+                Go!
+            </button>
+        </form>
 
     </div>
+
 
     <!--
 
@@ -137,9 +145,11 @@
         id="workWithUserModal"
         class="modal_outer"
         ng-if="workWithUser !== undefined"
+        ng-click="closeWorkWithUser()"  
     >
         <div 
-            class="modal_inner work_with_user_container"
+            class="modal_inner slender_modal"
+            ng-click="$event.stopPropagation()"
         >
             <div class="error_text_block" ng-if="workWithUser.user.login === null">
                 [user not found!]
@@ -163,10 +173,28 @@
 		                <b>User Age:</b> {a workWithUser.user.age a}<br/>
         	            <b>Created On:</b> {a workWithUser.user.created_on.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
         	            <b>Latest Sign-in:</b> {a workWithUser.user.latest_sign_in.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
+        	            <b>Latest Activity:</b> {a workWithUser.user.latest_activity.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
+        	            <b>Latest Action:</b> {a workWithUser.user.latest_action a}<br/>
                 		<b>Settlements created:</b> {a workWithUser.user.settlements_created a}<br/>
                 		<b>Survivors created:</b> {a workWithUser.user.survivors_created a}<br/>
                     </div>
+
+
                  </div>
+
+                <div
+                    class="user_detail_button_raft"
+                >
+                    <button
+                        class="kd yellow"
+                        ng-click="copyToClipboard(u._id.$oid);"
+                    >
+                        Copy OID
+                    </button>
+                    <button class="kd yellow" ng-click="exportUser(u.login)">
+                        Export
+                    </input>
+                </div>
 
     			<div
                     class="user_info_block" ng-if="workWithUser.user.subscriber.level > 0">
@@ -192,7 +220,7 @@
                     >
                         <div
                             class="kd checkbox"
-                            ng-class="{'checked': workWithUser.user.subscriber.level == sub_level.level}"
+                            ng-class="{'checked': workWithUser.user.subscriber.level === sub_level.level}"
                         >
                         </div>
 
@@ -207,12 +235,43 @@
                 <div
                     class="kd worksheet_block"
                 >
-                    <h3 class="kd title">Info</h3>
-                
-                    This is a placeholder! We're going to add the ability to
-                    view a user's settlements and event log stuff soon.
+                    <h3 class="kd title">Administration</h3>
+
+                    <div
+                        class="clickable kd worksheet_row"
+                        ng-click="toggleVerifiedEmail(workWithUser.user)"
+                    >
+                        <div
+                            class="kd checkbox"
+                            ng-class="{
+                                'checked': workWithUser.user.verified_email,
+                            }"
+                        >
+                        </div>
+                        <div
+                            class="kd checkbox_desc"
+                        >
+                            Verified email
+                        </div>
+                    </div>
 
                 </div><!-- worksheet block -->
+
+                <div
+                    class="kd worksheet_block"
+                >
+
+                    <h3 class="kd title">Activity</h3>
+
+                    <div
+                        class="kd worksheet_row"
+                        ng-class-even="'zebra'"
+                        ng-repeat="event in workWithUser.user.activity_log"
+                    >
+                        {a event a}
+                    </div>
+
+                </div> <!-- worksheet_block -->
 
                 <center>
                     <button
@@ -229,19 +288,37 @@
     </div> <!-- work with user -->
 
 
-    <h3>User Agent Info</h3>
-    <p
-        ng-click="ngShowHide('user_agent_popularity_contest')"
-        class="clickable tile"
-    >
-        Click/tap to show/hide the User Agent popularity contest.
-    </p>
-    <table id="user_agent_popularity_contest" class="hidden">
-        <tr><th>UA String</th><th>&nbsp; # &nbsp; </th></tr>
-        <tr ng-repeat="ua in users.user_agent_stats" ng-class-even="'zebra'">
-            <td>{a ua.latest_user_agent a}:</td><td>{a ua.count a}</td>
-        </tr>
-    </table>
-
 
 </div><!-- flex item basic -->
+
+
+<!-- the fold for this template! -->
+
+<div
+    id="userAgentPopularityContest"
+    class="modal_outer hidden"
+    ng-click="ngHide('userAgentPopularityContest')"
+>
+
+    <div
+        class="modal_inner slender_modal"
+        ng-click="$event.stopPropagation()"
+    >
+
+        <table id="user_agent_popularity_contest">
+            <tr><th>UA String</th><th>&nbsp; # &nbsp; </th></tr>
+            <tr ng-repeat="ua in users.user_agent_stats" ng-class-even="'zebra'">
+                <td>{a ua.latest_user_agent a}:</td><td>{a ua.count a}</td>
+            </tr>
+        </table>
+
+        <div
+            class="clickable kd capsule"
+            ng-click="ngHide('userAgentPopularityContest')"
+        >
+            Close
+        </div>
+
+    </div> <!-- modal_inner -->
+
+</div> <!-- UA popularity contest -->

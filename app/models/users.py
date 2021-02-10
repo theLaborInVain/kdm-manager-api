@@ -18,6 +18,7 @@ from copy import copy
 from datetime import datetime, timedelta
 import gridfs
 import io
+import inspect
 import os
 import pickle
 import random
@@ -428,6 +429,16 @@ class User(models.UserAsset):
         # assets
         self.Preferences = user_preferences.Assets()
 
+        # finally, if it's actually them, record that the user is using the API
+        if (
+            hasattr(flask.request, 'User') and
+            flask.request.User.user['login'] == self.user['login']
+        ):
+            self.set_latest_action(
+                activity_string = flask.request.path,
+                ua_string = flask.request.user_agent.string
+            )
+
 
     def new(self):
         """ Creates a new user based on request.json values. Like all UserAsset
@@ -475,6 +486,8 @@ class User(models.UserAsset):
         return self.user["_id"]
 
 
+    @models.admin_only
+    @models.web_method
     def export(self, return_type=None):
         """ This supercedes everything that happens in the legacy webapp's
         'get_user' CGI and facilitates "cloning" users from one environment
@@ -485,16 +498,6 @@ class User(models.UserAsset):
         THIS CODE WAS ALL PORTED FROM THE LEGACY WEBAPP ON 2020-12-09 AND
         IS IN NEED OF A REFACTOR. PLEASE REFACTOR IT.
         """
-
-        if API.config['ENVIRONMENT'].get('is_production', False):
-            if not flask.request.User.is_admin():
-                err = 'Only API admins may export users!'
-                raise utils.InvalidUsage(err, 401)
-        else:
-            warn = 'API is non-prod. Skipping admin check for user export...'
-            self.logger.warn(warn)
-
-        self.logger.debug("%s Beginning user export..." % self)
 
         created_by = {'created_by': self.user['_id']}
         assets_dict = {
@@ -576,7 +579,12 @@ class User(models.UserAsset):
         # basics; all views, generic UI/UX stuff
         output["user"]["age"] = self.get_age()
         output['user']['gravatar_hash'] = md5(self.user['login'].encode('utf-8')).hexdigest()
-        output["user"]["settlements_created"] = utils.mdb.settlements.find({'created_by': self.user['_id'], 'removed': {'$exists': False}}).count()
+        output["user"]["settlements_created"] = utils.mdb.settlements.find(
+            {
+                'created_by': self.user['_id'],
+                'removed': {'$exists': False}
+            }
+        ).count()
         output["user"]["survivors_created"] = utils.mdb.survivors.find({'created_by': self.user['_id']}).count()
         output['user']['subscriber'] = self.get_subscriber_attributes()
 
@@ -593,7 +601,6 @@ class User(models.UserAsset):
         # punch the user up if we're returning to the admin panel
         if return_type in ['admin_panel']:
             output['user']["latest_activity_age"] = self.get_latest_activity(return_type='age')
-            output["user"]["has_session"] = self.has_session()
             output["user"]["is_active"] = self.is_active()
             output['user']["friend_list"] = self.get_friends(list)
             output['user']["current_session"] = utils.mdb.sessions.find_one({"_id": self._id})
@@ -601,11 +608,6 @@ class User(models.UserAsset):
             output["user"]["survivors_owned"] = self.get_survivors(qualifier="owner", return_type=int)
             output["user"]["settlements_administered"] = self.get_settlements(qualifier="admin", return_type=int)
             output["user"]["campaigns_played"] = self.get_settlements(qualifier="player", return_type=int)
-
-        # user assets
-#        output["user_assets"] = {}
-#        output["user_assets"]["survivors"] = self.get_survivors(return_type=list)
-
 
         if return_type in ['admin_panel','create_new',dict]:
             return output
@@ -708,6 +710,7 @@ class User(models.UserAsset):
             self.save(verbose=False)
 
 
+    @models.web_method
     def set_preferences(self):
         """ Expects a request context and will not work without one. Iterates
         thru a list of preference handles and sets them. """
@@ -740,6 +743,8 @@ class User(models.UserAsset):
         return self.user["recovery_code"]
 
 
+    @models.admin_only
+    @models.web_method
     def set_subscriber_level(self, level=None):
         """ Supersedes set_patron_attributes() in the 1.0.0 release. Sets the
         subscriber level, i.e. self.user['subscriber']['level'] value, which, in
@@ -777,9 +782,29 @@ class User(models.UserAsset):
         )
         self.user['subscriber']['updated_on'] = datetime.now()
 
-        self.logger.info('%s Set subscriber level to %s...' % (self, level))
+        info = '%s subscriber level set to %s (admin: %s)'
+        self.logger.info(info % (self, level, flask.request.User.user['login']))
         self.save()
 
+
+    @models.web_method
+    def set_verified_email(self):
+        """ Sets the verified email value. Expects a request context. Fails
+        if the authenticated user is not a.) the user being modified or b.)
+        an API admin. """
+
+        if not (
+            flask.request.User.is_admin() or
+            flask.request.User.user['login'] == self.user['login']
+        ):
+            err = "Only API administrators may verify other users' email!"
+            raise utils.InvalidUsage(err)
+
+        self.check_request_params(['value'])
+        new_value = bool(self.params['value'])
+        self.user['verified_email'] = new_value
+        self.logger.info('%s Set verified email to %s' % (self, new_value))
+        self.save()
 
 
     def update_password(self, new_password=None):
@@ -801,6 +826,7 @@ class User(models.UserAsset):
     #   toggle methods
     #
 
+    @models.admin_only
     def toggle_admin_status(self, save=True):
         """ Toggles the 'admin' attribute on/off. Use 'kwarg' to save (or not)
         after the toggle is done. """
@@ -854,15 +880,6 @@ class User(models.UserAsset):
     #   query/assess methods
     #
 
-    def has_session(self):
-        """ Returns a bool representing whether there is a session in the mdb
-        for the user."""
-
-        if utils.mdb.sessions.find_one({"created_by": self.user["_id"]}) is not None:
-            return True
-        return False
-
-
     def is_admin(self):
         """ Returns a bool representing whether the user is an API admin. This
         is NOT THE SAME as being a settlement admin (see below)."""
@@ -871,15 +888,14 @@ class User(models.UserAsset):
 
 
     def is_active(self):
-        """ Returns a bool representing whether the user has logged an activity
-        within our 'active user' horizon/cutoff window. """
+        """ Refactored in February 2021 to no longer reference the legacy
+        webapp's 'sessions' collection in MDB. Now, we use activity in the API
+        to determine if a user is active. """
 
-        if not self.has_session():
-            return False
-
-        minutes_since_latest = self.get_latest_activity('minutes')
-        active_horizon = utils.settings.get("application","active_user_horizon")
-        if minutes_since_latest <= active_horizon:
+        if (
+            self.get_latest_activity('minutes') <=
+            API.config['ACTIVE_USER_HORIZON']
+        ):
             return True
 
         return False
@@ -1303,6 +1319,8 @@ class User(models.UserAsset):
             self.update_password()
         elif action == 'set_preferences':
             self.set_preferences()
+        elif action == 'set_verified_email':
+            self.set_verified_email()
 
         # collection management
         elif action == "add_expansion_to_collection":
