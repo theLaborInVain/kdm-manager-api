@@ -431,6 +431,7 @@ class User(models.UserAsset):
 
         # finally, if it's actually them, record that the user is using the API
         if (
+            flask.request and
             hasattr(flask.request, 'User') and
             flask.request.User.user['login'] == self.user['login']
         ):

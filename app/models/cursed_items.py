@@ -13,4 +13,5 @@ class Assets(models.AssetCollection):
 
     def __init__(self, *args, **kwargs):
         self.root_module = cursed_items
+        self.is_game_asset = False
         models.AssetCollection.__init__(self,  *args, **kwargs)

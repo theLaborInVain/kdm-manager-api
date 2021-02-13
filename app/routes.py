@@ -211,6 +211,17 @@ def world_json():
 
 #   game asset lookups
 
+@API.route("/kingdom_death")
+@crossdomain(origin=['*'])
+def kingdom_death():
+    """ Initializes all game assets and serializes them. """
+    return flask.Response(
+        response = assets.kingdom_death(),
+        status = 200,
+        mimetype = "application/json"
+    )
+
+
 @API.route("/game_asset")
 @API.route("/game_assets")  # as a courtesy/concession
 @crossdomain(origin=['*'])
@@ -219,7 +230,7 @@ def list_game_assets():
     webapp asset modules. """
     return flask.Response(
         response=json.dumps(
-            assets.list(game_assets=True),
+            assets.list_game_assets(game_assets=True),
             default=json_util.default
         ),
         status=200,
@@ -233,7 +244,7 @@ def lookup_asset(asset_type):
     """ Looks up game asset collection assets. Or, if you GET it, dumps the
     initialized asset module's assets dictionary. """
 
-    if asset_type not in assets.list():
+    if asset_type not in assets.list_game_assets():
         return flask.Response(
             response="/game_asset/%s is not a supported endpoint!" % asset_type,
             status=404,

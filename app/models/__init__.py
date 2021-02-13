@@ -280,7 +280,7 @@ class AssetCollection(object):
             self.type = os.path.splitext(self.root_module.__name__)[-1][1:]
             self.set_assets_from_root_module()
 
-   # IMPORTANT! self.assets must be set by this point!
+        # IMPORTANT! self.assets must be set by this point!
 
         # type override - be careful!
         if hasattr(self, "type_override"):
@@ -550,8 +550,20 @@ class AssetCollection(object):
 
     def get_names(self):
         """ Dumps all asset 'name' attributes, i.e. a list of name values. """
+        try:
+            for h in self.get_handles():
+                if isinstance(self.assets[h], list):
+                    err = '%s Asset (%s) is a list! %s'
+                    raise TypeError(err % (self, h, self.assets[h]))
+            return [self.assets[h]["name"] for h in self.get_handles()]
+        except KeyError as e:
+            self.logger.error("Asset does not have 'name' key!")
+            self.logger.error("Assets without 'name' keys follow...")
+            for handle in self.get_handles():
+                if self.assets[handle].get('name', None) is None:
+                    self.logger.error(self.assets[handle])
+            raise e
 
-        return sorted([self.assets[k]["name"] for k in self.get_handles()])
 
     def get_sorted_assets(self):
         """ Returns the asset collections 'assets' dict as an OrderedDict. """
@@ -562,6 +574,7 @@ class AssetCollection(object):
             output[asset_dict['handle']] = asset_dict
         return output
 
+
     def get_sub_types(self):
         """ Dumps a list of all asset 'sub_type' attributes. """
 
@@ -570,6 +583,7 @@ class AssetCollection(object):
             a_dict = self.get_asset(a)
             subtypes.add(a_dict.get('sub_type', None))
         return sorted(subtypes)
+
 
     def get_types(self):
         """ Dumps a list of all asset 'type' attributes. """

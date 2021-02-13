@@ -59,16 +59,18 @@ these routes, <u>all private routes supported by the KD:M API also support the
     },
     "game_asset_lookups": {
         "name": "Game asset lookup routes",
-        "desc": """\
-Use these endpoints to get information about game assets, e.g. monsters, gear,
-expansions, etc.
-<p>Each of these routes works essentially the same way. You can
-<b>POST</b> a query to one and retireve data about a single asset if you
-know its name or handle -OR- you can <b>GET</b> the route to get a dictionary
-of all assets.</p>
-<p>Use the <a href="/game_asset">/game_asset</a> endpoint to get a list of
-available game assets.</p>
-        """
+        "desc": (
+            '<p>Use these endpoints to get information about game assets, e.g. '
+            'monsters, gear, expansions, etc.</p>'
+            '<p>Each of these routes works essentially the same way. You can '
+            '<b>POST</b> a query to one and retireve data about a single asset '
+            'if you know its name or handle -OR- you can <b>GET</b> the route '
+            'to get a dictionary of all assets.</p>'
+            '<p><b>PROTIP:</b> Use the <a href="/game_asset">/game_asset</a> '
+            'endpoint to get a list of available game asset types -OR- hit the '
+            '<a href="/kingdom_death">/kingdom_death</a> endpoint to dump a '
+            'JSON representation of every game asset that the API tracks.</p>'
+        ),
     },
 
     #   private routes

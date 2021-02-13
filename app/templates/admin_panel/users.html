@@ -7,74 +7,6 @@
 
     <div
         class="kd worksheet_block"
-    >
-
-        <b>Registered Users:</b> {a world.world.total_users.value a}<br/>
-        <b>Subscribers:</b> {a world.world.total_subscribers.value a}<br/>
-    <b title="Active during the last {a users.meta.active_user_horizon a} minutes">
-        Active user count:
-    </b>
-    {a users.meta.active_user_count a}
-    <br/>
-
-    <b title="Active during the last {a users.meta.recent_user_horizon a} hours">
-    Recent user count:
-    </b>
-    {a users.meta.recent_user_count a}
-    <br/>
-    
-
-        <table class="subscribers_breakdown_table">
-            <tr>
-                <td
-                    ng-repeat="t in world.world.subscribers_by_level.value"
-                >
-                    Lvl. {a t.level a}
-                </td>
-            </tr>
-            <tr>
-                <td
-                    class="clickable"
-                    ng-repeat="t in world.world.subscribers_by_level.value"
-                    ng-class-even="'zebra'"
-                    title="{a settings.meta.subscriptions['level_' + t.level].desc a}"
-                    ng-click="scratch.subscriberToolTip = settings.meta.subscriptions['level_' + t.level]"
-                >
-                    {a t.count a}
-                </td>
-            </tr>
-            <tr
-                ng-if="scratch.subscriberToolTip"
-            >
-                <td
-                    colspan="{a world.world.subscribers_by_level.value.length a}"
-                    class="tooltip"
-                >
-                    Lvl. {a scratch.subscriberToolTip.level a}: {a scratch.subscriberToolTip.desc a}
-                </td>
-            </tr>
-        </table>
-
-        <div
-            class="clickable kd worksheet_row"
-            ng-click="ngShowHide('userAgentPopularityContest')"
-        >
-            <div
-                class="kd checkbox"
-                ng-class="{'checked': ngVisible['userAgentPopularityContest']}"
-            >
-            </div>
-            <div
-                class="kd checkbox_desc"
-            >
-                View user Agent popularity contest
-            </div>
-        </div>
-
-    </div> <!-- worksheet block -->
-
-    <div
-        class="kd worksheet_block"
         ng-class="{'disabled': !user.jwt}"
     >
 
@@ -133,7 +65,60 @@
             </button>
         </form>
 
-    </div>
+    </div> <!-- kd worksheet_block -->
+
+
+    <div
+        class="kd worksheet_block"
+    >
+
+        <div
+            class="clickable kd worksheet_row"
+            ng-click="ngShowHide('userAgentPopularityContest')"
+        >
+            <div
+                class="kd checkbox"
+                ng-class="{'checked': ngVisible['userAgentPopularityContest']}"
+            >
+            </div>
+            <div
+                class="kd checkbox_desc"
+            >
+                View user Agent popularity contest
+            </div>
+        </div>
+
+    </div> <!-- worksheet block -->
+
+
+    <!-- user counts -->
+
+    <div class="kd attributes_table">
+        <div
+            class="large_cell"
+        >
+            <div class="title">Users</div>
+            <span>
+                {a world.world.total_users.value a}
+            </span>
+        </div>
+        <div
+            class="cell"
+        >
+            <div class="title">Lvl. 0</div>
+            <span>
+                {a world.world.total_users.value - world.world.total_subscribers.value a}
+            </span>
+        </div>
+        <div
+            class="clickable cell"
+            ng-repeat="t in world.world.subscribers_by_level.value"
+            ng-click="scratch.subscriberToolTip = settings.meta.subscriptions['level_' + t.level]"
+        >
+            <div class="title">Lvl. {a t.level a}</div>
+            <span> {a t.count a}</span>
+        </div>
+    </div> <!-- attributes table -->
 
 
     <!--
@@ -141,6 +126,7 @@
         workWithUserModal starts here! Keep it in scope of this controller!
 
     -->
+
     <div
         id="workWithUserModal"
         class="modal_outer"
@@ -287,12 +273,11 @@
 
     </div> <!-- work with user -->
 
-
-
 </div><!-- flex item basic -->
 
 
-<!-- the fold for this template! -->
+
+<!-- the fold for this template! dump all out of scope modals here! -->
 
 <div
     id="userAgentPopularityContest"

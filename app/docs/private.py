@@ -164,35 +164,21 @@ create_assets = {
     "new_settlement": {
         "name": "/new/settlement",
         "methods": ["POST","OPTIONS"],
-        "desc": """\
-<p>Use 'handle' values from the <code>/game_asset/settlements</code>
-route (see above) as params, like this:</p>
+        "desc": (
+            '<p>Use <code>handle</code> values from the '
+            '<code>/kingdom_death</code> pubilc route as params, like this:</p>'
+            """\
 <code><pre>{
     "campaign": "people_of_the_lantern",
     "expansions": ["dung_beetle_knight", "lion_god"],
     "survivors": ["adam", "anna"],
     "name": "Chicago",
-    "special": ["create_first_story_survivors"]
+    "macros": ["create_first_story_survivors"]
 }</pre></code>
-<p>If successful, this route returns a serialized version of the new settlement,
-including its OID, as JSON.</p>
-<p>The following <code>special</code> values are supported by the API:</p>
-<table class="embedded_table">
-    <tr><th>value</th><th>result</th></tr>
-    <tr>
-     <td class="key">create_first_story_survivors</td>
-     <td class="value">Creates two male and two female survivors,
-     assigns them names and places Founding Stones and Cloths in
-     Settlement Storage.</td>
-    </tr>
-    <tr>
-     <td class="key">create_seven_swordsmen</td>
-     <td class="value">Creates seven random survivors with the
-    'Ageless' and Sword Mastery A&Is. </td>
-    </tr>
-</table>
-<p><b>Important!</b> Unsupported <code>special</code> values are ignored.</p>\
-        """,
+"""
+            '<p>If successful, this route returns a serialized version '
+            'of the new settlement, including its OID, as JSON.</p>'
+        ),
     },
     "new_survivor": {
         "name": "/new/survivor",

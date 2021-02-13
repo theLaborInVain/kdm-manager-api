@@ -30,6 +30,17 @@ dashboard = {
 #
 
 game_asset_lookups = {
+    'aaa_kingdom_death': {
+        'name': '/kingdom_death',
+        "methods": ["GET"],
+        'desc': (
+            '<p>Hit this endpoint to retrieve a JSON representation of every '
+            '<i>Monster</i> game asset that the API tracks.</p>'
+            '<p>While the other public routes (below) in this section allow '
+            'more targeted asset retrieval, this endpoint, which is optimized '
+            'for speed, just dumps <i>everything</i>.</p>'
+        ),
+    },
     'game_asset': {
         'name': '/game_asset',
         "methods": ["GET"],
@@ -277,21 +288,9 @@ goes away (in late 2019).</p>
     },
     'game_asset_resources': {
         'name': '/game_asset/resources',
-        'desc': """\
-<p>Returns a JSON representation of all known resources.</p>
-        """,
-    },
-    'game_asset_settlements': {
-        'name': '/game_asset/settlements',
-        'desc': """\
-<p><b>Important!</b> In the 1.0.0 release of the API, this endpoint supersedes
-and replaces the deprecated <code>/new_settlement</code> endpoint.</p>
-<p>This endpoint returns a pseudo asset type that represents the options/items
-available for use in the creation of new settlements (e.g. using
-<code>/new/settlement</code> below in the private routes).</p>
-<p>This is simply a dictionary of options that should be on your "create a new
-settlement" menu.</p>
-        """,
+        'desc': (
+            '<p>Returns a JSON representation of all known resources.</p>'
+        ),
     },
     'game_asset_strain_milestones': {
         'name': '/game_asset/strain_milestones',
@@ -304,6 +303,17 @@ settlement" menu.</p>
         'desc': """\
 <p>Returns a JSON representation of all known Survival Actions.</p>
         """,
+    },
+
+    'zz_game_asset_settlements': {
+        'name': '/game_asset/settlements',
+        'desc': (
+            '<p>Starting February 2021, this endpoint is deprecated.</p>'
+            '<p>It will return a 299 and, in April 2021, it will be removed '
+            'completely!</p>'
+            '<p>Please use <code>/kingdom_Death</code> to retrieve a complete '
+            'list of assets available for creating new settlements.</p>.'
+        ),
     },
 }
 

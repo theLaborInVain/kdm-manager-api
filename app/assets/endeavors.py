@@ -43,11 +43,16 @@ core = {
         'hide_if_location_exists': 'weapon_crafter',
     },
     'cooking_default': {
+        'name': 'Cooking',
         'desc': '<font class="kdm_font">g</font> <b>Cooking</b>',
         'cost': 1,
     },
     'cooking_stone_nose_gruel': {
-        'desc': 'Spend 1 organ and 1 bone to cook stone nose gruel. During the next Hunt phase, ignore <b>Starvation</b>.',
+        'name': 'Stone Noes Gruel',
+        'desc': (
+            'Spend 1 organ and 1 bone to cook stone nose gruel. During the '
+            'next Hunt phase, ignore <b>Starvation</b>.'
+        ),
         'cost': 1,
     },
     'drums_bone_beats': {
@@ -55,6 +60,7 @@ core = {
         'cost': 1,
     },
     'exhausted_lantern_hoard_0_lantern_research': {
+        'name': 'Lantern Research',
         'desc': '<font class="kdm_font">g</font> <b>Lantern Research</b>',
         'cost': 2,
         'requires_gear': ['final_lantern'],
@@ -87,7 +93,13 @@ core = {
         'cost': 1,
     },
     'guidepost_default': {
-        'desc': 'The survivor attempts to pull the weapon free from the ground. Roll 1d10 and add their strength. If the result is 12+, gain the <b>Lantern Halberd</b> rare gear and lose this innovation (archive this card).',
+        'name': 'Lantern Halberd',
+        'desc': (
+            'The survivor attempts to pull the weapon free from the ground. '
+            'Roll 1d10 and add their strength. If the result is 12+, gain the '
+            '<b>Lantern Halberd</b> rare gear and lose this innovation '
+            '(archive this card).'
+        ),
         'cost': 1,
     },
     'heart_flute_devils_melody':{
@@ -127,14 +139,17 @@ core = {
         'desc': """Once per settlement phase, spend 2 <font class="kdm_font">d</font> to carve a prosthetic limb. Remove a survivor's <b>dismembered</b> injury and add 1 bone to the settlement's storage.""",
     },
     'mask_maker_0': {
+        'name': 'White Lion Mask',
         'desc': 'White Lion Mask. You may hunt the Great Golden Cat.',
         'cost': 1,
     },
     'mask_maker_1': {
+        'name': 'Antelope Mask',
         'desc': 'Antelope Mask. You may hunt the Mad Steed.',
         'cost': 1,
     },
     'mask_maker_2': {
+        'name': 'Phoenix Mask',
         'desc': 'Phoenix Mask. You may hunt the Golden Eyed King.',
         'cost': 1,
     },
@@ -145,7 +160,10 @@ core = {
         'cost': 1,
     },
     'momento_mori_default': {
-        'desc': 'Nominate a survivor that died in the last showdown and roll id10.',
+        'name': 'Momento Mori',
+        'desc': (
+            'Nominate a survivor that died in the last showdown and roll id10.'
+        ),
         'cost': 1,
     },
     'nightmare_training_train': {
@@ -172,7 +190,12 @@ core = {
         'hide_if_location_exists': 'stone_circle',
     },
     'partnership_default': {
-        'desc': 'Nominate two survivors. They pair off, and each gains the <b>Partner</b> ability. A survivor may be nominated for Partnership once per lifetime.',
+        'name': 'Partnership',
+        'desc': (
+            'Nominate two survivors. They pair off, and each gains the '
+            '<b>Partner</b> ability. A survivor may be nominated for '
+            'Partnership once per lifetime.'
+        ),
         'cost': 2,
     },
     'pottery_fermentation': {
@@ -186,11 +209,19 @@ core = {
         'cost': 1,
     },
     'records_0_scholar_of_death': {
+        'name': 'Scholar of Death',
         'desc': "You gain the <b>Scholar of Death</b> secret fighting art.",
         'cost': 1,
     },
     'records_1_monster_volume': {
-        'desc': 'You laboriously create a volume about a monster you have defeated during your lifetime. Add "Monster Name" Vol. X where X is the level of the defeated monster to the Settlement Record Sheet. The work is exhausting, you retire. There can be up to 3 volumes for each monster.',
+        'name': 'Moster Volume',
+        'desc': (
+            'You laboriously create a volume about a monster you have '
+            'defeated during your lifetime. Add "Monster Name" Vol. X '
+            'where X is the level of the defeated monster to the Settlement '
+            'Record Sheet. The work is exhausting, you retire. There can be '
+            'up to 3 volumes for each monster.'
+        ),
         'cost': 1,
     },
     'sacrifice_death_ritual': {
@@ -216,12 +247,23 @@ core = {
         'hide_if_location_exists': 'blacksmith',
     },
     'sculpture_0': {
-        'desc': 'You create an Inspirational Statue. Skip the next hunt and lose a fighting art. Record this fighting art on the Settlement Record Sheet. A settlement can only have one Inspirational Statue. (You cannot make another! Secret fighting arts are not fighting arts!)',
+        'name': 'Inspirational Statue',
+        'desc': (
+            'You create an Inspirational Statue. Skip the next hunt and lose '
+            'a fighting art. Record this fighting art on the Settlement '
+            'Record Sheet. A settlement can only have one Inspirational '
+            'Statue. (You cannot make another! Secret fighting arts are not '
+            'fighting arts!)'
+        ),
         'cost': 1,
         'hide_if_settlement_attribute_exists': 'inspirational_statue',
     },
     'sculpture_1': {
-        'desc': 'You study the inspirational statue. Roll 1d10. On a 6+, gain the recorded fighting art.',
+        'name': 'Study the Inspirational Statue',
+        'desc': (
+            'You study the inspirational statue. Roll 1d10. On a 6+, '
+            'gain the recorded fighting art.'
+        ),
         'cost': 1,
     },
     'shrine_armor_ritual': {
@@ -378,7 +420,11 @@ expansions = {
         'cost': 1,
     },
     'choreia_spider_dance': {
-        'desc': 'Spider Dance. Nominate a male and a female survivor and roll id10.',
+        'name': 'Spider Dance',
+        'desc': (
+            'Spider Dance. Nominate a male and a female survivor and roll '
+            '1d10.'
+        ),
         'cost': 2,
     },
     'crimson_candy_crimson_cannibalism': {
@@ -386,11 +432,17 @@ expansions = {
         'cost': 1,
     },
     'dark_water_research_0': {
+        'name': 'Light Forging',
         'desc': '<font class="kdm_font">g</font> <b>Light Forging</b>.',
         'cost': 1,
     },
     'dark_water_research_1': {
-        'desc': 'Spend 2x resources and 2x Dark Water to increase the level of <b>Dark Water Research</b> by 1, to a maximum of 3. (Update your settlement record sheet.)',
+        'name': 'Dark Water Research',
+        'desc': (
+            'Spend 2x resources and 2x Dark Water to increase the level of '
+            '<b>Dark Water Research</b> by 1, to a maximum of 3. (Update '
+            'your settlement record sheet.)'
+        ),
         'cost': 1,
     },
     'dbk_horn_ceremony': {
@@ -409,18 +461,22 @@ expansions = {
         'cost': 1,
     },
     'gorm_albedo': {
+        'name': 'Albedo',
         'desc': 'Once this lantern year, roll 1d10',
         'cost': 2,
     },
     'gorm_citrinitas': {
+        'name': 'Citrinitas',
         'desc': 'Once this lantern year, roll 1d10',
         'cost': 3,
     },
     'gorm_nigredo': {
+        'name': 'Nigredo',
         'desc': 'Once this lantern year, roll 1d10',
         'cost': 1,
     },
     'gorm_rubedo': {
+        'name': 'Rubedo',
         'desc': 'Once this lantern year, roll 1d10',
         'cost': 4,
     },
@@ -434,23 +490,38 @@ expansions = {
         'hide_if_innovation_exists': 'gorm_rubedo',
     },
     'legless_ball_0': {
+        'name': 'Legless Ball',
         'desc': 'Add 1 <b>Web Silk</b> strange resource to settlement storage.',
         'cost': 1,
     },
     'legless_ball_1': {
-        'desc': 'A survivor with 10+ insanity may put the Spidicules out of its misery. Gain the <b>Grinning Visage</b> rare gear and lose this innovation. (Archive this card.)',
+        'name': 'Legless Ball',
+        'desc': (
+            'A survivor with 10+ insanity may put the Spidicules out of its '
+            'misery. Gain the <b>Grinning Visage</b> rare gear and lose this '
+            'innovation. (Archive this card.)'
+        ),
         'cost': 1,
     },
     'lion_knight_0_visit_the_retinue': {
-        'desc': 'Visit the retinue. <font class="kdm_font">g</font> <b>Strange Caravan</b>',
+        'name': 'Visit the retinue',
+        'desc': (
+            'Visit the retinue. <font class="kdm_font">g</font> <b>Strange '
+            'Caravan</b>'
+        ),
         'cost': 1,
     },
     'lion_knight_black_mask_face_the_monster': {
+        'name': 'Face the Monster',
         'desc': '<b>Face the Monster.</b> Roll 1d10.',
         'cost': 2,
     },
     'lion_knight_white_mask_leave_the_monster': {
-        'desc': '<b>Leave the monster an offering.</b> Spend 1 resource and roll 1d10.',
+        'name': 'Leave the monster an offering',
+        'desc': (
+            '<b>Leave the monster an offering.</b> Spend 1 resource and '
+            'roll 1d10.'
+        ),
         'cost': 1,
     },
     'petal_spiral_trace_petals': {
@@ -488,20 +559,25 @@ expansions = {
         'cost': 1,
     },
     'serrated_fangs_razor_pushups': {
-        'expansion': 'spidicules',
         'name': 'Razor Push-ups',
+        'expansion': 'spidicules',
         'cost': 1,
     },
     'shadow_dancing_final_dance': {
         'name': 'Final Dance',
-        'desc': 'You may only endeavor here if a survivor died during the last hunt or showdown. Once per year, roll 1d10.',
+        'desc': (
+            'You may only endeavor here if a survivor died during the last '
+            'hunt or showdown. Once per year, roll 1d10.'
+        ),
         'cost': 1,
     },
     'silk_refining_0': {
+        'name': 'Silk Surgery',
         'desc': '<font class="kdm_font">g</font> <b>Silk Surgery</b>.',
         'cost': 1,
     },
     'silk_refining_1': {
+        'name': 'Silk Refining',
         'desc': 'Convert 1 silk resource in 1 hide basic resource.',
         'cost': 1,
     },
@@ -513,15 +589,25 @@ expansions = {
         'hide_if_location_exists': 'silk_mill',
     },
     'stoic_statue_worship_the_monster': {
+        'name': 'Worship the monster',
         'desc': '<b>Worship the monster.</b> You may not <b>depart</b> or endeavor again this settlement phase. Roll 1d10.',
         'cost': 1,
     },
     'subterranean_agriculture_0': {
-        'desc': 'If <b>Black Harvest</b> is not on the timeline, <font class="kdm_font">g</font> <b>Underground Sow</b>.',
+        'name': 'Underground Sow',
+        'desc': (
+            'If <b>Black Harvest</b> is not on the timeline, '
+            '<font class="kdm_font">g</font> <b>Underground Sow</b>.'
+        ),
         'cost': 1,
     },
     'subterranean_agriculture_1': {
-        'desc': 'If <b>Black Harvest</b> is on the timelinem you may spend 1 Preserved Caustic Dung to increase its rank by 1 to a maximum rank of 3. Limit, once per settlement phase.',
+        'name': 'Preserved Caustic Dung',
+        'desc': (
+            'If <b>Black Harvest</b> is on the timeline you may spend 1 '
+            'Preserved Caustic Dung to increase its rank by 1 to a maximum '
+            'rank of 3. Limit, once per settlement phase.'
+        ),
         'cost': 1,
     },
     'subterranean_agriculture_2_build_wet_resin_crafter': {
@@ -532,6 +618,7 @@ expansions = {
         'hide_if_location_exists': 'wet_resin_crafter',
     },
     'umbilical_bank_umbilical_symbiosis':{
+        'name': 'Umbilical Symbiosis',
         'desc': '<font class="kdm_font">g</font> <b>Umbilical Symbiosis</b>.',
         'cost': 1,
     },
@@ -545,7 +632,12 @@ expansions = {
         'hide_if_innovation_exists': 'pottery',
     },
     'war_room_default': {
-        'desc': 'The hunt team makes a plan. The group may reroll 1 <b>Hunt Event Table</b> result (d100) this lantern year. They must reroll before performing the event.',
+        'name': 'Make a plan',
+        'desc': (
+            'The hunt team makes a plan. The group may reroll 1 <b>Hunt Event '
+            'Table</b> result (d100) this lantern year. They must reroll '
+            'before performing the event.'
+        ),
         'cost': 1,
     },
 }

@@ -86,7 +86,6 @@ class Assets(models.AssetCollection):
         YHBW
         """
 
-        self.is_game_asset = True
         self.assets = {}
 
         for mod in [campaigns, expansions]:

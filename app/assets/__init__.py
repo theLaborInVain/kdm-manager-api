@@ -14,6 +14,7 @@
 
 # standard lib imports
 from bson import json_util
+from collections import OrderedDict
 import glob
 import importlib
 import json
@@ -114,7 +115,7 @@ def get_game_asset(collection_name, return_type=flask.Response):
     return A.request_response()
 
 
-def list(game_assets=False):
+def list_game_assets(game_assets=False):
     """ Returns a list of all available asset dictionaries. The 'game_assets'
     kwarg filters this to only return game assets (i.e. to filter out meta and
     webapp only assets). """
@@ -138,3 +139,16 @@ def list(game_assets=False):
     return sorted(output)
 
 
+@utils.metered
+def kingdom_death(return_type=None):
+    """ Returns a dictionary of all assets. """
+
+    output = OrderedDict()
+
+    all_assets = list_game_assets()
+    for asset_collection in all_assets:
+        asset_object = get_game_asset(asset_collection, return_type=object)
+        if getattr(asset_object, 'is_game_asset', False):
+            output[asset_collection] = asset_object.get_sorted_assets()
+
+    return json.dumps(output, default=json_util.default)

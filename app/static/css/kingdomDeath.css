@@ -77,7 +77,7 @@ button.kd {
     --color-kd-affinity-green: #4CB848;
     --color-kd-affinity-red: #CD2027;
     --color-kd-black: #111;
-    --color-kd-black-gradient: radial-gradient(circle, #333, #000);
+    --color-kd-black-gradient: linear-gradient(to right, #000, #333, #000);
     --color-kd-bleeding-token: radial-gradient(at right 50%, #f00, #992426);
     --color-kd-blue: #00A0E9;
     --color-kd-blue-gradient: radial-gradient(#60DAF5, #40AFD3);
@@ -93,7 +93,7 @@ button.kd {
     --color-kd-pink-gradient: radial-gradient(#F06DbC, #F35295);
     --color-kd-red: #B92426;
     --color-kd-red-gradient: (#DC2426, #B92426);
-    --color-kd-silver-gradient: radial-gradient(#FFF, #efefef, #DaDbDb);
+    --color-kd-silver-gradient: linear-gradient(to right, #eaebeb, #efefef, #fefefe, #efefef, #eaebeb);
     --color-kd-yellow: #EEC051;
     --color-kd-yellow-gradient: radial-gradient(#fEf0a1, #EEC051);
 }
@@ -102,7 +102,9 @@ button.kd {
 /*                      */
 /*  worksheet styles    */
 /*                      */
-
+.kd.worksheet {
+    
+}
 .kd.worksheet_block {
     border: var(--border-worksheet);
     box-sizing: border-box;
@@ -282,6 +284,7 @@ button.kd {
     .capsule {
     align-self: center;
     background: #666;
+    border: 0.2rem solid;
     border-radius: 5vw;
     box-shadow: var(--box-shadow-default);
     box-sizing: border-box;

@@ -1,7 +1,13 @@
-#!/usr/bin/env python
+"""
+
+    For campaigns that use saviors, we treat savior 'options' or 'types'
+    as game assets.
+
+"""
 
 saviors = {
     "red": {
+        'name': 'Caratosis',
         "color": "red",
         "epithet": "red_savior",
         "abilities_and_impairments": [
@@ -9,6 +15,7 @@ saviors = {
         ],
     },
     "green": {
+        'name': 'Dormenatus',
         "color": "green",
         "epithet": "green_savior",
         "abilities_and_impairments": [
@@ -16,6 +23,7 @@ saviors = {
         ],
     },
     "blue": {
+        'name': 'Lucernae',
         "color": "blue",
         "epithet": "blue_savior",
         "abilities_and_impairments": [
