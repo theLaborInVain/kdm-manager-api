@@ -547,16 +547,26 @@ secret_fighting_art = {
         'name': 'Death Touch',
     },
     'silk_surgeon': {
-        'desc': '',
+        'name': 'Silk Surgeon',
         'epithet': 'silk_surgeon',
         'expansion': 'spidicules',
+        'desc': '',
         'levels': {
             0: '',
-            1: 'You may spend <font class="kdm_font">a</font> while adjacent to another survivor to add <font class="inline_shield">2</font> to one of their hit locations.',
-            2: 'While all armor in your gear grid is silk and all jewelry is amber, gain +2 evasion.',
-            3: 'During the aftermath, roll 1d10 for each other survivor that died during the showdown. On a 7+, revive them.'
+            1: (
+                'You may spend <font class="kdm_font">a</font> while adjacent '
+                'to another survivor to add <font class="inline_shield">2'
+                '</font> to one of their hit locations.'
+            ),
+            2: (
+                'While all armor in your gear grid is silk and all jewelry is '
+                'amber, gain +2 evasion.'
+            ),
+            3: (
+                'During the aftermath, roll 1d10 for each other survivor that '
+                'died during the showdown. On a 7+, revive them.'
+            ),
         },
-        'name': 'Silk Surgeon',
     },
 
 

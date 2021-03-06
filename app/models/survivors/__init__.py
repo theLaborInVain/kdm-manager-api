@@ -1764,7 +1764,6 @@ class Survivor(models.UserAsset):
 
         if fa_handle not in self.survivor['fighting_arts_levels'].keys():
             self.survivor["fighting_arts_levels"][fa_handle] = []
-            self.logger.warn("%s Adding fighting art handle '%s' to 'fighting_arts_levels' dict." % (self, fa_handle))
 
         if fa_level in self.survivor['fighting_arts_levels'][fa_handle]:
             toggle_operation = "off"
@@ -1773,9 +1772,20 @@ class Survivor(models.UserAsset):
             toggle_operation = "on"
             self.survivor['fighting_arts_levels'][fa_handle].append(fa_level)
 
-        self.survivor['fighting_arts_levels'][fa_handle] = sorted(self.survivor['fighting_arts_levels'][fa_handle])
+        self.survivor['fighting_arts_levels'][fa_handle] = sorted(
+            self.survivor['fighting_arts_levels'][fa_handle]
+        )
 
-        self.logger.debug("%s toggled '%s' fighting art level %s %s for %s." % (request.User.login, fa_dict["name"], fa_level, toggle_operation, self.pretty_name()))
+        msg = "%s toggled '%s' fighting art level %s %s for %s."
+        self.log_event(
+            msg % (
+                request.User.login,
+                fa_dict["name"],
+                fa_level,
+                toggle_operation,
+                self.pretty_name()
+            )
+        )
 
         self.save()
 
@@ -3629,10 +3639,6 @@ class Survivor(models.UserAsset):
             self.controls_of_death()
 
         # add/rm assets
-        elif action == "add_favorite":
-            self.add_favorite()
-        elif action == "rm_favorite":
-            self.rm_favorite()
         elif action == "add_game_asset":
             self.add_game_asset()
         elif action == "rm_game_asset":
@@ -3642,16 +3648,6 @@ class Survivor(models.UserAsset):
         elif action == "replace_game_assets":
             self.replace_game_assets()
 
-        # damage!
-        elif action == 'toggle_damage':
-            self.toggle_damage()
-
-        elif action == "toggle_fighting_arts_level":
-            self.toggle_fighting_arts_level()
-
-        # savior stuff
-        elif action == "set_savior_status":
-            self.set_savior_status()
 
         # misc sheet operations
         elif action == "set_constellation":
@@ -3685,7 +3681,6 @@ class Survivor(models.UserAsset):
         elif action == "update_attribute":
             self.update_attribute()
 
-
         # notes
         elif action == 'add_note':
             if 'serialize_on_response' in self.params:
@@ -3696,8 +3691,6 @@ class Survivor(models.UserAsset):
             self.update_note()
         elif action == 'rm_note':
             self.rm_note()
-
-
 
         # status flags!
         elif action == 'set_status_flag':
@@ -3721,30 +3714,20 @@ class Survivor(models.UserAsset):
         elif action == 'remove':
             self.remove()
 
-        # deprecated end points - kill these in March 2021
-        elif action == "update_survival":
-            return flask.Response(
-                response="Deprecated! Please use 'set_attribute' instead.",
-                status=410
-            )
-        elif action == "update_bleeding_tokens":
-            return flask.Response(
-                response="Deprecated! Please use 'set_attribute' instead.",
-                status=410
-            )
+        # deprecated end points - kill these for April 2021 release
         elif action == "get_survival_actions":
             return utils.http_410
+        elif action in ["update_survival", 'update_bleeding_tokens']:
+            return flask.Response(
+                response="Deprecated! Please use 'set_attribute' instead.",
+                status=410
+            )
         elif action == 'toggle_status_flag':
             return flask.Response(
                 response="Deprecated! Please use 'set_status_flag' instead.",
                 status=410
             )
-        elif action == "set_affinity":
-            return flask.Response(
-                response="Deprecated! Please use 'set_affinities' instead.",
-                status=410
-            )
-        elif action == "update_affinities":
+        elif action in ["set_affinity", 'update_affinities']:
             return flask.Response(
                 response="Deprecated! Please use 'set_affinities' instead.",
                 status=410

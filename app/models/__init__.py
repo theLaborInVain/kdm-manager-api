@@ -386,11 +386,13 @@ class AssetCollection(object):
             if isinstance(v, dict) and not module_dict.startswith('_'): # get all dicts in the module
                 for dict_key in sorted(v.keys()):                               # get all keys in each dict
 
+
                     if 'sub_type' in v[dict_key].keys():
                         raise Exception("%s already has a sub type!!!!" % v[dict_key])
 
                     # do NOT modify the original/raw asset dictionary
                     a_dict = v[dict_key].copy()
+                    a_dict['handle'] = dict_key
 
                     # set sub_type from raw asset  'type', then set the base type
                     a_dict['sub_type'] = v[dict_key].get("type", module_dict)
@@ -399,10 +401,18 @@ class AssetCollection(object):
                     # add it back to self.assets
                     all_assets[dict_key] = a_dict
 
-        self.assets = OrderedDict()
-        for k in sorted(all_assets.keys()):
-            self.assets[k] = all_assets[k]
+                    if a_dict.get('name', None) is None:
+                        err = "Asset has no 'name' attribute! %s"
+                        self.logger.error(err % a_dict)
 
+
+        # sort on name, allowing for the possibility of duplicate names
+        self.assets = OrderedDict()
+        list_of_dicts = [all_assets[handle] for handle in all_assets.keys()]
+        for asset in sorted(list_of_dicts, key = lambda i: i['name']):
+            self.assets[asset['handle']] = asset
+
+        # finally, set the laziness attribute self.handles
         self.handles = sorted(self.assets.keys())
 
 

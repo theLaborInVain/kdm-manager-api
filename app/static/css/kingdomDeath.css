@@ -371,6 +371,11 @@ input.kd.capsule {
     background-color: #EEE;
     color: #000;
 }
+.kd.white {
+    background: #fafafa;
+    background-color: #fafafa;
+    color: #000;
+}
 
 
 .kd.title {

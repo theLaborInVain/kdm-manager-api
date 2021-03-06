@@ -64,6 +64,12 @@ def blog_content(view, asset):
     flask.request with the 'view' and the 'asset' and then just do our normal
     return for the blog. """
 
+    # do 404's here, rather than letting Jinja2 do them
+    try:
+        flask.render_template('blog/' + view + '.html')
+    except jinja2.exceptions.TemplateNotFound:
+        return utils.http_404
+
     flask.request.view = view
     flask.request.asset = asset
 

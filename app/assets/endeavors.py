@@ -48,7 +48,7 @@ core = {
         'cost': 1,
     },
     'cooking_stone_nose_gruel': {
-        'name': 'Stone Noes Gruel',
+        'name': 'Stone Nose Gruel',
         'desc': (
             'Spend 1 organ and 1 bone to cook stone nose gruel. During the '
             'next Hunt phase, ignore <b>Starvation</b>.'
