@@ -1,5 +1,6 @@
 the_constellations = {
     "lookups": {
+        "name": "The Constellations table lookups",
         "map": {
             "9 Understanding (max)": "A1",
             "Destined disorder": "B1",

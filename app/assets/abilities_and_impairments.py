@@ -921,11 +921,20 @@ weapon_mastery = {
     },
     "mastery_shield": {
         "name": "Mastery - Shield",
-        "desc": "When a Shield Master is adjacent to a survivor that is targeted by a monster, they may swap spaces on the baord with the survivor and become the target instead. The master must have a shield to perform this.",
+        "desc": (
+            "When a Shield Master is adjacent to a survivor that is targeted "
+            "by a monster, they may swap spaces on the board with the survivor "
+            "and become the target instead. The master must have a shield to "
+            "perform this."
+        ),
         "weapon_proficiency": "shield",
         "weapon_name": "shield",
-        "current_survivor": {"abilities_and_impairments": ["shield_specialization"]},
-        "new_survivor": {"abilities_and_impairments": ["shield_specialization"]},
+        "current_survivor": {
+            "abilities_and_impairments": ["shield_specialization"]
+        },
+        "new_survivor": {
+            "abilities_and_impairments": ["shield_specialization"]
+        },
         'epithet': 'shield_master',
     },
     "mastery_dagger": {
