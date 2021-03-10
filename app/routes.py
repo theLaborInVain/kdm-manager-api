@@ -352,6 +352,17 @@ def reset_password(action):
 #
 #   private routes - past here, you've got to authenticate
 #
+@API.route('/report_error', methods=['POST', 'OPTIONS'])
+@crossdomain(origin=['*'])
+def report_error():
+    """ Accepts POST content containing an error message and emails it. """
+    flask.request.User = users.token_to_object(flask.request, strict=False)
+    report = flask.request.get_json().get('value', None)
+    if report is None:
+        raise utils.InvalidUsage("User error report 'value' must be a str!")
+    utils.email_error_report(report)
+    return utils.http_200
+
 
 @API.route("/authorization/<action>", methods=["POST", "GET", "OPTIONS"])
 @crossdomain(origin=['*'])

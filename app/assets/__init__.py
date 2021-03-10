@@ -133,7 +133,7 @@ def list_game_assets(game_assets=False):
     if game_assets:
         for collection_name in output:
             collectionObject = get_game_asset(collection_name, return_type=object)
-            if not collectionObject.is_game_asset:
+            if not getattr(collectionObject, 'is_game_asset', False):
                 output.remove(collection_name)
 
     return sorted(output)

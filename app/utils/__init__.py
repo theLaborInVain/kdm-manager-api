@@ -247,6 +247,26 @@ def email_exception(exception):
     e_logger.warn('Exception email sent!')
 
 
+def email_error_report(report):
+    """This assumes an authenticated user, since it's behind the login-required
+    decorator in routes.py. It takes 'report' and uses a template to format it
+    and then emails it out to the sysadmin address. """
+
+    # finally, prepare the message template and the traceback for emailing
+    msg = html_file_to_template("error_report.html")
+
+    # do it
+    s = msg.safe_substitute(
+        user_login=flask.request.User.login,
+        user_oid=flask.request.User._id,
+        body=report,
+    )
+    e = mailSession()
+    e.send(
+        subject="User error report! [%s]" % socket.getfqdn(),
+        recipients=API.settings.get('server', 'alert_email').split(','),
+        html_msg=s
+    )
 
 
 #
