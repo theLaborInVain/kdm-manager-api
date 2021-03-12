@@ -18,12 +18,13 @@ class Config(object):
     ENVIRONMENT = {'is_production': False}
     TESTING = True
     MDB = "kdm-manager"
+    NONSUBSCRIBER_SETTLEMENT_LIMIT = 3
     PORT = 8013
     PRODUCTION = {
         'app_fqdn': 'advanced-kdm-manager.c.kdm-manager.internal',
         'url': 'https://api.kdm-manager.com'
     }
-    VERSION = "1.60.422"
+    VERSION = "1.60.424"
 
     if socket.getfqdn() == PRODUCTION['app_fqdn']:
         ENVIRONMENT['is_production'] = True

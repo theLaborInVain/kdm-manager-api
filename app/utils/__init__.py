@@ -263,7 +263,7 @@ def email_error_report(report):
     )
     e = mailSession()
     e.send(
-        subject="User error report! [%s]" % socket.getfqdn(),
+        subject="KDM-Manager Error Report! [%s]" % socket.getfqdn(),
         recipients=API.settings.get('server', 'alert_email').split(','),
         html_msg=s
     )
@@ -694,6 +694,10 @@ api_meta = {
                 units='age'
             ),
             'panel': settings.get('admin'),
+            'limits': {
+                'nonsubscriber_settlements':
+                    API.config['NONSUBSCRIBER_SETTLEMENT_LIMIT'],
+            },
         },
         'server': {
             "hostname": socket.gethostname(),
