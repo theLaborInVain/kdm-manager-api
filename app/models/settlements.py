@@ -22,7 +22,8 @@ import random
 import time
 
 # third party imports
-from flask import Response, request
+import flask
+#from flask import Response, request
 
 # local imports
 from app import assets, models, utils
@@ -185,21 +186,21 @@ class Settlement(models.UserAsset):
         """
 
         if (
-            request.User.get_settlements(return_type=int) >= 3 and
-            request.User.user['subscriber']['level'] < 1
+            flask.request.User.get_settlements(return_type=int) >= 3 and
+            flask.request.User.user['subscriber']['level'] < 1
         ):
             raise utils.InvalidUsage(
                 'Free users may only create three settlements!',
                 status_code=405
             )
 
-        self.logger.info("%s is creating a new settlement..." % request.User)
+        self.logger.info("%s is creating a new settlement..." % flask.request.User)
 
         settlement = {
             # meta / admin
             "created_on": datetime.now(),
-            "created_by": request.User._id,
-            "admins": [request.User.login],
+            "created_by": flask.request.User._id,
+            "admins": [flask.request.User.login],
             "meta": {
                 "timeline_version":     1.2,
                 "campaign_version":     1.0,
@@ -213,8 +214,8 @@ class Settlement(models.UserAsset):
             },
 
             # sheet
-            "name": request.json.get("name", None),
-            "campaign": request.json.get("campaign", "people_of_the_lantern"),
+            "name": flask.request.json.get("name", None),
+            "campaign": flask.request.json.get("campaign", "people_of_the_lantern"),
             "lantern_year":             0,
             "population":               0,
             "death_count":              0,
@@ -244,11 +245,11 @@ class Settlement(models.UserAsset):
 
         # set the settlement name before we save to MDB
         s_name = settlement['name']
-        if s_name is None and request.User.get_preference(
+        if s_name is None and flask.request.User.get_preference(
             "random_names_for_unnamed_assets"
         ):
             s_name = self.Names.get_random_settlement_name()
-        elif s_name is None and not request.User.get_preference(
+        elif s_name is None and not flask.request.User.get_preference(
             "random_names_for_unnamed_assets"
         ):
             s_name = "Unknown"
@@ -263,7 +264,7 @@ class Settlement(models.UserAsset):
         self.initialize_timeline(save=False)
 
         # check params for additional expansions
-        req_expansions = request.json.get("expansions", [])
+        req_expansions = flask.request.json.get("expansions", [])
         for e in req_expansions:
             if e not in self.settlement["expansions"]:
                 self.settlement["expansions"].append(e)
@@ -418,7 +419,7 @@ class Settlement(models.UserAsset):
     def remove(self):
         """ Marks the settlement as removed. """
         self.settlement['removed'] = datetime.now()
-        self.log_event('%s marked the settlement as removed!' % request.User.user['login'])
+        self.log_event('%s marked the settlement as removed!' % flask.request.User.user['login'])
         self.save()
 
 
@@ -462,9 +463,9 @@ class Settlement(models.UserAsset):
             output['sheet']['monster_volumes'] = self.get_monster_volumes()
             output['sheet']['lantern_research_level'] = self.get_lantern_research_level()
 
-            if request.log_response_time:
+            if flask.request.log_response_time:
                 stop = datetime.now()
-                duration = stop - request.start_time
+                duration = stop - flask.request.start_time
                 self.logger.debug('serialize(%s) [%s] %s' % (return_type, duration, self))
 
         # create game_assets
@@ -523,9 +524,9 @@ class Settlement(models.UserAsset):
             # transitional to their deprecation, epithets as tags
             output["game_assets"]['tags'] = output['game_assets']['epithets']
 
-            if request.log_response_time:
+            if flask.request.log_response_time:
                 stop = datetime.now()
-                duration = stop - request.start_time
+                duration = stop - flask.request.start_time
                 self.logger.debug("serialize(%s) [%s] %s" % (return_type, duration, self))
 
         # additional top-level elements for more API "flatness"
@@ -557,9 +558,9 @@ class Settlement(models.UserAsset):
             output['campaign'].update({'endeavors': available_endeavors})
             output['campaign'].update({'endeavor_count': available_endeavor_count})
 
-            if request.log_response_time:
+            if flask.request.log_response_time:
                 stop = datetime.now()
-                duration = stop - request.start_time
+                duration = stop - flask.request.start_time
                 self.logger.debug("serialize(%s) [%s] %s" % (return_type, duration, self))
 
         return json.dumps(output, default=json_util.default)
@@ -619,13 +620,13 @@ class Settlement(models.UserAsset):
                 asset_dict['sub_type'] != 'secret_fighting_art'
             ):
                 if 'kd_collection_fighting_arts_and_disorders' in self.settlement['expansions']:
-                    if asset_dict['expansion'] in request.User.user['collection']['expansions']:
+                    if asset_dict['expansion'] in flask.request.User.user['collection']['expansions']:
                         return True
 
             # se pseudo
             if asset_dict.get('sub_type', None) == 'settlement_event':
                 if 'kd_collection_settlement_events' in self.settlement['expansions']:
-                    if asset_dict['expansion'] in request.User.user['collection']['expansions']:
+                    if asset_dict['expansion'] in flask.request.User.user['collection']['expansions']:
                         return True
 
             # normal test
@@ -656,7 +657,7 @@ class Settlement(models.UserAsset):
 
         for init_key in self.campaign.settlement_sheet_init.keys():
             self.settlement[init_key] = copy(self.campaign.settlement_sheet_init[init_key])
-        self.logger.info("%s initialized settlement sheet for '%s'" % (request.User, self))
+        self.logger.info("%s initialized settlement sheet for '%s'" % (flask.request.User, self))
 
 
     def initialize_timeline(self, save=True):
@@ -670,8 +671,8 @@ class Settlement(models.UserAsset):
         """
 
         self.settlement['timeline'] = copy(self.campaign.timeline)
-        if request:
-            self.logger.warn("%s initialized timeline for %s!" % (request.User, self))
+        if flask.request:
+            self.logger.warn("%s initialized timeline for %s!" % (flask.request.User, self))
         else:
             self.logger.warn("%s Timeline initialized from CLI!" % self)
 
@@ -698,7 +699,7 @@ class Settlement(models.UserAsset):
             'settlement_id': self.settlement['_id'],
             'settlement_name': self.settlement['name'],
             'kill_ly': self.get_current_ly(),
-            'created_by': request.User._id,
+            'created_by': flask.request.User._id,
             'created_on': datetime.now(),
             'handle': M.handle,
             'name': M.name,
@@ -710,7 +711,7 @@ class Settlement(models.UserAsset):
                 killboard_dict[a] = M.get(a)
 
         utils.mdb.killboard.insert(killboard_dict)
-        self.logger.info("%s Updated the application killboard to include '%s' (%s) in LY %s" % (request.User, monster_string, M.type, self.get_current_ly()))
+        self.logger.info("%s Updated the application killboard to include '%s' (%s) in LY %s" % (flask.request.User, monster_string, M.type, self.get_current_ly()))
 
         # add it and save
         self.settlement["defeated_monsters"].append(monster_string)
@@ -748,7 +749,7 @@ class Settlement(models.UserAsset):
 
         last_year_in_tl = self.settlement['timeline'][-1]['year']
         if last_year_in_tl >= 50:
-            self.logger.error("%s Attempt to add more than 50 LYs to Timeline." % (request.User))
+            self.logger.error("%s Attempt to add more than 50 LYs to Timeline." % (flask.request.User))
             raise utils.InvalidUsage("Max Lantern Years is 50!")
 
         for y in range(years):
@@ -773,7 +774,7 @@ class Settlement(models.UserAsset):
         for y in range(years):
             if len(self.settlement['timeline'][-1]) < 2:
                 removed_year = self.settlement['timeline'].pop()
-                self.logger.warn("%s Removed Lantern Year: %s" % (request.User, removed_year))
+                self.logger.warn("%s Removed Lantern Year: %s" % (flask.request.User, removed_year))
                 lys_removed +=1
             else:
                 self.logger.warn("Refusing to remove LY %s (which has events)." % (self.settlement['timeline'][-1]['year']))
@@ -1202,7 +1203,7 @@ class Settlement(models.UserAsset):
 
         # pass/ignore if we're trying to add an innovation twice:
         if i_handle in self.settlement['innovations']:
-            self.logger.warn("%s Attempt to add duplicate innovation handle, '%s'. Ignoring... " % (request.User, i_handle))
+            self.logger.warn("%s Attempt to add duplicate innovation handle, '%s'. Ignoring... " % (flask.request.User, i_handle))
             return False
 
         # refuse to add principles
@@ -1257,7 +1258,7 @@ class Settlement(models.UserAsset):
 
         # ignore bogus requests
         if i_handle not in self.settlement["innovations"]:
-            self.logger.warn("%s Bogus attempt to remove non-existent innovation '%s'. Ignoring..." % (request.User, i_dict['name']))
+            self.logger.warn("%s Bogus attempt to remove non-existent innovation '%s'. Ignoring..." % (flask.request.User, i_dict['name']))
             return False
 
         # refuse to add principles
@@ -1341,7 +1342,7 @@ class Settlement(models.UserAsset):
         }
 
         note_oid = utils.mdb.settlement_notes.insert(note_dict)
-        return Response(response=json.dumps({'note_oid': note_oid}, default=json_util.default), status=200)
+        return flask.Response(response=json.dumps({'note_oid': note_oid}, default=json_util.default), status=200)
 
 
     def rm_settlement_note(self, n_id=None):
@@ -1360,7 +1361,7 @@ class Settlement(models.UserAsset):
             }
         )
         msg = "%s User '%s' removed a settlement note"
-        self.logger.info(msg % (self, request.User.login))
+        self.logger.info(msg % (self, flask.request.User.login))
 
 
     @models.web_method
@@ -1610,7 +1611,7 @@ class Settlement(models.UserAsset):
         if live_returns != []:
             returners = utils.list_to_pretty_string(live_returns)
             if showdown_type == 'special':
-                msg = "%s healed %s." % (request.User.login, returners)
+                msg = "%s healed %s." % (flask.request.User.login, returners)
             else:
                 msg = "%s returned to the settlement in %s." % (returners, aftermath)
         else:
@@ -1745,6 +1746,38 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
+    def set_milestones(self):
+        """ This web method lets an app post a list of settlement milestones and
+        then does the dirty work of figuring out whether they're being added or
+        removed (and then making the appropriate method call). """
+
+        # get the new list
+        self.check_request_params(["milestone_story_events"])
+        new_milestones = self.params['milestone_story_events']
+
+        # compare to the old list and see if we can ignore
+        old_milestones = self.settlement['milestone_story_events']
+        if sorted(new_milestones) == sorted(old_milestones):
+            self.logger.warn('Old/new milestone lists match. Ignoring...')
+            return True
+
+        # now process the add/remove jobs
+        milestones_union = set(old_milestones).union(set(new_milestones))
+        for milestone_handle in milestones_union:
+            if (
+                milestone_handle in new_milestones and
+                milestone_handle not in old_milestones
+            ):
+                self.add_milestone(milestone_handle)
+            elif (
+                milestone_handle not in new_milestones and
+                milestone_handle in old_milestones
+            ):
+                self.logger.warn('would rm %s' % milestone_handle)
+                self.rm_milestone(milestone_handle)
+
+
     def set_name(self, new_name=None):
         """ Looks for the param key 'name' and then changes the Settlement's
         self.settlement["name"] to be that value. Works with or without a
@@ -1762,9 +1795,9 @@ class Settlement(models.UserAsset):
         self.settlement["name"] = new_name
 
         if old_name is None:
-            msg = "%s named the settlement '%s'." % (request.User.login, new_name)
+            msg = "%s named the settlement '%s'." % (flask.request.User.login, new_name)
         else:
-            msg = "%s changed settlement name from '%s' to '%s'" % (request.User.login, old_name, new_name)
+            msg = "%s changed settlement name from '%s' to '%s'" % (flask.request.User.login, old_name, new_name)
 
         self.log_event(action="set", key="name", value=new_name)
         self.save()
@@ -1788,7 +1821,6 @@ class Settlement(models.UserAsset):
         election = self.params["election"]
 
         # validate the principle first
-#        principles = self.Innovations.get_principles()
         principles = self.Principles.assets
 
         if principle in principles.keys():
@@ -1812,7 +1844,7 @@ class Settlement(models.UserAsset):
             """ private, internal fun for removing a principle. """
             principle_dict = self.Innovations.get_asset(principle_handle)
             self.settlement["principles"].remove(principle_handle)
-            self.logger.debug("%s removed '%s' from %s principles" % (request.User, principle_handle, self))
+            self.logger.debug("%s removed '%s' from %s principles" % (flask.request.User, principle_handle, self))
             if principle_dict.get("current_survivor", None) is not None:
                 self.update_all_survivors("decrement", principle_dict["current_survivor"], exclude_dead=True)
 
@@ -1825,15 +1857,24 @@ class Settlement(models.UserAsset):
                     remove_principle(option)
                     removed += 1
             if removed >= 1:
-                self.log_event(action="unset", key="'%s' principle" % p_dict['name'], event_type="set_principle")
+                self.log_event(
+                    action="unset",
+                    key="'%s' principle" % p_dict['name'],
+                    event_type="set_principle"
+                )
                 self.save()
-            else:
-                self.logger.debug("%s Ignoring bogus 'unset princple' request." % (self))
+#            else:
+#                self.logger.debug(
+#                    "%s Ignoring bogus 'unset princple' request." % (self)
+#                )
             return True
         else:
             # ignore re-clicks
             if e_dict["handle"] in self.settlement["principles"]:
-                self.logger.warn("%s Ignoring addition of duplicate principle handle '%s' to %s" % (request.User, e_dict["handle"], self))
+                err = "%s Ignoring duplicate principle handle '%s' (%s)"
+                self.logger.warn(
+                    err % (flask.request.User, e_dict["handle"], self)
+                )
                 return True
 
         # remove the opposite principle
@@ -1885,7 +1926,7 @@ class Settlement(models.UserAsset):
                 self.settlement['storage'].append(handle)
 
             self.log_event("%s updated settlement storage: %s x %s" % (
-                request.User.login,
+                flask.request.User.login,
                 a_obj.name,
                 value)
             )
@@ -1983,7 +2024,7 @@ class Settlement(models.UserAsset):
         msg = "%s updated settlement %s to %s"
         self.log_event(
             msg % (
-                request.User.login,
+                flask.request.User.login,
                 attribute_pretty,
                 self.settlement[attribute]
             )
@@ -2008,7 +2049,7 @@ class Settlement(models.UserAsset):
         if new_val < 0:
             new_val = 0
         self.settlement["endeavor_tokens"] = new_val
-        self.log_event("%s set endeavor tokens to %s" % (request.User.login, new_val))
+        self.log_event("%s set endeavor tokens to %s" % (flask.request.User.login, new_val))
 
         if save:
             self.save()
@@ -2029,7 +2070,7 @@ class Settlement(models.UserAsset):
         else:
             self.settlement["nemesis_encounters"][handle] = levels
             self.log_event('%s updated %s encounters to include %s' % (
-                request.User.login,
+                flask.request.User.login,
                 m_dict["name"],
                 utils.list_to_pretty_string(levels)
                 )
@@ -2053,7 +2094,7 @@ class Settlement(models.UserAsset):
 
         self.settlement["population"] = new
 
-        self.log_event("%s updated settlement population to %s" % (request.User.login, self.settlement["population"]))
+        self.log_event("%s updated settlement population to %s" % (flask.request.User.login, self.settlement["population"]))
         self.save()
 
 
@@ -2114,7 +2155,7 @@ class Settlement(models.UserAsset):
         msg = "%s set settlement %s to %s"
         self.log_event(
             msg % (
-                request.User.login,
+                flask.request.User.login,
                 pretty_attribute,
                 self.settlement[attribute]
             )
@@ -2130,7 +2171,7 @@ class Settlement(models.UserAsset):
 
         self.settlement["hunt_started"] = datetime.now()
         self.settlement["current_quarry"] = new_quarry
-        self.log_event("%s set target monster to %s" % (request.User.login, new_quarry), event_type="set_quarry")
+        self.log_event("%s set target monster to %s" % (flask.request.User.login, new_quarry), event_type="set_quarry")
         self.save()
 
 
@@ -2153,7 +2194,7 @@ class Settlement(models.UserAsset):
         else:
             self.settlement["location_levels"][handle] = int(level)
 
-        self.log_event("%s set '%s' location level to %s." % (request.User.login, loc_dict["name"], level), event_type="set_location_level")
+        self.log_event("%s set '%s' location level to %s." % (flask.request.User.login, loc_dict["name"], level), event_type="set_location_level")
 
         self.save()
 
@@ -2175,7 +2216,7 @@ class Settlement(models.UserAsset):
         else:
             self.settlement["innovation_levels"][handle] = int(level)
 
-        self.log_event("%s set '%s' innovation level to %s." % (request.User.login, i_dict["name"], level), event_type="set_innovation_level")
+        self.log_event("%s set '%s' innovation level to %s." % (flask.request.User.login, i_dict["name"], level), event_type="set_innovation_level")
 
         self.save()
 
@@ -2255,7 +2296,7 @@ class Settlement(models.UserAsset):
 
         err = "%s updated Timeline events for Lantern Year %s."
         self.log_event(
-            err % (request.User.login, new_ly['year'])
+            err % (flask.request.User.login, new_ly['year'])
         )
         self.save()
 
@@ -3438,7 +3479,7 @@ class Settlement(models.UserAsset):
                     groups['retired']['survivors'].append(s.serialize(dict, False))
                 elif s.survivor.get('skip_next_hunt', None) == True:
                     groups['skip_next']['survivors'].append(s.serialize(dict, False))
-                elif 'favorite' in s.survivor.keys() and request.User.login in s.survivor['favorite']:
+                elif 'favorite' in s.survivor.keys() and flask.request.User.login in s.survivor['favorite']:
                     groups['favorite']['survivors'].append(s.serialize(dict, False))
                 else:
                     groups['available']['survivors'].append(s.serialize(dict, False))
@@ -4447,33 +4488,33 @@ class Settlement(models.UserAsset):
         #
 
         if action == "get":
-            return Response(response=self.serialize(), status=200, mimetype="application/json")
+            return flask.Response(response=self.serialize(), status=200, mimetype="application/json")
         elif action == 'get_summary':
-            return Response(response=self.serialize('dashboard'), status=200, mimetype="application/json")
+            return flask.Response(response=self.serialize('dashboard'), status=200, mimetype="application/json")
         elif action == 'get_sheet':
-            return Response(response=self.serialize('sheet'), status=200, mimetype="application/json")
+            return flask.Response(response=self.serialize('sheet'), status=200, mimetype="application/json")
         elif action == 'get_survivors':
-            return Response(response=self.serialize('survivors'), status=200, mimetype="application/json")
+            return flask.Response(response=self.serialize('survivors'), status=200, mimetype="application/json")
         elif action == 'get_game_assets':
-            return Response(response=self.serialize('game_assets'), status=200, mimetype="application/json")
+            return flask.Response(response=self.serialize('game_assets'), status=200, mimetype="application/json")
         elif action == 'get_campaign':
-            return Response(response=self.serialize('campaign'), status=200, mimetype="application/json")
+            return flask.Response(response=self.serialize('campaign'), status=200, mimetype="application/json")
         elif action == 'get_storage':
-            return Response(response=self.get_settlement_storage(), status=200, mimetype="application/json")
+            return flask.Response(response=self.get_settlement_storage(), status=200, mimetype="application/json")
         elif action == 'get_storage_rollups':
-            return Response(
+            return flask.Response(
                 response=self.get_settlement_storage_rollup(),
                 status=200,
                 mimetype="application/json"
             )
         elif action == "get_event_log":
-            return Response(response=self.get_event_log("JSON"), status=200, mimetype="application/json")
+            return flask.Response(response=self.get_event_log("JSON"), status=200, mimetype="application/json")
         elif action == "gear_lookup":
-            return Response(response=self.get_gear_lookup(), status=200, mimetype="application/json")
+            return flask.Response(response=self.get_gear_lookup(), status=200, mimetype="application/json")
         elif action == "get_innovation_deck":
-            return Response(response=self.get_innovation_deck(), status=200, mimetype="application/json")
+            return flask.Response(response=self.get_innovation_deck(), status=200, mimetype="application/json")
         elif action == "get_timeline":
-            return Response(response=self.get_timeline("JSON"), status=200, mimetype="application/json")
+            return flask.Response(response=self.get_timeline("JSON"), status=200, mimetype="application/json")
 
 
         #
@@ -4622,9 +4663,17 @@ class Settlement(models.UserAsset):
         # support special response types
         if "response_method" in self.params:
             exec("payload = self.%s()" % self.params['response_method'])
-            return Response(payload, status=200, mimetype="application/json")
+            return flask.Response(
+                payload,
+                status=200,
+                mimetype="application/json"
+            )
         elif "serialize_on_response" in self.params:
-            return Response(self.serialize(), status=200, mimetype="application/json")
+            return flask.Response(
+                self.serialize(),
+                status=200,
+                mimetype="application/json"
+            )
 
         # default return
         return utils.http_200

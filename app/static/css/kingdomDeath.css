@@ -87,6 +87,7 @@ button.kd {
     --color-kd-death-grey: #212121;
     --color-kd-disorder-purple: #766DAC;
     --color-kd-fighting-art-red: #CD4438;
+    --color-kd-fighting-art-red-gradient: linear-gradient(to bottom, #D14D3A, #CE483C, #D14D3A);
     --color-kd-green: #32A54A;
     --color-kd-grey: #f2f2f2;
     --color-kd-pink: #F35295;
@@ -125,9 +126,14 @@ button.kd {
     background: #fff;
     opacity: .7;
 }
-.kd.worksheet_block_title {
+.kd.worksheet_page_title,
+    .kd.worksheet_block_title {
     font-family: 'Silverado';
-    font-size: var(--font-large);
+    font-size: 1.8rem;
+    font-weight: normal;
+}
+.kd.worksheet_page_title {  /* for titles outside of boxes */
+    margin: 0 auto 0 3%;
 }
 .kd.worksheet_row {
     align-items: baseline; 
@@ -136,6 +142,19 @@ button.kd {
     margin: 0 auto;
     padding: 0.5rem;
     width: 100%;
+}
+.kd.worksheet_row.lined {
+    align-items: center; 
+    border-bottom: 0.1rem solid;
+    justify-content: space-between;
+    min-height: 3rem;   /* since these are typically tappable/clickable */ 
+}
+.kd.worksheet_row.lined > div { /* only select direct children */
+    margin: 0 0.5rem 0 0.5rem;
+}
+.kd.worksheet_row.lined *:last-child{
+    margin-left: auto; 
+    white-space: nowrap; 
 }
 .kd.worksheet_row.checkbox_container {
     flex-wrap: wrap; 
@@ -300,6 +319,7 @@ button.kd {
 }
 .kd.capsule.full_width,
     .capsule.full_width {
+    margin: 3%;
     width: 100%;
     width: -webkit-fill-available;
 }
@@ -320,6 +340,20 @@ input.kd.capsule {
 select.kd.capsule {
     padding: 0.5rem;
     text-align-last:center;
+}
+
+/*  KD title */
+.kd.title {
+    font-family: 'Silverado';
+    font-weight: normal;
+    text-align: center;
+    text-transform: uppercase;
+}
+.kd.title:before {
+    content: "- ";
+}
+.kd.title:after {
+    content: " -";
 }
 
 
@@ -389,18 +423,6 @@ select.kd.capsule {
 }
 
 
-.kd.title {
-    font-family: 'Silverado';
-    font-weight: normal;
-    text-align: center;
-    text-transform: uppercase;
-}
-.kd.title:before {
-    content: "- ";
-}
-.kd.title:after {
-    content: " -";
-}
 
 
 /*                      */
