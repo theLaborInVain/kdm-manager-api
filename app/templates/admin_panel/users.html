@@ -28,6 +28,7 @@
             "
         >
             <div
+                title="Whether the user is presently active or not."
                 class="kd checkbox"
                 ng-class="{
                     'checked': u.is_active,
@@ -35,6 +36,7 @@
             >
             </div>
             <div
+                title="User login is BOLD if the user is a subscriber."
                 class="kd checkbox_desc"
                 ng-class="{'bold': u.subscriber.level > 1}"
             >
@@ -145,7 +147,7 @@
                 class="user_info_block"
                 ng-if="workWithUser !== undefined && workWithUser.user.login !== null"
             >
-                <h4>{a workWithUser.user.login a}</h4>
+                <h2 class="kd">{a workWithUser.user.login a}</h2>
             
                 <div class="user_info_block user_info_block_header">
 
@@ -172,14 +174,20 @@
                     class="user_detail_button_raft"
                 >
                     <button
-                        class="kd yellow"
-                        ng-click="copyToClipboard(u._id.$oid);"
+                        class="kd capsule blue"
+                        ng-click="
+                            scratch.searchUserEmail = workWithUser.user.login;
+                            getUser();
+                        "
                     >
-                        Copy OID
+                        Reload
                     </button>
-                    <button class="kd yellow" ng-click="exportUser(u.login)">
+                    <button
+                        class="kd capsule yellow"
+                        ng-click="exportUser(workWithUser.user.login)"
+                    >
                         Export
-                    </input>
+                    </button>
                 </div>
 
     			<div
@@ -197,7 +205,7 @@
                     <div
                         class="clickable kd worksheet_row"
                         ng-class="{
-                            'current_sub_level': workWithUser.user.subscriber.level == sub_level.level
+                            'yellow': workWithUser.user.subscriber.level == sub_level.level
                         }"
                         ng-repeat="sub_level in world.meta.subscriptions"
                         ng-click="
@@ -254,19 +262,24 @@
                         ng-class-even="'zebra'"
                         ng-repeat="event in workWithUser.user.activity_log"
                     >
-                        {a event a}
+                        <div
+                            class="user_activity_table_timestamp"
+                        >
+                            {a event[0].$date | date:'yyyy-MM-dd hh:mm' a}
+                        </div>
+                        <div>
+                            {a event[1] a}
+                        </div>
                     </div>
 
                 </div> <!-- worksheet_block -->
 
-                <center>
-                    <button
-                        class="clickable capsule kd yellow"
-                        ng-click="closeWorkWithUser()"  
-                    >
+                <button
+                    class="clickable capsule kd full_width"
+                    ng-click="closeWorkWithUser()"  
+                >
                     Close
-                    </button>
-                </center>
+                </button>
 
             </div> <!-- modal inner-->
         </div> <!-- modal outer -->

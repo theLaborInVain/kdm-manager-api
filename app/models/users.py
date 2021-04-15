@@ -688,23 +688,36 @@ class User(models.UserAsset):
         self.save()
 
 
-    def set_latest_action(self, activity_string=None, ua_string=None, save=True):
+    def set_latest_action(self, activity_string=None, ua_string=None,
+                            save=True):
         """ Updates the user's 'latest_activity' string and saves the user back
-        to the MDB. Supercedes the BS version of this that went on in the legacy
-        webapp (i.e. between session.py and the assets.User.mark_usage() method).
+        to the MDB.
+
+        Also saves the last 10 operations in self.user['activity_log'].
         """
 
         self.user['latest_action'] = activity_string
         self.user['latest_activity'] = datetime.now()
         self.user['latest_user_agent'] = ua_string
+
+        # save the most recent 10 actions in the 'activity_log' list
+        if self.user.get('activity_log', None) is None:
+            self.user['activity_log'] = [(datetime.now(), activity_string)]
+        else:
+            self.user['activity_log'].insert(
+                0,
+                (datetime.now(), activity_string)
+            )
+            self.user['activity_log'] = self.user['activity_log'][:10]
+
+
         if save:
             self.save(verbose=False)
 
 
-    def set_latest_authentication(self, timestamp=None, save=True):
-        """ Sets the self.user['latest_authentication'] value to the datetime
-        object passed in the 'timestamp' kwarg. If 'timestamp' is none, defaults
-        to datetime.now(). """
+    def set_latest_authentication(self, save=True):
+        """ Sets the self.user['latest_authentication'] value to datetime.now().
+        Saves, optionally. """
 
         self.user['latest_authentication'] = datetime.now()
         if save:

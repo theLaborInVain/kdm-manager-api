@@ -2692,7 +2692,7 @@ class Settlement(models.UserAsset):
         a certain time.
         """
 
-        if request and hasattr(self, 'params'):
+        if flask.request and hasattr(self, 'params'):
             if 'lines' in self.params:
                 lines = self.params['lines']
             if 'get_lines_after' in self.params:

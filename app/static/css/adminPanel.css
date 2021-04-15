@@ -154,28 +154,30 @@ button.toggle_settlement_event_log {float: right; }
 
 .error_text_block {background: #FFF0F0; color: #666; text-align: center; padding: 1em; font-size: 0.8em;}
 
-.work_with_user_container h4 {text-align: center;}
-.close_work_with_user {
-    font-size: 2em;
-    float: right;
-    padding: 1%; font-weight: bold; color: #c00; padding-left: 2%; padding-right: 2%; }
-.user_info_block {margin: 1em auto; margin-bottom: 0; margin-top: 0; padding: 1em; }
+/*  admin_panel/users.html */
+
+.user_info_block {
+    margin: 0 auto 0 auto;
+    padding: 1em;
+}
 .user_info_block_header {
     display: flex;
     flex-wrap: nowrap;
     justify-content: space-evenly;
 }
-.user_info_block_header img {height: max-content; }
 .user_info_block_header * {
     margin: 0.3rem;
 }
+.user_info_block_header img {
+    height: max-content;
+}
+.user_activity_table_timestamp {
+    font-style: italic;
+    margin-right: 1rem;
+    white-space: nowrap;
+}
 
-.current_sub_level {background: #FFFcDc; }
-
-.kd_check_box {border: 0.1em solid #000; background: #fff; transition: 1s; display: inline-block; width: 0.75vw; height: 1vh; margin-right: 1em; }
-.kd_check_box.checked {background: #000; }
-
-
+/*  API response */
 .api_response_times td {text-align: center; }
 .api_response_times td.url {text-align: left; }
 

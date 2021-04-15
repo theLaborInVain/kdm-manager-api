@@ -161,8 +161,12 @@ def admin_get_user(action):
     user_record = utils.mdb.users.find_one({'login': user_login})
 
     # die if we can't find the user record in MDB
-    if user_login is None or user_record is None:
-        return utils.http_404
+    if user_login is None:
+        err = "The 'login' param is required in the POST or as a form value!"
+        return flask.Response(response=err, status=400)
+    if user_record is None:
+        err = "User record for '%s' not found!" % user_login
+        return flask.Response(response=err, status=404)
 
     user_object = assets.get_user_asset('user', user_record['_id'])
 

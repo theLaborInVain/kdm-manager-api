@@ -399,6 +399,7 @@ myApp.controller('userAdminController', function($scope, $http) {
     };
 
     $scope.getUser = function() {
+        $scope.workWithUser = undefined; 
         var userLogin = $scope.scratch.searchUserEmail;
 
         // blank out the search and show the spinner
