@@ -433,7 +433,7 @@ class User(models.UserAsset):
         if (
             flask.request and
             hasattr(flask.request, 'User') and
-            flask.request.User.user['login'] == self.user['login']
+            flask.request.User.user['login'] == self.user.get('login', None)
         ):
             self.set_latest_action(
                 activity_string = flask.request.path,

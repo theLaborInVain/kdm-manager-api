@@ -48,6 +48,7 @@ class noUser:
     def __init__(self):
         self.login="admin@kdm-manager.com"
         self._id = "666"
+        self.user = None
 
 # CONSTANTS
 YMD = "%Y-%m-%d"

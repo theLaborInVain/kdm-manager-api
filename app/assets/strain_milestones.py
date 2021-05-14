@@ -94,7 +94,7 @@ echoes_of_death_3 = {
         'milestone_condition': (
             'A <b>Crazed</b> survivor witnesses a settlement with '
             '<b>Cannibalize</b> endeavor 8 times at <b>Sacrifice</b> in a '
-            'single langern year.'
+            'single lantern year.'
         ),
     },
     'material_feedback_strain': {

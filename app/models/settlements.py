@@ -1071,6 +1071,38 @@ class Settlement(models.UserAsset):
 
 
     @models.web_method
+    def set_expansions(self):
+        """ Processes the incoming request, compares a list of expansion
+        handles to what the settlement currently has, and then calls the
+        self.add_expansions and self.rm_expansions methods as necessary.
+
+        This method ONLY works with a request context, so DO NOT call it from
+        the CLI or within another function (that does not have a request with
+        the appropriate params)!
+        """
+
+        # first, sanity check the request
+        self.check_request_params(['expansions'])
+        new_expansions = self.params['expansions']
+
+        # now create the two different action lists:
+        add_expansions = []
+        for expansion_handle in new_expansions:
+            if expansion_handle not in self.settlement['expansions']:
+                add_expansions.append(expansion_handle)
+
+        rm_expansions = []
+        for expansion_handle in self.settlement['expansions']:
+            if expansion_handle not in new_expansions:
+                rm_expansions.append(expansion_handle)
+
+        self.add_expansions(add_expansions)
+        self.rm_expansions(rm_expansions)
+
+        return True
+
+
+    @models.web_method
     def add_location(self, loc_handle=None, save=True):
         "Adds a location to the settlement. Expects a request context"""
 

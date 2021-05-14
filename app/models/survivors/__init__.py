@@ -2150,29 +2150,65 @@ class Survivor(models.UserAsset):
             else:
                 unset = False
 
+        # if we're going to unset, do unset
         if unset and current_constellation:
             del self.survivor["constellation"]
-            self.log_event("%s unset the constellation for %s" % (request.User.login, self.pretty_name()))
-            self.rm_game_asset("epithets", "the_%s" % current_constellation.lower())
+            self.log_event("%s unset Constellation" % request.User.login)
+            self.rm_game_asset(
+                "epithets",
+                "the_%s" % current_constellation.lower()
+            )
             return True
         elif unset and not current_constellation:
-            self.logger.warn("%s Does not have a constellation! Ignoring unset request..." % (self))
+            self.logger.warn(
+                "%s has no Constellation! Ignoring unset request..." % (self)
+            )
             return False
 
+        # if we're NOT doing an unset, we're doing a set, so get params
         if constellation is None:
             self.check_request_params(['constellation'])
             constellation = self.params["constellation"]
 
+            # sanity check for issue #47
+            if constellation is None:
+                raise utils.InvalidUsage('Constellation cannot be None (null)!')
+
+        # check if this is redundant, if not, do the update
         if current_constellation == constellation:
-            self.logger.warn("%s Constellation is already %s. Ignoring request..." % (self, constellation))
+            err = "%s Constellation is already %s. Ignoring request..."
+            self.logger.warn(err % (self.pretty_name(), constellation))
             return False
         else:
             if current_constellation:
-                self.rm_game_asset("epithets", "the_%s" % current_constellation.lower())
+                self.rm_game_asset(
+                    "epithets",
+                    "the_%s" % current_constellation.lower()
+                )
+
+            # make the update
             self.survivor["constellation"] = constellation
             self.add_game_asset("epithets", "the_%s" % constellation.lower())
-            self.log_event("%s set %s constellation to '%s'" % (request.User.login, self.pretty_name(), constellation))
-            self.log_event("%s has become one of the People of the Stars!" % (self.pretty_name), event_type="potstars_constellation")
+
+            # event log the update
+            self.log_event(
+                "%s set %s constellation to '%s'" % (
+                    request.User.login,
+                    self.pretty_name(),
+                    constellation
+                ),
+                event_type = "potstars_constellation"
+            )
+
+            # event log the PotStars event
+            if not current_constellation:
+                log_msg = "%s has become one of the People of the Stars!"
+                self.log_event(
+                    log_msg % self.pretty_name(),
+                    event_type="potstars_constellation"
+                )
+
+            # only save if we get this far
             self.save()
 
 
@@ -2681,7 +2717,7 @@ class Survivor(models.UserAsset):
 
         # sanity check!
         SA = Assets()
-        if attrib not in DEFAULTS.keys():
+        if attrib not in self.DEFAULTS.keys():
             msg = "%s does not have a default value!" % (attrib)
             self.logger.exception(msg)
             raise utils.InvalidUsage(msg, status_code=400)
@@ -2690,14 +2726,14 @@ class Survivor(models.UserAsset):
             self.logger.exception(msg)
             raise utils.InvalidUsage(msg, status_code=400)
 
-        self.survivor[attrib] = DEFAULTS[attrib]
+        self.survivor[attrib] = self.DEFAULTS[attrib]
         msg = "%s defaulted %s '%s' to %s"
         self.log_event(
             msg % (
                 request.User.login,
                 self.pretty_name(),
                 attrib,
-                defaults[attrib]
+                self.DEFAULTS[attrib]
             )
         )
         self.save()
@@ -3650,8 +3686,6 @@ class Survivor(models.UserAsset):
 
 
         # misc sheet operations
-        elif action == "set_constellation":
-            self.set_constellation()
         elif action == "set_name":
             self.set_name()
         elif action == "set_email":

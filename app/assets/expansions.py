@@ -125,6 +125,17 @@ expansions_of_death = {
             {"ly": 1, "handle": "gorm_approaching_storm"},
             {"ly": 2, 'handle': 'gorm_gorm_climate'},
         ],
+        "help": [
+            {
+                "type": "events",
+                "tip": (
+                    'The Story event <b>The Approaching Storm</b> is added '
+                    'automatically to new settlements, but if you have to '
+                    'remove or move it, be careful to look for it near events '
+                    'whose title starts with "T", rather than "A".'
+                ),
+            },
+        ],
     },
 
     "green_knight_armor": {
