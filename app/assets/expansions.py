@@ -21,6 +21,7 @@ expansions_of_death = {
 
     "dragon_king": {
         "name": "Dragon King",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 8,
         'late_intro_event': 'dk_glowing_crater',
@@ -49,6 +50,7 @@ expansions_of_death = {
 
     "dung_beetle_knight": {
         "name": "Dung Beetle Knight",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_year': 8,
         'late_intro_event': 'dbk_rumbling_in_the_dark',
@@ -84,6 +86,7 @@ expansions_of_death = {
 
     "flower_knight": {
         "name": "Flower Knight",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_year': 5,
         'late_intro_event': 'fk_crones_tale',
@@ -109,6 +112,7 @@ expansions_of_death = {
 
     "gorm": {
         "name": "Gorm",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 1,
         'late_intro_event': 'gorm_approaching_storm',
@@ -141,6 +145,7 @@ expansions_of_death = {
     "green_knight_armor": {
         "name": "Green Knight Armor",
         "ui": {"pretty_category": "Enhancement"},
+        "released": datetime(2016, 2, 16),
         "subtitle": (
             "Crafting GKA items requires DBK, Flower Knight, Lion Knight and "
             "Gorm expansions!"
@@ -175,6 +180,7 @@ expansions_of_death = {
 
     "lion_god": {
         "name": "Lion God",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 13,
         'late_intro_event': 'lgod_the_silver_city',
@@ -193,6 +199,7 @@ expansions_of_death = {
 
     "lion_knight": {
         "name": "Lion Knight",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Nemesis"},
         'maximum_intro_year': 6,
         'late_intro_event': 'lk_uninvited_guest',
@@ -230,6 +237,7 @@ expansions_of_death = {
 
     "lonely_tree": {
         "name": "Lonely Tree",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Nemesis"},
         "nemesis_monsters": ["lonely_tree"],
         "special_showdowns": ["lonely_tree"],
@@ -266,6 +274,7 @@ expansions_of_death = {
 
     "manhunter": {
         "name": "Manhunter",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Nemesis"},
         'maximum_intro_year': 5,
         'late_intro_event': 'mh_hanged_man',
@@ -305,6 +314,7 @@ expansions_of_death = {
 
     "slenderman": {
         "name": "Slenderman",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Nemesis"},
         'maximum_intro_ly': 6,
         'late_intro_event': 'slender_its_already_here',
@@ -336,6 +346,7 @@ expansions_of_death = {
     },
     "spidicules": {
         "name": "Spidicules",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 2,
         'late_intro_event': 'spid_young_rivals',
@@ -358,6 +369,7 @@ expansions_of_death = {
 
     "sunstalker": {
         "name": "Sunstalker",
+        "released": datetime(2016, 2, 16),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 8,
         'late_intro_event': 'ss_promise_under_the_sun',

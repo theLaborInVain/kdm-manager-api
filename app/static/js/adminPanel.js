@@ -527,6 +527,7 @@ myApp.controller('userAdminController', function($scope, $http) {
         // to it; gets the pickle back
 
         var form = document.createElement("form");
+        form.classList.add('hidden');
         form.method = "POST";
         form.action = "/admin/user_asset/export";
         var a_input = document.createElement("input");

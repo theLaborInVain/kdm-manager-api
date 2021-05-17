@@ -282,6 +282,7 @@ location = {
     "giga_catarium": {
         "type": "gear",
         'extension': True,
+        'expansion': 'vignettes_of_death_white_gigalion',
         "name": "Giga-Catarium",
         "color": "BA8B02",
     },
@@ -305,7 +306,11 @@ location = {
         "type": "gear",
         "name": "Mask Maker",
         "color": "FFD700",
-        'settlement_buff': 'A <b>departing survivor</b> with a mask in their gear grid may lead their hunting party to a legendary monster. Rules for these monsters are found on the Legendary Monster story event.',
+        'settlement_buff': (
+            'A <b>departing survivor</b> with a mask in their gear grid may '
+            'lead their hunting party to a legendary monster. Rules for these '
+            'monsters are found on the Legendary Monster story event.'
+        ),
         "endeavors": ['mask_maker_0', 'mask_maker_1', 'mask_maker_2'],
     },
 
@@ -359,7 +364,12 @@ location = {
             "mask_maker",
             "sacred_pool"
         ],
-        "endeavors": ['innovate', 'build_bonesmith', 'build_organ_grinder','build_skinnery'],
+        "endeavors": [
+            'innovate',
+            'build_bonesmith',
+            'build_organ_grinder',
+            'build_skinnery'
+        ],
         "special_rules": [
             {
                 "name": "Extreme Heat",
@@ -369,7 +379,11 @@ location = {
             },
             {
                 "name": "Supernova",
-                "desc": 'If you suffer defeat against a nemesis monster, the sun cleanses the settlement, instantly killing everyone. <font class="kdm_font">g</font> <b>Game Over</b>',
+                "desc": (
+                    'If you suffer defeat against a nemesis monster, the sun '
+                    'cleanses the settlement, instantly killing everyone. '
+                    '<font class="kdm_font">g</font> <b>Game Over</b>'
+                ),
                 "bg_color": "990000",
                 "font_color": "FFF",
             },

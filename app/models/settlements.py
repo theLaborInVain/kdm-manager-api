@@ -1017,7 +1017,7 @@ class Settlement(models.UserAsset):
 
 
     @models.web_method
-    def rm_expansions(self, e_list=[]):
+    def rm_expansions(self, e_list=[], save=True):
         """ Takes a list of expansion handles and then removes them them from the
         settlement, undoing Timeline updates, etc. as required by the expansion
         asset definitions. """
@@ -1035,6 +1035,13 @@ class Settlement(models.UserAsset):
             if e_handle not in self.settlement["expansions"]:
                 e_list.remove(e_handle)
                 self.logger.warn("Expansion handle '%s' is not in %s" % (e_handle, self))
+
+            # check if the campaign requires it
+            campaign = self.get_campaign(dict)
+            if e_handle in campaign['settlement_sheet_init'].get('expansions',[]):
+                e_list.remove(e_handle)
+                err = "Expansion handle '%s' is required and cannot be removed!"
+                self.logger.warn(err % e_handle)
 
         #
         #   here is where we process the expansion dictionary
@@ -1067,11 +1074,13 @@ class Settlement(models.UserAsset):
             self.logger.info("Removed '%s' expansion from %s" % (e_dict["name"], self))
 
         self.logger.info("Successfully removed %s expansions from %s" % (len(e_list), self))
-        self.save()
+
+        if save:
+            self.save()
 
 
     @models.web_method
-    def set_expansions(self):
+    def set_expansions(self, save=True):
         """ Processes the incoming request, compares a list of expansion
         handles to what the settlement currently has, and then calls the
         self.add_expansions and self.rm_expansions methods as necessary.
@@ -1096,10 +1105,16 @@ class Settlement(models.UserAsset):
             if expansion_handle not in new_expansions:
                 rm_expansions.append(expansion_handle)
 
-        self.add_expansions(add_expansions)
-        self.rm_expansions(rm_expansions)
+        # now, see if we have any to add/rm and then do it
+        # be careful with self.add_expansions / self.rm_expansions, b/c they
+        #   check for the same request params!
+        if add_expansions != []:
+            self.add_expansions(add_expansions, save=False)
+        if rm_expansions != []:
+            self.rm_expansions(rm_expansions, save=False)
 
-        return True
+        if save:
+            self.save()
 
 
     @models.web_method

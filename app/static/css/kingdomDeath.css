@@ -115,6 +115,9 @@ button.kd {
     padding-top: 0.5rem;
     position: relative;
 }
+.kd.worksheet_block.borderless {
+    border: 0; 
+}
 .kd.worksheet_block.disabled {
     pointer-events: none;
 }
@@ -131,10 +134,13 @@ button.kd {
     font-family: 'Silverado';
     font-size: 1.8rem;
     font-weight: normal;
+    margin: 0 auto 0 auto;
 }
 .kd.worksheet_page_title {  /* for titles outside of boxes */
     margin: 0 auto 0 3%;
 }
+
+
 .kd.worksheet_row {
     align-items: baseline; 
     box-sizing: border-box;
@@ -323,6 +329,10 @@ button.kd {
     width: 100%;
     width: -webkit-fill-available;
 }
+.kd.worksheet_block .capsule {
+    margin: 1.5rem auto 1rem auto;
+}
+
 button.kd.capsule {
     width: 100%; 
 }
