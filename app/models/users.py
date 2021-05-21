@@ -441,6 +441,14 @@ class User(models.UserAsset):
             )
 
 
+    def load(self):
+        """ Calls the base class load() method and then sets self.login. """
+
+        super().load()
+
+        self.login = self.user['login']
+
+
     def new(self):
         """ Creates a new user based on request.json values. Like all UserAsset
         'new()' methods, this one returns the new user's MDB _id when it's done.

@@ -41,6 +41,17 @@
 }
 .kdm_font_2, .kdm_font_hit_locations {font-family: 'kdm-font-2'; }
 
+.kd.icon.settlement_event {
+    background-image:
+        url('https://api.kdm-manager.com/static/media/images/settlement_event.png'),
+        url('https://192.168.0.110:8013/static/media/images/settlement_event.png')
+    ;
+    background-size: 1em;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: rgba(255,255,255,0);
+    margin-right: -0.5rem;
+}
 
 /*
 
@@ -150,15 +161,16 @@ button.kd {
     width: 100%;
 }
 .kd.worksheet_row.lined {
-    align-items: center; 
-    border-bottom: 0.1rem solid;
-    justify-content: space-between;
+    border-bottom: 0.1rem solid #CBCBCB;
     min-height: 3rem;   /* since these are typically tappable/clickable */ 
+}
+.kd.worksheet_row.lined.borderless {
+    border-bottom: 0;
 }
 .kd.worksheet_row.lined > div { /* only select direct children */
     margin: 0 0.5rem 0 0.5rem;
 }
-.kd.worksheet_row.lined *:last-child{
+.kd.worksheet_row.lined.principle *:last-child{
     margin-left: auto; 
     white-space: nowrap; 
 }

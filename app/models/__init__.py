@@ -993,29 +993,31 @@ class UserAsset(object):
             )
 
 
+#    @utils.metered
     def load(self):
-        """ Retrieves an mdb doc using self.collection and makes the document an
-        attribute of the object. """
+        """ The default/vanilla load() method for all UserAsset objects, i.e.
+        settlements, survivors, users. The design here is that you call this
+        from the individual asset model's load() method via super(), and then
+        use the asset model's load() to add additional special stuff. """
 
-        mdb_doc = self.get_mdb_doc()
+        # make sure we've got self.collection, which should come from the
+        #   asset's private __init()__ method
+        for attr in ['_id', 'collection']:
+            if not hasattr(self, attr):
+                raise AssetLoadError('load() requires self.%s attr!' % attr)
 
-        if self.collection == "settlements":
-            self.settlement = mdb_doc
-            self._id = self.settlement["_id"]
-            self.settlement_id = self._id
-            self.get_campaign('initialize')     # sets an object
-            self.get_survivors('initialize')    # sets a list of objects
-            self.init_asset_collections()
-        elif self.collection == "survivors":
-            self.survivor = mdb_doc
-            self._id = self.survivor["_id"]
-            self.settlement_id = self.survivor["settlement"]
-        elif self.collection == "users":
-            self.user = mdb_doc
-            self._id = self.user["_id"]
-            self.login = self.user["login"]
-        else:
-            raise AssetLoadError("Invalid MDB collection for this asset!")
+        # use self.collection to set the mdb_doc
+        mdb_doc = utils.mdb[self.collection].find_one({"_id": self._id})
+        if mdb_doc is None:
+            raise AssetLoadError("Asset _id '%s' not be found in '%s'!" % (
+                self._id, self.collection
+                )
+            )
+
+        # now use self.collection and mdb_doc to set attributes
+        setattr(self, self.collection[:-1], mdb_doc)
+        setattr(self, '_id', mdb_doc['_id'])
+        setattr(self, 'created_by', mdb_doc.get('created_by', mdb_doc['_id']))
 
 
     def return_json(self):
@@ -1198,17 +1200,19 @@ class UserAsset(object):
         return int(ly)
 
 
-    def get_mdb_doc(self):
-        """ Retrieves the asset's MDB document. Raises a special exception if it
-        cannot for some reason. """
+    def get_requester_permissions(self):
+        """ Uses the flask request.User to return a str 'write', 'read' or a
+        None type, if the user has no permissios for the user asset.
 
-        mdb_doc = utils.mdb[self.collection].find_one({"_id": self._id})
-        if mdb_doc is None:
-            raise AssetLoadError("Asset _id '%s' not be found in '%s'!" % (
-                self._id, self.collection
-                )
-            )
-        return mdb_doc
+        'write' type access is what you get as the creator of a user asset; the
+        lower 'read' level of access is for settlement assets, e.g. where a
+        user might not be a settlement admin, etc.
+        """
+
+        if flask.request.User.user['_id'] == self.created_by:
+            return 'write'
+
+        return None
 
 
     def list_assets(self, attrib=None, log_failures=True):
@@ -1261,9 +1265,11 @@ class UserAsset(object):
 
         return output
 
+
     #
-    #   asset update methods below
+    #   semantic settlement event logging!
     #
+
     @log_event_exception_manager
     def log_event(self, msg=None, event_type=None, action=None,
         key=None, value=None, agent=None):

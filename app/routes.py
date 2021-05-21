@@ -455,14 +455,27 @@ def collection_action(collection, action, asset_id):
             status=400
         )
 
+    # log/validate the app brokering the request
     utils.check_api_key()
 
-    # update the request object
-    flask.request.collection = collection
+    # update the request object w/ the collection and action
+    setattr(flask.request, 'collection', collection)
     setattr(flask.request, 'action', action)
+
+    # set the user
     flask.request.User = users.token_to_object(flask.request, strict=False)
 
+    # get the asset
     asset_object = assets.get_user_asset(collection, asset_id)
+
+    # now see if the user has permission to access the asset; bomb them out
+    #   if they're attempting something they don't have permission to do
+    perms = asset_object.get_requester_permissions()
+
+    if perms is None:
+        return utils.HTTP_403
+    elif perms == 'read' and action != 'get':
+        return utils.HTTP_403
 
     if isinstance(asset_object, flask.Response):
         return asset_object
@@ -493,5 +506,5 @@ def route_to_static(path, sub_dir):
 
 @API.route("/favicon.ico")
 def favicon():
-    """ So you can see Logan's pretty logo in your dev environment."""
+    """ Favicon hack for dev. """
     return flask.send_file("static/media/images/favicon.png")

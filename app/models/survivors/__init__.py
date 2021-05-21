@@ -21,16 +21,17 @@ from copy import copy
 from io import BytesIO
 from datetime import datetime
 import gridfs
-import imghdr
 import importlib
 import json
 import math
-from PIL import Image
 import random
 
-# third party imports
+# second party imports
 import flask
 from flask import request, Response
+from PIL import Image # PIL.__init__ is empty!
+import pyheif
+import whatimage
 
 # local imports
 from app import models, utils
@@ -202,6 +203,16 @@ class Survivor(models.UserAsset):
 
         if self.normalize_on_init:
             self.normalize()
+
+
+    def load(self):
+        """ Calls the base class load() method and then sets a few additional,
+        survivor-specific attributes. """
+
+        super().load()
+
+        # 2021-05-18 this is deprecated / legacy and needs to die
+        self.settlement_id = self.survivor["settlement"]
 
 
     def save(self, verbose=True):
@@ -1155,7 +1166,7 @@ class Survivor(models.UserAsset):
         # now set the type. this validates that we've got an actual image
         # in the incoming string/object
         try:
-            avatar_type = imghdr.what(None, avatar)
+            avatar_type = whatimage.identify_image(avatar)
         except TypeError:
             raise utils.InvalidUsage(
                 "Image type of incoming file could not be determined!"
@@ -1166,13 +1177,20 @@ class Survivor(models.UserAsset):
 
         processed_image = BytesIO()
         try:
-            im = Image.open(BytesIO(avatar))
-#            self.logger.debug('AVATAR IMAGE INITIALIZED: %s' % im)
+            # issue #50; HEIF/iPhone support
+            if avatar_type in ['heic', 'avif']:
+                heif_object = pyheif.read_heif(avatar)
+                im = Image.frombytes(
+                    mode=heif_object.mode,
+                    size=heif_object.size,
+                    data=heif_object.data
+                )
+            else:
+                im = Image.open(BytesIO(avatar))
         except Exception as e:
-            msg = "PIL could not initialize an object from incoming string!"
-            self.logger.error(msg)
+            err = "Image could not be processed! "
             self.logger.exception(e)
-            raise utils.InvalidUsage(msg)
+            raise utils.InvalidUsage(err + str(e))
 
         resize_tuple = tuple(
             [int(n) for n in utils.settings.get(

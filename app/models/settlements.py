@@ -138,6 +138,22 @@ class Settlement(models.UserAsset):
         self.campaign_dict = self.get_campaign(dict)
 
 
+    def load(self):
+        """ Calls the base class load() method and then sets a few additional,
+        settlement-specific attributes.
+
+        There is more here than there is in the other load() methods, since the
+        settlement object has so much crap on it.
+        """
+
+        super().load()
+
+        self.settlement_id = self._id
+        self.get_campaign('initialize')     # sets an object
+        self.get_survivors('initialize')    # sets a list of objects
+        self.init_asset_collections()
+
+
     def init_asset_collections(self):
         """ Generally you want models.UserAsset.load() to call this method. """
 
@@ -352,7 +368,9 @@ class Settlement(models.UserAsset):
 
         self.bug_fixes()
         self.baseline()
-        self.migrate_settlement_notes()
+
+        if self.settlement.get("settlement_notes", None) is not None:
+            self.migrate_settlement_notes()
 
 
         #
@@ -4474,6 +4492,8 @@ class Settlement(models.UserAsset):
         as a proper settlement_note document in mdb. """
 
         if self.settlement.get("settlement_notes", None) is None:
+            err = "%s Does not have 'settlement_notes' key! Cannot migrate..."
+            self.logger.warn(err % self)
             return True
         else:
             self.logger.debug("Converting legacy 'settlement_notes' to mdb.settlement_notes doc!")
