@@ -407,7 +407,6 @@ class User(models.UserAsset):
 
     def __init__(self, *args, **kwargs):
         self.collection="users"
-        self.object_version=0.24
         models.UserAsset.__init__(self,  *args, **kwargs)
 
         # JWT needs this

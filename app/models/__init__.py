@@ -1169,14 +1169,6 @@ class UserAsset(object):
             )
             self.logger.error(" ".join(msg.split()))
 
-        try:
-            output["meta"]["object"]["version"] = self.object_version
-        except Exception as e:
-            self.logger.error(
-                "Could not create 'meta' dictionary when serializing object!"
-            )
-            self.logger.exception(e)
-            self.logger.warn(output["meta"])
         return output
 
 
@@ -1211,8 +1203,6 @@ class UserAsset(object):
 
         if flask.request.User.user['_id'] == self.created_by:
             return 'write'
-
-        return None
 
 
     def list_assets(self, attrib=None, log_failures=True):

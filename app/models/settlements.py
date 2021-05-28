@@ -127,7 +127,6 @@ class Settlement(models.UserAsset):
     @utils.metered
     def __init__(self, *args, **kwargs):
         self.collection="settlements"
-        self.object_version=0.82
         models.UserAsset.__init__(self,  *args, **kwargs)
 
         self.init_asset_collections()
@@ -429,7 +428,8 @@ class Settlement(models.UserAsset):
 
         # finish
         if self.perform_save:
-            self.logger.info("%s settlement modified during normalization! Saving changes..." % self)
+            msg = "%s settlement modified during normalization!"
+            self.logger.info(msg % self)
             self.save()
 
 
@@ -437,7 +437,8 @@ class Settlement(models.UserAsset):
     def remove(self):
         """ Marks the settlement as removed. """
         self.settlement['removed'] = datetime.now()
-        self.log_event('%s marked the settlement as removed!' % flask.request.User.user['login'])
+        msg = '%s marked the settlement as removed!'
+        self.log_event(msg % flask.request.User.user['login'])
         self.save()
 
 
@@ -448,7 +449,7 @@ class Settlement(models.UserAsset):
         output = self.get_serialize_meta()
 
         # do some tidiness operations first
-        for k in ["locations","innovations"]:
+        for k in ["locations", "innovations"]:
             self.settlement[k] = sorted(self.settlement[k])
 
         # now start
@@ -1760,6 +1761,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_lantern_research_level(self):
         """ Sets the self.settlement['lantern_research_level'] to incoming 'value'
         param. Requires a request context."""
@@ -1771,7 +1773,6 @@ class Settlement(models.UserAsset):
         self.settlement['lantern_research_level'] = level
         self.log_event(action="set", key="Lantern Research level", value=level)
         self.save()
-
 
 
     def set_last_accessed(self, access_time=None):
@@ -1786,28 +1787,30 @@ class Settlement(models.UserAsset):
         self.save(False)
 
 
-    def set_lost_settlements(self, new_value=None):
-        """ Updates settlement["lost_settlements"] to be int('new_value'). """
+    @models.web_method
+    def set_lost_settlements(self):
+        """ Updates settlement["lost_settlements"] to a new int type value. """
 
-        if self.check_request_params(["value"], True):
-            new_value = self.params["value"]
-        else:
-            self.logger.error("Incomplete params for updating lost settlements!")
-            raise Exception
+        # two-part sanity check; part one: param exists
+        self.check_request_params(['value'])
+        new_value = self.params['value']
 
+        # part two: param is an int
         try:
             new_value = int(new_value)
-        except Exception as e:
-            self.logger.error("Unable to set 'lost_settlements' to non-integer '%s'!" % new_value)
-            self.logger.exception(e)
-            raise Exception(e)
+        except ValueError as e:
+            self.logger.error(e)
+            err = "Cannot set non-integer value '%s'!" % new_value
+            self.logger.error(err)
+            raise utils.InvalidUsage(err)
 
+        # now set it, but don't go below zero
         if new_value <= 0:
             self.settlement["lost_settlements"] = 0
         else:
-            self.settlement["lost_settlements"] = int(new_value)
+            self.settlement["lost_settlements"] = new_value
 
-        self.log_event(action="set", key="Lost Settlements count", value=new_value)
+        self.log_event(key="Lost Settlements count", value=new_value)
         self.save()
 
 
@@ -2349,13 +2352,20 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.deprecated
     def replace_lantern_year(self):
+        """ DEPRECATED 2021-05-25. Use set_lantern_year_instead() """
+        self.set_landern_year()
+
+
+    @models.web_method
+    def set_lantern_year(self):
         """ Sets a lantern year. Requires a request context. """
 
         self.check_request_params(['ly'])
         new_ly = self.params['ly']
 
-        # thanks to LY zero, Lantern Years correspond to Timtline list indexes.
+        # thanks to LY zero, Lantern Years correspond to Timeline list indexes.
         del self.settlement['timeline'][new_ly['year']]
         self.settlement['timeline'].insert(new_ly['year'], new_ly)
 
@@ -3215,6 +3225,23 @@ class Settlement(models.UserAsset):
             },
         ]
 
+
+    def get_requester_permissions(self):
+        """ Overrides the base-class method: does additional stuff to assess
+        whether the requester has read access to the settlement. """
+
+        requester = flask.request.User.user
+
+        if requester['_id'] == self.created_by:
+            return 'write'
+
+        # if we're still here, check players
+        for player in self.get_players():
+            if player['_id'] == requester['_id']:
+                if player.get('settlement_admin', False):
+                    return 'write'
+                else:
+                    return 'read'
 
 
     def get_settlement_notes(self):
@@ -4561,7 +4588,11 @@ class Settlement(models.UserAsset):
         elif action == 'get_sheet':
             return flask.Response(response=self.serialize('sheet'), status=200, mimetype="application/json")
         elif action == 'get_survivors':
-            return flask.Response(response=self.serialize('survivors'), status=200, mimetype="application/json")
+            return flask.Response(
+                response=self.serialize('survivors'),
+                status=200,
+                mimetype="application/json"
+        )
         elif action == 'get_game_assets':
             return flask.Response(response=self.serialize('game_assets'), status=200, mimetype="application/json")
         elif action == 'get_campaign':
@@ -4619,8 +4650,6 @@ class Settlement(models.UserAsset):
             self.update_attribute()
         elif action == "update_endeavor_tokens":
             self.update_endeavor_tokens()
-        elif action == "set_lost_settlements":
-            self.set_lost_settlements()
 
         # timeline!
         elif action == 'replace_lantern_year':

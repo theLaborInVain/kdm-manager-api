@@ -125,8 +125,9 @@ def create_many_survivors(params):
 
 
 class Survivor(models.UserAsset):
-    """ This is the base class for all expansions. Private methods exist for
-    enabling and disabling expansions (within a campaign/settlement). """
+    """ This is the class object for survivor objects. It sub-classes the
+    models.UserAsset (e.g. just like settlements) and tries to fallback and/or
+    super() back to that base class when possible. """
 
     DEFAULTS = {
         "Movement": 5,
@@ -143,7 +144,6 @@ class Survivor(models.UserAsset):
 
     def __init__(self, *args, **kwargs):
         self.collection="survivors"
-        self.object_version = 1.01
 
         # initialize AssetCollections for later
         self.AbilitiesAndImpairments = abilities_and_impairments.Assets()
@@ -1551,6 +1551,7 @@ class Survivor(models.UserAsset):
     #   update methods!
     #
 
+    @models.deprecated
     def update_affinities(self, aff_dict={}, operation="add"):
         """ Set the kwarg 'operation' to either 'add' or 'rm' in order to
         do that operation on self.survivor["affinities"], which looks like this:
@@ -1645,14 +1646,6 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.deprecated
-    def update_bleeding_tokens(self, modifier=None):
-        """ DEPRECATED 2021-01-13. """
-
-        msg = 'This endpoint is deprecated. Use set_bleeding_tokens() instead'
-        self.logger.warn(msg)
-
-
     def update_returning_survivor_years(self, add_year=None, save=True):
         """ Adds the current LY to the survivor's 'returning_survivor' attrib
         (i.e. list) by default. Set 'add_year' to any integer to add an arbitrary
@@ -1672,6 +1665,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
+    @models.deprecated
     def update_survival(self, modifier=None, save=True):
         """ Adds 'modifier' to survivor["survival"]. Respects settlement rules
         about whether to enforce the Survival Limit. Will not go below zero.
@@ -2140,7 +2134,10 @@ class Survivor(models.UserAsset):
         # enforce min/max
         if self.survivor["bleeding_tokens"] < 0:
             self.survivor["bleeding_tokens"] = 0
-        elif self.survivor["bleeding_tokens"] > self.survivor["max_bleeding_tokens"]:
+        elif (
+            self.survivor["bleeding_tokens"] >
+            self.survivor["max_bleeding_tokens"]
+        ):
             self.survivor["bleeding_tokens"] = self.survivor["max_bleeding_tokens"]
 
         self.log_event(
@@ -2927,6 +2924,8 @@ class Survivor(models.UserAsset):
         # if no return_type, just return the trait list
         return traits
 
+
+    @models.deprecated
     def get_epithets(self, return_type=None):
         """ Returns survivor epithet (handles) as a list, unless the
         'return_type' kwarg is set to 'pretty', which gets you a nice
@@ -3761,29 +3760,6 @@ class Survivor(models.UserAsset):
             self.set_color_scheme()
         elif action == "toggle_sotf_reroll":
             self.toggle_sotf_reroll()
-
-        # delete-o! delete-o!
-        elif action == 'remove':
-            self.remove()
-
-        # deprecated end points - kill these for April 2021 release
-        elif action == "get_survival_actions":
-            return utils.http_410
-        elif action in ["update_survival", 'update_bleeding_tokens']:
-            return flask.Response(
-                response="Deprecated! Please use 'set_attribute' instead.",
-                status=410
-            )
-        elif action == 'toggle_status_flag':
-            return flask.Response(
-                response="Deprecated! Please use 'set_status_flag' instead.",
-                status=410
-            )
-        elif action in ["set_affinity", 'update_affinities']:
-            return flask.Response(
-                response="Deprecated! Please use 'set_affinities' instead.",
-                status=410
-            )
 
         else:
             # first, if we have a method matching 'action', try to execute it

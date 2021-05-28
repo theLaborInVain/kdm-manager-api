@@ -50,7 +50,6 @@
     background-repeat: no-repeat;
     background-position: center;
     color: rgba(255,255,255,0);
-    margin-right: -0.5rem;
 }
 
 /*
@@ -83,6 +82,7 @@ button.kd {
     --box-shadow-default: 0 0 0.5em 0 #999;
     --box-shadow-inset: inset 0.1em 0.1em 0.2em 0 #999;
     --border-checkbox: 0.1rem solid;
+    --border-checkbox-bold: 0.2rem solid;
     --border-worksheet: 0.3rem solid;
     --color-kd-affinity-blue: #1C99CD;
     --color-kd-affinity-green: #4CB848;
@@ -92,6 +92,8 @@ button.kd {
     --color-kd-bleeding-token: radial-gradient(at right 50%, #f00, #992426);
     --color-kd-blue: #00A0E9;
     --color-kd-blue-gradient: radial-gradient(#60DAF5, #40AFD3);
+    --color-kd-brown: #997030;
+    --color-kd-brown-gradient: linear-gradient(#997030, #a47a41, #997030);
     --color-kd-card-gradient: radial-gradient(#fff, #fff, #f8f8f8, #fffff9);
     --color-kd-green: #4CB848;
     --color-kd-green-gradient: radial-gradient(#0d0, #4CB848);
@@ -104,7 +106,7 @@ button.kd {
     --color-kd-pink: #F35295;
     --color-kd-pink-gradient: radial-gradient(#F06DbC, #F35295);
     --color-kd-red: #B92426;
-    --color-kd-red-gradient: (#DC2426, #B92426);
+    --color-kd-red-gradient: linear-gradient(#DC2426, #B92426);
     --color-kd-silver-gradient: linear-gradient(to right, #eaebeb, #efefef, #fefefe, #efefef, #eaebeb);
     --color-kd-yellow: #EEC051;
     --color-kd-yellow-gradient: radial-gradient(#fEf0a1, #EEC051);
@@ -160,6 +162,9 @@ button.kd {
     padding: 0.5rem;
     width: 100%;
 }
+.kd.worksheet_row.spaced {
+    justify-content: space-between;
+}
 .kd.worksheet_row.lined {
     border-bottom: 0.1rem solid #CBCBCB;
     min-height: 3rem;   /* since these are typically tappable/clickable */ 
@@ -186,16 +191,35 @@ button.kd {
 }
 .kd.checkbox {
     border: var(--border-checkbox);
-    height: 0.5rem;
-    min-height: 0.5rem;
-    min-width: 0.5rem;
-    width: 0.5rem;
+    box-sizing: border-box;
+    height: 0.6rem;
+    min-height: 0.6rem;
+    min-width: 0.6rem;
+    width: 0.6rem;
+}
+.kd.checkbox:after {
+    content: attr(caption-text);
+    font-size: var(--font-small);
+    margin-top: 1.2rem;
+    position: absolute;
+    text-align: center; 
+    width: inherit;
+}
+.kd.checkbox.large {
+    border: 0.125rem solid;
+    height: 1.2rem;
+    min-height: 1.2rem;
+    min-width: 1.2rem;
+    width: 1.2rem;
+}
+.kd.checkbox.large.heavy {
+    border: 0.3rem solid;
 }
 .kd.checkbox.tiny {
-    height: 0.25rem;
-    min-height: 0.25rem;
-    min-width: 0.25rem;
-    width: 0.25rem;
+    height: 0.4rem;
+    min-height: 0.4rem;
+    min-width: 0.4rem;
+    width: 0.4rem;
 }
 .kd.checkbox.checked {
     background: #000;
@@ -404,6 +428,11 @@ select.kd.capsule {
     background: var(--color-kd-blue-gradient);
     color: #fff;
 }
+.kd.brown {
+    background: var(--color-kd-brown);
+    background: var(--color-kd-brown-gradient);
+    color: #fff;
+}
 .kd.green {
     background: var(--color-kd-green);
     background: var(--color-kd-green-gradient);
@@ -444,8 +473,109 @@ select.kd.capsule {
     color: #000;
 }
 
+/*                      */
+/*  survivor sheet      */
+/*                      */
 
-
+.kd.survivor_sheet div.horizontal_rule {
+    border-top: 0.15rem solid;
+    margin: 0.25rem auto 0.25rem auto;
+    width: 100%; 
+}
+.kd.survivor_sheet.name_and_sex_container div.caption {
+    font-size: var(--font-small);
+}
+.kd.survivor_sheet.name_and_sex_container {
+    display: flex;
+    flex-wrap: wrap;
+}
+.kd.survivor_sheet.name_and_sex_container div.name {
+    font-family: 'Silverado';
+    width: 75%;
+}
+.kd.survivor_sheet.name_and_sex_container div.sex {
+    width: 25%;
+    display: flex;
+    justify-content: space-evenly;
+}
+.kd.survivor_sheet.name_and_sex_container .sex .repeater {
+    align-items: center; 
+    display: flex;
+    font-size: var(--font-small);
+    justify-content: space-around;
+    width: 50%;
+}
+.kd.survivor_sheet.border_box {
+    border: 0.125rem solid;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+}
+.kd.survivor_sheet.border_box.borderless {
+    border: 0;
+}
+.kd.survivor_sheet.border_box_inset {
+    align-items: center; 
+    border-right: 0.125rem solid;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+    padding-bottom: 0.25rem;
+    min-width: 15.8%
+}
+.kd.survivor_sheet.border_box_inset:first-child {
+    min-width: 17.5%;
+    justify-content: center;
+}
+.kd.survivor_sheet.border_box_inset:last-child {
+    border: 0;
+    width: 100%;
+}
+.kd.survivor_sheet.border_box_inset.borderless {
+    border: 0; 
+}
+.kd.survivor_sheet.border_box_inset.full_width {
+    display: flex;
+    flex-direction: column;
+}
+.kd.survivor_sheet.border_box_inset .number_container{
+    align-items: center; 
+    border: 0.125rem solid;
+    display: flex;
+    height: 1.75rem;
+    justify-content: center;
+    margin: 0.25rem auto 0.75rem auto; 
+    width: 1.75rem;
+}
+.kd.survivor_sheet.border_box_inset .number_container.borderless {
+    border: 0;
+}
+.kd.survivor_sheet.border_box_inset .number_container.shield {
+    border-bottom: 0;
+    border-image: linear-gradient(to bottom, #000, #000, rgba(0,0,0,0), rgba(0,0,0,0)) 1;
+}
+.kd.survivor_sheet.border_box_inset .number_container.shield::before {
+    content:"";
+    position: absolute;
+    background: linear-gradient(to right, #fff, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 75%, #fff);
+    width: 1.78rem;
+    height: 1rem;
+    margin-top: -0.75rem;
+    z-index:1;
+}
+.kd.survivor_sheet.border_box_inset .number_container.shield::after {
+    content: "";
+    position: absolute;
+    width: inherit;
+    height: inherit;
+    background: rgba(255,255,255,0);
+    border: 0.125rem solid;
+    border-bottom-left-radius: 0.75rem 1rem;
+    border-top-right-radius: 0.75rem 1rem;
+    border-left: 0;
+    border-top: 0;
+    transform: rotate(45deg);
+}
 
 /*                      */
 /*  survivor cards      */
