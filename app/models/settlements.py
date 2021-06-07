@@ -802,18 +802,18 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def add_monster(self, monster_handle=None):
         """ Adds quarry and nemesis type monsters to the appropriate settlement
-        list, e.g. self.settlemnt["nemesis_monsters"], etc.
+        list, e.g. self.settlement["nemesis_monsters"], etc.
 
-        If the 'monster_handle' kwargs is None, this method, list most others,
-        will assume that this is a request, and will get request params. """
+        CAN be used without a request context. """
 
         if monster_handle is None:
             self.check_request_params(["handle"])
             monster_handle = self.params["handle"]
 
-        # sanity check the handle; load an asset dict for it
+        # Initialize the monster asset (die if the handle is bogus)
         m_dict = self.Monsters.get_asset(monster_handle)
 
         # get the type from the asset dict
@@ -822,20 +822,26 @@ class Settlement(models.UserAsset):
         elif m_dict["sub_type"] == 'nemesis':
             target_list = self.settlement["nemesis_monsters"]
         else:
-            self.logger.error(m_dict)
-            raise AttributeError(
-                "Monster 'type' attribute is not an asset collection!"
-            )
+            err = "Monster 'sub_type' value of '%s' is not supported!'"
+            raise utils.InvalidUsage(err % m_dict['sub_type'])
 
         # finally, add, log and save
         if monster_handle not in target_list:
             target_list.append(monster_handle)
-            if m_dict["type"] == 'nemesis':
+            if m_dict.get("sub_type", None) == 'nemesis':
                 self.settlement["nemesis_encounters"][monster_handle] = []
-        self.log_event(action="add", key="%s monsters" % m_dict['type'], value=m_dict["name"], event_type="add_monster")
+
+        self.log_event(
+            action="add",
+            key="%s monsters" % m_dict['sub_type'],
+            value=m_dict["name"],
+            event_type="add_monster"
+        )
+
         self.save()
 
 
+    @models.web_method
     def rm_monster(self, monster_handle=None):
         """ Removes a monster from the settlement's list of quarry or nemesis
         monsters. Basically the inverse of the add_monster() method (above)."""
@@ -2123,18 +2129,22 @@ class Settlement(models.UserAsset):
             self.save()
 
 
+    @models.web_method
     def update_nemesis_levels(self):
         """ Updates a settlement's 'nemesis_encounters' array/list for a nemesis
-        monster handle. Assumes that this is a request. """
+        monster handle. Fails if the nemesis is not in the settlement's nemesis
+        list (this is intentionall and for your safety/sanity). """
 
-        self.check_request_params(["handle","levels"])
+        self.check_request_params(["handle", "levels"])
         handle = self.params["handle"]
         levels = list(self.params["levels"])
 
         m_dict = self.Monsters.get_asset(handle)
 
         if handle not in self.settlement["nemesis_monsters"]:
-            self.logger.error("Cannot update nemesis levels for '%s' (nemesis is not in 'nemesis_monsters' list for %s)" % (handle, self))
+            err = "Nemesis handle '%s' is not in the 'nemesis_monsters' list!"
+            self.logger.error(err % handle)
+            raise utils.InvalidUsage(err)
         else:
             self.settlement["nemesis_encounters"][handle] = levels
             self.log_event('%s updated %s encounters to include %s' % (
@@ -4632,13 +4642,6 @@ class Settlement(models.UserAsset):
             self.add_defeated_monster()
         elif action == "rm_defeated_monster":
             self.rm_defeated_monster()
-
-        elif action == "add_monster":
-            self.add_monster()
-        elif action == "rm_monster":
-            self.rm_monster()
-        elif action == "update_nemesis_levels":
-            self.update_nemesis_levels()
 
 
         # misc sheet controllers

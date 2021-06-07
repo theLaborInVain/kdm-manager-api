@@ -57,7 +57,10 @@
             <button
                 type="submit"
                 class="text_input_button"
-                ng-disabled="scratch.searchUserEmail === undefined"
+                ng-disabled="
+                    scratch.searchUserEmail === undefined ||
+                    !user.jwt
+                "
                 ng-click="
                     getUser();
                     $event.stopPropagation();
