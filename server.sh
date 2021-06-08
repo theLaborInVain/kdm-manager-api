@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-SUPERVISORCTL=`which supervisorctl`
+#
+#   This script allows the server to be started in 'development' mode.
+#   If you want to deploy the API in a production context, check the files
+#   in the /deploy folder and use supervisord.
+#
 
 start_venv() {
     echo -e "\nVirtual Envrionment:"
@@ -9,7 +13,7 @@ start_venv() {
     source venv/bin/activate
 
     # 2.) export env variables for our server
-    export FLASK_ENV=$1
+    export FLASK_ENV='development'
 
     # 3.) confirm to the CLI for the user
     PYTHON_PATH=`which python`
@@ -24,41 +28,5 @@ start_venv() {
     echo -e "Flask server:"
 }
 
-deploy() {
-
-    OPERATION=$1
-
-    if [[ $EUID -ne 0 ]]; then
-       echo -e "\n\tThis operation must be performed by root!\n"
-       exit 1
-    fi
-
-    $SUPERVISORCTL $OPERATION kdm-manager-api
-    $SUPERVISORCTL $OPERATION kdm-manager-api-world-daemon
-
-}
-
-case "$1" in
-    status)
-        deploy $1
-        ;;
-    start)
-        echo -e "Starting API server..."
-        deploy $1
-        ;;
-    stop)
-        echo -e "Stopping API server..."
-        deploy $1
-        ;;
-    restart)
-        echo -e "Restarting API server..."
-        deploy $1
-        ;;
-    dev)
-        start_venv development
-        python api.py
-        ;;
-    *)
-        echo "Usage: $NAME {status|start|stop|restart|dev}" >&2
-        exit 3
-esac
+start_venv
+python api.py

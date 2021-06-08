@@ -1260,7 +1260,7 @@ class World(object):
         alerts = utils.mdb.notifications.find(query)
         for a in alerts:
             if a['expiration'] == 'next_release':
-                if a['release'] < utils.settings.get('api','version'):
+                if a['release'] < API.config['VERSION']:
                     err_msg = 'Alert from v%s is lower than current! Removing!'
                     self.logger.warn(err_msg % a['release'])
                     A = notifications.Alert(_id=a['_id'])

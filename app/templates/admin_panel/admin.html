@@ -18,43 +18,12 @@
     <!-- main admin panel info -->
 
     <h1>KDM API</h1>
-    <b>API Hostname:</b> {a settings.meta.server.hostname a}<br/>
-    <b>API Version:</b> {a settings.meta.api.version a}<br/>
-
-    <!-- set admin user JWT/password -->
-    <form
-        class="text_input_container zebra"
-        ng-if="user.jwt === undefined"
-    >
-        <input
-            type="password"
-            class="text_input_input"
-            placeholder="{a user.login a} password"
-            ng-model="user.plaintext_password"
-        />
-        <button
-            type="submit"
-            class="text_input_button"
-            ng-click="
-                setUserJWT();
-                $event.stopPropagation();
-            "
-        >
-            Set JWT
-        </button>
-    </form>
-
-    <div
-        ng-if="user.jwt === undefined"
-        class="hidden error_text_block"
-        id="adminPasswordInputError"
-    >
-        <b>Authorization Error!</b>
-        <span id="adminPasswordInputErrorMsg"></span>
-    </div>
-
+    <b>Hostname:</b> {a settings.meta.server.hostname a}<br/>
+    <b>Version:</b> {a settings.meta.api.version a}<br/>
+    <b>Current User:</b> {a user.login a}
 
 	<!-- alerts start here -->
+    <h3 class="kd title" ng-if="webappAlerts.length > 0">Active alerts</h2>
     <div
         class="webapp_alert"
         ng-repeat="alert in webappAlerts"
@@ -92,16 +61,6 @@
         </div>
 
     </div> <!-- webappAlerts repeater -->
-
-	<center>
-	    <div
-	        ng-click="ngShow('createNewAlert')"
-	        class="clickable kd pink rulebook_warning"
-	    >
-	        Click/tap to create a new webapp alert!
-	    </div>
-	</center>
-
 
 </div> <!-- flex_item_basic -->
 
@@ -265,14 +224,14 @@
                     newAlert.body === null
                 "
                 ng-click="createAlert()"
-                class="clickable capsule kd pink"
+                class="kd capsule blue full_width"
             >
                 CREATE NEW WEBAPP ALERT
             </button>
 
             <button
                 ng-click="ngHide('createNewAlert')"
-                class="clickable capsule kd"
+                class="kd capsule full_width"
             >
                 Close
             </button>

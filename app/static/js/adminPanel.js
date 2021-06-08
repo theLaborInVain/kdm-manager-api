@@ -12,67 +12,6 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
         window.prompt("Copy User OID to clipboard:", text);
     };
 
-    // DEPRECATED - replace this with flask 
-	$scope.setUserJWT = function() {
-		// sets $scope.user.jwt to a valid JWToken
-		if ($scope.user.plaintext_password === undefined) {
-			console.error('Admin user password is not set!')
-		};
-
-		var jwt_req_url = 'login';
-		console.time(jwt_req_url);
-        var jwt_promise = $http({
-            method: 'POST',
-            url: jwt_req_url,
-            data: {
-                'username': $scope.user.login,
-                'password': $scope.user.plaintext_password,
-            },
-            headers: {
-				'API-Key': $scope.api_key,
-            },
-        })
-
-        jwt_promise.then(
-            function successCallback(response) {
-                $scope.user.jwt = response.data.access_token;
-                console.log('JWT set for ' + $scope.user.login);
-                console.timeEnd(jwt_req_url)
-            }, function errorCallback(response) {
-                console.error(response);
-                console.timeEnd(jwt_req_url);
-                $scope.ngShowHide('adminPasswordInputError');
-                var err = response.status + " - " + response.data
-                document.getElementById('adminPasswordInputErrorMsg').innerHTML = err;
-            }
-        );
-	}
-
-    $scope.getEventLog = function(settlement) {
-		// make sure we've got a fresh token
-		$scope.setUserJWT();
-
-        settlement.event_log = [
-            {event: 'Retrieving settlement Event Log as ' + $scope.user.login + '...'}
-        ]
-
-        var event_log_req_url = '/settlement/get_event_log/' + settlement._id.$oid;
-		var event_log_promise = $http({
-			method: 'POST',
-			url: event_log_req_url,
-			headers: {
-				'API-Key': $scope.api_key,
-				'Content-Type': undefined,
-				'Authorization': $scope.user.jwt,
-			},
-		})
-        event_log_promise.then(function(result){
-            settlement.event_log = result.data;
-        });
-
-    };
-
-
     // DEPRECATE THIS
     // DEPRECATE THIS
     $scope.showHide = function(e_id) {
@@ -406,7 +345,7 @@ myApp.controller('userAdminController', function($scope, $http) {
         $scope.scratch.searchUserEmail = undefined;
         $scope.scratch.showLoader = true;
 
-        console.warn("Attempting to retrieve '" + userLogin + "' from API...")
+//        console.warn("Attempting to retrieve '" + userLogin + "' from API...")
 
         var timerName = 'getUser(' + userLogin + ')'
 		console.time(timerName);
@@ -496,26 +435,27 @@ myApp.controller('userAdminController', function($scope, $http) {
             newValue = false;
         }
 
-        var reqURL = '/user/set_verified_email/' + userObject._id.$oid
-        console.time(reqURL);
-
+        var reqUrl = '/admin/user_asset/set_verified_email';
+        console.time(reqUrl);
         var promise = $http({
             method: 'POST',
-            url: reqURL,
-            data: {'value': newValue},
+            url: reqUrl,
+            data: {
+                'login': userObject.login,
+                'value': newValue,
+            },
             headers: {
                 'API-Key': $scope.api_key,
-				'Authorization': $scope.user.jwt,
             },
-        });
+        })
 
 		promise.then(
             function successCallback(response) {
-                console.timeEnd(reqURL);
+                console.timeEnd(reqUrl);
                 userObject.verified_email = newValue;
             }, function errorCallback(response) {
                 console.error(response);
-                console.timeEnd(reqURL);
+                console.timeEnd(reqUrl);
             }
         );
 

@@ -7,7 +7,6 @@
 
     <div
         class="kd worksheet_block"
-        ng-class="{'disabled': !user.jwt}"
     >
 
         <h3 class="kd title">User Administration</h3>
@@ -58,8 +57,7 @@
                 type="submit"
                 class="text_input_button"
                 ng-disabled="
-                    scratch.searchUserEmail === undefined ||
-                    !user.jwt
+                    scratch.searchUserEmail === undefined
                 "
                 ng-click="
                     getUser();
@@ -79,17 +77,21 @@
 
         <div
             class="clickable kd worksheet_row"
-            ng-click="ngShowHide('userAgentPopularityContest')"
+            ng-click="ngShow('userAgentPopularityContest')"
         >
-            <div
-                class="kd checkbox"
-                ng-class="{'checked': ngVisible['userAgentPopularityContest']}"
-            >
-            </div>
-            <div
-                class="kd checkbox_desc"
-            >
+            <div class="kd checkbox"></div>
+            <div class="kd checkbox_desc">
                 View user Agent popularity contest
+            </div>
+        </div>
+
+        <div
+            class="clickable kd worksheet_row"
+            ng-click="ngShow('createNewAlert')"
+        >
+            <div class="kd checkbox"></div>
+            <div class="kd checkbox_desc">
+                Click/tap to create a new webapp alert!
             </div>
         </div>
 

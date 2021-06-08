@@ -8,6 +8,7 @@
 from app import API
 
 if __name__ == '__main__':
+    print(' * KDM API version %s' % API.config['VERSION'])
     API.run(
         host="0.0.0.0",
         port=API.config['PORT'],
