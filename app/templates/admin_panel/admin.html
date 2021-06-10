@@ -14,7 +14,6 @@
     >
     </div>
 
-
     <!-- main admin panel info -->
 
     <h1>KDM API</h1>
@@ -23,56 +22,70 @@
     <b>Current User:</b> {a user.login a}
 
 	<!-- alerts start here -->
-    <h3 class="kd title" ng-if="webappAlerts.length > 0">Active alerts</h2>
-    <div
-        class="webapp_alert"
-        ng-repeat="alert in webappAlerts"
-        title="{a alert._id.$oid a}"
-    >
+    <div class="kd worksheet_block" ng-if="webappAlerts.length > 0">
+
+        <h3 class="kd worksheet_block_title">Active alerts</h2>
+
         <div
-            class="clickable tile"
+            class="clickable kd worksheet_row lined"
+            ng-repeat="alert in webappAlerts"
             ng-click="ngShowHide(alert._id.$oid + '_controls')"
         >
-            <b>{a alert.title a}</b>
-			<span ng-bind-html="alert.body|trustedHTML"></span>
-			<br/>
 
+            <div class="kd checkbox checked"></div> 
             <div
-                class="alert_footer"
+                class="kd checkbox_desc"
             >
-                <b>release:</b> {a alert.release a} |
-				<b>type:</b> {a alert.sub_type a} |
-				<b>created:</b> {a alert.created_on.$date | date:'yyyy-MM-dd @ h:mma' a} |
-				<b>expires:</b> {a alert.expiration a}
-            </div>
-        </div>
+                <b>{a alert.title a}</b>
+        		<span ng-bind-html="alert.body|trustedHTML"></span>
+
+
+                <div
+            		id="{a alert._id.$oid a}_controls"
+                   	class="hidden alert_footer"
+       	    	>
+                    <b>release:</b> {a alert.release a} |
+	    	    	<b>type:</b> {a alert.sub_type a} |
+    	    	    <b>created:</b> {a alert.created_on.$date | date:'yyyy-MM-dd @ h:mma' a} |
+	    	    	<b>expires:</b> {a alert.expiration a}
+
+                    <button
+                        class="kd capsule red"
+                        ng-click="
+                            $event.stopPropagation();
+                            expireAlert(alert)
+                        "
+                    >
+        	    		Expire
+    	        	</button>
+
+                </div> <!-- alert controls -->
+
+            </div> <!-- kd checkbox_desc -->
+
+        </div> <!-- kd worksheet_row webappAlerts repeater -->
 
         <div
-			id="{a alert._id.$oid a}_controls"
-			class="clickable tile hidden"
-		>
-            <div
-                class="alert_controls"
-            >
-                <button class="red_button" ng-click="expireAlert(alert)">
-					Expire Now!
-				</button>
+            class="clickable kd worksheet_row lined borderless"
+            ng-click="ngShow('createNewAlert')"
+        >
+            <div class="kd checkbox"></div>
+            <div class="kd checkbox_desc">
+                Click/tap to create a new webapp alert!
             </div>
         </div>
 
-    </div> <!-- webappAlerts repeater -->
+    </div> <!-- kd worksheet_block -->
 
 </div> <!-- flex_item_basic -->
 
 
 <!--
 
-	This is the FOLD
-
+    release details modal
+    
 -->
 
-
-<!--  release details modal -->
 <div
     id="adminPanelReleaseDetails"
     class="hidden modal_outer"
@@ -139,8 +152,11 @@
 </div><!-- modal outer -->
 
 
+<!--
 
-<!-- create new alert modal -->
+    create new alert modal
+    
+-->
 
 <div
     id="createNewAlert"
