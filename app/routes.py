@@ -221,7 +221,7 @@ def world_json():
 
 #   game asset lookups
 
-@API.route("/kingdom_death")
+@API.route("/kingdom_death", methods=API.config['DEFAULT_METHODS'])
 @crossdomain(origin=['*'])
 def kingdom_death():
     """ Initializes all game assets and serializes them. """

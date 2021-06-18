@@ -87,14 +87,39 @@ echoes_of_death_3 = {
             'The survivors are defeated by the Gold Smoke Knight. '
             '(Check for this at the end of your campaign.)'
         ),
+        'permanent_effect_flavor_text': (
+            'Departing the smouldering scene, the Gold Smoke Knight '
+            'unwittingly crushes the claw of a fleeing crab spider. '
+            'Desperate to survive, the crab cauterizes its mangled claw on a '
+            'nearby golden ember. It heals anew and much larger than before. '
+            'The crab shares the secret with its crab family.'
+        ),
+        'permanent_effect': (
+            'Permanently add <span class="kd deck_icon" deck="FA">FA</span> '
+            '<b>Armored Fist</b> to your fighting art deck. Permanently add '
+            '<span class="kd deck_icon" deck="V">FA</span> <b>Fiddler Crab '
+            'Spider</b> to your vermin deck. '
+        ),
     },
     'carnage_worm': {
-        'name': 'Carnage Worm',
+        'name': 'Carnage Worms',
         'expansion': 'echoes_of_death_3',
         'milestone_condition': (
             'A <b>Crazed</b> survivor witnesses a settlement with '
             '<b>Cannibalize</b> endeavor 8 times at <b>Sacrifice</b> in a '
             'single lantern year.'
+        ),
+        'permanent_effect_flavor_text' : (
+            'The survivor holds a feast at the bloodied site of sacrifice. '
+            'Attracted to the carnage, a parasitic worm of other origin is '
+            "swept up into the survivor's maw. Now a host, the survivor "
+            "spreads the parasite's young everywhere they defecate."
+        ),
+        'permanent_effect': (
+            'Permanently add <span class="kd deck_icon" deck="FA">FA</span> '
+            '<b>Dark Manifestation</b> to your fighting art deck. The survivor '
+            'gains <span class="kd deck_icon" deck="FA">FA</span> <b>Dark '
+            'Manifestation </b>.'
         ),
     },
     'material_feedback_strain': {
@@ -112,6 +137,22 @@ echoes_of_death_3 = {
             'A survivor gains a sword during the hunt or showdown and '
             'uses it to deliver the killing blow that lantern year.'
         ),
+        'permanent_effect_flavor_text': (
+            'Lightning splits the sky, illuminating a blade-shaped '
+            'castle that was not there before. Gouts of water spray '
+            "from the castle. Mingling with the survivor's sweat, "
+            'the rain hisses. In the sibilant sound, the survivor hears '
+            'a challenge.'
+        ),
+        'permanent_effect': (
+            'Permanently add the '
+            '<span class="kd deck_icon" deck="FA">FA</span> '
+            '<b>Sword Oath</b> to your fighting art deck. The survivor '
+            'gains <span class="kd deck_icon" deck="FA">FA</span> '
+            '<b>Sword Oath</b>. '
+            'Add <span class="kd deck_icon" deck="SE">SE</span> '
+            '<b>Acid Rain<b> to the next lantern year on the timeline.'
+        )
     },
 }
 

@@ -703,6 +703,7 @@ class Settlement(models.UserAsset):
     #   add/rm methods start here!
     #
 
+    @models.web_method
     def add_defeated_monster(self, monster_string=None):
         """ Adds a monster to the settlement's defeated monsters. Updates the
         killboard. """
@@ -730,14 +731,31 @@ class Settlement(models.UserAsset):
                 killboard_dict[a] = M.get(a)
 
         utils.mdb.killboard.insert(killboard_dict)
-        self.logger.info("%s Updated the application killboard to include '%s' (%s) in LY %s" % (flask.request.User, monster_string, M.type, self.get_current_ly()))
+        msg = (
+            "%s Updated the application killboard to include "
+            "'%s' (%s) in LY %s"
+        )
+        self.logger.info(
+            msg % (
+                flask.request.User,
+                monster_string,
+                M.type,
+                self.get_current_ly()
+            )
+        )
 
         # add it and save
         self.settlement["defeated_monsters"].append(monster_string)
-        self.log_event(action="add", key="Defeated Monsters list", value=monster_string, event_type="add_defeated_monster")
+        self.log_event(
+            action="add",
+            key="Defeated Monsters list",
+            value=monster_string,
+            event_type="add_defeated_monster"
+        )
         self.save()
 
 
+    @models.web_method
     def rm_defeated_monster(self, monster_string=None):
         """ Removes a monster string from the settlement's list, i.e. the
         self.settlement["defeated_monsters"] list of strings, if that monster
@@ -748,12 +766,20 @@ class Settlement(models.UserAsset):
             monster_string = self.params['monster']
 
         if monster_string not in self.settlement["defeated_monsters"]:
-            msg = "The string '%s' was not found in the settlement's list of defeated monsters!" % monster_string
-            self.logger.error(msg)
+            msg = (
+                "The string '%s' was not found in the settlement's list of "
+                "defeated monsters!"
+            )
+            self.logger.error(msg % monster_string)
             raise utils.InvalidUsage(msg)
 
         self.settlement["defeated_monsters"].remove(monster_string)
-        self.log_event(action="rm", key="Defeated Monsters list", value=monster_string, event_type="rm_defeated_monster")
+        self.log_event(
+            action="rm",
+            key="Defeated Monsters list",
+            value=monster_string,
+            event_type="rm_defeated_monster"
+        )
         self.save()
 
 
@@ -4638,10 +4664,6 @@ class Settlement(models.UserAsset):
         # monster methods
         elif action == "set_current_quarry":
             self.set_current_quarry()
-        elif action == "add_defeated_monster":
-            self.add_defeated_monster()
-        elif action == "rm_defeated_monster":
-            self.rm_defeated_monster()
 
 
         # misc sheet controllers

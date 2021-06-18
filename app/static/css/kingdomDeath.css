@@ -51,6 +51,24 @@
     background-position: center;
     color: rgba(255,255,255,0);
 }
+.kd .deck_icon {    /* for when display requires the inline deck icon */
+    background-image:
+        url('https://api.kdm-manager.com/static/media/images/deck_icon.png'),
+        url('https://192.168.0.110:8013/static/media/images/deck_icon.png')
+    ;
+    background-size: 1em;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: rgba(255,255,255,0);
+}
+.kd .deck_icon:after {
+    color: rgba(255,255,255);
+    content: attr(deck);
+    font-size: var(--font-small);
+    margin: 0.2rem auto auto -0.75rem;
+    position: absolute;
+    text-align: center; 
+}
 
 /*
 
@@ -155,7 +173,7 @@ button.kd {
 
 
 .kd.worksheet_row {
-    align-items: baseline; 
+    align-items: center; 
     box-sizing: border-box;
     display: flex;
     margin: 0 auto;
@@ -175,8 +193,9 @@ button.kd {
 .kd.worksheet_row.lined > div { /* only select direct children */
     margin: 0 0.5rem 0 0.5rem;
 }
-.kd.worksheet_row.lined.principle *:last-child{
+.kd.worksheet_row.lined.principle > :last-child{
     margin-left: auto; 
+    max-width: 50%; 
     white-space: nowrap; 
 }
 .kd.worksheet_row.checkbox_container {
@@ -187,15 +206,14 @@ button.kd {
 }
 .kd.worksheet_row.caption {
     display: block;
-    font-size: var(--font-small);
 }
 .kd.checkbox {
     border: var(--border-checkbox);
     box-sizing: border-box;
-    height: 0.6rem;
-    min-height: 0.6rem;
-    min-width: 0.6rem;
-    width: 0.6rem;
+    height: 0.8rem;
+    min-height: 0.8rem;
+    min-width: 0.8rem;
+    width: 0.8rem;
 }
 .kd.checkbox:after {
     content: attr(caption-text);
@@ -212,8 +230,8 @@ button.kd {
     min-width: 1.2rem;
     width: 1.2rem;
 }
-.kd.checkbox.large.heavy {
-    border: 0.3rem solid;
+.kd.checkbox.heavy {
+    border: 0.2rem solid;
 }
 .kd.checkbox.tiny {
     height: 0.4rem;

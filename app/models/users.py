@@ -494,8 +494,8 @@ class User(models.UserAsset):
         return self.user["_id"]
 
 
-    @models.admin_only
     @models.web_method
+    @models.admin_only
     def export(self, return_type=None):
         """ This supercedes everything that happens in the legacy webapp's
         'get_user' CGI and facilitates "cloning" users from one environment
@@ -632,42 +632,28 @@ class User(models.UserAsset):
     #   set/update/modify methods
     #
 
-    def set_attrib(self):
-        """ Parses and processes request JSON and attempts to set user attrib
-        key/value pairs. Returns an http response. """
+    @models.web_method
+    def set_collection(self):
+        """ Expects/requires a request context. Evaluates the incoming request
+        and hands off add/rm jobs to private/non-request methods. """
 
-        allowed_keys = ["current_settlement"]
-        failed_keys = []
-        success_keys = []
+        self.check_request_params(['collection'])
+        collection = self.params['collection']
 
-        # first, check the keys to see if they're legit; bail if any of them is
-        #   bogus, i.e. bail before we attempt to do anything.
-        for k in self.params.keys():
-            if k not in allowed_keys:
-                self.logger.warn("Unknown key '%s' will not be processed!" % k)
-                failed_keys.append(k)
-            else:
-                success_keys.append(k)
+        for collection_type in collection.keys():
+            if collection_type not in ['expansions']:
+                err = "Collection type '%s' is not implemented!"
+                raise utils.InvalidUsage(err % collection_type, 501)
 
-        # now, individual value handling for allow keys begins
-        for k in success_keys:
-            if k == "current_settlement":
-                self.user[k] = ObjectId(self.params[k])
-            else:
-                self.user[k] = self.params[k]
-            self.logger.debug("Set {'%s': '%s'} for %s" % (k, self.params[k], self))
+            add_list, rm_list = utils.list_compare(
+                self.user['collection'][collection_type],
+                collection[collection_type]
+            )
 
-        # build the response message
-        msg = "OK!"
-        if len(success_keys) >= 1:
-            msg += " User attributes successfully updated: %s." % (utils.list_to_pretty_string(success_keys, quote_char="'"))
-        if len(failed_keys) >= 1:
-            msg += " The following user attributes are NOT supported and could not be updated: %s." % (utils.list_to_pretty_string(failed_keys, quote_char="'"))
-
-        # finally, assuming we're still here, go ahead and save/return 200
-        self.save()
-
-        return flask.Response(response=msg, status=200)
+            if add_list != []:
+                [self.add_expansion_to_collection(exp) for exp in add_list]
+            if rm_list != []:
+                [self.rm_expansion_to_collection(exp) for exp in add_list]
 
 
     def set_current_settlement(self):
@@ -732,6 +718,25 @@ class User(models.UserAsset):
 
 
     @models.web_method
+    def set_notifications(self):
+        """ Sets a notification handle to datetime.now(). POST the handle value
+        'RESET' to reset the list. """
+
+        self.check_request_params(['notifications'])
+        notification_list = self.params['notifications']
+        if type(notification_list) != list:
+            raise utils.InvalidUsage("This method requires a list of handles!")
+
+        for n_handle in sorted(notification_list):
+            if n_handle == 'RESET':
+                self.user['notifications'] = {}
+            else:
+                self.user['notifications'][n_handle] = datetime.now()
+
+        self.save()
+
+
+    @models.web_method
     def set_preferences(self):
         """ Expects a request context and will not work without one. Iterates
         thru a list of preference handles and sets them. """
@@ -739,16 +744,20 @@ class User(models.UserAsset):
         self.check_request_params(['preferences'])
         pref_list = self.params['preferences']
         if type(pref_list) != list:
-            raise utils.InvalidUsage("set_preferences() endpoint requires 'preferences' to be a list!")
+            raise utils.InvalidUsage("'preferences' must be a list type!")
 
         for pref_dict in pref_list:
             handle = pref_dict.get('handle',None)
             value = pref_dict.get('value',None)
             for p in [handle, value]:
                 if p is None:
-                    raise utils.InvalidUsage("Nah, bro: individual preference hashes/dicts should follow this syntax: {handle: 'preference_handle', value: true}")
+                    err = (
+                        "Invalid dict: {handle: %s, value: %s} "
+                        "Preference hashes/dicts should follow this syntax: "
+                        "{handle: 'preference_handle', value: true}"
+                    ) % (handle, value)
+                    raise utils.InvalidUsage(err)
             self.user['preferences'][handle] = value
-#            self.logger.info("%s Set '%s' = %s'" % (flask.request.User.login, handle, value))
 
         self.save()
 
@@ -828,6 +837,7 @@ class User(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def update_password(self, new_password=None):
         """ Changes the user's password. Saves. """
 
@@ -863,9 +873,13 @@ class User(models.UserAsset):
     #   Collection Management - manage the user's asset collection
     #
 
+    @models.web_method
     def add_expansion_to_collection(self, handle=None):
         """ Adds an expansion handle to self.user['collection']['expansions']
-        list. Logs it. """
+        list. Logs it.
+
+        DEPRECATION WARNING: This is going to be an internal-only method soon!
+        """
 
         if handle is None:
             self.check_request_params(['handle'])
@@ -880,9 +894,13 @@ class User(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def rm_expansion_from_collection(self, handle=None):
         """ Adds an expansion handle to self.user['collection']['expansions']
-        list. Logs it. """
+        list. Logs it.
+
+        DEPRECATION WARNING: This is going to be an internal-only method soon!
+        """
 
         if handle is None:
             self.check_request_params(['handle'])
@@ -901,13 +919,6 @@ class User(models.UserAsset):
     #   query/assess methods
     #
 
-    def is_admin(self):
-        """ Returns a bool representing whether the user is an API admin. This
-        is NOT THE SAME as being a settlement admin (see below)."""
-
-        return bool(self.user.get('admin', False))
-
-
     def is_active(self):
         """ Refactored in February 2021 to no longer reference the legacy
         webapp's 'sessions' collection in MDB. Now, we use activity in the API
@@ -922,6 +933,14 @@ class User(models.UserAsset):
         return False
 
 
+    def is_admin(self):
+        """ Returns a bool representing whether the user is an API admin. This
+        is NOT THE SAME as being a settlement admin (see below)."""
+
+        return bool(self.user.get('admin', False))
+
+
+
 
     #
     #   get methods
@@ -931,72 +950,6 @@ class User(models.UserAsset):
         """ Returns the user's age. """
 
         return utils.get_time_elapsed_since(self.user["created_on"], 'age')
-
-
-    def get_subscriber_attributes(self):
-        """ Returns a dictionary of subscriber information. """
-
-        self.user['subscriber'].update(
-            {'age': utils.get_time_elapsed_since(
-                self.user['subscriber'].get('created_on', datetime.now()),
-                'age')
-            }
-        )
-
-        self.user['subscriber'].update(
-            {'level_handle': 'level_%s' % self.user['subscriber']['level']}
-        )
-
-        return self.user['subscriber']
-
-
-    def get_preference(self, p_key):
-        """ Ported from the legacy app: checks the user's MDB document for the
-        'preference' key and returns its value (which is a bool).
-
-        If the key is NOT present on the user's MDB document, return the default
-        value from utils.settings.cfg. """
-
-        default_value = utils.settings.get("users", p_key)
-
-        if "preferences" not in self.user.keys():
-            return default_value
-
-        if p_key not in self.user["preferences"].keys():
-            return default_value
-
-        return self.user["preferences"][p_key]
-
-
-    def get_preferences(self, return_type=None):
-        """ Not to be confused with self.get_preference(), which gets a bool for
-        a single preference handle, this renders a JSON-ish return meant to be
-        included in the self.serialize() call (and ultimately represented on the
-        application dashboard. """
-
-        if return_type == 'dashboard':
-            groups = set()
-            for p_dict in self.Preferences.get_dicts():
-                groups.add(p_dict['sub_type'])
-
-            output = []
-            for g_name in sorted(groups):
-                g_handle = g_name.lower().replace(" ","_")
-                g_dict = {'name': g_name, 'handle': g_handle, 'items': []}
-                for p_dict in self.Preferences.get_dicts():
-                    if p_dict['sub_type'] == g_name:
-                        election = self.get_preference(p_dict['handle'])
-                        p_dict['value'] = election
-                        g_dict['items'].append(p_dict)
-                output.append(g_dict)
-
-            return output
-
-        output = copy(self.user['preferences'])
-        for p_dict in self.Preferences.get_dicts():
-            if self.user['preferences'].get(p_dict['handle']) is None:
-                output[p_dict['handle']] = p_dict['default']
-        return output
 
 
     def get_friends(self, return_type=None):
@@ -1058,6 +1011,55 @@ class User(models.UserAsset):
             return utils.get_time_elapsed_since(la, return_type)
 
         return la
+
+
+    def get_preference(self, p_key):
+        """ Ported from the legacy app: checks the user's MDB document for the
+        'preference' key and returns its value (which is a bool).
+
+        If the key is NOT present on the user's MDB document, return the default
+        value from utils.settings.cfg. """
+
+        default_value = utils.settings.get("users", p_key)
+
+        if "preferences" not in self.user.keys():
+            return default_value
+
+        if p_key not in self.user["preferences"].keys():
+            return default_value
+
+        return self.user["preferences"][p_key]
+
+
+    def get_preferences(self, return_type=None):
+        """ Not to be confused with self.get_preference(), which gets a bool for
+        a single preference handle, this renders a JSON-ish return meant to be
+        included in the self.serialize() call (and ultimately represented on the
+        application dashboard. """
+
+        if return_type == 'dashboard':
+            groups = set()
+            for p_dict in self.Preferences.get_dicts():
+                groups.add(p_dict['sub_type'])
+
+            output = []
+            for g_name in sorted(groups):
+                g_handle = g_name.lower().replace(" ","_")
+                g_dict = {'name': g_name, 'handle': g_handle, 'items': []}
+                for p_dict in self.Preferences.get_dicts():
+                    if p_dict['sub_type'] == g_name:
+                        election = self.get_preference(p_dict['handle'])
+                        p_dict['value'] = election
+                        g_dict['items'].append(p_dict)
+                output.append(g_dict)
+
+            return output
+
+        output = copy(self.user['preferences'])
+        for p_dict in self.Preferences.get_dicts():
+            if self.user['preferences'].get(p_dict['handle']) is None:
+                output[p_dict['handle']] = p_dict['default']
+        return output
 
 
     def get_settlements(self, qualifier=None, return_type=None):
@@ -1178,6 +1180,23 @@ class User(models.UserAsset):
         return settlements
 
 
+    def get_subscriber_attributes(self):
+        """ Returns a dictionary of subscriber information. """
+
+        self.user['subscriber'].update(
+            {'age': utils.get_time_elapsed_since(
+                self.user['subscriber'].get('created_on', datetime.now()),
+                'age')
+            }
+        )
+
+        self.user['subscriber'].update(
+            {'level_handle': 'level_%s' % self.user['subscriber']['level']}
+        )
+
+        return self.user['subscriber']
+
+
     def get_subscriber_level(self):
         """ Returns the user's subscriber level as an int. """
         return self.user['subscriber']['level']
@@ -1215,10 +1234,6 @@ class User(models.UserAsset):
 
         return survivors
 
-
-    #
-    #   subscription methods
-    #
 
     def check_subscriber_expiration(self):
         """ This method checks subscribers whose self.user['subscriber']
@@ -1305,51 +1320,20 @@ class User(models.UserAsset):
             self.save()
 
 
-
-
-    #
-    #   Do not write model methods below this one.
-    #
-
-
     def request_response(self, action=None):
-        """ Initializes params from the request and then response to the
-        'action' kwarg appropriately. This is the ancestor of the legacy app
-        assets.Survivor.modify() method. """
+        """ Initializes params from the request and then responds to the
+        'action' kwarg. If 'action' is NOT a web method, do a custom return;
+        otherwise, super() the base class request_response() method to handle
+        web methods. """
 
         self.get_request_params()
 
-        if action == "get":
-            return flask.Response(response=self.serialize(), status=200, mimetype="application/json")
-        elif action == "dashboard":
-            return flask.Response(response=self.serialize('dashboard'), status=200, mimetype="application/json")
-        elif action == "export":
-            return self.export()
-
-        elif action == "set":
-            return self.set_attrib()
-
-        elif action == 'set_subscriber_level':
+        if action == "dashboard":
             return flask.Response(
-                response=self.set_subscriber_level(),
+                response=self.serialize('dashboard'),
                 status=200,
                 mimetype="application/json"
             )
-
-        elif action == "update_password":
-            self.update_password()
-        elif action == 'set_preferences':
-            self.set_preferences()
-        elif action == 'set_verified_email':
-            self.set_verified_email()
-
-        # collection management
-        elif action == "add_expansion_to_collection":
-            self.add_expansion_to_collection()
-        elif action == "rm_expansion_from_collection":
-            self.rm_expansion_from_collection()
-
-        # social?
         elif action == "get_friends":
             return flask.Response(
                 response=self.get_friends('JSON'),
@@ -1357,18 +1341,6 @@ class User(models.UserAsset):
                 mimetype="application/json"
             )
 
-        else:
-            # unknown/unsupported action response
-            err = "Unsupported survivor action '%s' received!" % action
-            self.logger.warn(err)
-            return utils.http_400
-
-
-        # finish successfully; generic
-        return flask.Response(
-            response="Completed '%s' action successfully!" % action,
-            status=200
-        )
-
+        return super().request_response(action)
 
 # ~fin

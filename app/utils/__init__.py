@@ -599,6 +599,22 @@ def list_to_pretty_string(l, quote_char=False):
     ])
 
 
+def list_compare(original_list, new_list):
+    """ Compares 'original_list' to 'new_list' and returns two new lists,
+    the first of which is a list of additions to 'original_list and and the
+    second is a list of items to be removed from 'original_list'. """
+
+    add = []
+    for item in new_list:
+        if item not in original_list:
+            add.append(item)
+
+    rm = []
+    for item in original_list:
+        if item not in new_list:
+            rm.append(item)
+
+    return add, rm
 
 #
 #  The JUNK DRAWER! Everything past this point is kind of...just random junk

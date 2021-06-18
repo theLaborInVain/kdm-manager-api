@@ -1030,6 +1030,12 @@ class UserAsset(object):
         )
 
 
+    @models.web_method
+    def get(self):
+        """ The basic 'get' method for user assets."""
+        return self.serialize()
+
+
     def get_request_params(self):
         """ Checks the incoming request (from Flask) for JSON and tries to add
         it to self.
@@ -1467,6 +1473,37 @@ class UserAsset(object):
         # finally, insert the event (i.e. save)
         utils.mdb.settlement_events.insert(d)
         self.logger.info("%s event: %s" % (self, d['event']))
+
+
+    def request_response(self, action=None):
+        """ The default request_response() method used by UserAsset objects.
+
+        In dividual UserAsset model request_response() methods should typically:
+
+        1.) get request parameters
+        2.) respond to special/magic requests for methods that aren't actually
+            methods
+        3.) super() this base class method to handle web methods and return the
+            standard way
+        """
+
+        if getattr(self, action, None) is not None:
+            method = getattr(self, action)
+            if getattr(method, '_web_method', False):
+                method()
+            else:
+                err = "The %s endpoint is mapped to an internal method!"
+                return flask.Response(response=err % action, status=400)
+        else:
+            err = "User action '%s' is not imlemented!" % action
+            return flask.Response(response = err, status=501)
+
+        return flask.Response(
+            response=self.serialize(),
+            status=200,
+            mimetype="application/json"
+        )
+
 
 
 #

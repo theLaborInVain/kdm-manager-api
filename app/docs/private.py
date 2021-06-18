@@ -143,18 +143,37 @@ like. The good news, is that it should fail pretty descriptively.</p>
         "name": "/user/add_expansion_to_collection/&lt;user_id&gt;",
         "subsection": "user_collection_management",
         "desc": """\
-<p>You can <b>POST</b> a single expansion handle to this endpoint
-to add it to a user's collection of expansions:</p>
-<code>{handle: "manhunter"}</code>
+<p>Starting in July of 2021, this endpoint is deprecated.</p>
+<p>Please use <code>/user/set_expansions/&lt;user_id&gt;</code> instead.</p>
         """,
     },
     "user_rm_expansion_from_collection": {
         "name": "/user/rm_expansion_from_collection/&lt;user_id&gt;",
         "subsection": "user_collection_management",
         "desc": """\
-<p><b>POST</b> some basic JSON to this endpoint to remove an expansion handle
-from a user's collection:</p>
-<code>{handle: "flower_knight"}</code>
+<p>Starting in July of 2021, this endpoint is deprecated.</p>
+<p>Please use <code>/user/set_expansions/&lt;user_id&gt;</code> instead.</p>
+        """,
+    },
+    "user_set_collection": {
+        "name": "/user/set_collection/&lt;user_id&gt;",
+        "subsection": "user_collection_management",
+        "desc": """\
+<p>This endpoint facilitates all-at-once updates to a user's
+<code>collection</code>, which basically looks like this:</p>
+<pre><code>
+'collection': {
+    'expansions': [
+        'manhunter',
+        'flower_knight'
+    ],
+}
+</pre></code>
+<p>The idea behind this endpoint is that you want to <b>POST</b> the actual
+<code>collection</code> to it, so the JSON you post is going to have a key,
+'collection', and that key's value is going to be a hash, and that hash will
+have the 'expansions' key, etc.</p>
+<p>Just follow the example JSON above.</p>
         """,
     },
 }
