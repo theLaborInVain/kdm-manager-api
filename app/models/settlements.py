@@ -434,11 +434,54 @@ class Settlement(models.UserAsset):
 
 
     @models.web_method
+    def abandon(self, value=None):
+        """ Abandons the settlement by setting self.settlement['abandoned'] to
+        datetime.now(). Logs it. Expects a request context.
+        """
+
+        if value == 'UNSET' and self.settlement.get('abandoned', False):
+            del self.settlement['abandoned']
+            self.log_event(
+                '%s is no longer abandoned.' % self.settlement['name'],
+                event_type='abandon_settlement'
+            )
+        else:
+            self.settlement['abandoned'] = datetime.now()
+            self.log_event(action='abandon', event_type='abandon_settlement')
+
+        self.save()
+
+
+    @models.web_method
     def remove(self):
         """ Marks the settlement as removed. """
         self.settlement['removed'] = datetime.now()
         msg = '%s marked the settlement as removed!'
         self.log_event(msg % flask.request.User.user['login'])
+        self.save()
+
+
+    def unremove(self, unremove_survivors=True):
+        """ Deletes the 'removed' attribute from the settlement and, if the
+        'unremove_survivors' kwarg is True, all surviors as well.
+
+        Not sure whether this should be exposed via API yet, so for now, it's
+        only available via admin.py.
+        """
+
+        if not self.settlement.get('removed', False):
+            err = '%s Ignoring bogus request to unremove settlement...'
+            self.logger.warn(err % self)
+            return False
+
+        del self.settlement['removed']
+        self.log_event(action="unset", value="removed", event_type="sysadmin")
+        if unremove_survivors:
+            self.logger.debug("Unremoving survivors...")
+            for s in utils.mdb.survivors.find({'settlement': self.settlement['_id']}):
+                if s.get('removed',False):
+                    S = survivors.Survivor(_id=s['_id'])
+                    S.unremove()
         self.save()
 
 
@@ -513,6 +556,7 @@ class Settlement(models.UserAsset):
 
             # options (i.e. decks)
             output["game_assets"]["pulse_discoveries"] = self.get_pulse_discoveries()
+            output["game_assets"]["innovations_options"] = self.get_innovations_options()
             output["game_assets"]["principles_options"] = self.get_principles_options()
             output["game_assets"]["milestones_options"] = self.get_milestones_options()
             output["game_assets"]["milestones_dictionary"] = self.get_milestones_options(dict)
@@ -583,29 +627,6 @@ class Settlement(models.UserAsset):
                 self.logger.debug("serialize(%s) [%s] %s" % (return_type, duration, self))
 
         return json.dumps(output, default=json_util.default)
-
-
-    def unremove(self, unremove_survivors=True):
-        """ Deletes the 'removed' attribute from the settlement and, if the
-        'unremove_survivors' kwarg is True, all surviors as well.
-
-        Not sure whether this should be exposed via API yet, so for now, it's
-        only available via admin.py.
-        """
-
-        if not self.settlement.get('removed', False):
-            self.logger.warn('%s Ignoring bogus request to unremove settlement...' % self)
-            return False
-
-        del self.settlement['removed']
-        self.log_event(action="unset", value="removed", event_type="sysadmin")
-        if unremove_survivors:
-            self.logger.debug("Unremoving survivors...")
-            for s in utils.mdb.survivors.find({'settlement': self.settlement['_id']}):
-                if s.get('removed',False):
-                    S = survivors.Survivor(_id=s['_id'])
-                    S.unremove()
-        self.save()
 
 
     #
@@ -783,6 +804,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def add_lantern_years(self, years=None):
         """ Adds 'years' lantern years to the timeline. Works with a request
         context. """
@@ -805,6 +827,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def rm_lantern_years(self, years=None):
         """ Removes 'years' lantern years from the timeline. Works with a request
         context. Will NOT remove an LY with events in it. """
@@ -825,141 +848,6 @@ class Settlement(models.UserAsset):
                 self.logger.warn("Refusing to remove LY %s (which has events)." % (self.settlement['timeline'][-1]['year']))
 
         self.log_event(action="rm", key="Timeline", value="%s Lantern Years" % lys_removed)
-        self.save()
-
-
-    @models.web_method
-    def add_monster(self, monster_handle=None):
-        """ Adds quarry and nemesis type monsters to the appropriate settlement
-        list, e.g. self.settlement["nemesis_monsters"], etc.
-
-        CAN be used without a request context. """
-
-        if monster_handle is None:
-            self.check_request_params(["handle"])
-            monster_handle = self.params["handle"]
-
-        # Initialize the monster asset (die if the handle is bogus)
-        m_dict = self.Monsters.get_asset(monster_handle)
-
-        # get the type from the asset dict
-        if m_dict["sub_type"] == 'quarry':
-            target_list = self.settlement["quarries"]
-        elif m_dict["sub_type"] == 'nemesis':
-            target_list = self.settlement["nemesis_monsters"]
-        else:
-            err = "Monster 'sub_type' value of '%s' is not supported!'"
-            raise utils.InvalidUsage(err % m_dict['sub_type'])
-
-        # finally, add, log and save
-        if monster_handle not in target_list:
-            target_list.append(monster_handle)
-            if m_dict.get("sub_type", None) == 'nemesis':
-                self.settlement["nemesis_encounters"][monster_handle] = []
-
-        self.log_event(
-            action="add",
-            key="%s monsters" % m_dict['sub_type'],
-            value=m_dict["name"],
-            event_type="add_monster"
-        )
-
-        self.save()
-
-
-    @models.web_method
-    def rm_monster(self, monster_handle=None):
-        """ Removes a monster from the settlement's list of quarry or nemesis
-        monsters. Basically the inverse of the add_monster() method (above)."""
-
-        # get the handle from kwargs or from the request
-        if monster_handle is None:
-            self.check_request_params(["handle"])
-            monster_handle = self.params["handle"]
-
-        # sanity check the handle; load an asset dict for it
-        m_dict = self.Monsters.get_asset(monster_handle)
-
-        # figure out what type it is or die trying
-        m_type = m_dict['sub_type']
-        if m_type == 'quarry':
-            target_list = self.settlement['quarries']
-        elif m_type == 'nemesis':
-            target_list = self.settlement['nemesis_monsters']
-        else:
-            # 1.) if we're failing, record the problem asset in the logs
-            err_0 = "%s Unable to process 'rm_monster' operation on asset: %s"
-            self.logger.error(err_0 % (self, m_dict))
-
-            # 2.) return a descriptive, but not fully-detailed, error
-            err_1 = (
-                "Monster asset with type '%s' cannot be removed! "
-                "Supported types are 'quarry' and 'nemesis'."
-            )
-            raise utils.InvalidUsage(
-                err_1 % m_type
-            )
-
-        # general handling for both types
-        if monster_handle in target_list:
-            target_list.remove(monster_handle)
-        else:
-            err = "%s Ignoring attempt to remove non-existing item '%s' from %s"
-            self.logger.error(err % (self, monster_handle, m_type))
-
-        # additional handling for nemeses
-        if m_type == 'nemesis' and monster_handle in self.settlement['nemesis_encounters'].keys():
-            del self.settlement["nemesis_encounters"][monster_handle]
-
-        self.log_event(
-            action="rm",
-            key="%s monsters" % m_dict['type'],
-            value=m_dict["name"],
-            event_type="rm_monster"
-        )
-
-        self.save()
-
-
-    @models.web_method
-    def add_monster_volume(self):
-        """ Adds a Monster Volume string. Forces the self.settlement['monster_volumes']
-        to be unique. Expects a request context."""
-
-        # initialize and validate
-        self.check_request_params(['name'])
-        vol_string = self.params['name']
-
-        if vol_string in self.get_monster_volumes():
-            self.logger.warn("%s Monster volume string '%s' has already been added! Ignoring bogus request..." % (self, vol_string))
-            return True
-
-        # add the list if it's not present
-        if not 'monster_volumes' in self.settlement.keys():
-            self.settlement['monster_volumes'] = []
-        self.settlement['monster_volumes'].append(vol_string)
-
-        self.log_event(action="add", key="Monster Volumes", value=vol_string, event_type='add_monster_volume')
-        self.save()
-
-
-    @models.web_method
-    def rm_monster_volume(self):
-        """ Removes a Monster Volume string. Fails gracefully if asked to remove
-        a non-existent string. Assumes a request context. """
-
-        # initialize
-        self.check_request_params(['name'])
-        vol_string=self.params['name']
-
-        if vol_string not in self.get_monster_volumes():
-            self.logger.warn("%s Monster volume string '%s' is not recorded! Ignoring bogus request..." % (self, vol_string))
-            return True
-
-        # add the list if it's not present
-        self.settlement['monster_volumes'].remove(vol_string)
-
-        self.log_event(action="rm", key="Monster Volumes", value=vol_string, event_type='rm_monster_volume')
         self.save()
 
 
@@ -1169,6 +1057,110 @@ class Settlement(models.UserAsset):
 
 
     @models.web_method
+    def add_innovation(self, i_handle=None, save=True):
+        """ Adds an innovation to the settlement. Request context optional.
+
+        NB: this method (and rm_innovations(), which basically is its inverse)
+        does NOT process current survivors.
+
+        Which, to put that another way, means that you SHOULD NOT be using this
+        method to add principle-type innovations to the settlement!
+        """
+
+        if i_handle is None:
+            self.check_request_params(["handle"])
+            i_handle = self.params["handle"]
+
+        #
+        #   SANITY CHECK
+        #
+
+        # verify the handle by initializing it
+        i_dict = self.Innovations.get_asset(i_handle)
+
+        # pass/ignore if we're trying to add an innovation twice:
+        if i_handle in self.settlement['innovations']:
+            self.logger.warn("%s Attempt to add duplicate innovation handle, '%s'. Ignoring... " % (flask.request.User, i_handle))
+            return False
+
+        # refuse to add principles
+        if i_dict.get('sub_type', None) == 'principle':
+            raise utils.InvalidUsage("'Principle-type innovations such as '%s' may not be added this way. Use the set_principle route instead." % (i_dict['name']))
+
+        #
+        #   UPDATE
+        #
+
+        # append (do not sort)
+        self.settlement["innovations"].append(i_handle)
+
+        # levels
+        if i_dict.get("levels", None) is not None:
+            self.settlement["innovation_levels"][i_handle] = 1
+
+        # log here, before checking for 'current_survivor' attrib
+        self.log_event(action="add", key="innovations", value=i_dict['name'], event_type="add_innovation")
+
+        # check for 'current_survivor' attrib
+        if i_dict.get('current_survivor', None) is not None:
+            self.update_all_survivors('increment', i_dict['current_survivor'], exclude_dead=True)
+
+        # (optional) save
+        if save:
+            self.save()
+
+
+    @models.web_method
+    def rm_innovation(self, i_handle=None, save=True):
+        """ Removes an innovation from the settlement. Request context is
+        optional.
+
+        This method DOES NOT do anything to innovation levels, which stay saved
+        on the settlement. If the user re-adds the innovation, it automatically
+        sets the level back to one.
+
+        Otherwise, this is just a mirror of add_innovation (above), so
+        if you haven't read that doc string yet, I don't know what you're
+        waiting for. """
+
+        if i_handle is None:
+            self.check_request_params(["handle"])
+            i_handle = self.params["handle"]
+
+        #
+        #   SANITY CHECK
+        #
+
+        # verify the handle by initializing it
+        i_dict = self.Innovations.get_asset(i_handle)
+
+        # ignore bogus requests
+        if i_handle not in self.settlement["innovations"]:
+            self.logger.warn("%s Bogus attempt to remove non-existent innovation '%s'. Ignoring..." % (flask.request.User, i_dict['name']))
+            return False
+
+        # refuse to add principles
+        if i_dict.get('sub_type', None) == 'principle':
+            raise utils.InvalidUsage("'Principle-type innovations such as '%s' may not be removed this way. Use the set_principle route instead." % (i_dict['name']))
+
+        #
+        #   UPDATE
+        #
+
+        # remove
+        self.settlement["innovations"].remove(i_handle)
+
+        # check for 'current_survivor' attrib
+        if i_dict.get('current_survivor', None) is not None:
+            self.update_all_survivors('decrement', i_dict['current_survivor'], exclude_dead=True)
+
+        # log and (optional) save
+        self.log_event(action="rm", key="innovations", value=i_dict['name'], event_type="rm_innovation")
+        if save:
+            self.save()
+
+
+    @models.web_method
     def add_location(self, loc_handle=None, save=True):
         "Adds a location to the settlement. Expects a request context"""
 
@@ -1244,6 +1236,7 @@ class Settlement(models.UserAsset):
             self.save()
 
 
+    @models.web_method
     def add_milestone(self, handle=None):
         """ Adds a Milestone Story Event. Wants a request context. """
 
@@ -1261,6 +1254,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def rm_milestone(self, handle=None):
         """ Removes a Milestone Story Event. Wants a request context. """
 
@@ -1278,108 +1272,142 @@ class Settlement(models.UserAsset):
         self.save()
 
 
-    def add_innovation(self, i_handle=None, save=True):
-        """ Adds an innovation to the settlement. Request context optional.
+    @models.web_method
+    def add_monster(self, monster_handle=None):
+        """ Adds quarry and nemesis type monsters to the appropriate settlement
+        list, e.g. self.settlement["nemesis_monsters"], etc.
 
-        NB: this method (and rm_innovations(), which basically is its inverse)
-        does NOT process current survivors.
+        CAN be used without a request context. """
 
-        Which, to put that another way, means that you SHOULD NOT be using this
-        method to add principle-type innovations to the settlement!
-        """
-
-        if i_handle is None:
+        if monster_handle is None:
             self.check_request_params(["handle"])
-            i_handle = self.params["handle"]
+            monster_handle = self.params["handle"]
 
-        #
-        #   SANITY CHECK
-        #
+        # Initialize the monster asset (die if the handle is bogus)
+        m_dict = self.Monsters.get_asset(monster_handle)
 
-        # verify the handle by initializing it
-        i_dict = self.Innovations.get_asset(i_handle)
+        # get the type from the asset dict
+        if m_dict["sub_type"] == 'quarry':
+            target_list = self.settlement["quarries"]
+        elif m_dict["sub_type"] == 'nemesis':
+            target_list = self.settlement["nemesis_monsters"]
+        else:
+            err = "Monster 'sub_type' value of '%s' is not supported!'"
+            raise utils.InvalidUsage(err % m_dict['sub_type'])
 
-        # pass/ignore if we're trying to add an innovation twice:
-        if i_handle in self.settlement['innovations']:
-            self.logger.warn("%s Attempt to add duplicate innovation handle, '%s'. Ignoring... " % (flask.request.User, i_handle))
-            return False
+        # finally, add, log and save
+        if monster_handle not in target_list:
+            target_list.append(monster_handle)
+            if m_dict.get("sub_type", None) == 'nemesis':
+                self.settlement["nemesis_encounters"][monster_handle] = []
 
-        # refuse to add principles
-        if i_dict.get('sub_type', None) == 'principle':
-            raise utils.InvalidUsage("'Principle-type innovations such as '%s' may not be added this way. Use the set_principle route instead." % (i_dict['name']))
+        self.log_event(
+            action="add",
+            key="%s monsters" % m_dict['sub_type'],
+            value=m_dict["name"],
+            event_type="add_monster"
+        )
 
-        #
-        #   UPDATE
-        #
-
-        # append (do not sort)
-        self.settlement["innovations"].append(i_handle)
-
-        # levels
-        if i_dict.get("levels", None) is not None:
-            self.settlement["innovation_levels"][i_handle] = 1
-
-        # log here, before checking for 'current_survivor' attrib
-        self.log_event(action="add", key="innovations", value=i_dict['name'], event_type="add_innovation")
-
-        # check for 'current_survivor' attrib
-        if i_dict.get('current_survivor', None) is not None:
-            self.update_all_survivors('increment', i_dict['current_survivor'], exclude_dead=True)
-
-        # (optional) save
-        if save:
-            self.save()
+        self.save()
 
 
-    def rm_innovation(self, i_handle=None, save=True):
-        """ Removes an innovation from the settlement. Request context is
-        optional.
+    @models.web_method
+    def rm_monster(self, monster_handle=None):
+        """ Removes a monster from the settlement's list of quarry or nemesis
+        monsters. Basically the inverse of the add_monster() method (above)."""
 
-        This method DOES NOT do anything to innovation levels, which stay saved
-        on the settlement. If the user re-adds the innovation, it automatically
-        sets the level back to one.
-
-        Otherwise, this is just a mirror of add_innovation (above), so
-        if you haven't read that doc string yet, I don't know what you're
-        waiting for. """
-
-        if i_handle is None:
+        # get the handle from kwargs or from the request
+        if monster_handle is None:
             self.check_request_params(["handle"])
-            i_handle = self.params["handle"]
+            monster_handle = self.params["handle"]
 
-        #
-        #   SANITY CHECK
-        #
+        # sanity check the handle; load an asset dict for it
+        m_dict = self.Monsters.get_asset(monster_handle)
 
-        # verify the handle by initializing it
-        i_dict = self.Innovations.get_asset(i_handle)
+        # figure out what type it is or die trying
+        m_type = m_dict['sub_type']
+        if m_type == 'quarry':
+            target_list = self.settlement['quarries']
+        elif m_type == 'nemesis':
+            target_list = self.settlement['nemesis_monsters']
+        else:
+            # 1.) if we're failing, record the problem asset in the logs
+            err_0 = "%s Unable to process 'rm_monster' operation on asset: %s"
+            self.logger.error(err_0 % (self, m_dict))
 
-        # ignore bogus requests
-        if i_handle not in self.settlement["innovations"]:
-            self.logger.warn("%s Bogus attempt to remove non-existent innovation '%s'. Ignoring..." % (flask.request.User, i_dict['name']))
-            return False
+            # 2.) return a descriptive, but not fully-detailed, error
+            err_1 = (
+                "Monster asset with type '%s' cannot be removed! "
+                "Supported types are 'quarry' and 'nemesis'."
+            )
+            raise utils.InvalidUsage(
+                err_1 % m_type
+            )
 
-        # refuse to add principles
-        if i_dict.get('sub_type', None) == 'principle':
-            raise utils.InvalidUsage("'Principle-type innovations such as '%s' may not be removed this way. Use the set_principle route instead." % (i_dict['name']))
+        # general handling for both types
+        if monster_handle in target_list:
+            target_list.remove(monster_handle)
+        else:
+            err = "%s Ignoring attempt to remove non-existing item '%s' from %s"
+            self.logger.error(err % (self, monster_handle, m_type))
 
-        #
-        #   UPDATE
-        #
+        # additional handling for nemeses
+        if m_type == 'nemesis' and monster_handle in self.settlement['nemesis_encounters'].keys():
+            del self.settlement["nemesis_encounters"][monster_handle]
 
-        # remove
-        self.settlement["innovations"].remove(i_handle)
+        self.log_event(
+            action="rm",
+            key="%s monsters" % m_dict['type'],
+            value=m_dict["name"],
+            event_type="rm_monster"
+        )
 
-        # check for 'current_survivor' attrib
-        if i_dict.get('current_survivor', None) is not None:
-            self.update_all_survivors('decrement', i_dict['current_survivor'], exclude_dead=True)
-
-        # log and (optional) save
-        self.log_event(action="rm", key="innovations", value=i_dict['name'], event_type="rm_innovation")
-        if save:
-            self.save()
+        self.save()
 
 
+    @models.web_method
+    def add_monster_volume(self):
+        """ Adds a Monster Volume string. Forces the self.settlement['monster_volumes']
+        to be unique. Expects a request context."""
+
+        # initialize and validate
+        self.check_request_params(['name'])
+        vol_string = self.params['name']
+
+        if vol_string in self.get_monster_volumes():
+            self.logger.warn("%s Monster volume string '%s' has already been added! Ignoring bogus request..." % (self, vol_string))
+            return True
+
+        # add the list if it's not present
+        if not 'monster_volumes' in self.settlement.keys():
+            self.settlement['monster_volumes'] = []
+        self.settlement['monster_volumes'].append(vol_string)
+
+        self.log_event(action="add", key="Monster Volumes", value=vol_string, event_type='add_monster_volume')
+        self.save()
+
+
+    @models.web_method
+    def rm_monster_volume(self):
+        """ Removes a Monster Volume string. Fails gracefully if asked to remove
+        a non-existent string. Assumes a request context. """
+
+        # initialize
+        self.check_request_params(['name'])
+        vol_string=self.params['name']
+
+        if vol_string not in self.get_monster_volumes():
+            self.logger.warn("%s Monster volume string '%s' is not recorded! Ignoring bogus request..." % (self, vol_string))
+            return True
+
+        # add the list if it's not present
+        self.settlement['monster_volumes'].remove(vol_string)
+
+        self.log_event(action="rm", key="Monster Volumes", value=vol_string, event_type='rm_monster_volume')
+        self.save()
+
+
+    @models.web_method
     def add_settlement_admin(self, user_login=None):
         """ Adds a user login (i.e. email address) to the self.settlement['admins']
         list. Fails gracefully if the user is already there. Expects a request
@@ -1401,6 +1429,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def rm_settlement_admin(self, user_login=None):
         """ Removes a user login (i.e. email address) from the
         self.settlement['admins'] list. Fails gracefully if the user is already
@@ -1443,6 +1472,7 @@ class Settlement(models.UserAsset):
         return flask.Response(response=json.dumps({'note_oid': note_oid}, default=json_util.default), status=200)
 
 
+    models.web_method
     def rm_settlement_note(self, n_id=None):
         """ Removes a note from MDB. Expects a dict with one key. """
 
@@ -1737,26 +1767,8 @@ class Settlement(models.UserAsset):
     #   set methods
     #
 
-    def set_abandoned(self, value=None):
-        """ Abandons the settlement by setting self.settlement['abandoned'] to
-        datetime.now(). Logs it. Expects a request context.
-        """
-
-        if value == 'UNSET' and self.settlement.get('abandoned', False):
-            del self.settlement['abandoned']
-            self.log_event(
-                '%s is no longer abandoned.' % self.settlement['name'],
-                event_type='abandon_settlement'
-            )
-        else:
-            self.settlement['abandoned'] = datetime.now()
-            self.log_event(action='abandon', event_type='abandon_settlement')
-
-        self.save()
-
-
     @models.web_method
-    def set_current_ly(self, ly=None):
+    def set_current_lantern_year(self, ly=None):
         """ Sets the current Lantern Year. Supports a request context, but does
         not require it. """
 
@@ -1805,18 +1817,6 @@ class Settlement(models.UserAsset):
         self.settlement['lantern_research_level'] = level
         self.log_event(action="set", key="Lantern Research level", value=level)
         self.save()
-
-
-    def set_last_accessed(self, access_time=None):
-        """ Set 'access_time' to a valid datetime object to set the settlement's
-        'last_accessed' value or leave it set to None to set the 'last_accessed'
-        time to now. """
-
-        if access_time is not None:
-            self.settlement['last_accessed'] = access_time
-        else:
-            self.settlement['last_accessed'] = datetime.now()
-        self.save(False)
 
 
     @models.web_method
@@ -1878,6 +1878,7 @@ class Settlement(models.UserAsset):
                 self.rm_milestone(milestone_handle)
 
 
+    @models.web_method
     def set_name(self, new_name=None):
         """ Looks for the param key 'name' and then changes the Settlement's
         self.settlement["name"] to be that value. Works with or without a
@@ -1903,6 +1904,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_principle(self):
         """ Basically, we're looking for incoming JSON to include a 'principle'
         key and an 'election' key.
@@ -1994,6 +1996,7 @@ class Settlement(models.UserAsset):
             self.update_all_survivors("increment", e_dict["current_survivor"], exclude_dead=True)
 
 
+    @models.web_method
     def set_showdown_type(self, showdown_type=None):
         """ Expects a request context and looks for key named 'type'. Uses the
         value of that key as self.settlement['showdown_type']. """
@@ -2006,6 +2009,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_storage(self):
         """ Takes in a list of JSON dictionaries from a request and updates the
         self.settlement['storage'] list. """
@@ -2060,178 +2064,6 @@ class Settlement(models.UserAsset):
         self.save()
 
 
-    def update_all_survivors(self, operation=None, attrib_dict={}, exclude_dead=False):
-        """ Performs bulk operations on all survivors. Use 'operation' kwarg to
-        either 'increment' or 'decrement' all attributes in 'attrib_dict'.
-
-        'attrib_dict' should look like this:
-
-        {
-            'Strength': 1,
-            'Courage': 1,
-            'abilities_and_impairments': ['sword_specialization', 'ageless'],
-        }
-
-        The 'increment' or 'decrement' values call the corresponding methods
-        on the survivors.
-        """
-
-        if operation not in ['set', 'increment', 'decrement']:
-            err = "update_all_survivors() cannot process '%s' operations!"
-            self.logger.exception(err % operation)
-            raise utils.InvalidUsage(err % operation)
-
-        for s in self.survivors:
-            if exclude_dead and s.is_dead():
-                pass
-            else:
-                for attribute, modifier in attrib_dict.items():
-                    if operation == 'increment':
-                        if attribute == 'abilities_and_impairments':
-                            for ai_handle in modifier:  # 'modifier' is a list here
-                                s.add_game_asset('abilities_and_impairments', ai_handle)
-                        else:
-                            s.update_attribute(attribute, modifier)
-                    elif operation == 'decrement':
-                        if attribute == 'abilities_and_impairments':
-                            for ai_handle in modifier:  # 'modifier' is a list here
-                                s.rm_game_asset('abilities_and_impairments', ai_handle)
-                        else:
-                            s.update_attribute(attribute, -modifier)
-                    elif operation == 'set':
-                        s.set_attribute(attribute, modifier)
-
-
-    def update_attribute(self):
-        """ Assumes a request context and looks for 'attribute' and 'modifier'
-        keys in self.params. Uses them to increment (literally adds) the current
-        self.settlement[attribute] value.
-
-        Since this method only supports integers, non-existing attributes are
-        assumed/defaulted to zero!
-        """
-
-        self.check_request_params(['attribute','modifier'])
-        attribute = self.params["attribute"]
-        modifier = self.params["modifier"]
-
-        # default non-existing attributes to zero and update
-        new_value = self.settlement.get(attribute, 0) + modifier
-        self.settlement[attribute] = new_value
-
-        # now log it as a settlement event
-        attribute_pretty = attribute.title().replace('_',' ')
-        msg = "%s updated settlement %s to %s"
-        self.log_event(
-            msg % (
-                flask.request.User.login,
-                attribute_pretty,
-                self.settlement[attribute]
-            )
-        )
-
-        # save
-        self.save()
-
-
-    def update_endeavor_tokens(self, modifier=0, save=True):
-        """ Updates settlement["endeavor_tokens"] by taking the current value,
-        which is normalized (above) to zero, if it is not defined or set, and
-        adding 'modifier' to it.
-
-        To increment ETs, do 'modifier=1'; to decrement, do 'modifier=-1'.
-        """
-
-        if "modifier" in self.params:
-            modifier = self.params["modifier"]
-
-        new_val = self.get_endeavor_tokens() + int(modifier)
-        if new_val < 0:
-            new_val = 0
-        self.settlement["endeavor_tokens"] = new_val
-        self.log_event("%s set endeavor tokens to %s" % (flask.request.User.login, new_val))
-
-        if save:
-            self.save()
-
-
-    @models.web_method
-    def update_nemesis_levels(self):
-        """ Updates a settlement's 'nemesis_encounters' array/list for a nemesis
-        monster handle. Fails if the nemesis is not in the settlement's nemesis
-        list (this is intentionall and for your safety/sanity). """
-
-        self.check_request_params(["handle", "levels"])
-        handle = self.params["handle"]
-        levels = list(self.params["levels"])
-
-        m_dict = self.Monsters.get_asset(handle)
-
-        if handle not in self.settlement["nemesis_monsters"]:
-            err = "Nemesis handle '%s' is not in the 'nemesis_monsters' list!"
-            self.logger.error(err % handle)
-            raise utils.InvalidUsage(err)
-        else:
-            self.settlement["nemesis_encounters"][handle] = levels
-            self.log_event('%s updated %s encounters to include %s' % (
-                flask.request.User.login,
-                m_dict["name"],
-                utils.list_to_pretty_string(levels)
-                )
-            )
-            self.save()
-
-
-    def update_population(self, modifier=None):
-        """ Updates settlement["population"] by adding 'modifier' to it. Will
-        never go below zero."""
-
-        if modifier is None:
-            self.check_request_params["modifier"]
-            modifier = self.params["modifier"]
-
-        current = self.settlement["population"]
-        new = current + modifier
-
-        if new < 0:
-            new = 0
-
-        self.settlement["population"] = new
-
-        self.log_event("%s updated settlement population to %s" % (flask.request.User.login, self.settlement["population"]))
-        self.save()
-
-
-    def update_survivors(self, include=None, attribute=None, modifier=None):
-        """ This method assumes a request context and should not be called from
-        outside of a request.
-
-        Use this to modify a single attribute for one of the following groups of
-        survivors:
-
-            'departing': All survivors with 'departing': True
-
-        NB: this is a waaaaaaay different method from update_all_survivors(), so
-        make sure you know the difference between the two. """
-
-        # initialize; assume a request context
-        if include is None:
-            self.check_request_params(['include', 'attribute', 'modifier'])
-            include = self.params['include']
-            attribute = self.params['attribute']
-            modifier = self.params['modifier']
-
-        # now check the include and get our targets
-        target_group = []
-        if include == 'departing':
-            target_group = utils.mdb.survivors.find({'settlement': self.settlement['_id'], 'departing': True, 'dead': {'$exists': False}})
-        else:
-            raise InvalidUsage("update_survivors() cannot process the 'include' value '%s'" % (include))
-
-        # now initialize survivors and update them with update_attribute()
-        for s in target_group:
-            S = survivors.Survivor(_id=s['_id'], Settlement=self)
-            S.update_attribute(attribute, modifier)
 
 
     #
@@ -2267,6 +2099,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_current_quarry(self, new_quarry=None):
         """ Sets the self.settlement["current_quarry"] attrib. """
 
@@ -2279,7 +2112,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
-
+    @models.web_method
     def set_location_level(self):
         """ Sets self.settlement["location_levels"][handle] to an int. """
 
@@ -2303,6 +2136,7 @@ class Settlement(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def set_innovation_level(self):
         """ Sets self.settlement["innovation_levels"][handle] to an int. """
 
@@ -2331,6 +2165,7 @@ class Settlement(models.UserAsset):
     #   data elements at once. 
     #
 
+    @models.web_method
     def replace_game_assets(self):
         """ Works just like the method of the same name in the survivor class,
         but for settlements.
@@ -2388,12 +2223,6 @@ class Settlement(models.UserAsset):
         self.save()
 
 
-    @models.deprecated
-    def replace_lantern_year(self):
-        """ DEPRECATED 2021-05-25. Use set_lantern_year_instead() """
-        self.set_landern_year()
-
-
     @models.web_method
     def set_lantern_year(self):
         """ Sets a lantern year. Requires a request context. """
@@ -2412,17 +2241,73 @@ class Settlement(models.UserAsset):
         self.save()
 
 
-    def toggle_strain_milestone(self):
-        """ toggles a strain milestone on or off, i.e. adds/rms it from the list. """
+    @models.web_method
+    def set_strain_milestones(self, save=True):
+        """ Wraps the toggle_strain_milestone() method below. Pass in the
+        settlement sheet's 'strain_milestones' list as 'strain_milestones' in
+        the request parameters to use it. """
 
-        # get the handle or die
-        self.check_request_params(['handle'])
-        handle = self.params['handle']
+        # sanity check the request
+        self.check_request_params(['strain_milestones'])
+        new_list = self.params['strain_milestones']
+
+        # get the add/rm lists 
+        add_list, rm_list = utils.list_compare(
+            self.settlement['strain_milestones'],
+            new_list
+        )
+
+        def update_list(action, handle):
+            """ Private function to update the settlement's Strain Milestones.
+            Does an asset lookup and writes a nice semantic log entry. """
+
+            # find the asset or die
+            strain_milestone_asset = self.StrainMilestones.get_asset(handle)
+            if strain_milestone_asset is None:
+                err = "'%s' is not a valid Strain Milestone handle!" % handle
+                raise utils.InvalidUsage(err)
+
+            # do the action
+            if action == 'rm':
+                self.settlement['strain_milestones'].remove(handle)
+            elif action == 'add':
+                self.settlement['strain_milestones'].append(handle)
+            else:
+                raise utils.InvalidUsage('Invalid action! Failing...')
+
+            self.log_event(
+                action=action,
+                key="Strain Milestones",
+                value=strain_milestone_asset['name']
+            )
+
+
+        if add_list != []:
+            [update_list('add', handle) for handle in add_list]
+
+        if rm_list != []:
+            [update_list('rm', handle) for handle in rm_list]
+
+        if save:
+            self.save()
+
+
+    @models.web_method
+    @models.deprecated
+    def toggle_strain_milestone(self, handle=None):
+        """ DEPRECATED JUNE 2021. Goes away with version four of the web app.
+        Toggles a strain milestone on or off, i.e. adds/rms it from the list.
+        """
+
+        if handle is None:
+            self.check_request_params(['handle'])
+            handle = self.params['handle']
 
         # find the asset or die
         strain_milestone_asset = self.StrainMilestones.get_asset(handle)
         if strain_milestone_asset is None:
-            raise utils.InvalidUsage("'%s' is not a valid Strain Milestone handle!" % handle)
+            err = "'%s' is not a valid Strain Milestone handle!" % handle
+            raise utils.InvalidUsage(err)
 
         # now do the toggle
         action = 'add'
@@ -2432,7 +2317,11 @@ class Settlement(models.UserAsset):
             self.settlement['strain_milestones'].remove(handle)
             action = 'rm'
 
-        self.log_event(action=action, key="Strain Milestones", value=strain_milestone_asset['name'])
+        self.log_event(
+            action=action,
+            key="Strain Milestones",
+            value=strain_milestone_asset['name']
+        )
         self.save()
 
 
@@ -2724,6 +2613,19 @@ class Settlement(models.UserAsset):
         return output
 
 
+    def get_compatible_assets(self, assetClassObject):
+        """ Returns a list of compatible assets from 'assetClass'."""
+
+        compatible_assets = []
+        all_assets = copy(assetClassObject.assets)
+
+        for handle in all_assets.keys():
+            if self.is_compatible(all_assets[handle]):
+                compatible_assets.append(all_assets[handle])
+
+        return compatible_assets
+
+
     def get_death_count(self, return_type=int):
         """ By default this returns the settlement's total number of deaths as
         an int.
@@ -2914,10 +2816,6 @@ class Settlement(models.UserAsset):
                     output[org_key] = []
                 output[org_key].append(gear_dict)
 
-#        final = collections.OrderedDict()
-#        for k in sorted(output.keys()):
-#            final[k] = output[k]
-
         return json.dumps(compatible_gear, default=json_util.default)
 
 
@@ -2940,6 +2838,27 @@ class Settlement(models.UserAsset):
             return output
 
         return s_innovations
+
+
+    def get_innovations_options(self, exclude_principles=True):
+        """ Returns the settlement's available options for adding a new
+        Innovation. """
+
+        compatible = self.get_compatible_assets(self.Innovations)
+
+        # list comp to exclude principles
+        if exclude_principles: [
+            compatible.remove(innovation) for
+            innovation in compatible if
+            innovation.get('sub_type', None) == 'principle'
+        ]
+
+        options = []
+        for innovation in compatible:
+            if innovation['handle'] not in self.settlement['innovations']:
+                options.append(innovation)
+
+        return options
 
 
     def get_innovation_deck(self, return_type=False):
@@ -3751,6 +3670,61 @@ class Settlement(models.UserAsset):
             raise AttributeError
 
 
+    def get_monster_options(self, monster_type):
+        """ Returns a list of available nemesis or quarry monster handles for
+        use with the Settlement Sheet controls.
+
+        The 'monster_type' kwarg should be something such as 'nemesis_monsters'
+        that will be present in our campaign and expansion definitions.
+        """
+
+        options = []
+
+        # first check our campaign and expansion assets, and get all options
+        if monster_type in self.get_campaign(dict):
+            c_monsters = self.get_campaign(dict)[monster_type]
+            options.extend(c_monsters)
+
+        for exp in self.get_expansions(dict):
+            e_dict = self.get_expansions(dict)[exp]
+            if monster_type in e_dict.keys():
+                options.extend(e_dict[monster_type])
+
+        # now convert our list into a set (just in case) and then go on to
+        # remove anything we've already got present in the settlement
+        option_set = set(options)
+        for n in self.settlement.get(monster_type, []):
+            if n in option_set:
+                option_set.remove(n)
+
+        # check the remaining to see if they're selectable:
+        option_set = list(option_set)
+        final_set = []
+        for m in option_set:
+            M = monsters.Monster(m)
+            if M.is_selectable():
+                final_set.append(m)
+
+        # remove anything that the campaign forbids
+        forbidden = []
+        if "forbidden" in self.campaign_dict.keys() and monster_type in self.campaign_dict["forbidden"].keys():
+            forbidden.extend(self.campaign_dict["forbidden"][monster_type])
+        for m_handle in forbidden:
+            if m_handle in final_set:
+                final_set.remove(m_handle)
+
+        # now turn our set
+        output = []
+        for m in sorted(list(final_set)):
+            M = monsters.Monster(m)
+            output.append({
+                "handle": M.handle,
+                "name": M.name,
+            })
+
+        return output
+
+
     def get_principles_options(self):
         """ Returns a dict (JSON) meant to be interated over in an ng-repeat on
         the Settlement Sheet. """
@@ -3830,61 +3804,6 @@ class Settlement(models.UserAsset):
                 output.extend(e_dict["special_showdowns"])
 
         return list(set(output))
-
-
-    def get_monster_options(self, monster_type):
-        """ Returns a list of available nemesis or quarry monster handles for
-        use with the Settlement Sheet controls.
-
-        The 'monster_type' kwarg should be something such as 'nemesis_monsters'
-        that will be present in our campaign and expansion definitions.
-        """
-
-        options = []
-
-        # first check our campaign and expansion assets, and get all options
-        if monster_type in self.get_campaign(dict):
-            c_monsters = self.get_campaign(dict)[monster_type]
-            options.extend(c_monsters)
-
-        for exp in self.get_expansions(dict):
-            e_dict = self.get_expansions(dict)[exp]
-            if monster_type in e_dict.keys():
-                options.extend(e_dict[monster_type])
-
-        # now convert our list into a set (just in case) and then go on to
-        # remove anything we've already got present in the settlement
-        option_set = set(options)
-        for n in self.settlement.get(monster_type, []):
-            if n in option_set:
-                option_set.remove(n)
-
-        # check the remaining to see if they're selectable:
-        option_set = list(option_set)
-        final_set = []
-        for m in option_set:
-            M = monsters.Monster(m)
-            if M.is_selectable():
-                final_set.append(m)
-
-        # remove anything that the campaign forbids
-        forbidden = []
-        if "forbidden" in self.campaign_dict.keys() and monster_type in self.campaign_dict["forbidden"].keys():
-            forbidden.extend(self.campaign_dict["forbidden"][monster_type])
-        for m_handle in forbidden:
-            if m_handle in final_set:
-                final_set.remove(m_handle)
-
-        # now turn our set
-        output = []
-        for m in sorted(list(final_set)):
-            M = monsters.Monster(m)
-            output.append({
-                "handle": M.handle,
-                "name": M.name,
-            })
-
-        return output
 
 
     def get_timeline_year(self, target_ly=0):
@@ -4001,6 +3920,189 @@ class Settlement(models.UserAsset):
 
         return player_list
 
+
+    #
+    #   Update methods; these should ONLY be internal non-web methods
+    #
+
+    def update_all_survivors(self, operation=None, attrib_dict={}, exclude_dead=False):
+        """ Performs bulk operations on all survivors. Use 'operation' kwarg to
+        either 'increment' or 'decrement' all attributes in 'attrib_dict'.
+
+        'attrib_dict' should look like this:
+
+        {
+            'Strength': 1,
+            'Courage': 1,
+            'abilities_and_impairments': ['sword_specialization', 'ageless'],
+        }
+
+        The 'increment' or 'decrement' values call the corresponding methods
+        on the survivors.
+        """
+
+        if operation not in ['set', 'increment', 'decrement']:
+            err = "update_all_survivors() cannot process '%s' operations!"
+            self.logger.exception(err % operation)
+            raise utils.InvalidUsage(err % operation)
+
+        for s in self.survivors:
+            if exclude_dead and s.is_dead():
+                pass
+            else:
+                for attribute, modifier in attrib_dict.items():
+                    if operation == 'increment':
+                        if attribute == 'abilities_and_impairments':
+                            for ai_handle in modifier:  # 'modifier' is a list here
+                                s.add_game_asset('abilities_and_impairments', ai_handle)
+                        else:
+                            s.update_attribute(attribute, modifier)
+                    elif operation == 'decrement':
+                        if attribute == 'abilities_and_impairments':
+                            for ai_handle in modifier:  # 'modifier' is a list here
+                                s.rm_game_asset('abilities_and_impairments', ai_handle)
+                        else:
+                            s.update_attribute(attribute, -modifier)
+                    elif operation == 'set':
+                        s.set_attribute(attribute, modifier)
+
+
+    @models.web_method
+    def update_attribute(self):
+        """ Assumes a request context and looks for 'attribute' and 'modifier'
+        keys in self.params. Uses them to increment (literally adds) the current
+        self.settlement[attribute] value.
+
+        Since this method only supports integers, non-existing attributes are
+        assumed/defaulted to zero!
+        """
+
+        self.check_request_params(['attribute','modifier'])
+        attribute = self.params["attribute"]
+        modifier = self.params["modifier"]
+
+        # default non-existing attributes to zero and update
+        new_value = self.settlement.get(attribute, 0) + modifier
+        self.settlement[attribute] = new_value
+
+        # now log it as a settlement event
+        attribute_pretty = attribute.title().replace('_',' ')
+        msg = "%s updated settlement %s to %s"
+        self.log_event(
+            msg % (
+                flask.request.User.login,
+                attribute_pretty,
+                self.settlement[attribute]
+            )
+        )
+
+        # save
+        self.save()
+
+
+    @models.web_method
+    def update_endeavor_tokens(self, modifier=0, save=True):
+        """ Updates settlement["endeavor_tokens"] by taking the current value,
+        which is normalized (above) to zero, if it is not defined or set, and
+        adding 'modifier' to it.
+
+        To increment ETs, do 'modifier=1'; to decrement, do 'modifier=-1'.
+        """
+
+        if "modifier" in self.params:
+            modifier = self.params["modifier"]
+
+        new_val = self.get_endeavor_tokens() + int(modifier)
+        if new_val < 0:
+            new_val = 0
+        self.settlement["endeavor_tokens"] = new_val
+        self.log_event("%s set endeavor tokens to %s" % (flask.request.User.login, new_val))
+
+        if save:
+            self.save()
+
+
+    @models.web_method
+    def update_nemesis_levels(self):
+        """ Updates a settlement's 'nemesis_encounters' array/list for a nemesis
+        monster handle. Fails if the nemesis is not in the settlement's nemesis
+        list (this is intentionall and for your safety/sanity). """
+
+        self.check_request_params(["handle", "levels"])
+        handle = self.params["handle"]
+        levels = list(self.params["levels"])
+
+        m_dict = self.Monsters.get_asset(handle)
+
+        if handle not in self.settlement["nemesis_monsters"]:
+            err = "Nemesis handle '%s' is not in the 'nemesis_monsters' list!"
+            self.logger.error(err % handle)
+            raise utils.InvalidUsage(err)
+        else:
+            self.settlement["nemesis_encounters"][handle] = levels
+            self.log_event('%s updated %s encounters to include %s' % (
+                flask.request.User.login,
+                m_dict["name"],
+                utils.list_to_pretty_string(levels)
+                )
+            )
+            self.save()
+
+
+    def update_population(self, modifier=None):
+        """ Updates settlement["population"] by adding 'modifier' to it. Will
+        never go below zero."""
+
+        if modifier is None:
+            self.check_request_params["modifier"]
+            modifier = self.params["modifier"]
+
+        current = self.settlement["population"]
+        new = current + modifier
+
+        if new < 0:
+            new = 0
+
+        self.settlement["population"] = new
+
+        msg = "%s updated settlement population to %s"
+        self.log_event(
+            msg % (flask.request.User.login, self.settlement["population"])
+        )
+        self.save()
+
+
+    @models.web_method
+    def update_survivors(self, include=None, attribute=None, modifier=None):
+        """ This method assumes a request context and should not be called from
+        outside of a request.
+
+        Use this to modify a single attribute for one of the following groups of
+        survivors:
+
+            'departing': All survivors with 'departing': True
+
+        NB: this is a waaaaaaay different method from update_all_survivors(), so
+        make sure you know the difference between the two. """
+
+        # initialize; assume a request context
+        if include is None:
+            self.check_request_params(['include', 'attribute', 'modifier'])
+            include = self.params['include']
+            attribute = self.params['attribute']
+            modifier = self.params['modifier']
+
+        # now check the include and get our targets
+        target_group = []
+        if include == 'departing':
+            target_group = utils.mdb.survivors.find({'settlement': self.settlement['_id'], 'departing': True, 'dead': {'$exists': False}})
+        else:
+            raise InvalidUsage("update_survivors() cannot process the 'include' value '%s'" % (include))
+
+        # now initialize survivors and update them with update_attribute()
+        for s in target_group:
+            S = survivors.Survivor(_id=s['_id'], Settlement=self)
+            S.update_attribute(attribute, modifier)
 
 
 
@@ -4581,6 +4683,25 @@ class Settlement(models.UserAsset):
     #   ???
     #
 
+    @models.web_method
+    @models.deprecated
+    def add_admin(self):
+        """ DEPRECATED. Use add_settlement_admin_instead. """
+        self.add_settlement_admin()
+
+    @models.web_method
+    @models.deprecated
+    def rm_admin(self):
+        """ DEPRECATED. Use add_settlement_admin_instead. """
+        self.rm_settlement_admin()
+
+    @models.web_method
+    @models.deprecated
+    def rm_note(self):
+        """ DEPRECATED. Use add_settlement_admin_instead. """
+        self.rm_settlement_note()
+
+
     def storage_handle_to_obj(self, handle):
         """ private method that turns any storage handle into an object."""
         asset_dict = self.Gear.get_asset(handle, raise_exception_if_not_found=False)
@@ -4607,14 +4728,12 @@ class Settlement(models.UserAsset):
     #
 
     def request_response(self, action=None):
-        """ Initializes params from the request and then response to the
-        'action' kwarg appropriately. This is the ancestor of the legacy app
-        assets.Settlement.modify() method. """
+        """ Follows the guidance in the base class method. """
 
         self.get_request_params()
 
         #
-        #   simple GET type methods
+        #   custom returns for endpoints that ARE NOT web methods
         #
 
         if action == "get":
@@ -4650,157 +4769,11 @@ class Settlement(models.UserAsset):
         elif action == "get_timeline":
             return flask.Response(response=self.get_timeline("JSON"), status=200, mimetype="application/json")
 
-
-        #
-        #   set / update, etc. methods
-        #
-        elif action == 'set_last_accessed':
-            self.set_last_accessed()
-        elif action == "add_expansions":
-            self.add_expansions()
-        elif action == "rm_expansions":
-            self.rm_expansions()
-
-        # monster methods
-        elif action == "set_current_quarry":
-            self.set_current_quarry()
-
-
-        # misc sheet controllers
-        elif action == "set_name":
-            self.set_name()
-        elif action == "set_attribute":
-            self.set_attribute()
-        elif action == "update_attribute":
-            self.update_attribute()
-        elif action == "update_endeavor_tokens":
-            self.update_endeavor_tokens()
-
-        # timeline!
-        elif action == 'replace_lantern_year':
-            self.replace_lantern_year()
-        elif action == "add_lantern_years":
-            self.add_lantern_years()
-        elif action == "rm_lantern_years":
-            self.rm_lantern_years()
-        elif action == "set_current_lantern_year":
-            self.set_current_ly()
-
-        # survivor methods
-        elif action == 'update_survivors':
-            self.update_survivors()
-
-
-        # innovations, locations, etc.
-        elif action == "replace_game_assets":
-            self.replace_game_assets()
-
-        elif action == "add_location":
-            self.add_location()
-        elif action == "rm_location":
-            self.rm_location()
-        elif action == "set_location_level":
-            self.set_location_level()
-
-        elif action == "add_innovation":
-            self.add_innovation()
-        elif action == "rm_innovation":
-            self.rm_innovation()
-        elif action == "set_innovation_level":
-            self.set_innovation_level()
-        elif action == "set_principle":
-            self.set_principle()
-
-        # milestone story events
-        elif action == "add_milestone":
-            self.add_milestone()
-        elif action == "rm_milestone":
-            self.rm_milestone()
-
-        elif action == 'set_storage':
-            self.set_storage()
-        elif action == 'set_showdown_type':
-            self.set_showdown_type()
-
-        elif action == 'add_monster_volume':
-            self.add_monster_volume()
-        elif action == 'rm_monster_volume':
-            self.rm_monster_volume()
-
-        elif action == 'set_inspirational_statue':
-            self.set_inspirational_statue()
-        elif action == 'set_version':
-            self.set_version()
-
-
-        elif action == 'toggle_strain_milestone':
-            self.toggle_strain_milestone()
-
-        elif action == 'abandon':
-            self.set_abandoned()
-        elif action == 'remove':
-            self.remove()
-
-
-        #
-        #   meta/admin
-        #
-
-        elif action == 'add_admin':
-            self.add_settlement_admin()
-        elif action == 'rm_admin':
-            self.rm_settlement_admin()
-
-        #
-        #   campaign notes controllers
-        #
         elif action == "add_note":
             return self.add_settlement_note(self.params)
-        elif action == "rm_note":
-            self.rm_settlement_note()
 
 
-        elif action == "return_survivors":
-            self.return_survivors()
-
-
-
-        #
-        #   finally, the catch-all/exception-catcher
-        #
-        else:
-            if getattr(self, action, None) is not None:
-                method = getattr(self, action)
-                if getattr(method, '_web_method', False):
-                    method()
-                else:
-                    err = "The %s endpoint is mapped to an internal method!"
-                    return flask.Response(response=err % action, status=400)
-            else:
-                err = "Settlement action '%s' is not imlemented!" % action
-                return flask.Response(response = err, status=501)
-
-
-        # support special response types
-        if "response_method" in self.params:
-            exec("payload = self.%s()" % self.params['response_method'])
-            return flask.Response(
-                payload,
-                status=200,
-                mimetype="application/json"
-            )
-        elif "serialize_on_response" in self.params:
-            return flask.Response(
-                self.serialize(),
-                status=200,
-                mimetype="application/json"
-            )
-
-        # default return
-        return utils.http_200
-
-
-
+        return super().request_response(action)
 
 
 # ~fin

@@ -519,10 +519,11 @@ the timestap of the mark as removed event and purge the settlement
         "name": "/settlement/set_last_accessed/&lt;settlement_id&gt;",
         "subsection": "settlement_set_attribute",
         "desc": """\
-<p>This endpoint allows you to set the settlement's <code>last_accessed</code>
-attribute, which is used in dashboard reporting, etc. </p>
-<p><b>POST</b>ing an empty JSON payload to this will cause the settlement's
-<code>last_accessed</code> value to be set to now.</p>
+<p><b>DEPRECATED.</b></p>
+<p>Starting in June 2021, settlement access information is handled automatically
+by the API.</p>
+<p>This endpoint is dead. Attempting to use it to manually set an access time
+is no longer supported.</p>
         """,
     },
 
@@ -656,11 +657,9 @@ whereas the code below would decrement by one:</p>
         "name": "/settlement/toggle_strain_milestone/&lt;settlement_id&gt;",
         "subsection": "settlement_update_attribute",
         "desc": """\
-<p>You may <b>POST</b> some JSON containing the key <code>handle</code>
-and the value of a strain milestone handle to toggle that strain
-milestone on or off for the settlement:</p>
-<code>{"handle": "ethereal_culture_strain"}</code>
-<p>The API will fail if unknown <code>handle</code> values are <b>POST</b>ed.</p>
+<p><b>DEPRECATED</b>.</p>
+<p>This endpoint is deprecated in the June 2021 release of the API.</p>
+<p>Use <code>set_strain_milestones</code> instead.</p>
 	""",
     },
 
@@ -1040,27 +1039,10 @@ a number of years that would take you above 50 LYs, you'll get a
         "name": "/settlement/replace_lantern_year/&lt;settlement_id&gt;",
         "subsection": "settlement_manage_timeline",
         "desc": """\
-<p>This is the preferred route for adding or removing events
-from a Lantern year. It basically requires <b>POST</b>ing an
-entire Lantern Year to the API, so be sure to understand the
-<a href="#timelineDataModel">timeline data model</a> before
-attempting to use this one.</p>
-<p>Since a Lantern year is a hash of hashes, replacing one is
-as simple as <b>POST</b>ing that hash to this route. To "blank
-out" or remove all events from an LY, for example, you would
-simply send a <b>POST</b> body like this:</p>
-<code>{ly: {year: 5}}</code>
-<p>Similarly, to add events to that LY, you could <b>POST</b>
-something like this:</p>
-<code>{ly: {year: 5, settlement_event: [{handle: 'core_open_maw', handle: 'core_clinging_mist'}]}</code>
-<p>Finally, as the name suggests, this is an overwrite/replace
-type method, and it does not do any "checks" or comparisons
-between the data in the API and your incoming LY.</p>
-<p>The best practice here, from a design standpoint, is to pull
-down the settlement's timeline (e.g. using <code>get_timeline</code>
-(above), let the user modify an individual LY as necessary, and
-then to <b>POST</b> their modified LY back, in its entirety, to
-this endpoint.</p>
+<p><b>DEPRECATED</b>.</p>
+<p>This endpoint was deprecated in the April 2021 release of the API.</p>
+<p>It was removed completely in the June 2021 release.</p>
+<p>Use <code>set_lantern_year</code> instead.</p>
 	""",
     },
     "settlement_set_current_lantern_year_settlement_id": {
@@ -1083,18 +1065,9 @@ endpoint:</p>
         "subsection": "settlement_admin_permissions",
 	"methods": ["POST","OPTIONS"],
         "desc": """\
-<p><b>POST</b> the email address of a registered user to add them to the
-list of settlement administrators:</p>
-<code>{login: 'demo@kdm-manager.com'}</code>
-<p>Disclaimers:
-<ul>
-<li class="plain">This will fail gracefully if the user's
-email is in the list (so feel free to spam it).</li>
-<li class="plain">This will
-fail loudly if the email address does not belong to a registered
-user: you'll get a 400 and a nasty message back.</li>
-</ul>
-</p>
+<p><b>DEPRECATED</b>.</p>
+<p>This endpoint is deprecated in the June 2021 release of the API.</p>
+<p>Use <code>add_settlement_admin</code> instead.</p>
 	""",
     },
     "settlement_rm_admin_settlement_id": {
@@ -1102,12 +1075,9 @@ user: you'll get a 400 and a nasty message back.</li>
         "subsection": "settlement_admin_permissions",
 	"methods": ["POST","OPTIONS"],
         "desc": """\
-<p>This is the reverse of the <code>add_admin</code> route.</p>
-<p>Basically, you <b>POST</b> some JSON to the route including the email
-of the user you want to remove from the settlement admins list:</p>
-<code>{login: 'demo@kdm-manager.com'}</code>
-<p>Like the <code>add_admin</code> route, this one fails gracefully
-if you try to remove someone who isn't on the list, etc.</p>
+<p><b>DEPRECATED</b>.</p>
+<p>This endpoint is deprecated in the June 2021 release of the API.</p>
+<p>Use <code>rm_settlement_admin</code> instead.</p>
 	""",
     },
 

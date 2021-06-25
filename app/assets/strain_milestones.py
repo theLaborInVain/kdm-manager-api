@@ -5,7 +5,22 @@ tenth_anniversary_white_speaker = {
         'milestone_condition': (
             'If the settlement has remembered all the '
             '<font class="kdm_font">g</font> <b>White Secret</b> stories.'
-        )
+        ),
+        'permanent_effect_flavor_text': (
+            'A White Speaker arrives with a new story. She cuts the listener. '
+            'Cloudy lymphatic fluid struggles from their wound, forming a '
+            'yellow disc. Reaching into it, the White Speaker pulls free a '
+            'black lump. Add <b>1 Iron</b> strange resource to the settlement '
+            'storage. '
+        ),
+        'permanent_effect': (
+            'The next time a survivor would remember a '
+            '<font class="kdm_font">g</font> <b>White Secret</b> story, they '
+            'recall the words recited under her breath instead. '
+            'Permanently add the <b>Story of Blood</b> fighting art to your '
+            'fighting art deck. That survivor gains the <b>Story of Blood</b> '
+            'fighting art.'
+        ),
     },
 }
 
@@ -128,6 +143,18 @@ echoes_of_death_3 = {
         'milestone_condition': (
             'A survivor archives 4 resources from their <b>Hoarder</b> '
             'disorder.'
+        ),
+        'permanent_effect_flavor_text': (
+            'A calm wraps around the anxiously beating heart of the survivor, '
+            'steadying their grasping hands. The deeply-felt sense of security '
+            'keeps cortical stress levels low. Inheriting the positive '
+            'chemical feedback between possession and serenity creates a '
+            'powerful ally in the settlement stores.'
+        ),
+        'permanent_effect': (
+            'Permanently add <span class="kd deck_icon" deck="FA">FA</span> '
+            '<b>Stockist</b> to your fighting art deck. The survivor gains '
+            '<span class="kd deck_icon" deck="FA">FA</span> <b>Stockist</b>.'
         ),
     },
     'sweat_stained_oath': {

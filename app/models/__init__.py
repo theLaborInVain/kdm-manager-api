@@ -974,26 +974,6 @@ class UserAsset(object):
             raise
 
 
-    def save(self, verbose=True):
-        """ Saves the user asset back to either the 'survivors' or 'settlements'
-        collection in mdb, depending on self.collection. """
-
-        if self.collection == "settlements":
-            utils.mdb.settlements.save(self.settlement)
-        elif self.collection == "survivors":
-            utils.mdb.survivors.save(self.survivor)
-        elif self.collection == "users":
-            utils.mdb.users.save(self.user)
-        else:
-            raise AssetLoadError("Invalid MDB collection for this asset!")
-        if verbose:
-            self.logger.info("Saved %s to mdb.%s successfully!" % (
-                self,
-                self.collection)
-            )
-
-
-#    @utils.metered
     def load(self):
         """ The default/vanilla load() method for all UserAsset objects, i.e.
         settlements, survivors, users. The design here is that you call this
@@ -1019,6 +999,29 @@ class UserAsset(object):
         setattr(self, '_id', mdb_doc['_id'])
         setattr(self, 'created_by', mdb_doc.get('created_by', mdb_doc['_id']))
 
+        self.set_last_accessed(save=True)
+
+
+    def save(self, verbose=True):
+        """ Saves the user asset back to either the 'survivors' or 'settlements'
+        collection in mdb, depending on self.collection. """
+
+        self.set_last_accessed(save=False)
+
+        if self.collection == "settlements":
+            utils.mdb.settlements.save(self.settlement)
+        elif self.collection == "survivors":
+            utils.mdb.survivors.save(self.survivor)
+        elif self.collection == "users":
+            utils.mdb.users.save(self.user)
+        else:
+            raise AssetLoadError("Invalid MDB collection for this asset!")
+        if verbose:
+            self.logger.info("Saved %s to mdb.%s successfully!" % (
+                self,
+                self.collection)
+            )
+
 
     def return_json(self):
         """ Calls the asset's serialize() method and creates a simple HTTP
@@ -1028,12 +1031,6 @@ class UserAsset(object):
             status=200,
             mimetype="application/json"
         )
-
-
-    @models.web_method
-    def get(self):
-        """ The basic 'get' method for user assets."""
-        return self.serialize()
 
 
     def get_request_params(self):
@@ -1104,8 +1101,16 @@ class UserAsset(object):
 
 
     #
-    #   get/set methods for User Assets below here
+    #   universal 'get' methods for User Assets
     #
+
+    @models.web_method
+    def get(self):
+        """ The basic 'get' method for user assets. Decorated with the
+        models.web_method decorator, because all assets need to be able to
+        request it (because we do 'get' as an endpoint everywhere)."""
+        return self.serialize()
+
 
     def get_campaign(self, return_type=None):
         """ Returns the campaign handle of the settlement as a string, if
@@ -1150,34 +1155,6 @@ class UserAsset(object):
         return c_handle
 
 
-    def get_serialize_meta(self):
-        """ Sets the 'meta' dictionary for the object when it is serialized. """
-
-        output = deepcopy(utils.api_meta)
-
-        if list(output['meta'].keys()) != [
-            'api',
-            'server',
-            'info',
-            'subscriptions',
-            'kdm-manager',
-            'object'
-            ]:
-
-            stack = inspect.stack()
-            the_class = stack[1][0].f_locals["self"].__class__
-            the_method = stack[1][0].f_code.co_name
-            msg = "models.UserAsset.get_serialize_meta() got modified 'meta'\
-            (%s) dict during call by %s.%s()!" % (
-                output['meta'].keys(),
-                the_class,
-                the_method
-            )
-            self.logger.error(" ".join(msg.split()))
-
-        return output
-
-
     def get_current_ly(self):
         """ Convenience/legibility function to help code readbility and reduce
         typos, etc. """
@@ -1209,6 +1186,57 @@ class UserAsset(object):
 
         if flask.request.User.user['_id'] == self.created_by:
             return 'write'
+
+
+    def get_serialize_meta(self):
+        """ Sets the 'meta' dictionary for the object when it is serialized. """
+
+        output = deepcopy(utils.api_meta)
+
+        if list(output['meta'].keys()) != [
+            'api',
+            'server',
+            'info',
+            'subscriptions',
+            'kdm-manager',
+            'object'
+            ]:
+
+            stack = inspect.stack()
+            the_class = stack[1][0].f_locals["self"].__class__
+            the_method = stack[1][0].f_code.co_name
+            msg = "models.UserAsset.get_serialize_meta() got modified 'meta'\
+            (%s) dict during call by %s.%s()!" % (
+                output['meta'].keys(),
+                the_class,
+                the_method
+            )
+            self.logger.error(" ".join(msg.split()))
+
+        return output
+
+
+
+
+    #
+    #   universal UserAsset 'set' methods
+    #
+
+    def set_last_accessed(self, access_time=None, save=False):
+        """ Set 'access_time' to a valid datetime object to set the settlement's
+        'last_accessed' value or leave it set to None to set the 'last_accessed'
+        time to now. """
+
+        asset_record = getattr(self, self.collection[:-1])
+
+        if access_time is not None:
+            asset_record['last_accessed'] = access_time
+        else:
+            asset_record['last_accessed'] = datetime.now()
+
+        if save:
+            self.save(False)
+
 
 
     def list_assets(self, attrib=None, log_failures=True):
@@ -1475,10 +1503,14 @@ class UserAsset(object):
         self.logger.info("%s event: %s" % (self, d['event']))
 
 
+    #
+    #   universal UserAsset request_response() 
+    #
+
     def request_response(self, action=None):
         """ The default request_response() method used by UserAsset objects.
 
-        In dividual UserAsset model request_response() methods should typically:
+        Individual UserAsset model request_response() methods should typically:
 
         1.) get request parameters
         2.) respond to special/magic requests for methods that aren't actually
