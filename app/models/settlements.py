@@ -1758,7 +1758,7 @@ class Settlement(models.UserAsset):
         # 7.) increment LY, if necessary
         if self.params.get('increment_ly', False):
             if not self.get_current_ly() >= self.get_max_ly():
-                self.set_current_ly(self.get_current_ly() + 1)
+                self.set_current_lantern_year(self.get_current_ly() + 1)
 
         self.save()
 

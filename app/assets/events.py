@@ -71,7 +71,7 @@ settlement_event = {
     "promo_strange_spot":
         {"name": "A Strange Spot", "expansion": "promo"},
     "promo_story_in_the_snow":
-        {"name": "Story in the Snow", "expansion": "promo"},
+        {"name": "Story in the Snow", "expansion": "holiday_white_speaker_nico"},
 
     # spidicules
     "spid_season_of_the_spiderling":

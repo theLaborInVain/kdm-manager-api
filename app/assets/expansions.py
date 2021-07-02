@@ -487,30 +487,6 @@ product_lines = {
         ],
     },
 
-    "percival": {
-        "name": "Percival",
-        "ui": {"pretty_category": "White Box"},
-        "released": datetime(2016, 8, 4),
-        'basic_hunt_event': ['dead_warrior'],
-    },
-
-    'swashbuckler': {
-        'name': 'Swashbuckler',
-        'ui': {'pretty_category': 'White Box'},
-        'released': datetime(2016, 3, 1),
-        'subtitle': (
-            'One of the few figures from the <i>Generic</i> line that also '
-            'includes game content.'
-        ),
-    },
-
-    "sword_hunter": {
-        "name": "Sword Hunter",
-        "ui": {"pretty_category": "White Box"},
-        "released": datetime(2019, 8, 1),
-        'basic_hunt_event': ['sword_in_the_stone'],
-    },
-
     "oktoberfest_aya": {
         "name": "Oktoberfest Aya",
         'subtitle': (
@@ -533,12 +509,6 @@ product_lines = {
         ],
     },
 
-    'winter_solstice_lucy': {
-        'name': 'Winter Solstice Lucy',
-        'ui': {'pretty_category': 'White Box'},
-        'release': datetime(2020, 12, 22),
-    },
-
     "halloween_white_speaker_2019": {
         "name": "Halloween White Speaker",
         'subtitle': (
@@ -554,8 +524,61 @@ product_lines = {
         'release': datetime(2020, 10, 31),
     },
 
+    'holiday_white_speaker_nico': {
+        'released': datetime(2012, 7, 1),
+        'name': 'Holiday White Speaker Nico',
+        'ui': {'pretty_category': 'White Box'},
+    },
 
-    # Vignettes of Death
+    "percival": {
+        "name": "Percival",
+        "ui": {"pretty_category": "White Box"},
+        "released": datetime(2016, 8, 4),
+        'basic_hunt_event': ['dead_warrior'],
+    },
+
+    'santa_satan': {
+        'released': datetime(2018, 12, 25),
+        'name': 'Santa Satan (promo)',
+        'ui': {'pretty_category': 'White Box'},
+        'strain_milestones': ['atmospheric_change'],
+        'subtitle': (
+            'This promo release from Holiday 2018 contains the &#128917; '
+            '<i>Atmostpheric Change</i> Strain Milestone.'
+        ),
+        'help': [
+            {
+                'type': 'event',
+                'tip': (
+                    'The &#128917; <i>Atmospheric Change</i> Strain Milestone '
+                    'condition requires one of two story events from separate '
+                    'expansion content: '
+                    'the <font class=kdm_font>g</font> <b>Story in the '
+                    'Snow</b> story event belongs to the <i>White Speaker '
+                    'Nico</i> expansion and the <font class=kdm_font>g</font> '
+                    '<b>Necrotoxic Mistletoe</b> story event is from the '
+                    '<i>Flower Knight</i> expansion.'
+                ),
+            },
+        ],
+    },
+
+    'swashbuckler': {
+        'name': 'Swashbuckler',
+        'ui': {'pretty_category': 'White Box'},
+        'released': datetime(2016, 3, 1),
+        'subtitle': (
+            'One of the few figures from the <i>Generic</i> line that also '
+            'includes game content.'
+        ),
+    },
+
+    "sword_hunter": {
+        "name": "Sword Hunter",
+        "ui": {"pretty_category": "White Box"},
+        "released": datetime(2019, 8, 1),
+        'basic_hunt_event': ['sword_in_the_stone'],
+    },
 
     'vignettes_of_death_white_gigalion': {
         'released': datetime(2019, 8, 1),
@@ -568,6 +591,13 @@ product_lines = {
         'strain_milestones': ['somatotropin_surge'],
         'quarries': ['white_gigalion'],
     },
+
+    'winter_solstice_lucy': {
+        'name': 'Winter Solstice Lucy',
+        'ui': {'pretty_category': 'White Box'},
+        'release': datetime(2020, 12, 22),
+    },
+
 
 }
 
@@ -641,8 +671,8 @@ miscellaneous = {
             'Pinup Wet Nurse, '
             "Pinups of Death, "
             "Valentine's Day Pinup Twilight Knight, "
-            'White Speaker, '
-            "White Speaker Nico, "
+            'White Speaker.'
+#            "White Speaker Nico, "
         ),
         'help': [
             {
@@ -670,16 +700,6 @@ miscellaneous = {
         ],
     },
 
-    'santa_satan': {
-        'released': datetime(2018, 12, 25),
-        'name': 'Santa Satan (promo)',
-        'ui': {'pretty_category': 'Enhancement'},
-        'strain_milestones': ['atmospheric_strain'],
-        'subtitle': (
-            "This promo release from Holiday 2018 contains the <i>Atmostpheric "
-            "Strain</i> milestone."
-        ),
-    },
 
 }
 
