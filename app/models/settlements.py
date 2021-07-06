@@ -2083,7 +2083,7 @@ class Settlement(models.UserAsset):
 
         # routing to specialized methods!
         if attribute == 'abandoned':
-            return self.set_abandoned(value=value)
+            return self.abandon(value=value)
 
         # generic handling follows
         self.settlement[attribute] = value
