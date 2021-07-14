@@ -1522,7 +1522,9 @@ class UserAsset(object):
         if getattr(self, action, None) is not None:
             method = getattr(self, action)
             if getattr(method, '_web_method', False):
-                method()
+                method_response = method()
+                if isinstance(method_response, flask.Response):
+                    return method_response
             else:
                 err = "The %s endpoint is mapped to an internal method!"
                 return flask.Response(response=err % action, status=400)
