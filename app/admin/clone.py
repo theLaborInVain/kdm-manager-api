@@ -10,6 +10,7 @@
 """
 
 # standard library imports
+import _pickle
 from datetime import datetime
 import sys
 from urllib.parse import urljoin
@@ -22,6 +23,7 @@ import requests
 from app import API, admin, utils
 from app.models import users
 
+logger = utils.get_logger()
 
 #
 #   import data wrappers: these methods get data and feed it to the import_data
@@ -76,9 +78,18 @@ def get_one_user_from_api(prod_api, pickle_auth=False, **kwargs):
 
     if response.status_code != 200:
         raise requests.RequestException(response.reason)
+    logger.warn(response.content)
 
     pickle_string = response.content
-    user_oid = users.import_user(pickle_string)
+    try:
+        user_oid = users.import_user(pickle_string)
+    except _pickle.UnpicklingError as e:
+        pickled = _pickle.dumps(pickle_string)
+        error_path = kwargs['u_login'] + '_import_error.pickle'
+        error_dump = open(error_path, 'wb')
+        error_dump.write(pickle_string)
+        error_dump.close()
+        raise ValueError("Could not import user! See '%s'" % error_path)
 
     # we can silently reset the user's password if 'force' is in the kwargs
     if kwargs.get('force', False):

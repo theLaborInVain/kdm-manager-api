@@ -1175,6 +1175,54 @@ class UserAsset(object):
         return int(ly)
 
 
+    def get_players(self, return_type=None):
+        """ Ported from the Settlement object method.
+
+        Returns a list of dictionaries where each dict is a short summary of
+        the significant attributes of the player, as far as the settlement is
+        concerned.
+
+        This is NOT the place to get full user information and these dicts are
+        intentionally sparse for exactly that reason.
+        """
+
+        player_set = set()
+
+        # get records of all survivors matching this settlement's OID;
+        #   return an empty dict if there are no survivors (no survivors == no
+        #   players).
+        settlement_survivor_records = utils.mdb.survivors.find(
+            {'settlement': self.settlement_id}
+        )
+        if settlement_survivor_records is None:
+            return []
+
+        # iterate thru the survivors and create the set of users
+        for survivor_record in settlement_survivor_records:
+            player_set.add(survivor_record.get("email", None))
+
+        player_set = utils.mdb.users.find({"login": {"$in": list(player_set)}})
+
+        if return_type in [int, "count"]:
+            return player_set.count()
+        elif return_type == "email":
+            return [p["login"] for p in player_set]
+
+        # if we're still here, we need settlement info for the full return
+        settlement_record = self.get_settlement_record()
+        player_list = []
+        for p in player_set:
+            p_dict = {"login": p["login"], "_id": p["_id"]}
+            if p["login"] in settlement_record.get("admins", []):
+                p_dict["settlement_admin"] = True
+            if p["_id"] == settlement_record.get("created_by", None):
+                p_dict["settlement_founder"] = True
+
+            player_list.append(p_dict)
+
+        return player_list
+
+
     def get_requester_permissions(self):
         """ Uses the flask request.User to return a str 'write', 'read' or a
         None type, if the user has no permissios for the user asset.
@@ -1184,8 +1232,18 @@ class UserAsset(object):
         user might not be a settlement admin, etc.
         """
 
-        if flask.request.User.user['_id'] == self.created_by:
+        requester = flask.request.User.user
+
+        if requester['_id'] == getattr(self, 'created_by', None):
             return 'write'
+
+        # if we're still here, check players
+        for player in self.get_players():
+            if player['_id'] == requester['_id']:
+                if player.get('settlement_admin', False):
+                    return 'write'
+                else:
+                    return 'read'
 
 
     def get_serialize_meta(self):
@@ -1215,6 +1273,11 @@ class UserAsset(object):
 
         return output
 
+
+    def get_settlement_record(self):
+        """ Settlement and Survivor models have self.settlement_id, which this
+            method uses to retrieve the raw settlement record from MDB. """
+        return utils.mdb.settlements.find_one({'_id': self.settlement_id})
 
 
 

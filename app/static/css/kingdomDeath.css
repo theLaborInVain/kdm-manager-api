@@ -144,12 +144,12 @@ button.kd {
     margin: 1rem;
     padding: 1rem;
     padding-top: 0.5rem;
-    position: relative;
 }
 .kd.worksheet_block.borderless {
     border: 0; 
 }
 .kd.worksheet_block.disabled {
+    position: relative; 
     pointer-events: none;
 }
 .kd.worksheet_block.disabled:before{
@@ -355,7 +355,9 @@ button.kd {
     padding: 1rem;
     width: fit-content; 
 }
-
+.kd.rulebook_warning.full_width {
+    max-width: none;
+}
 
 /*  capsule styles! These are a main part of reusable UI    */
 

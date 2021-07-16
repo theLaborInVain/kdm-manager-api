@@ -432,6 +432,7 @@ class User(models.UserAsset):
         if (
             flask.request and
             hasattr(flask.request, 'User') and
+            self.user.get('login', None) is not None and
             flask.request.User.user['login'] == self.user.get('login', None)
         ):
             self.set_latest_action(
@@ -603,8 +604,12 @@ class User(models.UserAsset):
             output["preferences"] = self.get_preferences('dashboard')
             output["dashboard"] = {}
             output["dashboard"]["friends"] = self.get_friends(return_type=list)
-            output["dashboard"]["campaigns"] = self.get_settlements(return_type='list_of_dicts', qualifier='player')
-            output["dashboard"]["settlements"] = self.get_settlements(return_type='list_of_dicts')
+            output["dashboard"]["campaigns"] = self.get_settlements(
+                return_type='list_of_dicts', qualifier='player'
+            )
+            output["dashboard"]["settlements"] = self.get_settlements(
+                return_type='list_of_dicts', qualifier='player'
+            )
 
         # punch the user up if we're returning to the admin panel
         if return_type in ['admin_panel']:
@@ -1088,7 +1093,12 @@ class User(models.UserAsset):
             settlements_owned = self.get_settlements()
             for s in settlements_owned:
                 settlement_id_set.add(s["_id"])
-            settlements = utils.mdb.settlements.find({"_id": {"$in": list(settlement_id_set)}, "removed": {"$exists": False}})
+            settlements = utils.mdb.settlements.find(
+                {
+                    "_id": {"$in": list(settlement_id_set)},
+                    "removed": {"$exists": False}
+                }
+            )
         elif qualifier == "admin":
             settlements = utils.mdb.settlements.find({
                 "admins": {"$in": [self.user["login"]]},

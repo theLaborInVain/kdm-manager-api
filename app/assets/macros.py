@@ -50,6 +50,11 @@ add_survivors = {
                 "name": "White Lion (First Story)"
             },
         ],
+        'warning': (
+            'This macro was intended to be applied to new settlements at '
+            'creation time! Apply this macro to existing settlements at '
+            'your own risk...'
+        ),
     },
 
     "create_seven_swordsmen": {

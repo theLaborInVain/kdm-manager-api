@@ -319,6 +319,13 @@ class Settlement(models.UserAsset):
 
         macro = self.Macros.get_asset(handle=handle)
 
+        self.log_event(
+            action="apply",
+            key="settlement",
+            value=macro["name"],
+            event_type='sysadmin'
+        )
+
         # do random survivors
         if macro.get("random_survivors", None) is not None:
             for s in macro["random_survivors"]:
@@ -352,12 +359,6 @@ class Settlement(models.UserAsset):
                     exclude_dead = True,
                 )
 
-        self.log_event(
-            action="apply",
-            key="settlement",
-            value=macro["name"],
-            event_type='sysadmin'
-        )
 
 
     def normalize(self):
@@ -438,6 +439,10 @@ class Settlement(models.UserAsset):
         """ Abandons the settlement by setting self.settlement['abandoned'] to
         datetime.now(). Logs it. Expects a request context.
         """
+
+        # optional check for params
+        if value is None:
+            value = self.params.get("value", None)
 
         if value == 'UNSET' and self.settlement.get('abandoned', False):
             del self.settlement['abandoned']
@@ -1408,21 +1413,47 @@ class Settlement(models.UserAsset):
 
 
     @models.web_method
+    def set_admins(self):
+        """ Replaces/supersedes the one-off add/rm methods. Requires a request.
+        Proccesses a list of settlement administrators and adds or removes
+        email addresses from the list as appropriate. """
+
+        self.check_request_params(['admins'])
+        new_list = self.params['admins']
+
+        # get the add/rm lists
+        add_list, rm_list = utils.list_compare(
+            self.settlement['admins'],
+            new_list
+        )
+
+        if add_list != []:
+            [self.add_settlement_admin(login) for login in add_list]
+
+        if rm_list != []:
+            [self.rm_settlement_admin(login) for login in rm_list]
+
+        self.save()
+
+
+    @models.web_method
     def add_settlement_admin(self, user_login=None):
-        """ Adds a user login (i.e. email address) to the self.settlement['admins']
-        list. Fails gracefully if the user is already there. Expects a request
-        context. """
+        """ Adds a user login (i.e. email address) to the
+        self.settlement['admins'] list. Fails gracefully if the user is already
+        there. Expects a request context. """
 
         if user_login is None:
             self.check_request_params(['login'])
             user_login = self.params['login']
 
         if user_login in self.settlement['admins']:
-            self.logger.warn("%s User '%s' is already a settlement admin! Ignoring bogus request..." % (self, user_login))
+            err = "%s User '%s' is already a settlement admin! Ignoring..."
+            self.logger.warn(err % (self, user_login))
             return True
 
         if utils.mdb.users.find_one({'login': user_login}) is None:
-            raise utils.InvalidUsage("The email address '%s' does not belong to a registered user!" % user_login, status_code=400)
+            err = "The email address '%s' does not belong to a registered user!"
+            raise utils.InvalidUsage(err % user_login, status_code=400)
 
         self.settlement['admins'].append(user_login)
         self.log_event(action="add", key="administrators", value=user_login)
@@ -1440,11 +1471,13 @@ class Settlement(models.UserAsset):
             user_login = self.params['login']
 
         if user_login not in self.settlement['admins']:
-            self.logger.warn("%s User '%s' is not a settlement admin! Ignoring bogus request..." % (self, user_login))
+            err = "%s User '%s' is not a settlement admin! Ignoring..."
+            self.logger.warn(err % (self, user_login))
             return True
 
         if utils.mdb.users.find_one({'login': user_login}) is None:
-            raise utils.InvalidUsage("The email address '%s' does not belong to a registered user!" % user_login, status_code=400)
+            err = "The email address '%s' does not belong to a registered user!"
+            raise utils.InvalidUsage(err % user_login, status_code=400)
 
         self.settlement['admins'].remove(user_login)
         self.log_event(action="rm", key="administrators", value=user_login)
@@ -3181,24 +3214,6 @@ class Settlement(models.UserAsset):
         ]
 
 
-    def get_requester_permissions(self):
-        """ Overrides the base-class method: does additional stuff to assess
-        whether the requester has read access to the settlement. """
-
-        requester = flask.request.User.user
-
-        if requester['_id'] == self.created_by:
-            return 'write'
-
-        # if we're still here, check players
-        for player in self.get_players():
-            if player['_id'] == requester['_id']:
-                if player.get('settlement_admin', False):
-                    return 'write'
-                else:
-                    return 'read'
-
-
     def get_settlement_notes(self):
         """ Returns a list of mdb.settlement_notes documents for the settlement.
         They're sorted in reverse chronological, because the idea is that you're
@@ -3886,39 +3901,23 @@ class Settlement(models.UserAsset):
         return output
 
 
-    def get_players(self, return_type=None):
-        """ Returns a list of dictionaries where each dict is a short summary of
-        the significant attributes of the player, as far as the settlement is
-        concerned.
+    @models.web_method
+    def rm_player(self):
+        """ Expects a request with the param 'login'. Iterates all survivor
+        records for the settlement and swaps 'login' for the settlement's
+        creator. """
 
-        This is NOT the place to get full user information and these dicts are
-        intentionally sparse for exactly that reason.
+        self.check_request_params(['login'])
+        player_login = self.params["login"]
 
-        Otherwise, use return_type="count" to get an int representation of the
-        set of players. """
+        founder = self.get_founder()
 
-        player_set = set()
-        for s in self.survivors:
-            player_set.add(s.survivor["email"])
+        self.log_event("Removed %s from the settlement." % player_login)
 
-        player_set = utils.mdb.users.find({"login": {"$in": list(player_set)}})
+        for survivor_obj in self.survivors:
+            if survivor_obj.survivor.get('email', None) == player_login:
+                survivor_obj.set_email(founder['login'])
 
-        if return_type == "count":
-            return player_set.count()
-        elif return_type == "email":
-            return [p["login"] for p in player_set]
-
-        player_list = []
-        for p in player_set:
-            p_dict = {"login": p["login"], "_id": p["_id"]}
-            if p["login"] in self.settlement["admins"]:
-                p_dict["settlement_admin"] = True
-            if p["_id"] == self.settlement["created_by"]:
-                p_dict["settlement_founder"] = True
-
-            player_list.append(p_dict)
-
-        return player_list
 
 
     #
