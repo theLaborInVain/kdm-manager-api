@@ -48,34 +48,27 @@ Navigate to your home and clone the repo:
     $ cd 
     $ git clone https://github.com/theLaborInVain/kdm-manager-api.git
 
-Install app dependencies:
-
-    $ cd kdm-manager-api
-    $ python3 -m venv venv
-    $ source venv/bin/activate
-    $ pip install -r requirements.txt
-    $ deactivate
-
 
 ## Run
 
-The API server will not start without a file called `settings_private.cfg` in
-the project's root directory.
+**Important!** The API server will not start without a file called
+`settings_private.cfg` in the project's root directory. This file is _not_
+included in the distribution, and you will have to create it manually.
 
 Run the dev server from the root of the project directory:
 
     $ cd kdm-manager-api
-    $ ./server.sh dev
+    $ ./server.sh
 
-Assuming everything went according to plan with pip, this should start listening
+Assuming everything went according to plan, this should start listening
 on 0.0.0.0:8013 and responding to requests.
 
 
 ## Deploy
 
 **Important!** At the time of the 1.0.0 release of the API, the install files
-have some hard-coded paths, e.g. `/home/toconnell` and similar. Deploying the
-API as a different user will require the modification of these files!
+still have some hard-coded paths, e.g. `/home/toconnell` and similar. Deploying
+the API as a different user will require the modification of these files!
 
 In order to deploy, **perform the steps above under _Installation instructions_
  first**, then navigate to the project's root directory and run the `install.sh`
@@ -88,8 +81,7 @@ The `install.sh` script will reload both nginx and `supervisord`, at which point
 the API should be running on 127.0.0.1:8013 and nginx should be listening for
 requests for https://api.kdm-manager.com
 
-From there, run `server.sh` as root to manage deployment operations, e.g. start,
-stop, restart, etc.
+(Modify the /deploy/nginx.conf file to change this.)
 
 
 ## System administration
