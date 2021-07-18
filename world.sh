@@ -4,7 +4,9 @@
 #   works like admin.sh, except it has daemon modes
 #
 
-pushd /home/toconnell/kdm-manager-api > /dev/null 2>&1
+SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+pushd $SCRIPTPATH > /dev/null
+
 source venv/bin/activate
 export PYTHONPATH="`pwd`"
 

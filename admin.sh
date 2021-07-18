@@ -8,7 +8,9 @@
 #   module if you're interested in manual, CLI administration of the API.
 #
 
-pushd /home/toconnell/kdm-manager-api > /dev/null 2>&1
+SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+pushd $SCRIPTPATH > /dev/null
+
 source venv/bin/activate
 export PYTHONPATH="`pwd`"
 
@@ -17,4 +19,4 @@ PYTHON_VERS=`python --version`
 echo -e " * interpreter: $PYTHON_PATH ($PYTHON_VERS)"
 echo -e " *  PYTHONPATH: $PYTHONPATH"
 
-python app/admin $@ 
+python $SCRIPTPATH/app/admin $@ 

@@ -562,6 +562,7 @@ class Settlement(models.UserAsset):
             # options (i.e. decks)
             output["game_assets"]["pulse_discoveries"] = self.get_pulse_discoveries()
             output["game_assets"]["innovations_options"] = self.get_innovations_options()
+            output['game_assets']['locations_options'] = meow
             output["game_assets"]["principles_options"] = self.get_principles_options()
             output["game_assets"]["milestones_options"] = self.get_milestones_options()
             output["game_assets"]["milestones_dictionary"] = self.get_milestones_options(dict)

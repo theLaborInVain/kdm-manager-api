@@ -6,14 +6,15 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 
-APP_ROOT=`pwd`
+SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+pushd $SCRIPTPATH > /dev/null
 
 
 install() {
     echo -e " Creating symlinks:"
-    ln -v -s $APP_ROOT/deploy/supervisor.conf /etc/supervisor/conf.d/kdm-manager-api.conf
-    ln -v -s $APP_ROOT/deploy/world_supervisor.conf /etc/supervisor/conf.d/kdm-manager-api-world-daemon.conf
-    ln -v -s $APP_ROOT/deploy/nginx.conf /etc/nginx/sites-enabled/kdm-manager-api
+    ln -v -s $SCRIPTPATH/deploy/supervisor.conf /etc/supervisor/conf.d/kdm-manager-api.conf
+    ln -v -s $SCRIPTPATH/deploy/world_supervisor.conf /etc/supervisor/conf.d/kdm-manager-api-world-daemon.conf
+    ln -v -s $SCRIPTPATH/deploy/nginx.conf /etc/nginx/sites-enabled/kdm-manager-api
     echo -e "\n Reloading services:"
     /etc/init.d/nginx reload
     supervisorctl reload
@@ -27,7 +28,7 @@ install() {
 
 
 read -sn 1 -p "
- Press any key to create links to $APP_ROOT/deploy files...
+ Press any key to create links to $SCRIPTPATH/deploy files...
 ";echo
 
 install
