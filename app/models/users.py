@@ -587,14 +587,20 @@ class User(models.UserAsset):
 
         # basics; all views, generic UI/UX stuff
         output["user"]["age"] = self.get_age()
-        output['user']['gravatar_hash'] = md5(self.user['login'].encode('utf-8')).hexdigest()
+
+        # gravatar hash, which is determined programmatically
+        output['user']['gravatar_hash'] = md5(
+            self.user['login'].encode('utf-8')
+        ).hexdigest()
+
+        # count user assets created by the user
         output["user"]["settlements_created"] = utils.mdb.settlements.find(
-            {
-                'created_by': self.user['_id'],
-                'removed': {'$exists': False}
-            }
+            {'created_by': self.user['_id'], 'removed': {'$exists': False}}
         ).count()
-        output["user"]["survivors_created"] = utils.mdb.survivors.find({'created_by': self.user['_id']}).count()
+        output["user"]["survivors_created"] = utils.mdb.survivors.find(
+            {'created_by': self.user['_id']}
+        ).count()
+
         output['user']['subscriber'] = self.get_subscriber_attributes()
 
         output['user']['preferences'] = self.get_preferences()

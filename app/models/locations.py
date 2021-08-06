@@ -1,9 +1,20 @@
-from app.assets import locations
+"""
+
+    LOCATIONS!
+
+"""
+
 from app import models
 
-
 class Assets(models.AssetCollection):
+    """ AssetCollection object model for Locations. """
 
     def __init__(self, *args, **kwargs):
-        self.root_module = locations
+        """ Locations use the base class method to enforce their data model. """
+
+        self.data_model = {
+            'selectable': bool,
+        }
+
         models.AssetCollection.__init__(self,  *args, **kwargs)
+

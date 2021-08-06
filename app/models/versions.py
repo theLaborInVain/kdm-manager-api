@@ -4,19 +4,15 @@
 
 """
 
-
-from app.assets import versions
 from app import models
 
 class Assets(models.AssetCollection):
 
     def __init__(self, *args, **kwargs):
-
-#        self.is_game_asset = False
-        self.root_module = versions
+        """ There's a one-off method that gets called after init to add some
+        info in; versions is sort of a sparse asset. """
 
         models.AssetCollection.__init__(self,  *args, **kwargs)
-
         self.set_version_vars()
 
 
@@ -42,6 +38,5 @@ class Version(models.GameAsset):
 
     def __init__(self, *args, **kwargs):
         models.GameAsset.__init__(self,  *args, **kwargs)
-
         self.assets = Assets()
         self.initialize()

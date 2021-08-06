@@ -562,7 +562,7 @@ class Settlement(models.UserAsset):
             # options (i.e. decks)
             output["game_assets"]["pulse_discoveries"] = self.get_pulse_discoveries()
             output["game_assets"]["innovations_options"] = self.get_innovations_options()
-            output['game_assets']['locations_options'] = meow
+            output['game_assets']['locations_options'] = self.get_locations_options()
             output["game_assets"]["principles_options"] = self.get_principles_options()
             output["game_assets"]["milestones_options"] = self.get_milestones_options()
             output["game_assets"]["milestones_dictionary"] = self.get_milestones_options(dict)
@@ -3099,6 +3099,25 @@ class Settlement(models.UserAsset):
                 return s[0]
 
         return None
+
+
+    def get_locations_options(self):
+        """ Similar to the other get_whatever_options() methods, this one
+        returns a list of options for adding new locations to the settlement.
+        Does not have 'return_type' options. Always returns a list of handles.
+        """
+
+        compatible = self.get_compatible_assets(self.Locations)
+
+        options = []
+        for location in compatible:
+            if (
+                location['handle'] not in self.settlement['locations'] and
+                location.get('selectable', False)
+            ):
+                options.append(location)
+
+        return options
 
 
     def get_monster_volumes(self):

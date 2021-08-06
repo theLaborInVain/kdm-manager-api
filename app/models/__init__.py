@@ -38,6 +38,14 @@ import flask
 # local imports
 from app import API, models, utils
 
+
+# constants
+ATTRIBUTE_DEFAULTS = {
+    bool: True,
+    datetime: datetime.now(),
+    str: 'UNDEFINED',
+}
+
 #
 #   model decorators
 #
@@ -236,7 +244,6 @@ class AssetCollection(object):
     __init__ code in in an individual Asset() object module. """
 
 
-
     def __init__(self):
         """ All Assets() models must base-class this guy to get access to the
         full range of AssetCollection methods, i.e. all of the common/ubiquitous
@@ -247,11 +254,20 @@ class AssetCollection(object):
 
             - you get self.logger for free.
 
-            - if you set 'self.root_module' to be an actual module from the
-            assets folder, that module will be scraped for dictionaries: those
-            dictionaries will then be used as your self.assets dict, i.e. so
-            that you DO NOT have to define your self.assets in your
-            models.Assets() sub class.
+            - Starting in the August 2021 release, there are two options for
+                dealing with self.assets:
+
+                1. if you set 'self.root_module' to be an actual module from the
+                assets folder, that module will be scraped for dictionaries.
+
+                2. if you DO NOT set self.root_module -OR- self.assets, the
+                self.__module__ name ('app.models.locations') will be used to
+                find the app.assets.whatever module, set it to be the
+                self.root_module and do the thing above.
+
+            Either way, the assets dict will then be used as your self.assets
+            dict and overwrite any pre-init self.assets values you might have
+            set.
 
             - if you have assets in your model.Assets.assets dict that DO NOT
             set their own type, you can set self.type on your model.Assets when
@@ -279,6 +295,14 @@ class AssetCollection(object):
         if hasattr(self, "root_module"):
             self.type = os.path.splitext(self.root_module.__name__)[-1][1:]
             self.set_assets_from_root_module()
+        elif not hasattr(self, 'assets'):
+            self.type = self.__module__.split('.')[-1]
+            self.root_module = importlib.import_module(
+                'app.assets.%s' % self.type
+            )
+            self.set_assets_from_root_module()
+#        else:
+#            self.logger.warn('%s initializing manually!' % self.__module__)
 
         # IMPORTANT! self.assets must be set by this point!
 
@@ -309,6 +333,9 @@ class AssetCollection(object):
                 warn_on = True
             self.enforce_mandatory_attributes(warn_on)
 
+        # finally, enforce the self.data_model, if it exists
+        self.enforce_data_model()
+
 
     def __repr__(self):
         """ Complicated __repr__ for asset collections which are...complex."""
@@ -326,6 +353,22 @@ class AssetCollection(object):
             self.type,
             len(self.assets)
         )
+
+
+    def enforce_data_model(self):
+        """ If the collection is initialized with a self.data_model dict, we
+        check all assets in self.assets to make sure they have a value for each
+        key in the dict (and that it is the right type). """
+
+        # iterate thru the data model
+        for attr_name, attr_type in getattr(self, 'data_model', {}).items():
+            attr_default = ATTRIBUTE_DEFAULTS[attr_type]
+
+            # iterate through all asset dicts
+            for asset_dict in self.get_dicts():
+                asset_handle = asset_dict['handle']
+                if attr_name not in asset_dict.keys():
+                    self.assets[asset_handle][attr_name] = attr_default
 
 
     def enforce_mandatory_attributes(self, warn_on_missing_attr=False):
