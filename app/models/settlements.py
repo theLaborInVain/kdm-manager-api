@@ -1373,15 +1373,19 @@ class Settlement(models.UserAsset):
 
     @models.web_method
     def add_monster_volume(self):
-        """ Adds a Monster Volume string. Forces the self.settlement['monster_volumes']
-        to be unique. Expects a request context."""
+        """
+        Adds a Monster Volume string. Forces the
+        self.settlement['monster_volumes'] to be unique. Expects a request
+        context.
+        """
 
         # initialize and validate
         self.check_request_params(['name'])
         vol_string = self.params['name']
 
         if vol_string in self.get_monster_volumes():
-            self.logger.warn("%s Monster volume string '%s' has already been added! Ignoring bogus request..." % (self, vol_string))
+            err = "%s Monster volume '%s' already exists! Ignoring request..."
+            self.logger.warn(err % (self, vol_string))
             return True
 
         # add the list if it's not present
@@ -1389,7 +1393,12 @@ class Settlement(models.UserAsset):
             self.settlement['monster_volumes'] = []
         self.settlement['monster_volumes'].append(vol_string)
 
-        self.log_event(action="add", key="Monster Volumes", value=vol_string, event_type='add_monster_volume')
+        self.log_event(
+            action="add",
+            key="Monster Volumes",
+            value=vol_string,
+            event_type='add_monster_volume'
+        )
         self.save()
 
 

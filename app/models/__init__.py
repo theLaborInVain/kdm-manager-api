@@ -76,7 +76,11 @@ def admin_only(func):
 
 def web_method(func):
     """ Decorate methods that we do not support a request context and thus
-    are not meant to be called as part of web-facing API work, etc. """
+    are not meant to be called as part of web-facing API work, etc.
+
+    If use with other decorators, this should be the FIRST decorator, e.g.
+    @utils.admin_only should come second and so on.
+    """
     func._web_method = True
     return func
 
@@ -1635,7 +1639,7 @@ class UserAsset(object):
                 err = "The %s endpoint is mapped to an internal method!"
                 return flask.Response(response=err % action, status=400)
         else:
-            err = "User action '%s' is not imlemented!" % action
+            err = "User action '%s' is not implemented!" % action
             return flask.Response(response = err, status=501)
 
         return flask.Response(

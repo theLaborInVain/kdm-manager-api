@@ -115,7 +115,7 @@ button.kd {
     --color-kd-card-gradient: radial-gradient(#fff, #fff, #f8f8f8, #fffff9);
     --color-kd-green: #4CB848;
     --color-kd-green-gradient: radial-gradient(#0d0, #4CB848);
-    --color-kd-death-grey: #212121;
+    --color-kd-death-grey: #313131;
     --color-kd-disorder-purple: #766DAC;
     --color-kd-fighting-art-red: #CD4438;
     --color-kd-fighting-art-red-gradient: linear-gradient(to bottom, #D14D3A, #CE483C, #D14D3A);
@@ -193,7 +193,8 @@ button.kd {
 .kd.worksheet_row.lined > div { /* only select direct children */
     margin: 0 0.5rem 0 0.5rem;
 }
-.kd.worksheet_row.lined.principle > :last-child{
+.kd.worksheet_row.justified > :last-child,
+    .kd.worksheet_row.lined.principle > :last-child {
     margin-left: auto; 
     max-width: 50%; 
     white-space: nowrap; 
@@ -452,6 +453,9 @@ select.kd.capsule {
     background: var(--color-kd-brown);
     background: var(--color-kd-brown-gradient);
     color: #fff;
+}
+.kd.death_grey_text {
+    color: #616161;
 }
 .kd.green {
     background: var(--color-kd-green);

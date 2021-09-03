@@ -784,8 +784,8 @@ class User(models.UserAsset):
         return self.user["recovery_code"]
 
 
-    @models.admin_only
     @models.web_method
+    @models.admin_only
     def set_subscriber_level(self, level=None):
         """ Supersedes set_patron_attributes() in the 1.0.0 release. Sets the
         subscriber level, i.e. self.user['subscriber']['level'] value, which, in
