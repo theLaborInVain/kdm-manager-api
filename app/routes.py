@@ -267,8 +267,8 @@ def lookup_asset(asset_type):
 #   UI/UX Helpers
 #
 
-@API.route("/get_random_names/<count>")
-@crossdomain(origin=['*'], headers='Content-Type')
+@API.route("/get_random_names/<count>", methods=['GET', 'OPTIONS'])
+@crossdomain(origin=['*'])
 def get_random_names(count):
     """ Rapid-fire random name generator for FIRST names. """
     names_object = names.Assets()
@@ -281,8 +281,8 @@ def get_random_names(count):
         mimetype="application/json"
     )
 
-@API.route("/get_random_surnames/<count>")
-@crossdomain(origin=['*'], headers='Content-Type')
+@API.route("/get_random_surnames/<count>", methods=['GET','OPTIONS'])
+@crossdomain(origin=['*'])
 def get_random_surnames(count):
     """ Rapid-fire random name generator for LAST names. """
     names_object = names.Assets()

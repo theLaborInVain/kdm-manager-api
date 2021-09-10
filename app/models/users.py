@@ -824,15 +824,20 @@ class User(models.UserAsset):
         self.user['subscriber']['updated_on'] = datetime.now()
 
         info = '%s subscriber level set to %s (admin: %s)'
+
+        # September 2021: automatically set email to verified
+#        self.set_verified_email(new_value=True, save=False)
+
+        # log and save
         self.logger.info(info % (self, level, flask.request.User.user['login']))
         self.save()
 
 
     @models.web_method
-    def set_verified_email(self):
-        """ Sets the verified email value. Expects a request context. Fails
-        if the authenticated user is not a.) the user being modified or b.)
-        an API admin. """
+    def set_verified_email(self, new_value=None, save=True):
+        """ Sets the verified email value. Expects a request context, but can
+        be called directly.Fails if the authenticated user is not a.) the user
+        being modified or b.) an API admin. """
 
         if not (
             flask.request.User.is_admin() or
@@ -841,11 +846,15 @@ class User(models.UserAsset):
             err = "Only API administrators may verify other users' email!"
             raise utils.InvalidUsage(err)
 
-        self.check_request_params(['value'])
-        new_value = bool(self.params['value'])
-        self.user['verified_email'] = new_value
+        if new_value is None:
+            self.check_request_params(['value'])
+            new_value = self.params['value']
+
+        self.user['verified_email'] = bool(new_value)
         self.logger.info('%s Set verified email to %s' % (self, new_value))
-        self.save()
+
+        if save:
+            self.save()
 
 
     @models.web_method
