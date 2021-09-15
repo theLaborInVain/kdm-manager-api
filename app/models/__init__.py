@@ -121,9 +121,20 @@ def log_event_exception_manager(log_event_call):
         try:
             return log_event_call(self, *args, **kwargs)
         except Exception as log_event_call_exception:
-            err_msg = "Unhandled exception in log_event() method!"
-            err_msg += "args: %s, kwargs: %s" % (args, kwargs)
+            # first, figure out what called log_event()
+            curframe = inspect.currentframe()
+            calframe = inspect.getouterframes(curframe, 2)
+            caller_function = calframe[1][3]
+
+            # now roll it all up into a really detailed failure message
+            err_msg = (
+                '%s() call resulted in an unhandled exception in log_event() '
+                'method! log_event(args: %s, kwargs: %s)'
+            ) % (caller_function, args, kwargs)
+
             self.logger.exception(err_msg)
+
+
             utils.email_exception(log_event_call_exception)
 
     return wrapper
@@ -964,6 +975,9 @@ class UserAsset(object):
         PROBABLY define a __repr__ for your individual assets, if for no other
         reason than to make the logs look cleaner. """
 
+        if not hasattr(self, 'collection'):
+            return '[Uninitialized UserAsset object]'
+
         record = getattr(self, self.collection[:-1], {})
         name = record.get('name', 'UNKNOWN')
         return "%s object '%s' [%s]" % (self.collection, name, self._id)
@@ -971,6 +985,7 @@ class UserAsset(object):
 
     def __init__(self, collection=None, _id=None, normalize_on_init=True,
         new_asset_attribs={}, Settlement=None):
+        """ The base init() method for all UserAssets. """
 
         # initialize basic vars
         self.logger = utils.get_logger()
@@ -979,18 +994,17 @@ class UserAsset(object):
 
         if collection is not None:
             self.collection = collection
-        elif hasattr(self,"collection"):
+        elif hasattr(self, "collection"):
             pass
         else:
-            err_msg = "User assets (settlements, users, etc.) may not be\
-            initialized without specifying a collection!"
-
+            err_msg = (
+                "User assets (settlements, users, etc.) may not be "
+                "initialized without specifying a collection!"
+            )
             self.logger.error(err_msg)
             raise AssetInitError(err_msg)
 
-        # use attribs to determine whether the object has been loaded
-        self.loaded = False
-
+        # here is the fork where we create a new record:
         if _id is None:
             self.get_request_params()
             self.new()
@@ -1001,7 +1015,8 @@ class UserAsset(object):
         #   overwrite this
         self.Settlement = Settlement
 
-        # now do load() stuff
+        # now do load() and self.loaded stuff
+        self.loaded = False
         try:
             try:
                 self._id = ObjectId(_id)
@@ -1021,17 +1036,28 @@ class UserAsset(object):
             raise
 
 
+        # finally, since we're initialized, we should also be self.loaded; die
+        #   extra bloody if we're not
+        if not self.loaded:
+            err = "%s UserAsset initialized but not loaded!"
+            raise ValueError(err % (self))
+
+
     def load(self):
         """ The default/vanilla load() method for all UserAsset objects, i.e.
         settlements, survivors, users. The design here is that you call this
         from the individual asset model's load() method via super(), and then
         use the asset model's load() to add additional special stuff. """
 
-        # make sure we've got self.collection, which should come from the
-        #   asset's private __init()__ method
+
+        # do some sanity checking here around the MOST BASIC attributes required
+        #   to load() a UserAsset object, regardless of collection.
         for attr in ['_id', 'collection']:
             if not hasattr(self, attr):
                 raise AssetLoadError('load() requires self.%s attr!' % attr)
+            if not isinstance(self.collection, str):
+                err = "self.collection must be 'str' type (not %s)"
+                raise AssetLoadError(err % type(self.collection))
 
         # use self.collection to set the mdb_doc
         mdb_doc = utils.mdb[self.collection].find_one({"_id": self._id})
@@ -1481,7 +1507,8 @@ class UserAsset(object):
             "created_on": datetime.now(),
             'created_by': created_by,
             'created_by_email': created_by_email,
-            "settlement_id": self.settlement_id,
+#            "settlement_id": self.settlement_id,
+            "settlement_id": getattr(self, 'settlement_id', None),
             "ly": self.get_current_ly(),
             'event_type': event_type,
             'event': msg,

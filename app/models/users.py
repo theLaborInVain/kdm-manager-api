@@ -402,7 +402,11 @@ class User(models.UserAsset):
     """ This is the main controller for all user objects. """
 
     def __repr__(self):
-        return "[%s (%s)]" % (self.user["login"], self._id)
+        """ Custom repr for User objects. """
+        try:
+            return "[%s (%s)]" % (self.user["login"], self._id)
+        except:
+            return super().__repr__()
 
 
     def __init__(self, *args, **kwargs):

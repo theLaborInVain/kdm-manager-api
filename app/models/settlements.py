@@ -129,7 +129,9 @@ class Settlement(models.UserAsset):
         self.collection="settlements"
         models.UserAsset.__init__(self,  *args, **kwargs)
 
+        # initialize asset collections immediately, since we need them to norm
         self.init_asset_collections()
+
         # now normalize
         if self.normalize_on_init:
             self.normalize()
@@ -150,7 +152,6 @@ class Settlement(models.UserAsset):
         self.settlement_id = self._id
         self.get_campaign('initialize')     # sets an object
         self.get_survivors('initialize')    # sets a list of objects
-        self.init_asset_collections()
 
 
     def init_asset_collections(self):

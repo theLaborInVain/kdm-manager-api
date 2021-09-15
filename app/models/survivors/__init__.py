@@ -135,14 +135,22 @@ class Survivor(models.UserAsset):
     }
 
     def __repr__(self):
-        return "%s [%s] (%s)" % (
-            self.survivor["name"],
-            self.survivor["sex"],
-            self.survivor["_id"]
-        )
+        """ Writes a pretty __repr__ if self.survivor exists. Otherwise, falls
+        back to the base class __repr__(). """
+
+        if hasattr(self, 'survivor'):
+            return "%s [%s] (%s)" % (
+                self.survivor["name"],
+                self.survivor["sex"],
+                self.survivor["_id"]
+            )
+
+        return super().__repr__()
 
 
     def __init__(self, *args, **kwargs):
+        """ Child/private class method for initializing a survivor object. """
+
         self.collection="survivors"
 
         # initialize AssetCollections for later
@@ -187,8 +195,9 @@ class Survivor(models.UserAsset):
         ]
 
         # if we're doing a new survivor, it will happen when we subclass the
-        # models.UserAsset class:
-        models.UserAsset.__init__(self,  *args, **kwargs)
+        #   models.UserAsset class; otherwise, the base class method will call
+        #   self.load():
+        super().__init__(*args, **kwargs)
 
         # this makes the baby jesus cry
         if self.Settlement is None:
@@ -215,29 +224,51 @@ class Survivor(models.UserAsset):
         self.settlement_id = self.survivor["settlement"]
 
 
-    def save(self, verbose=True):
+
+    def save(self, verbose=True, bypass_post_process=False):
         """ Do custom post-process for survivors and then super the base class
         func (i.e. the UserAsset.save() method) to go the generic save. """
 
+
         #
-        #   SURVIVOR POST PROCESS! - January 2018
+        #   SURVIVOR POST PROCESS! - January 2018; September 2021
         #
+
         post_process_routes = [
             'set_attribute',
             'set_weapon_proficiency_type'
         ]
-        if hasattr(request, 'action') and request.action in post_process_routes:
+
+        # never post-process an uninitialized Survivor:
+        if getattr(self, 'Settlement', None) is None:
+            bypass_post_process = True
+
+        if (
+            not bypass_post_process and
+            hasattr(request, 'action') and
+            request.action in post_process_routes
+        ):
             self.post_process()
 
         # finally, call the base class method (passing the verb flag through)
-        super(Survivor, self).save(verbose=verbose)
+        super().save(verbose=verbose)
 
 
     def post_process(self):
         """ Certain routes require a post-processing past to apply rules, biz
         logic, etc. """
 
-        self.logger.debug("%s saving during '%s' action! Starting post-process..." % (self, request.action))
+        # sanity check/warning about needing Settlement
+        # https://github.com/theLaborInVain/kdm-manager-api/issues/55
+        if not getattr(self, 'loaded', False):
+            err = (
+                'post_process() has been called on an uninitialized object! '
+                'This can cause major errors if business logic in this '
+                'method requires an initialized Settlement attribute! '
+                'Ignoring...'
+            )
+            self.logger.warn(err)
+            return True
 
         # biz logic for weapon proficiency
         w_handle = self.survivor.get("weapon_proficiency_type", None)
@@ -246,11 +277,11 @@ class Survivor(models.UserAsset):
             w_dict = self.WeaponProficiency.get_asset(w_handle)
             if self.survivor.get('Weapon Proficiency', 0) >= 3:
                 if w_dict['specialist_ai'] not in self.survivor['abilities_and_impairments']:
-                    self.logger.warn("%s Weapon specialization reached, but A&I not present! Adding A&I..." % (self))
+                    self.logger.info("%s Weapon specialization reached, but A&I not present! Adding A&I..." % (self))
                     self.add_game_asset("abilities_and_impairments", w_dict['specialist_ai'], save=False)
             if self.survivor.get('Weapon Proficiency', 0) >= 8:
                 if w_dict['master_ai'] not in self.survivor['abilities_and_impairments']:
-                    self.logger.warn("%s Weapon mastery reached, but A&I not present! Adding A&I..." % (self))
+                    self.logger.info("%s Weapon mastery reached, but A&I not present! Adding A&I..." % (self))
                     self.add_game_asset("abilities_and_impairments", w_dict['master_ai'], save=False)
 
 
@@ -3723,8 +3754,6 @@ class Survivor(models.UserAsset):
             self.set_weapon_proficiency_type()
 
         # sheet attribute operations
-        elif action == "set_attribute":
-            self.set_attribute()
         elif action == "set_many_attributes":   # serial set_attribute()
             self.set_many_attributes()
         elif action == "set_attribute_detail":  # tokens/gear
