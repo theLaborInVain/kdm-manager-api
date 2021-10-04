@@ -55,10 +55,12 @@ def verify_password(username, password):
     if flask.request.User is None:
         return False
     elif flask.request.User.user.get("admin", None) is None:
-        msg = "Non-admin user %s attempted to access the admin panel!" % (
-            flask.request.User.user["login"])
-        application.logger.warn(msg)
-        return False
+        msg = (
+            "Failed attempt by non-admin user '%s' to access the admin "
+            "panel at %s server time."
+        ) % (flask.request.User.user["login"], datetime.now())
+        API.logger.warn(msg)
+        raise PermissionError(msg)
 
     return True
 

@@ -473,9 +473,9 @@ def collection_action(collection, action, asset_id):
     perms = asset_object.get_requester_permissions()
 
     if perms is None:
-        return utils.HTTP_403
+        return utils.http_403
     elif perms == 'read' and not action.startswith('get'):
-        return utils.HTTP_403
+        return utils.http_403
 
     if isinstance(asset_object, flask.Response):
         return asset_object

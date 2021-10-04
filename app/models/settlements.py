@@ -126,11 +126,12 @@ class Settlement(models.UserAsset):
 
     @utils.metered
     def __init__(self, *args, **kwargs):
-        self.collection="settlements"
-        models.UserAsset.__init__(self,  *args, **kwargs)
-
         # initialize asset collections immediately, since we need them to norm
         self.init_asset_collections()
+
+        # now initialize a generic settlement object
+        self.collection="settlements"
+        models.UserAsset.__init__(self,  *args, **kwargs)
 
         # now normalize
         if self.normalize_on_init:
