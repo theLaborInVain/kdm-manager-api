@@ -37,7 +37,7 @@ import flask
 
 # local imports
 from app import API, models, utils
-
+from app.assets import versions as versions_module
 
 # constants
 ATTRIBUTE_DEFAULTS = {
@@ -259,7 +259,7 @@ class AssetCollection(object):
     __init__ code in in an individual Asset() object module. """
 
 
-    def __init__(self):
+    def __init__(self, assets_version=API.config['DEFAULT_GAME_VERSION']):
         """ All Assets() models must base-class this guy to get access to the
         full range of AssetCollection methods, i.e. all of the common/ubiquitous
         ones.
@@ -301,6 +301,7 @@ class AssetCollection(object):
         """
 
         self.logger = utils.get_logger()
+        self.version = assets_version
 
         # set the game_asset attrib first (default to True)
         if not hasattr(self, 'is_game_asset'):
@@ -316,8 +317,6 @@ class AssetCollection(object):
                 'app.assets.%s' % self.type
             )
             self.set_assets_from_root_module()
-#        else:
-#            self.logger.warn('%s initializing manually!' % self.__module__)
 
         # IMPORTANT! self.assets must be set by this point!
 
@@ -422,6 +421,7 @@ class AssetCollection(object):
 
 
     def set_assets_from_root_module(self):
+
         """ This is the vanilla AssetCollection initialization method. You feed
         it a 'module' value (which should be something from the assets/ folder)
         and it creates a self.assets dictionary by iterating through the module.
@@ -432,27 +432,28 @@ class AssetCollection(object):
         Important! Adjusting the self.assets dict before calling this method
         will overwrite any adjustments because this method starts self.assets as
         a blank dict!
+
+        Finally, as of October 2021, this method supports the kwarg 'version',
+        which allows the assets to be updated to 'version'.
         """
 
         # the 'type' of all assets is the name of their root module. Full stop.
         # 'sub_type' is where we want to put any kind of 'type' info that we get
         # from the asset itself.
-
         all_assets = {}
-
         for module_dict, v in self.root_module.__dict__.items():
-            if isinstance(v, dict) and not module_dict.startswith('_'): # get all dicts in the module
-                for dict_key in sorted(v.keys()):                               # get all keys in each dict
-
+            if isinstance(v, dict) and not module_dict.startswith('_'):
+                for dict_key in sorted(v.keys()):
 
                     if 'sub_type' in v[dict_key].keys():
-                        raise Exception("%s already has a sub type!!!!" % v[dict_key])
+                        err = "%s already has a sub type!!!!" % v[dict_key]
+                        raise Exception(err)
 
                     # do NOT modify the original/raw asset dictionary
                     a_dict = v[dict_key].copy()
                     a_dict['handle'] = dict_key
 
-                    # set sub_type from raw asset  'type', then set the base type
+                    # set sub_type from raw asset 'type', then set the base type
                     a_dict['sub_type'] = v[dict_key].get("type", module_dict)
                     a_dict["type"] = self.type
 
@@ -463,14 +464,26 @@ class AssetCollection(object):
                         err = "Asset has no 'name' attribute! %s"
                         self.logger.error(err % a_dict)
 
-
         # sort on name, allowing for the possibility of duplicate names
         self.assets = OrderedDict()
         list_of_dicts = [all_assets[handle] for handle in all_assets.keys()]
         for asset in sorted(list_of_dicts, key = lambda i: i['name']):
             self.assets[asset['handle']] = asset
 
-        # finally, set the laziness attribute self.handles
+        # now step through versions and update until target
+        target_vers_dict = versions_module.VERSIONS[self.version]
+        for v_key in versions_module.VERSIONS.keys():
+            v_dict = versions_module.VERSIONS[v_key]
+            if v_dict['released'] <= target_vers_dict['released']:
+                if (
+                    v_dict.get('assets', None) is not None and
+                    v_dict['assets'].get(self.type, None) is not None
+                ):
+                    updates = v_dict['assets'][self.type]
+                    for asset_handle in v_dict['assets'].get(self.type, {}):
+                        self.assets[asset_handle].update(updates[asset_handle])
+
+        # set the laziness attribute self.handles
         self.handles = sorted(self.assets.keys())
 
 
@@ -1376,7 +1389,10 @@ class UserAsset(object):
 
 
     def list_assets(self, attrib=None, log_failures=True):
-        """ Laziness method that returns a list of dictionaries where dictionary
+        """
+        WARNING! THIS IGNORES SETTLEMENT VERSION! YHBW!!!
+
+        Laziness method that returns a list of dictionaries where dictionary
         in the list is an asset in the object's list of those assets.
 
         Basically, if your object is a survivor, and you set 'attrib' to

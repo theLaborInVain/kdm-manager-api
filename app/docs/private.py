@@ -1026,6 +1026,7 @@ routes that pulls down the whole settlement.</p>
     "settlement_add_lantern_years_settlement_id": {
         "name": "/settlement/add_lantern_years/&lt;settlement_id&gt;",
         "subsection": "settlement_manage_timeline",
+        'methods': ['POST','OPTIONS'],
         "desc": """\
 <p><b>POST</b> a number (int) of years to add to the settlement's
 Timeline:</p>
@@ -1035,7 +1036,39 @@ a number of years that would take you above 50 LYs, you'll get a
 400 back.</p>
 	""",
     },
-    "settlement_replace_lantern_year_settlement_id": {
+    "settlement_set_current_lantern_year_settlement_id": {
+        "name": "/settlement/set_current_lantern_year/&lt;settlement_id&gt;",
+        "subsection": "settlement_manage_timeline",
+        'methods': ['POST','OPTIONS'],
+        "desc": """\
+<p>To set the settlement's current LY, <b>POST</b> an int to this
+endpoint:</p>
+<code>{ly: 3}</code>
+	""",
+    },
+    'settlement_set_lantern_year': {
+        'name': '/settlement/set_lantern_year/&lt;settlement_id&gt;',
+        'methods': ['POST','OPTIONS'],
+        'subsection': 'settlement_manage_timeline',
+        'desc': """\
+            <p>Use this endpoint to compeltely overwrite a lantern year.</p>
+            <p>Requires the <code>ly</code> param, which should be a
+            whole lantern year represented as JSON, e.g:
+<pre><code>
+{
+    'year': 1,
+    'story_event': [
+        {'handle': 'core_returning_survivors'}
+    ],
+    'settlement_event': [
+        {'handle': 'core_first_day'}
+    ]
+}
+</pre></code>
+        </p>
+        """,
+    },
+    "zz_settlement_replace_lantern_year_settlement_id": {
         "name": "/settlement/replace_lantern_year/&lt;settlement_id&gt;",
         "subsection": "settlement_manage_timeline",
         "desc": """\
@@ -1043,15 +1076,6 @@ a number of years that would take you above 50 LYs, you'll get a
 <p>This endpoint was deprecated in the April 2021 release of the API.</p>
 <p>It was removed completely in the June 2021 release.</p>
 <p>Use <code>set_lantern_year</code> instead.</p>
-	""",
-    },
-    "settlement_set_current_lantern_year_settlement_id": {
-        "name": "/settlement/set_current_lantern_year/&lt;settlement_id&gt;",
-        "subsection": "settlement_manage_timeline",
-        "desc": """\
-<p>To set the settlement's current LY, <b>POST</b> an int to this
-endpoint:</p>
-<code>{ly: 3}</code>
 	""",
     },
 

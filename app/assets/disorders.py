@@ -268,9 +268,13 @@ expansion_disorders = {
     },
     'spiral_ganglia': {
         'expansion': 'slenderman',
-        'flavor_text': 'The roads in your mind cross and reveal a strange new path.',
+        'flavor_text':
+            'The roads in your mind cross and reveal a strange new path.',
         'name': 'Spiral Ganglia',
-        'survivor_effect': 'At the start of the showdown, gain the <b>Darkness Awareness</b> survivor status card.'
+        'survivor_effect': (
+            'At the start of the showdown, gain the <b>Darkness Awareness</b> '
+            'survivor status card.'
+        ),
     },
 
     # dung beetle knight
@@ -278,13 +282,17 @@ expansion_disorders = {
         'expansion': 'dung_beetle_knight',
         'flavor_text': 'Moving quickly makes you vomit.',
         'name': 'Motion Sickness',
-        'survivor_effect': 'Whenever you suffer <b>knockback</b>, gain 1 bleeding token.'
+        'survivor_effect':
+            'Whenever you suffer <b>knockback</b>, gain 1 bleeding token.'
     },
     'vermin_obsession': {
         'expansion': 'dung_beetle_knight',
         'flavor_text': 'You love insects.',
         'name': 'Vermin Obsession',
-        'survivor_effect': 'While there is a <b>Bug Spot</b> terrain tile on the showdown board, you are so overwhelmed that you are <b>doomed</b>.'
+        'survivor_effect': (
+            'While there is a <b>Bug Spot</b> terrain tile on the showdown '
+            'board, you are so overwhelmed that you are <b>doomed</b>.'
+        ),
     },
 
     # lion knight

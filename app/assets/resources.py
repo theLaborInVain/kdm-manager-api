@@ -61,6 +61,31 @@ core_resources = {
         'copies': 3,
         'rules_text': 'If you <b class="special-rule">consume</b> this, archive this card. Roll 1d10. On a result of 6+, you contract a parasite. Archive all <b class="keyword">consumable</b> gear in your gear grid now.'
     },
+    'perfect_bone': {
+        'type': 'basic_resources',
+        'name': 'Perfect Bone',
+        'min_version': 'core_1_6',
+        'keywords': ['perfect', 'bone'],
+        'desc': '<i class="flavor-text">A mind numbingly perfect bone.</i>',
+    },
+    'perfect_hide': {
+        'type': 'basic_resources',
+        'name': 'Perfect Hide',
+        'min_version': 'core_1_6',
+        'keywords': ['perfect', 'hide'],
+        'desc': '<i class="flavor-text">Supreme texture.</i>',
+    },
+    'perfect_organ': {
+        'type': 'basic_resources',
+        'name': 'Perfect Organ',
+        'min_version': 'core_1_6',
+        'keywords': ['perfect', 'organ', 'consumable'],
+        'desc': (
+            'If you <b>consume</b> this, archive this card. Roll 1d10. On '
+            'a result of 6+, you contract a millennium parasite and gain +10 '
+            'Hunt XP.'
+        ),
+    },
     'skull': {
         'type': 'basic_resources',
         'name': 'Skull',
@@ -999,6 +1024,14 @@ expansions = {
         'desc': 'When you gain Jowls, it bites off your nose! If you have no nose, you die.<br/>If you have <b class="vermin">Jowls</b>, <b class="vermin">Hagfish</b>, and <b class="vermin">Bugfish</b>, you are inspired! You may archive all 3 to gain the <b class="innovation">Filleting Table</b> innovation.',
         'copies': 1,
         'rules_text': 'When you gain Jowls, it bites off your nose! If you have no nose, you die.<br/>If you have <b class="vermin">Jowls</b>, <b class="vermin">Hagfish</b>, and <b class="vermin">Bugfish</b>, you are inspired! You may archive all 3 to gain the <b class="innovation">Filleting Table</b> innovation.',
+    },
+    'life_string': {
+        'expansion': 'sunstalker',
+        'type': 'strange_resources',
+        'min_version': 'core_1_6',
+        'name': 'Life String',
+        'keywords': ['organ'],
+        'desc': '<i>A thread of history.</i>',
     },
 
     # sunstalker resources

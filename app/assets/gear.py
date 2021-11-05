@@ -17,11 +17,18 @@ core = {
     'brain_mint': {
         'type': 'barber_surgeon',
         'name': 'Brain Mint',
-        'keywords': ['item','consumable'],
+        'keywords': ['item', 'consumable'],
         'affinities': {'left': 'blue', 'top': 'green'},
-        'desc': '<font class="kdm_font">a</font> <b>Consume:</b> Remove all your tokens and stand up. You may use this while knocked down. Use once per showdown.', 
+        'desc': (
+            '<font class="kdm_font">a</font> <b>Consume:</b> Remove all your '
+            'tokens and stand up. You may use this while knocked down. Use '
+            'once per showdown.',
+        ),
         'recipes': [
-            {'locations': ['barber_surgeon'], 'resource_handles': {'screaming_brain': 1}, },
+            {
+                'locations': ['barber_surgeon'],
+                'resource_handles': {'screaming_brain': 1},
+            },
         ],
     },
     'bug_trap': {
@@ -36,11 +43,18 @@ core = {
     'elder_earrings': {
         'type': 'barber_surgeon',
         'name': 'Elder Earrings',
-        'keywords': ['item','jewelry'],
+        'keywords': ['item', 'jewelry'],
         'affinities': {'left': 'red', 'right': 'green', 'bottom': 'blue'},
-        'desc': 'At the start of the <b>showdown</b>, gain +2 survival. +1 Hunt XP after a showdown.',
+        'desc': (
+            'At the start of the <b>showdown</b>, gain +2 survival. +1 Hunt XP '
+            'after a showdown.'
+        ),
         'recipes': [
-            {'locations': ['barber_surgeon'], 'resource_handles': {'shank_bone': 1}, 'resource_types': {'scrap':1}},
+            {
+                'locations': ['barber_surgeon'],
+                'resource_handles': {'shank_bone': 1},
+                'resource_types': {'scrap':1}
+            },
         ],
     },
     'first_aid_kit': {
@@ -77,10 +91,17 @@ core = {
         'type': 'barber_surgeon',
         'name': 'Speed Powder',
         'keywords': ['item','soluble'],
-        'desc': '<font class="kdm_font">a</font>: Suffer 2 brain damage. Gain +1 speed token. Use once per showdown.',
+        'desc': (
+            '<font class="kdm_font">a</font>: Suffer 2 brain damage. '
+            'Gain +1 speed token. Use once per showdown.'
+        ),
         'affinities': {'right': 'blue'},
         'recipes': [
-            {'locations': ['barber_surgeon'], 'resource_types': {'organ': 2}, 'resource_handles': {'second_heart': 1}},
+            {
+                'locations': ['barber_surgeon'],
+                'resource_types': {'organ': 2},
+                'resource_handles': {'second_heart': 1}
+            },
         ],
     },
 
@@ -204,7 +225,23 @@ core = {
         'speed': 3,
         'accuracy': 5,
         'strength': 3,
-        'desc': '<b>Sharp:</b> Add 1d10 strength to each wound attempt.<br/><b>Early Iron:</b> When an attack roll result is 1, cancel any hits and end the attack.',
+        'desc': (
+            '<b>Sharp:</b> Add 1d10 strength to each wound attempt.<br/>'
+            '<b>Early Iron:</b> When an attack roll result is 1, cancel any '
+            'hits and end the attack.'
+        ),
+    },
+    'polishing_lantern': {
+        'name': 'Polishing Lantern',
+        'min_version': 'core_1_6',
+        'keywords': ['item', 'metal', 'lantern'],
+        'affinities': {'left': 'red'},
+        'rules': ['Ignore <b>Early Iron</b>'],
+        'desc': (
+            'Spend <font class="kdm_font">a</font> to polish the edge of your '
+            "or an adjacent survivor's finesse weapon. It gains +4 strength "
+            'for its next attack. Limit once per attack.'
+        ),
     },
     'perfect_slayer': {
         'type': 'blacksmith',
@@ -525,7 +562,11 @@ core = {
         'keywords': ['item','other'],
         'rules': ['Vital'],
         'affinities': {'left': 'blue', 'top': 'green'},
-        'desc': "On <b>Arrival</b>, all survivors gain the <b>Horripilation</b> survivor status card. (See the Watcher's AI Deck.) When not <b>insane</b>, flip this card.",
+        'desc': (
+            "On <b>Arrival</b>, all survivors gain the <b>Horripilation</b> "
+            "survivor status card. (See the Watcher's AI Deck.) When not "
+            "<b>insane</b>, flip this card."
+        ),
     },
     'oxidized_beacon_shield': {
         'type': 'exhausted_lantern_hoard',
@@ -557,14 +598,19 @@ core = {
     'oxidized_lantern_glaive': {
         'type': 'exhausted_lantern_hoard',
         'name': 'Oxidized Lantern Glaive',
-        'keywords': ['weapon','melee','spear','axe','two-handed','finesse','metal'],
+        'keywords': [
+            'weapon','melee','spear','axe','two-handed','finesse','metal'
+        ],
         'affinities': {'bottom': 'green'},
         'rules': ['Sharp','Reach 2'],
         'speed': 2,
         'accuracy': 5,
         'strength': 6,
         'affinity_bonus':{
-            'desc': 'On a <b>Perfect hit</b>, the edge sharpens. This weapon gains +4 strength for this attack.',
+            'desc': (
+                'On a <b>Perfect hit</b>, the edge sharpens. This weapon '
+                'gains +4 strength for this attack.'
+            ),
             'requires': {
                 'puzzle': {'green': 1},
                 'complete': {'red': 1},
@@ -770,7 +816,11 @@ core = {
         'keywords': ['item','mask','bone','other'],
         'rules': ['Unique','Irreplaceable','Accessory'],
         'recipes': [
-            {'locations': ['mask_maker'], 'resource_handles': {'small_feather':1}, 'resource_types': {'bone': 6, 'organ': 4}, },
+            {
+                'locations': ['mask_maker'],
+                'resource_handles': {'small_feathers':1},
+                'resource_types': {'bone': 6, 'organ': 4},
+            },
         ],
     },
     'white_lion_mask': {
@@ -787,17 +837,28 @@ core = {
     'dried_acanthus': {
         'type': 'organ_grinder',
         'name': 'Dried Acanthus',
-        'keywords': ['item','herb','consumable'],
-        'desc': 'When you <b>depart</b>, gain +2 survival. When you suffer a severe injury, ignore it and archive this card instead.',
+        'keywords': ['item', 'herb', 'consumable'],
+        'desc': (
+            'When you <b>depart</b>, gain +2 survival. When you suffer a '
+            'severe injury, ignore it and archive this card instead.'
+        ),
         'recipes': [
-            {'locations': ['organ_grinder'], 'resource_handles': {'fresh_acanthus':1} },
+            {
+                'locations': ['organ_grinder'],
+                'resource_handles': {'fresh_acanthus':1}
+            },
         ],
     },
     'fecal_salve': {
         'type': 'organ_grinder',
         'name': 'Fecal Salve',
         'keywords': ['item','balm','stinky'],
-        'desc': 'When you <b>depart</b>, gain +1 survival<br/><font class="kdm_font">a</font>: You are not a <b>threat</b> until you attack. If you have the <b>priority target</b> token, remove it.',
+        'desc': (
+            'When you <b>depart</b>, gain +1 survival<br/>'
+            '<font class="kdm_font">a</font>: You are not a <b>threat</b> '
+            'until you attack. If you have the <b>priority target</b> token, '
+            'remove it.'
+        ),
         'affinities': {'left': 'blue'},
         'recipes': [
             {'locations': ['organ_grinder'], 'resource_types': {'organ':1} },
@@ -867,7 +928,10 @@ core = {
         'accuracy': 6,
         'strength': 9,
         'rules': ['Slow','Range 6'],
-        'desc': '<b>Cumbersome:</b> Spend <font class="kdm_font">c</font> as an additional cost of activating this weapon.',
+        'desc': (
+            '<b>Cumbersome:</b> Spend <font class="kdm_font">c</font> as an '
+            'additional cost of activating this weapon.'
+        ),
         'affinities': {'left': 'red', 'right': 'green'},
         'affinity_bonus': {
             'desc': 'Range +2',
@@ -876,13 +940,41 @@ core = {
                 'complete': {'blue': 1},
             }
         },
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'phoenix_whisker': 1,
+                    'wishbone': 1,
+                },
+                'resource_types': {
+                    'scrap': 1,
+                },
+            },
+        ],
     },
     'bird_bread': {
         'type': 'plumery',
         'name': 'Bird Bread',
         'keywords': ['item','consumable','soluble'],
         'affinities': {'right': 'green'},
-        'desc': '<font class="kdm_font">a</font> <b>Consume:</b> Once per showdown, add <font class="inline_shield">1</font> to all hit locations. Gain <b>priority target</b> token. Roll 1d10. On a 1, reduce your survival to 0.',
+        'desc': (
+            '<font class="kdm_font">a</font> <b>Consume:</b> Once per '
+            'showdown, add <font class="inline_shield">1</font> to all hit '
+            'locations. Gain <b>priority target</b> token. Roll 1d10. On a 1, '
+            'reduce your survival to 0.'
+        ),
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'pustules': 1,
+                },
+                'resource_types': {
+                    'hide': 3,
+                },
+            },
+        ],
     },
     'bloom_sphere': {
         'type': 'plumery',
@@ -890,27 +982,74 @@ core = {
         'keywords': ['item','stinky','other'],
         'affinities': {'left': 'green', 'right': 'blue'},
         'affinity_bonus': {
-            'desc': 'When you are picked as a target, roll 1d10. On a 6+, the monster must pick a new target, if possible.',
-            'requires': {'puzzle': {'green': 1, 'blue':1}},
+            'desc': (
+                'When you are picked as a target, roll 1d10. On a 6+, the '
+                'monster must pick a new target, if possible.'
+            ),
+            'requires': {'puzzle': {'green': 1, 'blue':1} },
         },
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'small_hand_parasites': 1,
+                },
+                'resource_types': {
+                    'bone': 3,
+                },
+            },
+        ],
     },
     'crest_crown': {
         'type': 'plumery',
         'name': 'Crest Crown',
         'keywords': ['item', 'other'],
-        'affinities': {'top': 'blue', 'left': 'red', 'right': 'green', 'bottom': 'blue'},
-        'desc': '<font class="kdm_font">a</font>: If <b>insane</b>, reshuffle hit location deck.',
+        'affinities':
+            {'top': 'blue', 'left': 'red', 'right': 'green', 'bottom': 'blue'},
+        'desc': (
+            '<font class="kdm_font">a</font>: If <b>insane</b>, reshuffle hit '
+            'location deck.'
+        ),
         'affinity_bonus': {
-            'desc': 'When you depart, gain +1 insanity and +1 survival for every <font class="kdm_font_2 affinity_blue_text">h</font> you have.',
+            'desc': (
+                'When you depart, gain +1 insanity and +1 survival for '
+                'every <font class="kdm_font_2 affinity_blue_text">h</font> '
+                'you have.'
+            ),
             'requires': {'puzzle': {'red': 1, 'blue':2}},
         },
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'phoenix_crest': 1,
+                },
+                'resource_types': {
+                    'organ': 6,
+                },
+            },
+        ],
     },
     'feather_mantle': {
         'type': 'plumery',
         'name': 'Feather Mantle',
         'keywords': ['item', 'flammable'],
         'affinities': {'left': 'blue', 'right': 'green', 'bottom': 'red'},
-        'desc': 'When you suffer <b>knockback</b>, you may ignore <b>collision</b> with other survivors and reduce movement by up to 3 spaces.',
+        'desc': (
+            'When you suffer <b>knockback</b>, you may ignore <b>collision</b> '
+            'with other survivors and reduce movement by up to 3 spaces.'
+        ),
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'tail_feathers': 2,
+                },
+                'resource_types': {
+                    'scrap': 1,
+                },
+            },
+        ],
     },
     'feather_shield': {
         'type': 'plumery',
@@ -925,6 +1064,15 @@ core = {
             'desc':'Reduce any suffered brain damage by 1 to a minimum of 1.',
             'requires': {'complete': {'red': 1, 'blue': 1, 'green': 1}}
         },
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'small_feathers': 2,
+                    'muculent_droppings': 1,
+                },
+            },
+        ],
     },
     'hollow_sword': {
         'type': 'plumery',
@@ -933,8 +1081,22 @@ core = {
         'speed': 3,
         'accuracy': 5,
         'strength': 3,
-        'rules': ['Frail','Paired'],
-        'desc': 'On a <b>perfect hit</b>, make 1 additional attack roll.',
+        'rules': ['Frail', 'Paired'],
+        'desc': (
+            'On a <b>perfect hit</b>, make 1 additional attack roll.'
+        ),
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'hollow_wing_bones': 1,
+                },
+                'resource_types': {
+                    'bone': 2,
+                    'hide': 2,
+                },
+            },
+        ],
     },
     'hollowpoint_arrow': {
         'type': 'plumery',
@@ -944,19 +1106,49 @@ core = {
         'accuracy': 6,
         'strength': 11,
         'rules': ['Slow','Ammo - Bow'],
-        'desc': 'On a hit, monster gains -1 movement token. Use once per showdown.',
+        'desc':
+            'On a hit, monster gains -1 movement token. Use once per showdown.',
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'hollow_wing_bones': 1,
+                },
+                'resource_types': {
+                    'scrap': 1,
+                },
+            },
+        ],
     },
     'hours_ring': {
         'type': 'plumery',
         'name': 'Hours Ring',
         'keywords': ['item','other'],
-        'rules': ['Unique','Selfish'],
-        'desc': 'Do not gain any tokens for any reason. Do not gain Hunt XP or weapon proficiency. <b>Retired</b> wearers can <b>depart</b>.',
+        'rules': ['Unique', 'Selfish'],
+        'desc': (
+            'Do not gain any tokens for any reason. Do not gain Hunt XP or '
+            'weapon proficiency. <b>Retired</b> wearers can <b>depart</b>.'
+        ),
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'shimmering_halo': 1,
+                },
+                'resource_types': {'organ': 5},
+            },
+        ],
     },
     'phoenix_armor_set': {
         'type': 'plumery',
         'name': 'Phoenix Armor Set',
-        'desc': 'Add <font class="inline_shield">1</font> to all hit locations.<br/><b>Charge:</b> Spend <font class="kdm_font">c a</font>, full move in a straight line. At the end of the movement, activate a melee weapon and attack. Add the number of spaces you moved to your strength for the attack.',
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+            '<br/><b>Charge:</b> Spend <font class="kdm_font">c a</font>, '
+            'full move in a straight line. At the end of the movement, '
+            'activate a melee weapon and attack. Add the number of spaces you '
+            'moved to your strength for the attack.'
+        ),
     },
     'phoenix_faulds': {
         'type': 'plumery',
@@ -965,6 +1157,17 @@ core = {
         'armor': 4,
         'location': 'waist',
         'desc': 'When you <b>depart</b>, gain +1 insanity.',
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'iron': 1,
+                    'leather': 1,
+                    'tail_feathers': 1,
+                },
+                'resource_types': {'organ':1},
+            },
+        ],
     },
     'phoenix_gauntlet': {
         'type': 'plumery',
@@ -973,6 +1176,17 @@ core = {
         'location': 'arms',
         'keywords': ['armor','set','feather','metal','flammable'],
         'desc': 'When you <b>depart</b>, gain +1 insanity.',
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_types': {'bone':1},
+                'resource_handles': {
+                    'iron': 1,
+                    'leather': 1,
+                    'small_feathers': 1,
+                },
+            },
+        ],
     },
     'phoenix_greaves': {
         'type': 'plumery',
@@ -982,21 +1196,45 @@ core = {
         'armor': 4,
         'location': 'legs',
         'desc': 'If <b>insane</b>, gain +2 movement.',
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'iron': 1,
+                    'leather': 1,
+                    'small_feathers': 1,
+                },
+                'resource_types': {'organ':1},
+            },
+        ],
     },
     'phoenix_helm': {
         'type': 'plumery',
         'name': 'Phoenix Helm',
-        'keywords': ['armor','set','feather','metal','flammable'],
+        'keywords': ['armor', 'set', 'feather', 'metal', 'flammable'],
         'armor': 4,
         'location': 'head',
         'affinities': {'bottom': 'blue'},
         'affinity_bonus': {
-            'desc': 'If <b>insane</b> at the start of the showdown, gain +1 evasion token.',
+            'desc': (
+                'If <b>insane</b> at the start of the showdown, gain +1 evasion '
+                'token.'
+            ),
             'requires': {
                 'puzzle': {'blue':1},
                 'complete': {'green': 1, 'red': 1},
             },
         },
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_types': {'bone':1},
+                'resource_handles': {
+                    'small_feathers': 1,
+                    'hollow_wing_bones': 1,
+                },
+            },
+        ],
     },
     'phoenix_plackart': {
         'type': 'plumery',
@@ -1006,11 +1244,25 @@ core = {
         'armor': 4,
         'affinities': {'top': 'blue', 'left': 'green', 'right': 'red'},
         'affinity_bonus':{
-            'desc': 'If <b>insane</b>, ignore the first hit each round and suffer 1 brain damage instead.',
+            'desc': (
+                'If <b>insane</b>, ignore the first hit each round and suffer '
+                '1 brain damage instead.'
+            ),
             'requires':{
-                'puzzle':{'red':1,'blue':1,'green':1},
+                'puzzle': {'red':1, 'blue':1, 'green':1},
             },
         },
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'iron': 1,
+                    'leather': 1,
+                    'tail_feathers': 1,
+                },
+                'resource_types': {'hide':1},
+            },
+        ],
     },
     'sonic_tomahawk': {
         'type': 'plumery',
@@ -1028,6 +1280,16 @@ core = {
                 'complete': {'green': 2, 'blue': 1},
             },
         },
+        'recipes': [
+            {
+                'locations': ['plumery'],
+                'resource_handles': {
+                    'hollow_wing_bones': 1,
+                    'small_feathers': 1,
+                    'iron': 1,
+                },
+            },
+        ],
     },
 
     # rare gear
@@ -1065,7 +1327,10 @@ core = {
         'name': 'Lantern Halberd',
         'keywords': ['weapon','melee','two-handed','spear','other'],
         'rules': ['Reach 2','Irreplaceable','Unique'],
-        'desc': 'After attacking, if standing, you may move up to 2 spaces directly away from the monster.',
+        'desc': (
+            'After attacking, if standing, you may move up to 2 spaces '
+            'directly away from the monster.'
+        ),
         'speed': 2,
         'accuracy': 4,
         'strength': 7,
@@ -1140,7 +1405,10 @@ core = {
         'name': 'Steel Sword',
         'keywords': ['weapon','melee','sword','finesse','metal'],
         'rules': ['Irreplaceable','Slow','Sharp'],
-        'desc': 'On a <b>Perfect hit</b>, the edge sharpens. Gain +1d10 strength for the rest of the attack.',
+        'desc': (
+            'On a <b>Perfect hit</b>, the edge sharpens. Gain +1d10 strength '
+            'for the rest of the attack.'
+        ),
         'speed': 1,
         'accuracy': 4,
         'strength': 5,
@@ -1305,12 +1573,18 @@ core = {
         'type': 'stone_circle',
         'name': 'Blood Paint',
         'keywords': ['item','soluble'],
-        'desc': '<font class="kdm_font">a</font>: Activate weapon gear to the left and right of this card. These are two separate attacks. Cannot be used with two-handed weapons.',
+        'desc': (
+            '<font class="kdm_font">a</font>: Activate weapon gear to the left '
+            'and right of this card. These are two separate attacks. Cannot be '
+            'used with two-handed weapons.'
+        ),
         'affinities': {'left': 'paired', 'right': 'paired'},
         'recipes': [
             {
-                'locations': ['stone_circle'], 'resource_handles': {'bladder': 1},
-                'resource_types': {'organ': 1}, 'innovations': ['paint'],
+                'locations': ['stone_circle'],
+                'resource_handles': {'bladder': 1},
+                'resource_types': {'organ': 1},
+                'innovations': ['paint'],
             },
         ],
     },
@@ -1320,7 +1594,10 @@ core = {
         'keywords': ['item', 'jewelry', 'fragile'],
         'add_affinity': ['blue'],
         'affinity_bonus': {
-            'desc': '<b>Unshakeable:</b> When you draw a <b>Trap</b>, roll 1d10. On a 6+, discard the <b>Trap</b> and reshuffle the deck.',
+            'desc': (
+                '<b>Unshakeable:</b> When you draw a <b>Trap</b>, roll 1d10. '
+                'On a 6+, discard the <b>Trap</b> and reshuffle the deck.'
+            ),
             'requires': {'complete': {'blue': 5}},
         },
         'recipes': [
@@ -1331,18 +1608,33 @@ core = {
         'type': 'stone_circle',
         'name': 'Bone Earrings',
         'keywords': ['item','jewelry','bone'],
-        'desc': 'At the start of the showdown, gain +2 speed and +2 strength tokens if <b>insane</b> and all gear in your gear grid has the <i>bone</i> keyword.',
+        'desc': (
+            'At the start of the showdown, gain +2 speed and +2 strength '
+            'tokens if <b>insane</b> and all gear in your gear grid has the '
+            '<i>bone</i> keyword.'
+        ),
         'recipes': [
-            {'locations': ['stone_circle'], 'resource_handles': {'shank_bone': 1}, 'resource_types': {'bone': 1}, },
+            {
+                'locations': ['stone_circle'],
+                'resource_handles': {'shank_bone': 1},
+                'resource_types': {'bone': 1},
+            },
         ],
     },
     'boss_mehndi': {
         'type': 'stone_circle',
         'name': 'Boss Mehndi',
         'keywords': ['item','soluble'],
-        'desc': 'Boss is brave. While adjacent to you, <b>insane</b> survivors gain +1 speed.',
+        'desc': (
+            'Boss is brave. While adjacent to you, <b>insane</b> survivors '
+            'gain +1 speed.'
+        ),
         'recipes': [
-            {'locations': ['stone_circle'], 'resource_handles': {'golden_whiskers': 1}, 'resource_types': {'bone': 1}, },
+            {
+                'locations': ['stone_circle'],
+                'resource_handles': {'golden_whiskers': 1},
+                'resource_types': {'bone': 1},
+            },
         ],
     },
     'green_charm': {
@@ -1351,7 +1643,10 @@ core = {
         'keywords': ['item', 'jewelry', 'fragile'],
         'add_affinity': ['green'],
         'affinity_bonus': {
-            'desc': '<b>Undeathable:</b> If you would die, roll 1d10. On a 6+, you inexplicably survive.',
+            'desc': (
+                '<b>Undeathable:</b> If you would die, roll 1d10. On a 6+, '
+                'you inexplicably survive.'
+            ),
             'requires': {'complete': {'green': 5}},
         },
         'recipes': [
@@ -1363,12 +1658,19 @@ core = {
         'name': 'Lance of Longinus',
         'keywords': ['melee', 'weapon', 'spear', 'two-handed', 'bone'],
         'rules': ['Irreplaceable', 'Reach 2'],
-        'desc': 'Each showdown, the first time you wound, the monster gains a -1 toughness token.',
+        'desc': (
+            'Each showdown, the first time you wound, the monster gains a -1 '
+            'toughness token.'
+        ),
         'speed': 2,
         'accuracy': 6,
         'strength': 9,
         'recipes': [
-            {'locations': ['stone_circle'], 'resource_handles': {'legendary_horns': 1}, 'resource_types': {'organ': 6}, },
+            {
+                'locations': ['stone_circle'],
+                'resource_handles': {'legendary_horns': 1},
+                'resource_types': {'organ': 6},
+            },
         ],
     },
     'red_charm': {
@@ -1377,7 +1679,10 @@ core = {
         'keywords': ['item', 'jewelry', 'fragile'],
         'add_affinity': ['red'],
         'affinity_bonus': {
-            'desc': '<b>Unstoppable:</b> When you attempt to wound, instead roll 1d10. On a 1-5 fail. On 6-10, wound.',
+            'desc': (
+                '<b>Unstoppable:</b> When you attempt to wound, instead roll '
+                '1d10. On a 1-5 fail. On 6-10, wound.'
+            ),
             'requires': {'complete': {'red': 5}},
         },
         'recipes': [
@@ -1387,7 +1692,14 @@ core = {
     'screaming_armor_set': {
         'type': 'stone_circle',
         'name': 'Screaming Armor Set',
-        'desc': 'Add <font class="inline_shield">2</font> to all hit locations.<br/><b>Skewer:</b> After you <b>slam</b>, spend <font class="kdm_font">a</font> to move 1 space and activate a melee weapon with +2 strength. If you wound with a spear, apply that wound roll result to the next selected hit location this attack.',
+        'desc': (
+            'Add <font class="inline_shield">2</font> to all hit locations.'
+            '<br/><b>Skewer:</b> After you <b>slam</b>, spend '
+            '<font class="kdm_font">a</font> to move 1 space and activate a '
+            'melee weapon with +2 strength. If you wound with a spear, '
+            'apply that wound roll result to the next selected hit location '
+            'this attack.',
+        ),
     },
     'screaming_bracers': {
         'type': 'stone_circle',
@@ -1396,9 +1708,17 @@ core = {
         'keywords': ['armor', 'set', 'fur'],
         'affinities': {'left': 'red', 'top': 'green'},
         'location': 'arms',
-        'desc': 'On <b>Arrival</b>, if possible, add an <b>Acanthus Plant</b> terrain card to the showdown. When you activate terrain, you may add +2 to your roll result.',
+        'desc': (
+            'On <b>Arrival</b>, if possible, add an <b>Acanthus Plant</b> '
+            'terrain card to the showdown. When you activate terrain, you may '
+            'add +2 to your roll result.'
+        ),
         'recipes': [
-            {'locations': ['stone_circle'], 'resource_handles': {'pelt': 1}, 'resource_types': {'hide': 1}, },
+            {
+                'locations': ['stone_circle'],
+                'resource_handles': {'pelt': 1},
+                'resource_types': {'hide': 1},
+            },
         ],
     },
     'screaming_coat': {
@@ -1408,9 +1728,18 @@ core = {
         'armor': 2,
         'location': 'body',
         'keywords': ['armor', 'set', 'fur'],
-        'desc': '<b>Slam:</b> Spend <font class="kdm_font">c</font>  to full move forward in a straight line. If you move 4+ spaces and stop adjacent to a monster, it suffers <b>knockback 1</b> and -1 toughness until the end of the round.',
+        'desc': (
+            '<b>Slam:</b> Spend <font class="kdm_font">c</font> to full move '
+            'forward in a straight line. If you move 4+ spaces and stop '
+            'adjacent to a monster, it suffers <b>knockback 1</b> and -1 '
+            'toughness until the end of the round.'
+        ),
         'recipes': [
-            {'locations': ['stone_circle'], 'resource_handles': {'pelt': 1}, 'resource_types': {'bone': 1}, },
+            {
+                'locations': ['stone_circle'],
+                'resource_handles': {'pelt': 1},
+                'resource_types': {'bone': 1},
+            },
         ],
     },
     'screaming_horns': {
@@ -1420,9 +1749,17 @@ core = {
         'location': 'head',
         'keywords': ['armor', 'set', 'bone'],
         'affinities': {'bottom': 'blue'},
-        'desc': '<font class="kdm_font">a</font>: Scream. Non-deaf <b>insane</b> survivors gain +1 movement until end of round. All other survivors gain +1 insanity.',
+        'desc': (
+            '<font class="kdm_font">a</font>: Scream. Non-deaf <b>insane</b> '
+            'survivors gain +1 movement until end of round. All other '
+            'survivors gain +1 insanity.'
+        ),
         'recipes': [
-            {'locations': ['stone_circle'], 'resource_handles': {'spiral_horn': 1}, 'resource_types': {'scrap': 1}, },
+            {
+                'locations': ['stone_circle'],
+                'resource_handles': {'spiral_horn': 1},
+                'resource_types': {'scrap': 1},
+            },
         ],
     },
     'screaming_leg_warmers': {
@@ -1444,9 +1781,15 @@ core = {
         'location': 'waist',
         'keywords': ['armor', 'set', 'fur'],
         'affinities': {'right': 'green', 'bottom': 'blue'},
-        'desc': 'Thick, protective fur protects your parts. Add +1 to severe waist injury roll results.',
+        'desc': (
+            'Thick, protective fur protects your parts. Add +1 to severe '
+            'waist injury roll results.'
+        ),
         'recipes': [
-            {'locations': ['stone_circle'], 'resource_handles': {'pelt': 1}, },
+            {
+                'locations': ['stone_circle'],
+                'resource_handles': {'pelt': 1},
+            },
         ],
     },
 
@@ -1454,12 +1797,23 @@ core = {
     'blood_sheath': {
         'type': 'weapon_crafter',
         'name': 'Blood Sheath',
-        'keywords': ['item','bone','other'],
+        'keywords': ['item', 'bone', 'other'],
         'rules': ['Block 1'],
-        'desc': 'When Rainbow Katana is left of Blood Sheath, it loses <b>Frail</b> and gains <b>Sharp</b> (add 1d10 strength to each wound attempt).',
+        'desc': (
+            'When Rainbow Katana is left of Blood Sheath, it loses '
+            '<b>Frail</b> and gains <b>Sharp</b> (add 1d10 strength to '
+            'each wound attempt).',
+        ),
         'affinities': {'left': 'paired'},
         'recipes': [
-            {'locations': ['weapon_crafter'], 'resource_handles': {'hollow_wing_bones': 1, 'muculent_droppings': 1}, 'resource_types': {'organ': 5} },
+            {
+                'locations': ['weapon_crafter'],
+                'resource_handles': {
+                    'hollow_wing_bones': 1,
+                    'muculent_droppings': 1
+                },
+                'resource_types': {'organ': 5}
+            },
         ],
     },
     'counterweighted_axe': {
@@ -1472,14 +1826,20 @@ core = {
         'strength': 4,
         'affinities': {'top': 'red', 'right': 'green'},
         'affinity_bonus': {
-            'desc': 'Gains <b>Devastating 1</b>: Whenever you wound, inflict 1 additional wound.',
+            'desc': (
+                'Gains <b>Devastating 1</b>: Whenever you wound, inflict 1 '
+                'additional wound.'
+            ),
             'requires': {
                 'complete': {'green': 1},
                 'puzzle': {'red': 1},
             },
         },
         'recipes': [
-            {'locations': ['weapon_crafter'], 'resource_types': {'bone': 2, 'hide': 1, 'organ': 1} },
+            {
+                'locations': ['weapon_crafter'],
+                'resource_types': {'bone': 2, 'hide': 1, 'organ': 1}
+            },
         ],
     },
     'finger_of_god': {
@@ -1492,13 +1852,20 @@ core = {
         'strength': 5,
         'affinities': {'top': 'red'},
         'affinity_bonus': {
-            'desc': 'As long as you have 5+ survival, gain +1 accuracy and +1 strength.',
+            'desc': (
+                'As long as you have 5+ survival, gain +1 accuracy and +1 '
+                'strength.'
+            ),
             'requires': {
                 'complete': {'red': 1, 'blue': 1, 'green': 1},
             },
         },
         'recipes': [
-            {'locations': ['weapon_crafter'], 'resource_handles': {'phoenix_finger': 1}, 'resource_types': {'bone': 4,} },
+            {
+                'locations': ['weapon_crafter'],
+                'resource_handles': {'phoenix_finger': 1},
+                'resource_types': {'bone': 4,}
+            },
         ],
     },
     'rainbow_katana': {
@@ -1518,27 +1885,88 @@ core = {
             },
         },
         'recipes': [
-            {'locations': ['weapon_crafter'], 'resource_handles': {'bird_beak': 1, 'rainbow_droppings': 1}, 'resource_types': {'iron': 1, 'bone': 6}, 'suffix_text': '<b>Heat</b> Required.'},
+            {
+                'locations': ['weapon_crafter'],
+                'resource_handles': {
+                    'bird_beak': 1, 'rainbow_droppings': 1
+                },
+                'resource_types': {'iron': 1, 'bone': 6},
+                'suffix_text': '<b>Heat</b> Required.'
+            },
         ],
+    },
+    'scrap_bone_spear': {
+        'name': 'Scrap Bone Spear',
+        'min_version': 'core_1_6',
+        'type': 'weapon_crafter',
+        'keywords': ['weapon', 'melee', 'spear', 'bone', 'metal'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 3,
+        'affinities': {'left': 'green', 'right': 'red'},
+        'rules': ['Reach 2', 'Frail'],
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 1}},
+            'desc': (
+                '<b>Barbed 4:</b> On a <b>Perfect hit</b>, gain +4 strength '
+                'for the rest of the attack.'
+            ),
+        },
     },
     'scrap_dagger': {
         'type': 'weapon_crafter',
         'name': 'Scrap Dagger',
         'keywords': ['weapon','melee','dagger','metal'],
-        'desc': "On a <b>Perfect hit</b>, the edge sharpens. Gain +2 strength for the rest of the attack.",
+        'desc': (
+            "On a <b>Perfect hit</b>, the edge sharpens. Gain +2 strength for "
+            "the rest of the attack."
+        ),
         'speed': 3,
         'accuracy': 7,
         'strength': 2,
         'affinities': {'top': 'red', 'right': 'red'},
         'recipes': [
-            {'locations': ['weapon_crafter'], 'resource_types': {'scrap': 1, 'bone': 1}, 'suffix_text': '<b>Heat</b> Required.'},
+            {
+                'locations': ['weapon_crafter'],
+                'resource_types': {'scrap': 1, 'bone': 1},
+                'suffix_text': '<b>Heat</b> Required.'
+            },
         ],
+    },
+    'scrap_lantern': {
+        'name': 'Scrap Lantern',
+        'min_version': 'core_1_6',
+        'type': 'weapon_crafter',
+        'keywords': ['item', 'metal', 'lantern'],
+        'desc': 'When you <b>depart</b>, gain +1 survival.',
+        'affinities': {'right': 'blue'},
+        'affinity_bonus': {
+            'desc': '+1 accuracy',
+            'requires': {
+                'complete': {'red': 1, 'blue': 1},
+            },
+        },
+    },
+    'scrap_rebar': {
+        'name': 'Scrap Rebar',
+        'min_version': 'core_1_6',
+        'type': 'weapon_crafter',
+        'keywords': ['item', 'metal', 'heavy'],
+        'affinities': {'left': 'paired'},
+        'desc': (
+            'The weapon to the left loses <b>frail</b> and gains '
+            '<b>unwieldy</b>. If you attempt to wound a Super-dense location '
+            'with the weapon, archive this at the end of the attack.'
+        ),
     },
     'scrap_sword': {
         'type': 'weapon_crafter',
         'name': 'Scrap Sword',
         'keywords': ['weapon','melee','sword','metal'],
-        'desc': "On a <b>Perfect hit</b>, the edge sharpens. Gain +4 strength for the rest of the attack.",
+        'desc': (
+            "On a <b>Perfect hit</b>, the edge sharpens. Gain +4 strength for "
+            "the rest of the attack."
+        ),
         'speed': 2,
         'accuracy': 5,
         'strength': 3,
@@ -1556,14 +1984,21 @@ core = {
     'skullcap_hammer': {
         'type': 'weapon_crafter',
         'name': 'Skullcap Hammer',
-        'desc': 'On a <b>Perfect Hit</b>, the monster is dazed, and gains -1 speed token until the end of its turn. A monster can be dazed once per round.',
+        'desc': (
+            'On a <b>Perfect Hit</b>, the monster is dazed, and gains -1 '
+            'speed token until the end of its turn. A monster can be dazed '
+            'once per round.'
+        ),
         'keywords': ['weapon','melee','club','bone'],
         'speed': 2,
         'accuracy': 7,
         'strength': 3,
         'affinities': {'bottom': 'green'},
         'recipes': [
-            {'locations': ['weapon_crafter'], 'resource_types': {'scrap': 1, 'bone': 2}, },
+            {
+                'locations': ['weapon_crafter'],
+                'resource_types': {'scrap': 1, 'bone': 2},
+            },
         ],
     },
     'whistling_mace': {
@@ -1594,7 +2029,10 @@ core = {
         'strength': 6,
         'affinities': {'top': 'red', 'right': 'green'},
         'affinity_bonus': {
-            'desc': 'Gains <b>Devastating 1:</b> Whenever you wound, inflict 1 additional wound.',
+            'desc': (
+                'Gains <b>Devastating 1:</b> Whenever you wound, inflict 1 '
+                'additional wound.'
+            ),
             'requires': {
                 'complete': {'green': 1},
                 'puzzle': {'red': 1},
@@ -3311,7 +3749,10 @@ promo = {
         'name': 'Dormant Twilight Cloak',
         'keywords': ['item','heavy','order','other'],
         'rules': ['Unique','Irreplaceable','Accessory'],
-        'desc': 'Ignore sentient on all gear. You cannot depart with this if you have 3+ understanding.',
+        'desc': (
+            'Ignore <b>sentient</b> on all gear. You cannot <b>depart</b> with '
+            'this if you have 3+ understanding.'
+        ),
         'affinities': {'top': 'blue'},
         'location': 'head',
         'armor': 3,
@@ -3368,7 +3809,10 @@ promo = {
         'rules': ['Deadly','Sharp'],
         'affinities': {'top': 'red', 'bottom': 'red'},
         'affinity_bonus': {
-            'desc': 'While <b>insane</b>, and not wearing armor or accessories, gain +2 evasion, +2 strength.',
+            'desc': (
+                'While <b>insane</b>, and not wearing armor or accessories, '
+                'gain +2 evasion, +2 strength.'
+            ),
             'requires': {'puzzle': {'red': 2}},
         },
     },
@@ -3531,7 +3975,7 @@ promo = {
 
     # beyond the wall
     'cloth_leggings': {
-        'expansion': 'promo',
+        'expansion': 'allison_the_twilight_knight',
         'type': 'gear_recipe',
         'name': 'Cloth Leggings',
         'keywords': ['item','cloth'],
@@ -3552,7 +3996,7 @@ promo = {
         ],
     },
     'hard_breastplate': {
-        'expansion': 'promo',
+        'expansion': 'allison_the_twilight_knight',
         'type': 'gear_recipe',
         'name': 'Hard Breastplate',
         'keywords': ['armor','leather','heavy'],
@@ -3569,6 +4013,7 @@ promo = {
                 'resource_types': {'bone': 2},
                 'resource_handles': {'leather': 1},
                 'innovations': ['lantern_oven'],
+                'suffix_text': 'or <b>Heat</b>.'
             },
         ],
     },
@@ -4856,5 +5301,64 @@ vignettes_of_death_white_gigalion = {
                 'resource_types': {'bone': 2},
             },
         ],
+    },
+}
+
+pinups_of_death_2 = {
+    'lantern_brassiere': {
+        'name': 'Lantern Brassiere',
+        'armor': 0,
+        'location': 'body',
+        'keywords': ['armor', 'set', 'metal', 'heavy'],
+        'rules': ['Outfit', '-2 movement'],
+        'affinities': {
+            'top': 'blue', 'right': 'green', 'bottom': 'blue', 'left': 'green',
+        },
+        'affinity_bonus': {
+            'requires': {
+                'puzzle': {'blue': 2, 'green': 2},
+            },
+            'desc': (
+                'When you <b>depart</b>, add <font class="inline_shield">2'
+                '</font> to all hit locations with metal armor.'
+            ),
+        },
+    },
+    'leather_bodysuit': {
+        'name': 'Leather Bodysuit',
+        'armor': 0,
+        'location': 'body',
+        'keywords': ['armor', 'set', 'leather'],
+        'rules': ['Outfit'],
+        'affinities': {'top': 'red', 'bottom': 'blue'}
+    },
+    'rawhide_corset': {
+        'name': 'Rawhide Corset',
+        'armor': 0,
+        'location': 'body',
+        'keywords': ['armor', 'set', 'rawhide'],
+        'rules': ['Outfit'],
+        'affinities': {'top': 'blue', 'right': 'red'},
+        'affinity_bonus': {
+            'requires': {'puzzle': {'blue': 1, 'red': 1}},
+            'desc': '+1 evasion',
+        },
+    },
+    'teeth_bikini': {
+        'name': 'Teeth Bikini',
+        'armor': 0,
+        'location': 'body',
+        'keywords': ['armor', 'set', 'scale'],
+        'affinities': {'left': 'red', 'top': 'blue', 'right': 'red'},
+        'rules': ['Outfit'],
+        'affinity_bonus': {
+            'requires': {'puzzle': {'blue': 1}, 'complete': {'red': 2}},
+            'desc': '+1 accuracy',
+        },
+        'desc': (
+            'When you spend <font class="kdm_font">c</font>, you <b>Shadow '
+            'Walk</b> and may move through spaces survivors occupy without '
+            'causing <b>collision</b>.'
+        ),
     },
 }

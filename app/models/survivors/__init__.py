@@ -245,7 +245,7 @@ class Survivor(models.UserAsset):
 
         if (
             not bypass_post_process and
-            hasattr(request, 'action') and
+            request and hasattr(request, 'action') and
             request.action in post_process_routes
         ):
             self.post_process()

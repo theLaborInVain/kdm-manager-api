@@ -126,12 +126,13 @@ class Settlement(models.UserAsset):
 
     @utils.metered
     def __init__(self, *args, **kwargs):
-        # initialize asset collections immediately, since we need them to norm
-        self.init_asset_collections()
+        # initialize asset collections immediately, since we need them to create
+        # create new settlements and normalize existing
 
         # now initialize a generic settlement object
         self.collection="settlements"
-        models.UserAsset.__init__(self,  *args, **kwargs)
+        models.UserAsset.__init__(self,  *args, **kwargs) # calls load()
+        self.init_asset_collections()
 
         # now normalize
         if self.normalize_on_init:
@@ -156,17 +157,21 @@ class Settlement(models.UserAsset):
 
 
     def init_asset_collections(self):
-        """ Generally you want models.UserAsset.load() to call this method. """
+        """ Called during __init__(); these are used by numerous methods. """
+
+        if not hasattr(self, 'settlement'):
+            err = "Settlement object must be loaded before assets can init!"
+            raise AttributeError(err)
 
         self.Campaigns = campaigns.Assets()
-        self.Endeavors = endeavors.Assets()
+        self.Endeavors = endeavors.Assets(self.settlement['version'])
         self.Events = events.Assets()
         self.Expansions = expansions.Assets()
         self.FightingArts = fighting_arts.Assets()
-        self.Gear = gear.Assets()
+        self.Gear = gear.Assets(self.settlement['version'])
         self.Resources = resources.Assets()
         self.Innovations = innovations.Assets()
-        self.Locations = locations.Assets()
+        self.Locations = locations.Assets(self.settlement['version'])
         self.Macros = macros.Assets()
         self.Milestones = milestone_story_events.Assets()
         self.Monsters = monsters.Assets()
@@ -177,6 +182,7 @@ class Settlement(models.UserAsset):
         self.Survivors = survivors.Assets()
         self.SurvivorColorSchemes = color_schemes.Assets()
         self.SurvivorStatusFlags = status_flags.Assets()
+        self.Versions = versions.Assets()
         self.WeaponMasteries = weapon_masteries.Assets()
         self.StrainMilestones = strain_milestones.Assets()
 
@@ -247,7 +253,7 @@ class Settlement(models.UserAsset):
             "storage":                  [],
             "custom_epithets":          [],
             "strain_milestones":        [],
-            "version":                  'core_1_5',
+            "version":                  'core_1_6',
         }
 
 
@@ -265,7 +271,8 @@ class Settlement(models.UserAsset):
         if s_name is None and flask.request.User.get_preference(
             "random_names_for_unnamed_assets"
         ):
-            s_name = self.Names.get_random_settlement_name()
+            # can't use self.Names because we haven't initialized assets
+            s_name = names.Assets().get_random_settlement_name()
         elif s_name is None and not flask.request.User.get_preference(
             "random_names_for_unnamed_assets"
         ):
@@ -648,6 +655,13 @@ class Settlement(models.UserAsset):
 
         if type(asset_dict) != dict:
             asset_dict = asset_dict.__dict__
+
+        # check minimum version
+        if asset_dict.get('min_version', None) is not None:
+            settlement_v = self.get_version()
+            asset_v = self.Versions.get_asset(asset_dict['min_version'])
+            if settlement_v['value'] < asset_v['value']:
+                return False
 
         # check to see if the asset excludes certian campaign types
         if "excluded_campaigns" in asset_dict.keys():
@@ -1514,7 +1528,11 @@ class Settlement(models.UserAsset):
         }
 
         note_oid = utils.mdb.settlement_notes.insert(note_dict)
-        return flask.Response(response=json.dumps({'note_oid': note_oid}, default=json_util.default), status=200)
+        return flask.Response(
+            response=json.dumps(
+                {'note_oid': note_oid}, default=json_util.default),
+                status=200
+            )
 
 
     models.web_method
@@ -2401,7 +2419,7 @@ class Settlement(models.UserAsset):
         else:
             available = []
 
-        A = copy(asset_module.Assets())
+        A = copy(asset_module.Assets(self.settlement['version']))
 
         # remove excluded type/sub_types
         if exclude_types != []:
@@ -2477,13 +2495,23 @@ class Settlement(models.UserAsset):
             available['campaign'].append(bogus_dict)
 
         # innovations and locations
-        for a_list in ['innovations','locations']:
+        for a_list in ['innovations']:
             for a_dict in self.list_assets(a_list):
-                if a_dict.get('endeavors',None) is not None:
+                if a_dict.get('endeavors', None) is not None:
                     eligible_endeavor_handles = get_eligible_endeavors(a_dict['endeavors'])
                     if len(eligible_endeavor_handles) >= 1:
                         a_dict['endeavors'] = eligible_endeavor_handles
                         available[a_list].append(a_dict)
+
+        # locations - refactored 2021-11-05 for version support
+        for location_handle in self.settlement['locations']:
+            loc_dict = copy(self.Locations.get_asset(location_handle))
+            eligible_endeavor_handles = get_eligible_endeavors(
+                loc_dict.get('endeavors', [])
+            )
+            if len(eligible_endeavor_handles) >= 1:
+                loc_dict['endeavors'] = eligible_endeavor_handles
+                available['locations'].append(loc_dict)
 
         # storage
         for i_handle in self.settlement['storage']:
@@ -3695,6 +3723,11 @@ class Settlement(models.UserAsset):
             return json.dumps(TL, default=json_util.default)
 
         return TL
+
+
+    def get_version(self):
+        """ Returns the version object. """
+        return self.Versions.get_asset(self.settlement['version'])
 
 
     def get_milestones_options(self, return_type=list):

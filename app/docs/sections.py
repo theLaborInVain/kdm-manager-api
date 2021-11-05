@@ -227,8 +227,7 @@ sheet.timeline</code> JSON is structured:</p>
 contain any event list hashes, but they <u>absolutely must contain a
 hash with the <code>year</code> key/value pair.</u></p>
 <p>Any attempt to <b>POST</b> a Lantern Year without this 'magic'
-key/value pair, e.g. using the <code>replace_lantern_year</code>
-route below, will cause the API to throw an error.</p>
+key/value pair, will cause the API to throw an error.</p>
 <p>Also, for now, the API does not enforce any normalization or business logic
 for the timeline and individual event lists may contain as many
 event hashes as necessary.</p>

@@ -592,6 +592,12 @@ product_lines = {
         'quarries': ['white_gigalion'],
     },
 
+    'pinups_of_death_2': {
+        'name': 'Pinups of Death II',
+        'ui': {'pretty_category': 'White Box'},
+        'release': datetime(2020, 11, 1),
+    },
+
     'winter_solstice_lucy': {
         'name': 'Winter Solstice Lucy',
         'ui': {'pretty_category': 'White Box'},
@@ -643,6 +649,16 @@ miscellaneous = {
         ],
     },
 
+    'allison_the_twilight_knight': {
+        'name': 'Allison the Twilight Knight',
+        "released": datetime(2016, 8, 16),
+        'ui': {'pretty_category': 'White Box'},
+        'url': (
+            'https://www.kickstarter.com/projects/poots/kingdom-death-monster/'
+            'posts/381921/'
+        ),
+    },
+
     "promo": {
         "released": datetime(2016, 8, 16),
         "name": "Promo",
@@ -655,7 +671,6 @@ miscellaneous = {
             'Adds promotional events, gear, Abilities & Impairments, etc. '
             'to Settlement and Survivor Sheet drop-down lists. '
             'Collects the following releases: '
-            "Allison the Twilight Knight, "
             'Before the Wall, '
             'Beyond the Wall, '
             "Black Friday Ninja, "

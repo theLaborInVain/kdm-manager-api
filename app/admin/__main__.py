@@ -211,6 +211,20 @@ def dump_settlement_to_cli(s_id, verbose=False):
     print()
 
 
+def dump_settlement_timeline_to_cli(s_id, verbose=False):
+    """ Dumps the timeline for settlement with 's_id'. """
+
+    settlement = utils.mdb.settlements.find_one({'_id': s_id})
+    for ly in settlement['timeline']:
+        print('  ' + str(settlement['timeline'][ly['year']]))
+#        tl_dict = settlement['timeline']
+#        year_int = ly['year']
+#        print(' %s \ ' % (year_int))
+#        for event_type in tl_dict[year_int].keys():
+#            if event_type != 'year':
+#                print('    - %s: %s' % (event_type, tl_dict[year_int][event_type]))
+
+
 
 
 #
@@ -316,6 +330,12 @@ class AdministrationObject:
                             default=None, help = (
                                 "[SETTLEMENT] "
                                 "Dump settlement details"
+                            ),
+                            action="store_true"),
+        parser.add_argument('--dump_timeline', dest='dump_settlement_timeline',
+                            default=None, help = (
+                                "[SETTLEMENT] "
+                                "Dump settlement's timeline."
                             ),
                             action="store_true"),
         parser.add_argument('--event_log', dest='settlement_event_log',
@@ -779,6 +799,9 @@ class AdministrationObject:
 
         if self.options.dump_settlement:
             dump_settlement_to_cli(sm_object._id)
+
+        if self.options.dump_settlement_timeline:
+            dump_settlement_timeline_to_cli(sm_object._id)
 
         if self.options.settlement_event_log:
             sm_object.dump_event_log()

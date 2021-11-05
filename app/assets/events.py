@@ -91,6 +91,11 @@ settlement_event = {
         'expansion': 'sword_hunter',
     },
 
+    # pinups 2
+    'dark_seamstress': {
+        'name': 'Dark Seamstress', 'expansion': 'pinups_of_death_2',
+    },
+
 }
 
 story_event = {

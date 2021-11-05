@@ -254,8 +254,8 @@ location = {
         "consequences": ["Stone Circle"],
         "endeavors": [
             'organ_grinder_augury',
+            'organ_grinder_stone_noses',
             'organ_grinder_build_stone_circle',
-            'organ_grinder_stone_noses'
         ],
     },
 

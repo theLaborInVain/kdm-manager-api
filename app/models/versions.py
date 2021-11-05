@@ -25,6 +25,11 @@ class Assets(models.AssetCollection):
             version = float(
                 "%s.%s" % (a_dict['major'], a_dict['minor'])
             )
+
+            self.assets[handle]['value'] = 0
+            for attr in ['major', 'minor', 'patch']:
+                self.assets[handle]['value'] += self.assets[handle].get(attr, 0)
+
             self.assets[handle]['version'] = version
             self.assets[handle]['version_string'] = str(version)
             self.assets[handle]['name'] = 'Version %s' % version

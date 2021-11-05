@@ -12,19 +12,17 @@ core = {
     },
     'black_guard_style': {
         'name': 'Black Guard Style',
-        'desc': 'During the settlement phase you may spend <font class="kdm_font">d</font> to train a survivor. They gain the <b>Black Guard Style</b> secret fighting art. You lose it and suffer the <b>broken arm</b> severe injury.',
+        'desc': (
+            'During the settlement phase you may spend '
+            '<font class="kdm_font">d</font> to train a survivor. They gain '
+            'the <b>Black Guard Style</b> secret fighting art. You lose it '
+            'and suffer the <b>broken arm</b> severe injury.'
+        ),
         'cost': 1,
     },
     'bloodletting_breathing_a_vein': {
         'name': 'Breathing a Vein',
         'cost': 1,
-    },
-    'build_skinnery': {
-        'name': 'Build',
-        'desc': 'Skinnery',
-        'cost': 1,
-        'class': 'available_endeavors_build',
-        'hide_if_location_exists': 'skinnery',
     },
     'build_organ_grinder': {
         'name': 'Build',
@@ -32,6 +30,13 @@ core = {
         'cost': 1,
         'class': 'available_endeavors_build',
         'hide_if_location_exists': 'organ_grinder',
+    },
+    'build_skinnery': {
+        'name': 'Build',
+        'desc': 'Skinnery',
+        'cost': 1,
+        'class': 'available_endeavors_build',
+        'hide_if_location_exists': 'skinnery',
     },
     'bone_smith_build_weapon_crafter': {
         'name': 'Build',
@@ -171,24 +176,37 @@ core = {
         'desc': 'Lose 3 survival and roll 1d10.',
         'cost': 1,
     },
-    'organ_grinder_stone_noses':{
-        'name': 'Stone Noses',
-        'cost': 1,
-    },
+
+    # organ grinder endeavors 
     'organ_grinder_augury': {
         'name': 'Augury',
         'desc': 'roll 1d10. The survivor endeavors to glean the meaning of existence. Roll on the table. Add +1 to your roll result if your understanding is 3 or higher.',
         'cost': 1,
     },
+    'organ_grinder_build_barber_surgeon': {
+        'min_version': 'core_1_6',
+        'name': 'Build',
+        'desc': 'Barber Surgeon',
+        'cost': 1,
+        'cost_detail': ['3 x organ', '1 x hide'],
+        'cost_detail_type': 'build',
+        'class': 'available_endeavors_build',
+        'hide_if_location_exists': 'barber_surgeon',
+    },
     'organ_grinder_build_stone_circle': {
         'name': 'Build',
         'desc': 'Stone Circle',
         'cost': 1,
-        'cost_detail': ['3 x organ','3 x hide'],
+        'cost_detail': ['3 x organ', '3 x hide'],
         'cost_detail_type': 'build',
         'class': 'available_endeavors_build',
         'hide_if_location_exists': 'stone_circle',
     },
+    'organ_grinder_stone_noses':{
+        'name': 'Stone Noses',
+        'cost': 1,
+    },
+
     'partnership_default': {
         'name': 'Partnership',
         'desc': (

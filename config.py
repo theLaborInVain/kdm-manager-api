@@ -13,6 +13,7 @@ class Config(object):
     ACTIVE_USER_HORIZON = 15    # minutes
     DEBUG = True
     DEFAULT_METHODS = ['GET','POST','OPTIONS']
+    DEFAULT_GAME_VERSION = 'core_1_6'
     DEV_SSL_CERT = 'deploy/dev_cert.pem'
     DEV_SSL_KEY = 'deploy/dev_key.pem'
     ENVIRONMENT = {'is_production': False}
@@ -24,7 +25,7 @@ class Config(object):
         'app_fqdn': 'advanced-kdm-manager.c.kdm-manager.internal',
         'url': 'https://api.kdm-manager.com'
     }
-    VERSION = "1.86.588"
+    VERSION = "1.93.614"
 
     if socket.getfqdn() == PRODUCTION['app_fqdn']:
         ENVIRONMENT['is_production'] = True

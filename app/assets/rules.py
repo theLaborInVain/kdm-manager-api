@@ -55,6 +55,15 @@ core = {
             "skin."
         ),
     },
+    'barbed': {
+        'name': 'Barbed N',
+        'type': 'special_rule',
+        'min_version': 'core_1_6',
+        'desc': (
+            'On a <b>Perfect hit</b>, gain +N strength for the rest of the '
+            'attack.'
+        ),
+    },
     'blind': {
         'name': 'Blind',
         'type': 'special_rule',
