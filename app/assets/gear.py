@@ -4,7 +4,10 @@ core = {
         'type': 'barber_surgeon',
         'name': 'Almanac',
         'keywords': ['item','soluble','flammable'],
-        'desc': 'When you <b>depart</b>, gain +2 insanity.<br/>You cannot gain disorders.',
+        'desc': (
+            'When you <b>depart</b>, gain +2 insanity.<br/>You cannot gain '
+            'disorders.'
+        ),
         'affinities': {'right': 'blue'},
         'recipes': [
             {
@@ -35,9 +38,16 @@ core = {
         'type': 'barber_surgeon',
         'name': 'Bug Trap',
         'keywords': ['item','soluble'],
-        'desc': 'At the start of the showdown, roll 1d10. On a 3+, add a <b>Bug Patch</b> terrain card to the showdown board.',
+        'desc': (
+            'At the start of the showdown, roll 1d10. On a 3+, add a <b>Bug '
+            'Patch</b> terrain card to the showdown board.'
+        ),
         'recipes': [
-            {'locations': ['barber_surgeon'], 'resource_handles': {'muscly_gums': 1}, 'resource_types': {'bone':2}},
+            {
+                'locations': ['barber_surgeon'],
+                'resource_handles': {'muscly_gums': 1},
+                'resource_types': {'bone':2}
+            },
         ],
     },
     'elder_earrings': {
@@ -60,20 +70,41 @@ core = {
     'first_aid_kit': {
         'type': 'barber_surgeon',
         'name': 'First Aid Kit',
-        'affinities': {'top': 'green', 'left': 'green', 'right': 'green', 'bottom': 'green'},
+        'affinities': {
+            'top': 'green', 'left': 'green', 'right': 'green', 'bottom': 'green'
+        },
         'keywords': ['item','heavy'],
-        'desc': 'On <b>Arrival</b>, all survivors gain +3 survival.<br/><font class="kdm_font">a</font>: Remove 1 bleeding or negative attribute token from yourself or an adjacent survivor.',
+        'desc': (
+            'On <b>Arrival</b>, all survivors gain +3 survival.<br/>'
+            '<font class="kdm_font">a</font>: Remove 1 bleeding or negative '
+            'attribute token from yourself or an adjacent survivor.'
+        ),
         'recipes': [
-            {'locations': ['barber_surgeon'], 'resource_types': {'leather': 1, 'bone':2}, },
+            {
+                'locations': ['barber_surgeon'],
+                'resource_types': {
+                    'leather': 1,
+                    'bone':2
+                },
+            },
         ],
     },
     'musk_bomb': {
         'type': 'barber_surgeon',
         'name': 'Musk Bomb',
         'keywords': ['item','stinky','thrown','fragile'],
-        'desc': 'If adjacent to monster when it draws <font class="kdm_font_10">b</font>, you may spend 2 survival and archive Musk Bomb to roll 1d10. On a 3+, discard <font class="kdm_font_10">b</font> without playing it.',
+        'desc': (
+            'If adjacent to monster when it draws '
+            '<font class="kdm_font_10">b</font>, you may spend 2 survival and '
+            'archive Musk Bomb to roll 1d10. On a 3+, discard '
+            '<font class="kdm_font_10">b</font> without playing it.'
+        ),
         'recipes': [
-            {'locations': ['barber_surgeon'], 'prefix_text': '7x resources', 'innovations': ['pottery']},
+            {
+                'locations': ['barber_surgeon'],
+                'prefix_text': '7x resources',
+                'innovations': ['pottery']
+            },
         ],
     },
     'scavenger_kit': {
@@ -82,9 +113,16 @@ core = {
         'affinities': {'bottom': 'green'},
         'keywords': ['item','heavy'],
         'rules': ['Unique'],
-        'desc': "When you defeat a monster, gain either 1 random basic resource or 1 random monster resource from that monster's resource deck.",
+        'desc': (
+            'When you defeat a monster, gain either 1 random basic resource '
+            "or 1 random monster resource from that monster's resource deck."
+        ),
         'recipes': [
-            {'locations': ['barber_surgeon'], 'resource_types': {'scrap': 1}, 'resource_handles': {'pelt': 1}},
+            {
+                'locations': ['barber_surgeon'],
+                'resource_types': {'scrap': 1},
+                'resource_handles': {'pelt': 1}
+            },
         ],
     },
     'speed_powder': {
@@ -114,8 +152,22 @@ core = {
         'accuracy': 6,
         'strength': 5,
         'rules': ['Block 2'],
-        'desc': 'Add <font class="inline_shield">2</font> to all hit locations.<br/><b>Block 2:</b> Spend <font class="kdm_font">a</font> to ignore 2 hits the next time you are attacked. Lasts until your next act. You cannot use <b>block</b> more than once per attack.'
-
+        'desc': (
+            'Add <font class="inline_shield">2</font> to all hit locations.'
+            '<br/><b>Block 2:</b> Spend <font class="kdm_font">a</font> to '
+            'ignore 2 hits the next time you are attacked. Lasts until your '
+            'next act. You cannot use <b>block</b> more than once per attack.'
+        ),
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'bone': 4},
+                'resource_handles': {
+                    'iron': 2,
+                    'leather': 3
+                },
+            },
+        ],
     },
     'dragon_slayer': {
         'type': 'blacksmith',
@@ -124,14 +176,33 @@ core = {
         'speed': 1,
         'accuracy': 6,
         'strength': 9,
-        'keywords': ['weapon','melee','grand weapon','two-handed','heavy','metal'],
+        'keywords': [
+            'weapon','melee','grand weapon','two-handed','heavy','metal'
+        ],
         'rules': ['Frail', 'Slow','Sharp','Devastating 1', 'Early Iron'],
-        'desc': '<b>Early Iron:</b> When an attack roll result is 1, cancel any hits and end the attack.',
+        'desc': (
+            '<b>Early Iron:</b> When an attack roll result is 1, cancel any '
+            'hits and end the attack.'
+        ),
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'organ': 3},
+                'resource_handles': {
+                    'iron': 5,
+                },
+                'suffix_text': '<b>Paint</b> Required.'
+            },
+        ],
     },
     'lantern_armor_set': {
         'type': 'blacksmith',
         'name': 'Lantern Armor Set',
-        'desc': 'You feel invincible. On <b>Arrival</b>, gain survival up to the survival limit.<br/>The extra weight is leverage. All clubs in your gear grid gain <b>Sharp</b>.',
+        'desc': (
+            'You feel invincible. On <b>Arrival</b>, gain survival up to the '
+            'survival limit.<br/>The extra weight is leverage. All clubs in '
+            'your gear grid gain <b>Sharp</b>.'
+        ),
     },
     'lantern_cuirass': {
         'type': 'blacksmith',
@@ -140,11 +211,26 @@ core = {
         'location': 'body',
         'keywords': ['armor','set','metal','heavy'],
         'desc': '-2 movement.',
-        'affinities': {'top': 'blue', 'left': 'green', 'right': 'green', 'bottom': 'blue'},
-        'affinity_bonus': {
-            'desc': 'When you <b>depart</b>, add <font class="inline_shield">3</font> to all hit locations with metal armor.',
-            'requires': {'puzzle': {'green': 2, 'blue': 2}},
+        'affinities': {
+            'top': 'blue', 'left': 'green', 'right': 'green', 'bottom': 'blue'
         },
+        'affinity_bonus': {
+            'desc': (
+                'When you <b>depart</b>, add '
+                '<font class="inline_shield">3</font> to all hit locations '
+                'with metal armor.'
+            ),
+            'requires': {'puzzle': {'green': 2, 'blue': 2} },
+        },
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_handles': {
+                    'iron': 2,
+                    'leather': 5,
+                },
+            },
+        ],
     },
     'lantern_dagger': {
         'type': 'blacksmith',
@@ -155,7 +241,21 @@ core = {
         'strength': 1,
         'affinities': {'right': 'red'},
         'rules': ['Paired','Sharp','Early Iron'],
-        'desc': '<b>Sharp:</b> Add 1d10 strength to each wound attempt.<br/><b>Early Iron:</b> When an attack roll result is 1, cancel any hits and end the attack.',
+        'desc': (
+            '<b>Sharp:</b> Add 1d10 strength to each wound attempt.<br/>'
+            '<b>Early Iron:</b> When an attack roll result is 1, cancel '
+            'any hits and end the attack.'
+        ),
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'bone': 2},
+                'resource_handles': {
+                    'iron': 1,
+                    'leather': 4,
+                },
+            },
+        ],
     },
     'lantern_gauntlets': {
         'type': 'blacksmith',
@@ -167,6 +267,15 @@ core = {
             'desc': '+2 accuracy with <b>club</b> weapons.',
             'requires': {'puzzle': {'green': 1}},
         },
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_handles': {
+                    'iron': 2,
+                    'leather': 6,
+                },
+            },
+        ],
     },
     'lantern_glaive': {
         'type': 'blacksmith',
@@ -184,6 +293,16 @@ core = {
             '<b>Early Iron:</b> When an attack roll result is 1, cancel '
             'any hits and end the attack.'
         ),
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'bone': 4},
+                'resource_handles': {
+                    'iron': 2,
+                    'leather': 2,
+                },
+            },
+        ],
     },
     'lantern_greaves': {
         'type': 'blacksmith',
@@ -196,6 +315,15 @@ core = {
         'affinities': {'left': 'red','right': 'red','top': 'blue'},
         'armor': 5,
         'location': 'legs',
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_handles': {
+                    'iron': 1,
+                    'leather': 5,
+                },
+            },
+        ],
     },
     'lantern_helm': {
         'type': 'blacksmith',
@@ -208,6 +336,15 @@ core = {
             'desc': 'Ear Plugs. You are <b>deaf</b>, -1 accuracy.',
             'requires': {'puzzle': {'blue': 1,}},
         },
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'bone': 7},
+                'resource_handles': {
+                    'iron': 1,
+                },
+            },
+        ],
     },
     'lantern_mail': {
         'type': 'blacksmith',
@@ -216,6 +353,15 @@ core = {
         'armor': 5,
         'location': 'waist',
         'affinities': {'right': 'green'},
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'organ': 5},
+                'resource_handles': {
+                    'iron': 1,
+                },
+            },
+        ],
     },
     'lantern_sword': {
         'type': 'blacksmith',
@@ -230,6 +376,15 @@ core = {
             '<b>Early Iron:</b> When an attack roll result is 1, cancel any '
             'hits and end the attack.'
         ),
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'bone': 5, 'hide': 3},
+                'resource_handles': {
+                    'iron': 1,
+                },
+            },
+        ],
     },
     'polishing_lantern': {
         'name': 'Polishing Lantern',
@@ -242,17 +397,39 @@ core = {
             "or an adjacent survivor's finesse weapon. It gains +4 strength "
             'for its next attack. Limit once per attack.'
         ),
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'organ': 1, 'scrap': 1},
+                'resource_handles': {
+                    'iron': 1,
+                },
+            },
+        ],
     },
     'perfect_slayer': {
         'type': 'blacksmith',
         'name': 'Perfect Slayer',
-        'keywords': ['weapon','melee','grand weapon','two-handed','sword','heavy','finesse','metal'],
+        'keywords': [
+            'weapon','melee','grand weapon','two-handed',
+            'sword', 'heavy', 'finesse', 'metal',
+        ],
         'desc': '-2 movement',
         'rules': ['Slow','Sharp','Devastating 2','Irreplaceable'],
         'affinities': {'bottom': 'red'},
         'speed': 3,
         'accuracy': 6,
         'strength': 14,
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'organ': 3},
+                'resource_handles': {
+                    'iron': 9,
+                },
+                'suffix_text': '<b>Perfect Crucible</b> Required.',
+            },
+        ],
     },
     'ring_whip': {
         'type': 'blacksmith',
@@ -260,10 +437,22 @@ core = {
         'rules': ['Sharp','Reach 2'],
         'affinities': {'left': 'blue'},
         'keywords': ['weapon','melee','whip','finesse','metal'],
-        'desc': '<b>Early Iron:</b> When an attack roll result is 1, cancel any hits and end the attack.',
+        'desc': (
+            '<b>Early Iron:</b> When an attack roll result is 1, cancel any '
+            'hits and end the attack.'
+        ),
         'speed': 2,
         'accuracy': 5,
         'strength': 0,
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'bone': 3, 'organ': 3},
+                'resource_handles': {
+                    'iron': 1,
+                },
+            },
+        ],
     },
     'scrap_shield': {
         'type': 'blacksmith',
@@ -271,10 +460,24 @@ core = {
         'keywords': ['weapon','melee','shield','bone','metal'],
         'affinities': {'right': 'red'},
         'rules': ['Block 1'],
-        'desc': 'Add <font class="inline_shield">1</font> to all hit locations.<br/><b>Block 1:</b> Spend <font class="kdm_font">a</font> to ignore 1 hit the next time you are attacked. Lasts until your next act. You cannot use <b>block</b> more than once per attack.',
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+            '<br/><b>Block 1:</b> Spend <font class="kdm_font">a</font> to '
+            'ignore 1 hit the next time you are attacked. Lasts until your '
+            'next act. You cannot use <b>block</b> more than once per attack.'
+        ),
         'speed': 2,
         'accuracy': 7,
         'strength': 3,
+        'recipes': [
+            {
+                'locations': ['blacksmith'],
+                'resource_types': {'bone': 3, 'scrap': 2},
+                'resource_handles': {
+                    'leather': 3,
+                },
+            },
+        ],
     },
 
     # bone smith
