@@ -840,7 +840,8 @@ class GameAsset(object):
 
     """
 
-    def __init__(self, handle=None, name=None):
+    def __init__(self, handle=None, name=None,
+                version=API.config['DEFAULT_GAME_VERSION']):
 
         # initialize basic vars
         self.logger = utils.get_logger()
@@ -849,7 +850,10 @@ class GameAsset(object):
 
 
     def __repr__(self):
-        return "%s object '%s' (assets.%s['%s'])" % (self.type.title(), self.name, self.type, self.handle)
+        """ Custom repr for game asset objects. """
+        return "%s object '%s' (assets.%s['%s'])" % (
+            self.type.title(), self.name, self.type, self.handle
+        )
 
 
     def initialize(self):
@@ -902,7 +906,11 @@ class GameAsset(object):
 
         # sanity warning
         if " " in self.handle:
-            self.logger.warn("Asset handle '%s' contains whitespaces. Handles should use underscores." % self.handle)
+            err = (
+                "Asset handle '%s' contains whitespaces. Handles should use "
+                "underscores and never have whitespaces. Did you mean 'name'?"
+            ) % self.handle
+            self.logger.error(err % self.handle)
 
         self.asset_dict = self.assets.get_asset(self.handle)
         self.initialize_asset(self.asset_dict)
@@ -925,7 +933,11 @@ class GameAsset(object):
 
         # sanity warning
         if "_" in self.name:
-            self.logger.warn("Asset name '%s' contains underscores. Names should use whitespaces." % self.name)
+            err = (
+                "Asset name '%s' contains underscores. Names should use "
+                "whitespaces. Did you mean 'handle'?"
+            ) % self.name
+            self.logger.error(err % self.name)
 
         lookup_dict = {}
         for asset_handle in self.assets.get_handles():

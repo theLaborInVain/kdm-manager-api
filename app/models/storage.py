@@ -8,29 +8,7 @@
 
 
 from app.assets import storage
-from app.models import gear, resources
-from app import models, utils
-
-Gear = gear.Assets()
-Resources = resources.Assets()
-
-#
-#   general object methods
-#
-
-
-def handle_to_item_object(handle=None):
-    """ The authoritative way to turn a storage handle into a game asset
-    object. If you see this happening on the fly anywhere, then we've
-    failed. """
-
-    if handle in Gear.handles:
-        return gear.Gear(handle)
-    elif handle in Resources.handles:
-        return resources.Resource(handle)
-
-    err = 'Unknown game asset handle: %s' % handle
-    raise utils.InvalidUsage(err)
+from app import API, models, utils
 
 
 #
@@ -56,7 +34,10 @@ class Storage(models.GameAsset):
 
     def __init__(self, *args, **kwargs):
         models.GameAsset.__init__(self,  *args, **kwargs)
-        self.assets = Assets()
+        # initialize the AssetCollection at an arbitrary version, defaulting to
+        #   whatever the current/HEAD version of the game is
+        self.version = kwargs.get('version', API.config['DEFAULT_GAME_VERSION'])
+        self.assets = Assets(self.version)
         self.initialize()
 
 
@@ -65,9 +46,9 @@ class Storage(models.GameAsset):
         location. """
 
         if self.sub_type == 'gear':
-            A = Gear
+            A = models.gear.Assets(self.version)
         elif self.sub_type == 'resources':
-            A = Resources
+            A = models.resources.Assets(self.version)
         else:
             self.logger.error(self.asset_dict)
             err_msg = "'%s' is not a valid 'sub_type' for storage asset: %s" % (

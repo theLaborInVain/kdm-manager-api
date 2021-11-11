@@ -25,7 +25,7 @@ class Config(object):
         'app_fqdn': 'advanced-kdm-manager.c.kdm-manager.internal',
         'url': 'https://api.kdm-manager.com'
     }
-    VERSION = "1.93.615"
+    VERSION = "1.94.620"
 
     if socket.getfqdn() == PRODUCTION['app_fqdn']:
         ENVIRONMENT['is_production'] = True

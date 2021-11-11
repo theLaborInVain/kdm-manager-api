@@ -169,7 +169,7 @@ class Settlement(models.UserAsset):
         self.Expansions = expansions.Assets()
         self.FightingArts = fighting_arts.Assets()
         self.Gear = gear.Assets(self.settlement['version'])
-        self.Resources = resources.Assets()
+        self.Resources = resources.Assets(self.settlement['version'])
         self.Innovations = innovations.Assets()
         self.Locations = locations.Assets(self.settlement['version'])
         self.Macros = macros.Assets()
@@ -2867,6 +2867,17 @@ class Settlement(models.UserAsset):
         return utils.mdb.users.find_one({"_id": self.settlement["created_by"]})
 
 
+    def get_game_asset_from_handle(self, handle):
+        """ Returns an initialized GameAsset object or dies trying. """
+
+        if handle in self.Gear.handles:
+            return gear.Gear(handle, version=self.settlement['version'])
+        elif handle in self.Resources.handles:
+            return resources.Resource(handle, version=self.settlement['version'])
+
+        raise LookupError('Unknown game asset handle: %s' % handle)
+
+
     def get_gear_lookup(self, organize_by="sub_type"):
         """ This is a sort of...meta-method that renders the settlement's Gear
         and resource options as JSON. """
@@ -3305,9 +3316,12 @@ class Settlement(models.UserAsset):
             storage_repr[k]['collection'] = []
 
             # add COMPATIBLE item dicts to the 'collection' list
-            S = storage.Storage(k)  # storage object!
+            S = storage.Storage(k, version=self.settlement['version'])  # storage object!
             for handle in S.get_collection():
-                item_obj = storage.handle_to_item_object(handle)
+
+                # initialize a GameAsset object or die
+                item_obj = self.get_game_asset_from_handle(handle)
+
                 if self.is_compatible(item_obj):
                     item_dict = item_obj.serialize(dict)
                     item_dict['quantity'] = self.settlement['storage'].count(handle)
@@ -3419,7 +3433,7 @@ class Settlement(models.UserAsset):
 
         for handle in set(self.settlement['storage']):
             item_count = self.settlement['storage'].count(handle)
-            item_obj = storage.handle_to_item_object(handle)
+            item_obj = storage.get_game_asset_from_handle(handle)
 
             if item_obj.type == 'gear':
                 gear_count += item_count
