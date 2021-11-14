@@ -3433,7 +3433,7 @@ class Settlement(models.UserAsset):
 
         for handle in set(self.settlement['storage']):
             item_count = self.settlement['storage'].count(handle)
-            item_obj = storage.get_game_asset_from_handle(handle)
+            item_obj = self.get_game_asset_from_handle(handle)
 
             if item_obj.type == 'gear':
                 gear_count += item_count
