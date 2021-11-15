@@ -890,6 +890,11 @@ class Settlement(models.UserAsset):
         LY that the content wants to be added.
         """
 
+        # in case we're creating new
+        if not hasattr(self, 'Expansions'):
+            self.Expansions = expansions.Assets()
+
+
         # create a list of expansions to add
         if e_list == []:
             self.check_request_params(['expansions'])
@@ -1597,6 +1602,10 @@ class Settlement(models.UserAsset):
         #
         #   Initialize and Sanity Check
         #
+
+        if not hasattr(self, 'Events'):
+            self.Events = events.Assets()
+
 
         # ensure that the incoming event specifies the target LY
         t_index = e.get('ly', None)
