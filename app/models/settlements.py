@@ -322,6 +322,10 @@ class Settlement(models.UserAsset):
         """ Starting in January 2021, settlement macros can be applied
         arbitrarily and at will. """
 
+        # in case we've haven't initialized yet, e.g. new settlement creation
+        if not hasattr(self, 'Macros'):
+            self.Macros = macros.Assets()
+
         if handle is None:
             self.check_request_params(['handle'])
             handle = self.params["handle"]
