@@ -141,7 +141,7 @@ def general_exception(exception):
 
     if socket.getfqdn() != API.settings.get('server', 'prod_fqdn'):
         err = "'%s' is not production! Raising exception..." % socket.getfqdn()
-        logger.warn(err)
+        logger.error(err)
         raise exception
 
     try:

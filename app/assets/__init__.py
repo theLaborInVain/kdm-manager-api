@@ -105,7 +105,6 @@ def get_game_asset(collection_name, return_type=flask.Response):
     its request_response() method."""
 
     model = importlib.import_module('app.models.%s' % collection_name)
-    API.logger.warn(model)
     A = model.Assets()
 
     if return_type == dict:

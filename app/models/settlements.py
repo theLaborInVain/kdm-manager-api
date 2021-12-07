@@ -163,15 +163,19 @@ class Settlement(models.UserAsset):
             err = "Settlement object must be loaded before assets can init!"
             raise AttributeError(err)
 
+        # set versions first, since this is used by the get_versions() method
+        #   that gets called to get assets at the settlement's version
+        self.Versions = versions.Assets()
+
         self.Campaigns = campaigns.Assets()
-        self.Endeavors = endeavors.Assets(self.settlement['version'])
+        self.Endeavors = endeavors.Assets(self.get_version(str))
         self.Events = events.Assets()
         self.Expansions = expansions.Assets()
         self.FightingArts = fighting_arts.Assets()
-        self.Gear = gear.Assets(self.settlement['version'])
-        self.Resources = resources.Assets(self.settlement['version'])
+        self.Gear = gear.Assets(self.get_version(str))
+        self.Resources = resources.Assets(self.get_version(str))
         self.Innovations = innovations.Assets()
-        self.Locations = locations.Assets(self.settlement['version'])
+        self.Locations = locations.Assets(self.get_version(str))
         self.Macros = macros.Assets()
         self.Milestones = milestone_story_events.Assets()
         self.Monsters = monsters.Assets()
@@ -182,7 +186,6 @@ class Settlement(models.UserAsset):
         self.Survivors = survivors.Assets()
         self.SurvivorColorSchemes = color_schemes.Assets()
         self.SurvivorStatusFlags = status_flags.Assets()
-        self.Versions = versions.Assets()
         self.WeaponMasteries = weapon_masteries.Assets()
         self.StrainMilestones = strain_milestones.Assets()
 
@@ -3752,9 +3755,18 @@ class Settlement(models.UserAsset):
         return TL
 
 
-    def get_version(self):
+    def get_version(self, return_type=object):
         """ Returns the version object. """
-        return self.Versions.get_asset(self.settlement['version'])
+
+        # get it, fail back to earliest vers as a default:
+        version_str = self.settlement.get('version', 'core_1_3')
+        version_object = self.Versions.get_asset(version_str)
+
+        # handle 'return_type' kwarg
+        if return_type == str:
+            return version_object['handle']
+
+        return version_object
 
 
     def get_milestones_options(self, return_type=list):
