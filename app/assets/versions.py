@@ -17,8 +17,8 @@ VERSIONS = OrderedDict({
         'minor': 3,
         'patch': 1,
         'released': datetime(2015,9,1),
-        'desc': 'Original Kickstarter release',
-        'name': 'Original Kickstarter release',
+        'desc': 'Original Kickstarter release.',
+        'name': 'Original Kickstarter release.',
     },
     'core_1_4': {
         'major': 1,

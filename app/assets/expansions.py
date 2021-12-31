@@ -13,7 +13,9 @@
 """
 
 from datetime import datetime
+import pytz
 
+USCENTRAL = pytz.timezone('US/Central')
 
 expansions_of_death = {
 
@@ -21,7 +23,7 @@ expansions_of_death = {
 
     "dragon_king": {
         "name": "Dragon King",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 8,
         'late_intro_event': 'dk_glowing_crater',
@@ -50,13 +52,14 @@ expansions_of_death = {
 
     "dung_beetle_knight": {
         "name": "Dung Beetle Knight",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_year': 8,
         'late_intro_event': 'dbk_rumbling_in_the_dark',
         "flair": {
             "color": "EAE40A",
-            "bgcolor": "C3C8AB",
+            "bgcolor": "928F7C",
+            'border_color': "C1BCB8",
         },
         "quarries": ["dung_beetle_knight"],
         "always_available": {
@@ -86,7 +89,7 @@ expansions_of_death = {
 
     "flower_knight": {
         "name": "Flower Knight",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_year': 5,
         'late_intro_event': 'fk_crones_tale',
@@ -112,13 +115,14 @@ expansions_of_death = {
 
     "gorm": {
         "name": "Gorm",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 1,
         'late_intro_event': 'gorm_approaching_storm',
         "flair": {
-            "color": "EAE40A",
-            "bgcolor": "958C83",
+            "color": "F3E2AF",
+            "bgcolor": "78413A",
+            'border_color': "A6756A",
         },
         "quarries": ["gorm"],
         "always_available": {
@@ -145,7 +149,7 @@ expansions_of_death = {
     "green_knight_armor": {
         "name": "Green Knight Armor",
         "ui": {"pretty_category": "Enhancement"},
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "subtitle": (
             "Crafting GKA items requires DBK, Flower Knight, Lion Knight and "
             "Gorm expansions!"
@@ -180,7 +184,7 @@ expansions_of_death = {
 
     "lion_god": {
         "name": "Lion God",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 13,
         'late_intro_event': 'lgod_the_silver_city',
@@ -199,7 +203,7 @@ expansions_of_death = {
 
     "lion_knight": {
         "name": "Lion Knight",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Nemesis"},
         'maximum_intro_year': 6,
         'late_intro_event': 'lk_uninvited_guest',
@@ -237,7 +241,7 @@ expansions_of_death = {
 
     "lonely_tree": {
         "name": "Lonely Tree",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Nemesis"},
         "nemesis_monsters": ["lonely_tree"],
         "special_showdowns": ["lonely_tree"],
@@ -274,13 +278,14 @@ expansions_of_death = {
 
     "manhunter": {
         "name": "Manhunter",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Nemesis"},
         'maximum_intro_year': 5,
         'late_intro_event': 'mh_hanged_man',
         "flair": {
-            "color": "E8cE55",
-            "bgcolor": "8D0000",
+            "color": "eee",
+            "bgcolor": "7AB7E0",
+            'border_color': 'CCE3F7',
         },
         "nemesis_monsters": ["manhunter"],
         "special_showdowns": ["manhunter"],
@@ -314,7 +319,7 @@ expansions_of_death = {
 
     "slenderman": {
         "name": "Slenderman",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Nemesis"},
         'maximum_intro_ly': 6,
         'late_intro_event': 'slender_its_already_here',
@@ -346,13 +351,14 @@ expansions_of_death = {
     },
     "spidicules": {
         "name": "Spidicules",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 2,
         'late_intro_event': 'spid_young_rivals',
         "flair": {
             "color": "333",
-            "bgcolor": "C0B870",
+            "bgcolor": "AB9D23",
+            'border_color': 'D2CD97',
         },
         "quarries": ["spidicules"],
         "always_available": {
@@ -369,13 +375,14 @@ expansions_of_death = {
 
     "sunstalker": {
         "name": "Sunstalker",
-        "released": datetime(2016, 2, 16),
+        "released": datetime(2016, 2, 16, 12, tzinfo=USCENTRAL),
         "ui": {"pretty_category": "Quarry"},
         'maximum_intro_ly': 8,
         'late_intro_event': 'ss_promise_under_the_sun',
         "flair": {
-            "color": "000",
-            "bgcolor": "ECD77E",
+            "color": "666",
+            "bgcolor": "F5E99D",
+            'border_color': 'DDD099',
         },
         "quarries": ["sunstalker"],
         "always_available": {
@@ -395,7 +402,7 @@ product_lines = {
     # Echoes of Death
 
     "echoes_of_death": {
-        "released": datetime(2018, 7, 1), # Gencon 2018
+        "released": datetime(2018, 7, 1, 12, tzinfo=USCENTRAL), # Gencon 2018
         "name": "Echoes of Death",
         "ui": {"pretty_category": "Enhancement"},
         "flair": {
@@ -411,7 +418,7 @@ product_lines = {
     },
 
     "echoes_of_death_2": {
-        "released": datetime(2019, 8, 1), # Gencon 2019
+        "released": datetime(2019, 8, 1, 12, tzinfo=USCENTRAL), # Gencon 2019
         "name": "Echoes of Death 2",
         "ui": {"pretty_category": "Enhancement"},
         "flair": {
@@ -427,7 +434,7 @@ product_lines = {
     },
 
     "echoes_of_death_3": {
-        "released": datetime(2020, 11, 27), # Black Friday 2020
+        "released": datetime(2020, 11, 27, 12, tzinfo=USCENTRAL), # Black Friday 2020
         "name": "Echoes of Death 3",
         "ui": {"pretty_category": "Enhancement"},
         "flair": {
@@ -457,20 +464,20 @@ product_lines = {
     "tenth_anniversary_white_speaker": {
         "name": "10th Anniversary White Speaker",
         "ui": {"pretty_category": "White Box"},
-        "released": datetime(2019, 10, 9),
+        "released": datetime(2019, 10, 9, 12, tzinfo=USCENTRAL),
         'strain_milestones': ['plot_twist'],
     },
 
     "tenth_anniversary_survivors": {
         "name": "10th Anniversary Survivors",
         "ui": {"pretty_category": "White Box"},
-        "released": datetime(2019, 10, 9),
+        "released": datetime(2019, 10, 9, 12, tzinfo=USCENTRAL),
     },
 
     "fade": {
         "name": "Fade",
         "ui": {"pretty_category": "White Box"},
-        "released": datetime(2016, 8, 4),
+        "released": datetime(2016, 8, 4, 12, tzinfo=USCENTRAL),
         'basic_hunt_event': ['baby_and_the_sword'],
         'help': [
             {
@@ -493,7 +500,7 @@ product_lines = {
             'Includes crafting recipes that require <b>Lonely Tree</b>.'
         ),
         "ui": {"pretty_category": "White Box"},
-        "released": datetime(2019, 10, 31),
+        "released": datetime(2019, 10, 31, 12, tzinfo=USCENTRAL),
         'help': [
             {
                 'type': 'gear',
@@ -515,17 +522,17 @@ product_lines = {
             'Includes crafting recipes that require <b>Slenderman</b>.'
         ),
         "ui": {"pretty_category": "White Box"},
-        "released": datetime(2019, 10, 31),
+        "released": datetime(2019, 10, 31, 12, tzinfo=USCENTRAL),
     },
 
     "halloween_ringtail_vixen_2020": {
         'name': 'Halloween Ringtail Vixen',
         'ui': {'pretty_category': 'White Box'},
-        'release': datetime(2020, 10, 31),
+        'released': datetime(2020, 10, 31, 12, tzinfo=USCENTRAL),
     },
 
     'holiday_white_speaker_nico': {
-        'released': datetime(2012, 7, 1),
+        'released': datetime(2012, 7, 1, 12, tzinfo=USCENTRAL),
         'name': 'Holiday White Speaker Nico',
         'ui': {'pretty_category': 'White Box'},
     },
@@ -533,13 +540,13 @@ product_lines = {
     "percival": {
         "name": "Percival",
         "ui": {"pretty_category": "White Box"},
-        "released": datetime(2016, 8, 4),
+        "released": datetime(2016, 8, 4, 12, tzinfo=USCENTRAL),
         'basic_hunt_event': ['dead_warrior'],
     },
 
     'santa_satan': {
-        'released': datetime(2018, 12, 25),
-        'name': 'Santa Satan (promo)',
+        'released': datetime(2018, 12, 25, 12, tzinfo=USCENTRAL),
+        'name': 'Santa Satan',
         'ui': {'pretty_category': 'White Box'},
         'strain_milestones': ['atmospheric_change'],
         'subtitle': (
@@ -566,7 +573,7 @@ product_lines = {
     'swashbuckler': {
         'name': 'Swashbuckler',
         'ui': {'pretty_category': 'White Box'},
-        'released': datetime(2016, 3, 1),
+        'released': datetime(2016, 3, 1, 12, tzinfo=USCENTRAL),
         'subtitle': (
             'One of the few figures from the <i>Generic</i> line that also '
             'includes game content.'
@@ -576,12 +583,12 @@ product_lines = {
     "sword_hunter": {
         "name": "Sword Hunter",
         "ui": {"pretty_category": "White Box"},
-        "released": datetime(2019, 8, 1),
+        "released": datetime(2019, 8, 1, 12, tzinfo=USCENTRAL),
         'basic_hunt_event': ['sword_in_the_stone'],
     },
 
     'vignettes_of_death_white_gigalion': {
-        'released': datetime(2019, 8, 1),
+        'released': datetime(2019, 8, 1, 12, tzinfo=USCENTRAL),
         'name': 'Vignettes of Death: White Gigalion',
         'ui': {'pretty_category': 'Quarry'},
         'flair': {
@@ -595,13 +602,19 @@ product_lines = {
     'pinups_of_death_2': {
         'name': 'Pinups of Death II',
         'ui': {'pretty_category': 'White Box'},
-        'release': datetime(2020, 11, 1),
+        'released': datetime(2020, 11, 1, 12, tzinfo=USCENTRAL),
     },
 
     'winter_solstice_lucy': {
         'name': 'Winter Solstice Lucy',
         'ui': {'pretty_category': 'White Box'},
-        'release': datetime(2020, 12, 22),
+        'released': datetime(2020, 12, 22, 12, tzinfo=USCENTRAL),
+    },
+
+    'halloween_survivors_series_2': {
+        'name': 'Halloween Survivors - Series II',
+        'ui': {'pretty_category': 'White Box'},
+        'released': datetime(2021, 11, 25, 12, tzinfo=USCENTRAL),
     },
 
 
@@ -614,7 +627,7 @@ miscellaneous = {
     # gets filed here
 
     "beta_challenge_scenarios": {
-        "released": datetime(2016, 2, 1),
+        "released": datetime(2016, 2, 1, 12, tzinfo=USCENTRAL),
         "name": "Beta Challenge Scenarios",
         "ui": {"pretty_category": "Enhancement"},
         "flair": {
@@ -651,7 +664,10 @@ miscellaneous = {
 
     'allison_the_twilight_knight': {
         'name': 'Allison the Twilight Knight',
-        "released": datetime(2016, 8, 16),
+        "released": datetime(2016, 8, 16, 12, tzinfo=USCENTRAL),
+        'subtitle': (
+            'As released in the White Box Hard Plastic Collection.'
+        ),
         'ui': {'pretty_category': 'White Box'},
         'url': (
             'https://www.kickstarter.com/projects/poots/kingdom-death-monster/'
@@ -659,8 +675,14 @@ miscellaneous = {
         ),
     },
 
+    'pinup_wet_nurse': {
+        'name': 'Pinup Wet Nurse',
+        'released': datetime(2016, 10, 31, 12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
+
     "promo": {
-        "released": datetime(2016, 8, 16),
+        "released": datetime(2015, 9, 2, 12, tzinfo=USCENTRAL),
         "name": "Promo",
         "ui": {"pretty_category": "Enhancement"},
         "flair": {
@@ -683,7 +705,6 @@ miscellaneous = {
             'Pinup Sci-fi Twilight Knight, '
             "Pinup Sci-fi White Speaker, "
             'Pinup Warrior of the Sun, '
-            'Pinup Wet Nurse, '
             "Pinups of Death, "
             "Valentine's Day Pinup Twilight Knight, "
             'White Speaker.'
@@ -715,6 +736,11 @@ miscellaneous = {
         ],
     },
 
+    'sunlion_armor_beta': {
+        'released': datetime(2021,11,25, 12, tzinfo=USCENTRAL),
+        'name': 'Sunlion Armor (Beta)',
+        'ui': {'pretty_category': 'Enhancement'},
+    },
 
 }
 

@@ -15,11 +15,26 @@ class Assets(models.AssetCollection):
         """ In release 1.0.0, the init method for the gear asset collection uses
         the 'mandatory_attributes' attr instead of custom code. """
 
-        self.root_module = gear
-
         self.mandatory_attributes = {'keywords': [], 'rules': [], 'desc': "",}
-
         models.AssetCollection.__init__(self,  *args, **kwargs)
+        self.set_gear_vars()
+
+
+    def set_gear_vars(self):
+        """ Updates assets with assorted values. """
+
+        gear_list = self.get_dicts()
+        for g_dict in gear_list:
+            handle = g_dict['handle']
+
+            if g_dict.get('affinity_bonus', None) is not None:
+                self.assets[handle]['affinity_bonus']['total_required'] = 0
+                for affinity_type in ['puzzle', 'complete']:
+                    req = g_dict['affinity_bonus']['requires'].get(
+                        affinity_type, {}
+                    )
+                    for value in req.values():
+                        self.assets[handle]['affinity_bonus']['total_required'] += value
 
 
     def get_all_rules(self):

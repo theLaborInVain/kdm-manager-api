@@ -93,6 +93,7 @@ class World(object):
             "test", "Test", "TEST",
             "unknown", "Unknown", "UNKNOWN",
             "Anonymous", "anonymous",
+            'Unnamed'
         ]
 
         self.total_refreshed_assets = 0

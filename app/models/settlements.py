@@ -19,6 +19,7 @@ from datetime import datetime, timedelta
 import inspect
 import json
 import random
+import os
 import time
 
 # third party imports
@@ -252,6 +253,7 @@ class Settlement(models.UserAsset):
             "innovations":              [],
             "locations":                [],
             "defeated_monsters":        [],
+            'patterns':                 [],
             "principles":               [],
             "storage":                  [],
             "custom_epithets":          [],
@@ -477,8 +479,16 @@ class Settlement(models.UserAsset):
     def remove(self):
         """ Marks the settlement as removed. """
         self.settlement['removed'] = datetime.now()
+
+        # formulate a log message based on whether it's a user or CLI admin
         msg = '%s marked the settlement as removed!'
-        self.log_event(msg % flask.request.User.user['login'])
+        if flask.has_request_context():
+            msg = msg % flask.request.User.user['login']
+        else:
+            msg = msg % "CLI admin '%s'" % os.environ['USER']
+
+        # log and save
+        self.log_event(msg)
         self.save()
 
 
@@ -579,6 +589,7 @@ class Settlement(models.UserAsset):
             output["game_assets"]["pulse_discoveries"] = self.get_pulse_discoveries()
             output["game_assets"]["innovations_options"] = self.get_innovations_options()
             output['game_assets']['locations_options'] = self.get_locations_options()
+            output['game_assets']['patterns_options'] = self.get_patterns_options()
             output["game_assets"]["principles_options"] = self.get_principles_options()
             output["game_assets"]["milestones_options"] = self.get_milestones_options()
             output["game_assets"]["milestones_dictionary"] = self.get_milestones_options(dict)
@@ -2321,6 +2332,59 @@ class Settlement(models.UserAsset):
 
 
     @models.web_method
+    def set_patterns(self, save=True):
+        """ Updates the settlements 'patterns' list. Initializes gear objects
+        to do it, so watch out for that. """
+
+        # sanity check the request
+        self.check_request_params(['patterns'])
+        new_list = self.params['patterns']
+
+        # get the add/rm lists 
+        add_list, rm_list = utils.list_compare(
+            self.settlement['patterns'],
+            new_list
+        )
+
+        def update_list(action, handle):
+            """ Initialize a Gear object from the handle. Evaluate it and, if it
+            checks out, do the needful and log about it. """
+
+            # initialize the gear
+            gear_object = gear.Gear(handle)
+
+            # sanity check the gear
+            gear_sub_type = getattr(gear_object, 'sub_type')
+            if gear_sub_type != 'pattern':
+                err = "%s must be 'pattern' sub_type, not '%s'"
+                raise utils.InvalidUsage(err % (gear_object, gear_sub_type))
+
+            # do the action
+            if action == 'rm':
+                self.settlement['patterns'].remove(handle)
+            elif action == 'add':
+                self.settlement['patterns'].append(handle)
+            else:
+                raise utils.InvalidUsage('Invalid action! Failing...')
+
+            self.log_event(
+                action = action,
+                key = "Patterns",
+                value = getattr(gear_object, 'name')
+            )
+
+
+        if add_list != []:
+            [update_list('add', handle) for handle in add_list]
+
+        if rm_list != []:
+            [update_list('rm', handle) for handle in rm_list]
+
+        if save:
+            self.save()
+
+
+    @models.web_method
     def set_strain_milestones(self, save=True):
         """ Wraps the toggle_strain_milestone() method below. Pass in the
         settlement sheet's 'strain_milestones' list as 'strain_milestones' in
@@ -3191,6 +3255,25 @@ class Settlement(models.UserAsset):
         which is a list of unique strings. """
 
         return self.settlement.get('monster_volumes', [])
+
+
+    def get_patterns_options(self):
+        """ Similar to the other get_whatever_options() methods, this one
+        returns a list of options for adding new patterns to the settlement.
+        Does not have 'return_type' options. Always returns a list of handles.
+        """
+
+        compatible = self.get_compatible_assets(self.Gear)
+
+        options = []
+        for gear in compatible:
+            if (
+                gear['handle'] not in self.settlement['patterns'] and
+                gear.get('sub_type', None) == 'pattern'
+            ):
+                options.append(gear)
+
+        return options
 
 
     def get_parents(self):
@@ -4227,7 +4310,7 @@ class Settlement(models.UserAsset):
             self.perform_save = True
 
         # data model - required lists
-        for req_list in ['nemesis_monsters','quarries','strain_milestones']:
+        for req_list in ['nemesis_monsters','quarries','strain_milestones', 'patterns']:
             if not req_list in self.settlement.keys():
                 self.settlement[req_list] = []
                 self.perform_save = True

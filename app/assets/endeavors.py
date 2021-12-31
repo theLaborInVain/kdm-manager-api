@@ -471,7 +471,11 @@ expansions = {
     },
     'fear_and_trembling': {
         'name': 'Fear and Trembling',
-        'desc': 'Once per settlement phase, a survivor may spend <font class="kdm_font">d</font> to approach the throne and roll 1d10.',
+        'desc': (
+            'Once per settlement phase, a survivor may spend '
+            '<font class="kdm_font">d</font> to approach the throne and roll '
+            '1d10.'
+        ),
         'cost': 1,
     },
     'filleting_table_advanced_cutting': {

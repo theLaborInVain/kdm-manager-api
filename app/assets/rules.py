@@ -82,7 +82,10 @@ core = {
     'bone': {
         'name': 'Bone',
         'type': 'keyword',
-        'desc': """A gear keyword. Bone is one of the primary materials used to craft this gear.""",
+        'desc': (
+            'A gear keyword. Bone is one of the primary materials used to '
+            'craft this gear.'
+        ),
     },
     'consume': {
         'name': 'Consume',
@@ -155,13 +158,30 @@ core = {
     'frail': {
         'name': 'Frail',
         'type': 'special_rule',
-        'desc': """A gear special rule. Frail weapons are destroyed if a survivor attempts to wound a Super-dense location with them. Archive the weapon at the end of the attack.""",
+        'desc': (
+            'A gear special rule. Frail weapons are destroyed if a survivor '
+            'attempts to wound a Super-dense location with them. Archive the '
+            'weapon at the end of the attack.'
+        ),
         'related': ['archive'],
     },
     'fur': {
         'name': 'Fur',
         'type': 'keyword',
-        'desc': """ A gear keyword. This gear is substantively crafted of thick fur.""",
+        'desc': (
+            'A gear keyword. This gear is substantively crafted of thick fur.'
+        ),
+    },
+    'guard': {
+        'name': 'Guard',
+        'expansion': 'gorm',
+        'type': 'special_rule',
+        'desc': (
+            'At the end of your attack, if you are standing and have a shield '
+            'in your gear grid, spend 1 survival to move 3 spaces directly '
+            'away from the monster and <b>Block 1</b> for free.'
+        ),
+        'related': ['block'],
     },
     'heavy': {
         'name': 'Heavy',

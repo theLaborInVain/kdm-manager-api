@@ -1335,6 +1335,10 @@ class UserAsset(object):
         if requester['_id'] == getattr(self, 'created_by', None):
             return 'write'
 
+        # carve-out for 'public' survivors
+        if hasattr(self, 'survivor') and self.survivor.get('public', False):
+            return 'write'
+
         # if we're still here, check players
         for player in self.get_players():
             if player['_id'] == requester['_id']:

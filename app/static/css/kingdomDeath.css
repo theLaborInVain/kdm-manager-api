@@ -11,10 +11,10 @@
 
 @font-face {
     font-family: 'Silverado';
-    src: url('/static/fonts/329BC2_0_0.eot?#iefix') format('embedded-opentype'),
-        url('/static/fonts/329BC2_0_0.woff') format('woff'),
-        url('/static/fonts/329BC2_0_0.woff2') format('woff2'),
-        url('/static/fonts/329BC2_0_0.ttf') format('truetype');
+    src: url('/static/fonts/SilveradoRR-MediumCondensed.eot?#iefix') format('embedded-opentype'),
+        url('/static/fonts/SilveradoRR-MediumCondensed.woff') format('woff'),
+        url('/static/fonts/SilveradoRR-MediumCondensed.woff2') format('woff2'),
+        url('/static/fonts/SilveradoRR-MediumCondensed.ttf') format('truetype');
 }
 .silverado {
     font-family: 'Silverado';
@@ -93,6 +93,18 @@ button.kd {
     border: 0; 
 }
 
+/* 3D Horizontal rule */
+hr.three_dee {
+    background: #000;
+    border: 0;
+    border-bottom: 1px solid;
+    border-color: #bbb;
+    box-sizing: border-box;
+    height: 0.15rem;
+    margin: 0.25rem 0 0.25rem -10%;;
+    width: 1.75rem;
+}
+
 /*  kd CSS variables    */
 .kd {
     --border-radius-card: 0.8rem;
@@ -113,6 +125,7 @@ button.kd {
     --color-kd-brown: #997030;
     --color-kd-brown-gradient: linear-gradient(#997030, #a47a41, #997030);
     --color-kd-card-gradient: radial-gradient(#fff, #fff, #f8f8f8, #fffff9);
+    --color-kd-resource-card-gradient: radial-gradient(#FBF7F7, #FBF7F7, #F4ECD2, #E7D09D);
     --color-kd-green: #4CB848;
     --color-kd-green-gradient: radial-gradient(#0d0, #4CB848);
     --color-kd-death-grey: #313131;
@@ -145,6 +158,14 @@ button.kd {
     padding: 1rem;
     padding-top: 0.5rem;
 }
+.kd.worksheet_block.lined > div:not(.worksheet_block_title, .worksheet_block_subtitle) {
+    border-bottom: 0.1rem solid #CBCBCB;
+    min-height: 3rem;
+    padding-top: 0.5rem; 
+}
+.kd.worksheet_block.lined > div:last-child {
+    border-bottom: none;
+}
 .kd.worksheet_block.borderless {
     border: 0; 
 }
@@ -162,10 +183,13 @@ button.kd {
 }
 .kd.worksheet_page_title,
     .kd.worksheet_block_title {
+    border: none;
     font-family: 'Silverado';
-    font-size: 1.8rem;
+    font-size: 1.7rem;
     font-weight: normal;
     margin: 0 auto 0 auto;
+}
+.kd.worksheet_block_subtitle {
 }
 .kd.worksheet_page_title {  /* for titles outside of boxes */
     margin: 0 auto 0 3%;
@@ -187,13 +211,14 @@ button.kd {
     border-bottom: 0.1rem solid #CBCBCB;
     min-height: 3rem;   /* since these are typically tappable/clickable */ 
 }
-.kd.worksheet_row.lined.borderless {
-    border-bottom: 0;
-}
 .kd.worksheet_row.lined > div { /* only select direct children */
     margin: 0 0.5rem 0 0.5rem;
 }
+.kd.worksheet_row.lined.borderless {
+    border-bottom: 0;
+}
 .kd.worksheet_row.justified > :last-child,
+    .kd.worksheet_row.principle > :last-child,
     .kd.worksheet_row.lined.principle > :last-child {
     margin-left: auto; 
     max-width: 50%; 
@@ -212,6 +237,7 @@ button.kd {
     border: var(--border-checkbox);
     box-sizing: border-box;
     height: 0.8rem;
+    margin: 0 0.5rem 0 0.5rem;
     min-height: 0.8rem;
     min-width: 0.8rem;
     width: 0.8rem;
@@ -410,6 +436,10 @@ select.kd.capsule {
 }
 
 /*  KD title */
+.kd.super_title_logo {
+    margin: 1rem auto -0.5rem auto;
+    width: 4rem;
+}
 .kd.title {
     font-family: 'Silverado';
     font-weight: normal;
@@ -602,8 +632,311 @@ select.kd.capsule {
 }
 
 /*                      */
-/*  survivor cards      */
+/*  cards               */
 /*                      */
+
+.kd.card {
+    color: #111;
+}
+
+.kd.card.container {
+    box-sizing: border-box;
+    border-radius: var(--border-radius-card);
+    background: var(--color-kd-card-gradient);
+    box-shadow: var(--box-shadow-default);
+    display: flex;
+    margin: auto;
+    min-height: 3in;
+}
+
+.kd.card.face {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%
+}
+.kd.card.face.header,
+    .kd.card.face.footer {
+    display: flex;
+    width: 100%;
+}
+.kd.card.face.header {
+    flex-direction: row; 
+}
+.kd.card.face.footer {
+    flex-direction: column;
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+.kd.card.title_bar { /* for any title region with keywords, etc. */
+    display: flex;
+    flex-direction: column; 
+    margin: 1.5rem;
+    width: 100%; 
+}
+.kd.card.title_bar div:first-child { /*  title goes first in a title bar */
+    font-family: 'silverado';
+    text-align: center;
+}
+.kd.card.title_bar div:last-child { /*  keywords go last in a title bar */
+    font-size: 0.8rem;
+    margin: 0 auto;
+    text-align: center; 
+    width: 70%;
+}
+
+.kd.card.face.footer div {
+    margin: 1rem 1rem 0 1rem;
+    text-align: center;
+}
+
+/*  expansion flair/bookmark thing ; absolute position */
+.kd.card.expansion_flair {
+    align-items: flex-end;
+    border: 0.2rem solid;
+    border-radius: 0 0 5rem 5rem;
+    border-top: 0;
+    box-sizing: border-box;
+    display: flex;
+    font-family: 'Silverado';
+    font-weight: bold; 
+    height: 5rem;
+    justify-content: center;
+    margin-left: 1rem; 
+    position: absolute; 
+    padding-bottom: 0.75rem;
+    width: 2rem;
+}
+
+
+/*  gear cards - CSS grid */
+.kd.card.gear.container {
+    display: grid;
+    grid-gap: 0;
+    grid-template-columns: 1.2rem auto 1.2rem;
+    grid-template-rows: 1.2rem auto 1.2rem;
+    width: 3in;
+}
+
+/* inner and outer affinity square */
+.kd.card.gear.bleed.affinity.outer,
+    .kd.card.gear.bleed.affinity.inner {
+    margin: 0 auto; 
+}
+
+/* outer affinity square */
+.kd.card.gear.bleed.affinity.outer.top,
+    .kd.card.gear.bleed.affinity.outer.bottom {
+    height: 1rem;
+    width: 2.5rem;
+}
+.kd.card.gear.bleed.affinity.outer.left,
+    .kd.card.gear.bleed.affinity.outer.right {
+    height: 2.5rem;
+    margin-bottom: auto;
+    margin-top: auto;
+    width: 1rem;
+}
+.kd.card.gear.bleed.affinity.outer.top {
+    border-radius: 0 0 0.3rem 0.3rem;
+    padding: 0 0.25rem 0.25rem 0.25rem;
+}
+.kd.card.gear.bleed.affinity.outer.right {
+    border-radius: 0.3rem 0 0 0.3rem;
+    padding: 0.25rem 0 0.25rem 0.25rem;
+}
+.kd.card.gear.bleed.affinity.outer.bottom {
+    border-radius: 0.3rem 0.3rem 0 0;
+    padding: 0.25rem 0.25rem 0 0.25rem;
+}
+.kd.card.gear.bleed.affinity.outer.left {
+    border-radius: 0 0.3rem 0.3rem 0;
+    padding: 0.25rem 0.25rem 0.25rem 0;
+}
+
+/* inner affinity square */
+.kd.card.gear.bleed.affinity.inner {
+    border: 0.1rem solid #fff;
+    border-radius: inherit;
+    box-sizing: border-box; 
+    height: 100%;
+}
+.kd.card.gear.bleed.affinity.inner.top {
+    border-top: 0;
+}
+.kd.card.gear.bleed.affinity.inner.right {
+    border-right: 0;
+}
+.kd.card.gear.bleed.affinity.inner.bottom {
+    border-bottom: 0;
+}
+.kd.card.gear.bleed.affinity.inner.left {
+    border-left: 0;
+}
+
+/* left and right affinity bleed */
+/*  paired carve-outs */
+.kd.card.gear.bleed.affinity.outer.affinity_paired {
+    border-bottom: 1rem solid transparent;
+    border-top: 1rem solid transparent;
+    height:0;
+    padding: 0;
+    width:0;
+}
+.kd.card.gear.bleed.affinity.outer.left.affinity_paired {
+    border-right: 1rem solid;
+}
+.kd.card.gear.bleed.affinity.outer.right.affinity_paired {
+    border-left: 1rem solid;
+}
+.kd.card.gear.bleed.affinity.outer.bottom.affinity_paired {
+    border-left: 1rem solid transparent;
+    border-right: 1rem solid transparent;
+    border-top: 1rem solid;
+}
+
+/* gear card face - top and bottom half */
+.kd.card.gear.title_bar { /* remove the margin from the name/title */
+    margin-top: 0;  
+}
+.kd.card.gear.title_bar div {
+    text-align: center; 
+}
+
+/*  gear card armor/attack stats */
+.kd.card.gear.armor_stats,
+    .kd.card.gear.weapon_stats {
+    font-family: 'arial';
+    position: absolute;
+}
+.kd.card.gear.armor_stats {
+    display: flex;
+    width: 3rem;
+}
+.kd.card.gear.shield {
+    background: #222;
+    background-color: #222;
+    border-radius: 0.1rem;
+    color: #fff;
+    display: inline-block;
+    font-family: 'Silverado';
+    font-size: 1.5rem;
+    height: 1.4rem;
+    margin-left: -0.1rem;
+    padding-top: 0.1rem;
+    text-align: center;
+    width: 100%;
+}
+.kd.card.gear.shield:after {
+    border-left: 0.9rem solid transparent;
+    border-top: 0.9rem solid #222;
+    border-right: 0.9rem solid transparent;
+    content: "";
+    height: 0;
+    left: -0.1rem;
+    position: absolute;
+    top: 1.5rem;
+    width: 0;
+}
+.kd.card.gear.location_glyph {
+    color: #222;
+    font-family: 'kdm-font-2';
+    font-size: 1.25rem;
+    max-width: 1.3rem;
+}
+.kd.card.gear.activation_icon {
+    font-family: 'kdm-font-10';
+}
+.kd.card.gear.activation_icon::before {
+    content: 'a';
+    font-size: 0.8em;
+    border-radius:100%;
+    position: absolute;
+    margin: 0.1em;
+}
+
+/* gear card face - bottom */
+.kd.card.gear.face.footer .kd.card.gear.add_affinity {
+    align-items: center;
+    border-radius: 0.2rem;
+    display: flex;
+    margin: 1rem auto;
+    height: 3rem;
+    justify-content: center; 
+    width: 3rem;
+}
+.kd.card.gear.add_affinity div {
+    border: 0.15rem solid #fff;
+    height: 75%;
+    margin: 0;
+    width: 75%;
+}
+.kd.card.gear.face.footer .kd.card.gear.desc {
+    margin: 0; 
+}
+.kd.card.gear.face.footer .kd.card.gear.affinity_bonus {
+    background: #fff;
+    border: 0.15rem solid #fff;
+    border-radius: var(--border-radius-card);
+    box-sizing: border-box;
+    display: flex;
+    padding: 0;
+    margin: 0; 
+    width: 100%;
+}
+.kd.card.gear.face.footer .kd.card.gear.affinity_bonus_requirements {
+    margin: 0; 
+}
+.kd.card.gear.face.footer .kd.card.gear.affinity_bonus_requirements.horizontal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    padding: 0.25rem; 
+}
+.kd.card.gear.face.footer .kd.card.gear.affinity_bonus_requirements.horizontal * {
+}
+.kd.card.gear.face.footer .kd.card.gear.affinity_bonus_desc {
+    background: #D8E2E4;
+    box-sizing: border-box; 
+    margin: 0;
+    padding: 0.25rem;
+    width: 100%; 
+}
+.kd.card.gear.face.footer .kd.card.gear.affinity_bonus_desc.horizontal {
+    text-align: left;  
+}
+.kd.card.gear.affinity_bonus_desc.horizontal {
+    border-radius: 0 var(--border-radius-card) var(--border-radius-card) 0;
+}
+.kd.card.gear.affinity_bonus_desc.vertical {
+    border-radius: 0 0 var(--border-radius-card) var(--border-radius-card);
+}
+.kd.card.gear.affinity_bonus.vertical {
+    flex-direction: column;
+}
+
+/*  resource cards  */
+.kd.card.resource.container {
+    background: var(--color-kd-resource-card-gradient);
+    max-width: 85%;
+    padding-bottom: 1rem; 
+}
+.kd.card.resource.header.expansion {
+    margin-left: 2.5rem;
+    width: auto;  
+}
+.kd.card.resource.title_bar.expansion div {
+    text-align: left;
+    width: 100%; 
+}
+.kd.card.resource.text.flavor_text {
+    font-style: italic;
+}
+
+
+
+/*  vignette survivor cards */
 
 .kd.vignette_survivor_card {
     background: var(--color-kd-card-gradient);

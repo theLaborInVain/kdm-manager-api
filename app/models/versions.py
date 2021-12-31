@@ -4,6 +4,8 @@
 
 """
 
+from datetime import datetime, timedelta
+
 from app import models
 
 class Assets(models.AssetCollection):
@@ -20,7 +22,9 @@ class Assets(models.AssetCollection):
         """ Sets self.version, which is a float, and self.version_string, which
         is also a float. Just kidding, it's a string. """
 
-        for a_dict in self.get_dicts():
+        versions_list = self.get_dicts()
+        for a_dict in versions_list:
+
             handle = a_dict['handle']
             version = float(
                 "%s.%s" % (a_dict['major'], a_dict['minor'])
@@ -36,6 +40,14 @@ class Assets(models.AssetCollection):
 
             released_summary = a_dict['released'].strftime('%B %Y')
             self.assets[handle]['released_summary'] = released_summary
+
+            # next release
+            if a_dict != versions_list[-1]:
+                next_release = versions_list[versions_list.index(a_dict) + 1]
+                eol = next_release['released'] - timedelta(1)
+                self.assets[handle]['eol'] = eol
+            else:
+                self.assets[handle]['eol'] = datetime.now()
 
 
 class Version(models.GameAsset):

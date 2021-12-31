@@ -662,6 +662,26 @@ whereas the code below would decrement by one:</p>
 <p>Use <code>set_strain_milestones</code> instead.</p>
 	""",
     },
+    "settlement_set_strain_milestones_settlement_id": {
+        "name": "/settlement/set_strain_milestones/&lt;settlement_id&gt;",
+        "subsection": "settlement_update_attribute",
+        "desc": """\
+<p><b>POST</b> a list of Strain Milestones to update the settlement's list of
+unlocked Strain Milestones.</p>
+<code>{'strain_milestones': ['plot_twist', 'somatotropin_surge']}</code>
+	""",
+    },
+    "settlement_set_patterns_settlement_id": {
+        "name": "/settlement/set_patterns/&lt;settlement_id&gt;",
+        "subsection": "settlement_update_attribute",
+        "desc": """\
+<p><b>POST</b> a list of pattern gear handles to update the settlement's
+available patterns.</p>
+<code>{'patterns': ['teleric_eye_tac', 'grim_muffler']}</code>
+<p>This endpoint is the only way to manage this attribute. Adding and removing
+is logged atomically in the settlement event log.</p>
+	""",
+    },
 
 
 	#

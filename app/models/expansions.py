@@ -18,6 +18,23 @@ class Assets(models.AssetCollection):
 
         self.root_module = expansions
         models.AssetCollection.__init__(self,  *args, **kwargs)
+        self.set_expansion_vars()
+
+
+    def set_expansion_vars(self):
+        """ Touch up each asset with some convenience data. """
+
+        gear_object = models.gear.Assets()
+        gear_list = gear_object.get_dicts()
+
+        expansions_list = self.get_dicts()
+        for e_dict in expansions_list:
+            handle = e_dict['handle']
+
+            self.assets[handle]['pattern_gear'] = []
+            for gear in gear_list:
+                if gear.get('expansion', None) == handle and gear.get('sub_type', None) == 'pattern':
+                    self.assets[handle]['pattern_gear'].append(gear['handle'])
 
 
 class Expansion(models.GameAsset):

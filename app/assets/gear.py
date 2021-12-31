@@ -842,7 +842,7 @@ core = {
         'keywords': ['weapon','melee','sword','finesse','metal'],
         'affinities': {'right': 'red'},
         'speed': 3,
-        'accurady': 5,
+        'accuracy': 5,
         'strength': 5,
         'rules': ['Sharp','Deflect 1'],
         'desc': '<b>Deflect 1</b>: Spend <font class="kdm_font">a</font>. You now have exactly 1 deflect token. The next 1 time you are hit, ignore a hit and and lose 1 deflect token.',
@@ -2626,9 +2626,16 @@ gorm = {
         'accuracy': 7,
         'strength': 2,
         'rules': ['Paired'],
-        'desc': 'On a <b>Perfect hit</b>, a wound attempt in your attack automatically succeeds.',
+        'desc': (
+            'On a <b>Perfect hit</b>, a wound attempt in your attack '
+            'automatically succeeds.'
+        ),
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'acid_gland': 1}, 'resource_types': {'bone': 2}},
+            {
+                'locations':['gormery'],
+                'resource_handles': {'acid_gland': 1},
+                'resource_types': {'bone': 2}
+            },
         ],
     },
     'armor_spikes': {
@@ -2636,10 +2643,17 @@ gorm = {
         'type': 'gormery',
         'name': 'Armor Spikes',
         'keywords': ['item','bone','heavy'],
-        'desc': 'If adjacent to the monster when you suffer a severe body injury, the monster suffers a wound. Limit, once per round.',
+        'desc': (
+            'If adjacent to the monster when you suffer a severe body injury, '
+            'the monster suffers a wound. Limit, once per round.'
+        ),
         'affinities': {'bottom': 'blue'},
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'stout_vertebrae': 1}, 'resource_types': {'scrap': 1}},
+            {
+                'locations':['gormery'],
+                'resource_handles': {'stout_vertebrae': 1},
+                'resource_types': {'scrap': 1}
+            },
         ],
     },
     'black_sword': {
@@ -2650,9 +2664,16 @@ gorm = {
         'speed': 3,
         'accuracy': 5,
         'strength': 10,
-        'desc': """On a <b>Perfect hit</b>, gain +1 survival. If you are a Sword Master, you understand this weapon's potential. It gains +20 strength.""",
+        'desc': (
+            'On a <b>Perfect hit</b>, gain +1 survival. If you are a Sword '
+            "Master, you understand this weapon's potential. It gains +20 "
+            'strength.'
+        ),
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'gormite': 1, 'handed_skull': 1}, },
+            {
+                'locations':['gormery'],
+                'resource_handles': {'gormite': 1, 'handed_skull': 1},
+            },
         ],
     },
     'gaxe': {
@@ -2660,7 +2681,10 @@ gorm = {
         'type': 'gormery',
         'name': 'Gaxe',
         'keywords': ['weapon','melee','axe','bone'],
-        'desc': 'Each showdown, the first time you critically wound the monster, it gains -1 evasion token.',
+        'desc': (
+            'Each showdown, the first time you critically wound the monster, '
+            'it gains -1 evasion token.'
+        ),
         'speed': 1,
         'accuracy': 6,
         'strength': 4,
@@ -2670,7 +2694,10 @@ gorm = {
             'requires': {'complete': {'red': 1}},
         },
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'dense_bone': 1, 'stout_hide': 1}, },
+            {
+                'locations':['gormery'],
+                'resource_handles': {'dense_bone': 1, 'stout_hide': 1},
+            },
         ],
     },
     'gorment_armor_set': {
@@ -2685,9 +2712,16 @@ gorm = {
         'armor': 2,
         'location': 'legs',
         'keywords': ['armor','set','gormskin','heavy'],
-        'desc': 'Other survivors may move through but not end movement in a space you occupy.',
+        'desc': (
+            'Other survivors may move through but not end movement in a space '
+            'you occupy.'
+        ),
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'stout_hide': 1}, 'resource_types': {'bone': 1}},
+            {
+                'locations':['gormery'],
+                'resource_handles': {'stout_hide': 1},
+                'resource_types': {'bone': 1}
+            },
         ],
     },
     'gorment_mask': {
@@ -2699,11 +2733,17 @@ gorm = {
         'armor': 2,
         'affinities': {'top': 'blue', 'bottom': 'green'},
         'affinity_bonus': {
-            'desc': 'If your courage is higher than &#9733;, ignore intimidate actions.',
+            'desc': (
+                'If your courage is higher than &#9733;, ignore intimidate '
+                'actions.'
+            ),
             'requires': {'puzzle': {'blue': 1, 'green': 1}},
         },
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'stout_hide': 1, 'handed_skull': 1}, },
+            {
+                'locations': ['gormery'],
+                'resource_handles': {'stout_hide': 1, 'handed_skull': 1},
+            },
         ],
     },
     'gorment_sleeves': {
@@ -2719,7 +2759,11 @@ gorm = {
             'requires': {'complete': {'green': 2}},
         },
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'stout_hide': 1, }, 'resource_types': {'bone':1} },
+            {
+                'locations':['gormery'],
+                'resource_handles': {'stout_hide': 1, },
+                'resource_types': {'bone':1}
+            },
         ],
     },
     'gorment_suit': {
@@ -2732,7 +2776,12 @@ gorm = {
         'armor': 2,
         'affinities': {'left': 'green'},
         'affinity_bonus': {
-            'desc': '<b>Guard:</b> At the end of your attack, if you are standing and have a shield in your gear grid, spend 1 survival to move 3 spaces directly away from the monster and <b>Block 1</b> for free.',
+            'desc': (
+                '<b>Guard:</b> At the end of your attack, if you are standing '
+                'and have a shield in your gear grid, spend 1 survival to move '
+                '3 spaces directly away from the monster and <b>Block 1</b> '
+                'for free.'
+            ),
             'requires': {
                 'puzzle': {'green': 1},
                 'complete': {'blue': 1, 'red': 1},
@@ -2744,10 +2793,18 @@ gorm = {
         'type': 'gormery',
         'name': 'Gorn',
         'keywords': ['item','instrument','gormskin'],
-        'desc': '<font class="kdm_font">a</font>: All non-deaf knocked down survivors stand and gain +<font class="inline_shield">1</font> to all hit locations.<br/>Use once per showdown.',
+        'desc': (
+            '<font class="kdm_font">a</font>: All non-deaf knocked down '
+            'survivors stand and gain +<font class="inline_shield">1</font> '
+            'to all hit locations.<br/>Use once per showdown.'
+        ),
         'affinities': {'bottom': 'blue'},
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'stout_heart': 1, }, 'resource_types': {'bone':3} },
+            {
+                'locations':['gormery'],
+                'resource_handles': {'stout_heart': 1, },
+                'resource_types': {'bone':3}
+            },
         ],
     },
     'greater_gaxe': {
@@ -2758,14 +2815,20 @@ gorm = {
         'speed': 2,
         'accuracy': 6,
         'strength': 4,
-        'rules': ['Deadly','Reach 2'],
-        'affinities': {'left':'red'},
+        'rules': ['Deadly', 'Reach 2'],
+        'affinities': {'left': 'red'},
         'affinity_bonus': {
-            'desc': 'On a <b>Perfect hit</b>, the edge sharpens. Gain +4 strength for the rest of the attack.',
+            'desc': (
+                'On a <b>Perfect hit</b>, the edge sharpens. Gain +4 strength '
+                'for the rest of the attack.'
+            ),
             'requires': {'complete': {'green': 1,'red': 1}},
         },
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'dense_bone': 1, 'jiggling_lard': 1}, },
+            {
+                'locations':['gormery'],
+                'resource_handles': {'dense_bone': 1, 'jiggling_lard': 1},
+            },
         ],
     },
     'knuckle_shield': {
@@ -2777,10 +2840,17 @@ gorm = {
         'accuracy': 7,
         'strength': 1,
         'rules': ['Block 1'],
-        'desc': 'Once per round, if you wound with this weapon, <b>Block 1</b> for free.',
+        'desc': (
+            'Once per round, if you wound with this weapon, <b>Block 1</b> '
+            'for free.'
+        ),
         'affinities': {'bottom': 'red'},
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'mammoth_hand': 1, }, 'resource_types': {'bone':2} },
+            {
+                'locations':['gormery'],
+                'resource_handles': {'mammoth_hand': 1, },
+                'resource_types': {'bone':2}
+            },
         ],
     },
     'pulse_lantern': {
@@ -2788,10 +2858,17 @@ gorm = {
         'type': 'gormery',
         'name': 'Pulse Lantern',
         'keywords': ['item','lantern','gormskin','fragile'],
-        'desc': '<font class="kdm_font">a</font>: Once per showdown, roll 1d10. On a result of 4+, the monster is knocked down and all survivors gain -1 accuracy token.',
+        'desc': (
+            '<font class="kdm_font">a</font>: Once per showdown, roll 1d10. '
+            'On a result of 4+, the monster is knocked down and all survivors '
+            'gain -1 accuracy token.'
+        ),
         'affinities': {'top': 'red',},
         'recipes': [
-            {'locations':['gormery'], 'resource_handles': {'milky_eye': 1, 'active_thyroid': 1}, },
+            {
+                'locations':['gormery'],
+                'resource_handles': {'milky_eye': 1, 'active_thyroid': 1},
+            },
         ],
     },
     'regeneration_suit': {
@@ -2844,7 +2921,10 @@ gorm = {
         'accuracy': 5,
         'strength': 5,
         'rules': ['Deadly'],
-        'desc': 'When you critically wound, the next time a monster would draw AI, it performs <b>Basic Action</b> instead.',
+        'desc': (
+            'When you critically wound, the next time a monster would draw AI, '
+            'it performs <b>Basic Action</b> instead.'
+        ),
         'affinities': {'left': 'blue'},
         'recipes': [
             {
@@ -4109,8 +4189,7 @@ promo = {
 
     # pinup wet nurse
     'nightmare_breast_pump': {
-        'expansion': 'promo',
-        'type': 'promo',
+        'expansion': 'pinup_wet_nurse',
         'name': 'Nightmare Breast Pump',
         'affinities': {'top': 'blue'},
         'keywords': ['item','noisy','fragile','other'],
@@ -4823,7 +4902,11 @@ manhunter = {
         'affinities': {'top': 'blue', 'right': 'red'},
         'keywords': ['item', 'metal', 'fragile'],
         'rules': ['Unique'],
-        'desc': """At the start of your act, gain +1 survival.<br/>Once per campaign, you may fire the gun to automatically hit and inflict a critical wound.""",
+        'desc': (
+            'At the start of your act, gain +1 survival.<br/>Once per '
+            'campaign, you may fire the gun to automatically hit and inflict '
+            'a critical wound.'
+        ),
     },
     "hunters_heart": {
         'expansion': 'manhunter',
@@ -4831,7 +4914,12 @@ manhunter = {
         'name': "Hunter's Heart",
         'keywords': ['item', 'consumable', 'metal', 'heavy'],
         'rules': ['Unique'],
-        'desc': """If you die, the heart crawls back to the settlement. Roll 1d10. On a 7+, it regrows you.<br/> During the settlement phase, you may archive this to <font class="kdm_font">g</font> <b>Bleeding Heart</b>.""",
+        'desc': (
+            'If you die, the heart crawls back to the settlement. Roll 1d10. '
+            'On a 7+, it regrows you.<br/> During the settlement phase, you '
+            'may archive this to <font class="kdm_font">g</font> <b>Bleeding '
+            'Heart</b>.'
+        ),
     },
     "manhunters_hat": {
         'expansion': 'manhunter',
@@ -4840,10 +4928,13 @@ manhunter = {
         'affinities': {'top': 'red', 'left': 'red', 'bottom': 'blue'},
         'armor': 2,
         'location': 'head',
-        'keywords': ['item', 'rawhide', 'leater'],
+        'keywords': ['item', 'rawhide', 'leather'],
         'rules': ['Unique', 'Accessory'],
         'affinity_bonus': {
-            'desc': """Ignore the first severe <font class="kdm_font_2">b</font> injury you suffer each showdown.""",
+            'desc': (
+                'Ignore the first severe <font class="kdm_font_2">b</font> '
+                'injury you suffer each showdown.'
+            ),
             'requires': {'puzzle': {'blue': 1}, 'complete': {'red': 1}},
         },
     },
@@ -4854,7 +4945,11 @@ manhunter = {
         'keywords': ['item','tool','lantern'],
         'rules': ['Unique'],
         'affinities': {'top': 'green', 'right': 'blue'},
-        'desc': """At the start of any hunt turn, before an event is revealed, you may <font class="kdm_font">g</font> <b>Sonorous Rest</b>. Limit, once per hunt.""", 
+        'desc': (
+            'At the start of any hunt turn, before an event is revealed, you '
+            'may <font class="kdm_font">g</font> <b>Sonorous Rest</b>. <br/>'
+            'Limit, once per hunt.'
+        ),
     },
     'tool_belt': {
         'expansion': 'manhunter',
@@ -5510,6 +5605,7 @@ vignettes_of_death_white_gigalion = {
 pinups_of_death_2 = {
     'lantern_brassiere': {
         'name': 'Lantern Brassiere',
+        'type': 'rare_gear',
         'armor': 0,
         'location': 'body',
         'keywords': ['armor', 'set', 'metal', 'heavy'],
@@ -5529,6 +5625,7 @@ pinups_of_death_2 = {
     },
     'leather_bodysuit': {
         'name': 'Leather Bodysuit',
+        'type': 'rare_gear',
         'armor': 0,
         'location': 'body',
         'keywords': ['armor', 'set', 'leather'],
@@ -5537,6 +5634,7 @@ pinups_of_death_2 = {
     },
     'rawhide_corset': {
         'name': 'Rawhide Corset',
+        'type': 'rare_gear',
         'armor': 0,
         'location': 'body',
         'keywords': ['armor', 'set', 'rawhide'],
@@ -5549,6 +5647,7 @@ pinups_of_death_2 = {
     },
     'teeth_bikini': {
         'name': 'Teeth Bikini',
+        'type': 'rare_gear',
         'armor': 0,
         'location': 'body',
         'keywords': ['armor', 'set', 'scale'],
@@ -5565,3 +5664,127 @@ pinups_of_death_2 = {
         ),
     },
 }
+
+sunlion_armor_beta = {
+    'white_sunlion_mask': {
+        'name': 'White Sunlion Mask',
+        'type': 'gear_recipe',
+        'expansion': 'sunlion_armor_beta',
+        'armor': 1,
+        'location': 'head',
+        'keywords': ['armor', 'set', 'fragile', 'mask'],
+        'affinities': {'left': 'red', 'bottom': 'red'},
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 2}},
+            'desc': (
+                'When you <b>Pounce</b> and attack from the blind spot, '
+                'add +1d10 strength to the first wound attempt of that '
+                'attack.'
+            ),
+        },
+        'recipes': [
+            {
+                'gear_handles': {'white_lion_helm': 1, },
+                'resource_types': {'organ': 1},
+                'innovations': ['paint']
+            },
+        ],
+    },
+}
+
+halloween_survivors_series_2 = {
+    'big_bite_costume': {
+        'type': 'pattern',
+        'expansion': 'halloween_survivors_series_2',
+        'name': 'Big Bite Costume',
+        'keywords': ['item'],
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+        ),
+        'affinities': {'top': 'green', 'bottom': 'red'},
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 1, 'green': 1}},
+            'desc': (
+                'On <b>Arrival</b>, trick or treat! Roll 1d10: 1-5 survivors '
+                'gain a bleeding token. 6+, survivors gain +6 insanity.'
+            ),
+        },
+        'recipes': [
+            {
+                'resource_handles': {
+                    'leather': 1,
+                    'organ': 2,
+                    'skull': 1,
+                },
+                'crafting_process': [
+                    (
+                        'Listen to the tragic tale of a <b>dismembered</b> '
+                        "survivor's brush with the croc."
+                    ),
+                    (
+                        'Imagine the feet of a of a cold-blooded opportunist.'
+                    ),
+                    (
+                        'Find a blood-crusted <b>Broken Lantern</b>.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'gold_cat_costume': {
+        'type': 'pattern',
+        'expansion': 'halloween_survivors_series_2',
+        'name': 'Gold Cat Costume',
+        'keywords': ['item'],
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+        ),
+        'affinities': {'left': 'red', 'bottom': 'blue'},
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 1, 'blue': 1}},
+            'desc': (
+                'On <b>Arrival</b>, trick or treat! Roll 1d10: 1-5 survivors '
+                'gain a -1 strength token. 6+ survivors gain a +1 strength '
+                'token.'
+            ),
+        },
+    },
+    'retching_costume': {
+        'type': 'pattern',
+        'expansion': 'halloween_survivors_series_2',
+        'name': 'Retching Costume',
+        'keywords': ['item'],
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+        ),
+        'affinities': {'right': 'red', 'bottom': 'blue'},
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 1, 'blue': 1}},
+            'desc': (
+                'On <b>Arrival</b>, trick or treat! Roll 1d10: 1-5 survivors '
+                'lose <font class="inline_shield">1</font> to all locations. '
+                '6+, survivors gain <font class="inline_shield">1</font> to '
+                'all locations.'
+            ),
+        },
+    },
+    'screaming_costume': {
+        'type': 'pattern',
+        'expansion': 'halloween_survivors_series_2',
+        'name': 'Screaming Costume',
+        'keywords': ['item'],
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+        ),
+        'affinities': {'left': 'green', 'right': 'blue'},
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 1, 'blue': 1}},
+            'desc': (
+                'On <b>Arrival</b>, trick or treat! Roll 1d10: 1-5 survivors '
+                'gain a -1 movement token. 6+ survivors gain a +1 movement '
+                'token.'
+            ),
+        },
+    },
+}
+
