@@ -212,14 +212,9 @@ class Settlement(models.UserAsset):
 
         """
 
-        if (
-            flask.request.User.get_settlements(return_type=int) >= 3 and
-            flask.request.User.user['subscriber']['level'] < 1
-        ):
-            raise utils.InvalidUsage(
-                'Free users may only create three settlements!',
-                status_code=405
-            )
+        # before we do it, call the User object's validator method, which will
+        #   bomb this out if they're at their limit.
+        flask.request.User.can_create_settlement(raise_on_false=True)
 
         self.logger.info("%s is creating a new settlement..." % flask.request.User)
 
@@ -907,6 +902,8 @@ class Settlement(models.UserAsset):
         # in case we're creating new
         if not hasattr(self, 'Expansions'):
             self.Expansions = expansions.Assets()
+        if not hasattr(self, 'Events'):
+            self.Events = events.Assets()
 
 
         # create a list of expansions to add
@@ -1986,9 +1983,11 @@ class Settlement(models.UserAsset):
         self.settlement["name"] = new_name
 
         if old_name is None:
-            msg = "%s named the settlement '%s'." % (flask.request.User.login, new_name)
+            msg = "%s named the settlement '%s'."
+            msg = msg % (flask.request.User.login, new_name)
         else:
-            msg = "%s changed settlement name from '%s' to '%s'" % (flask.request.User.login, old_name, new_name)
+            msg = "%s changed settlement name from '%s' to '%s'"
+            msg = msg % (flask.request.User.login, old_name, new_name)
 
         self.log_event(action="set", key="name", value=new_name)
         self.save()

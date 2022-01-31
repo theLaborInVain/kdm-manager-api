@@ -99,6 +99,8 @@ def get_logger(log_level=None, log_name=None):
     return logger
 
 
+
+
 def check_api_key():
     """ Checks the API key on the request; bombs the whole request out if
     it wants to. """
@@ -112,7 +114,33 @@ def check_api_key():
             flask.request.api_key
             )
         )
+        return None
 
+    return True
+
+
+def get_api_client():
+    """ Checks the request's api_key, tries to return a string representing the
+    webapp making the request. Returns None if it can't come up with a string
+    for the requesting source. """
+
+    # default value
+    requester_netloc = urlparse(str(flask.request.referrer)).netloc
+
+    if flask.has_request_context():
+        if hasattr(flask.request, 'api_key'):
+            api_key_owner = API.config['KEYS'].get(
+                flask.request.api_key,
+                requester_netloc,
+            )
+            if isinstance(api_key_owner, dict):
+                return api_key_owner['owner']
+
+            return api_key_owner
+
+        return requester_netloc
+
+    return None
 
 
 #
@@ -324,10 +352,7 @@ def record_response_time(response):
 
     mdb.api_response_times.insert({
         "api_key": flask.request.api_key,
-        'api_key_owner': API.config['KEYS'].get(
-            flask.request.api_key,
-            '[UNKNOWN] ' + urlparse(str(flask.request.referrer)).netloc
-        ),
+        'api_key_owner': get_api_client(),
         "created_on": datetime.now(),
         "url": url,
         "method": flask.request.method,

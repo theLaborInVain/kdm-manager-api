@@ -535,7 +535,7 @@ class AdministrationObject:
 
         logs = utils.mdb.api_response_times.find().sort(
             'created_on',
-            -1
+            -1,
         ).limit(how_many)
 
         for log in logs:
@@ -869,8 +869,12 @@ class UserManagementObject:
                 )
             except KeyError:
                 mini_repr[time_attr] = None
-        for attr in ['settlements_created', 'survivors_created']:
-            mini_repr[attr] = serialized_user[attr]
+        for attr in [
+            'latest_api_client',
+            'settlements_created',
+            'survivors_created'
+        ]:
+            mini_repr[attr] = serialized_user.get(attr, None)
         dump_doc_to_cli(mini_repr, gap_spaces=25)
 
         print(" User subscriber status:")

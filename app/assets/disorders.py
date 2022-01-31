@@ -124,7 +124,11 @@ core_disorders = {
     'weak_spot': {
         'flavor_text': 'You have an imaginary infirmity.',
         'name': 'Weak Spot',
-        'survivor_effect': 'When you gain this disorder, roll a random hit location and record it. You cannot <b>depart</b> unless you have armor at this hit location.'
+        'survivor_effect': (
+            'When you gain this disorder, roll a random hit location and '
+            'record it. You cannot <b>depart</b> unless you have armor at '
+            'this hit location.'
+        ),
     },
 
 }

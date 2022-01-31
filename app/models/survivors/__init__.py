@@ -51,7 +51,12 @@ from app.models import (
     the_constellations,
     weapon_proficiency
 )
+
+# this is dodgy; needs a refactor
 from app.models.survivors import color_schemes, special_attributes
+
+# direct imports of modules
+from app.assets.survivors import attributes as ATTRIBUTES
 
 
 class Assets(models.AssetCollection):
@@ -129,10 +134,6 @@ class Survivor(models.UserAsset):
     models.UserAsset (e.g. just like settlements) and tries to fallback and/or
     super() back to that base class when possible. """
 
-    DEFAULTS = {
-        "Movement": 5,
-        "max_bleeding_tokens": 5,
-    }
 
     def __repr__(self):
         """ Writes a pretty __repr__ if self.survivor exists. Otherwise, falls
@@ -163,10 +164,14 @@ class Survivor(models.UserAsset):
         self.SpecialAttributes = special_attributes.Assets()
         self.WeaponProficiency = weapon_proficiency.Assets()
 
-        # data model meta data
+        # programmatically set attributes from the attributes.py file
+        # debug/troubleshooting only!
+#        for attr in ATTRIBUTES.__dict__:
+#            if not attr.startswith('__'):
+#                setattr(self, attr, getattr(ATTRIBUTES, attr))
+
+        # survivor attributes
         self.stats =                ['Movement','Accuracy','Strength','Evasion','Luck','Speed','bleeding_tokens']
-        self.game_asset_keys =      ['disorders','epithets','fighting_arts','abilities_and_impairments']
-        self.armor_locations =      ['Head', 'Body', 'Arms', 'Waist', 'Legs']
         self.flags =                [
             'cannot_activate_two_handed_weapons',
             'cannot_activate_two_plus_str_gear',
@@ -181,18 +186,7 @@ class Survivor(models.UserAsset):
         self.abs_value_attribs =    ['max_bleeding_tokens', ]
         self.min_zero_attribs =     ["hunt_xp","Courage","Understanding"]
         self.min_one_attribs =      ["Movement"]
-        self.damage_locations = [
-           "brain_damage_light",
-           "head_damage_heavy",
-           "arms_damage_light",
-           "arms_damage_heavy",
-           "body_damage_light",
-           "body_damage_heavy",
-           "waist_damage_light",
-           "waist_damage_heavy",
-           "legs_damage_light",
-           "legs_damage_heavy",
-        ]
+
 
         # if we're doing a new survivor, it will happen when we subclass the
         #   models.UserAsset class; otherwise, the base class method will call
@@ -1375,10 +1369,43 @@ class Survivor(models.UserAsset):
                 raise utils.InvalidUsage(err_msg)
 
             if action == 'add':
-                self.add_game_asset(str(asset_class), str(asset_handle), save=False)
+                self.add_game_asset(
+                    str(asset_class),
+                    str(asset_handle),
+                    save=False
+                )
             elif action == 'rm':
-                self.rm_game_asset(str(asset_class), str(asset_handle), save=False)
+                self.rm_game_asset(
+                    str(asset_class),
+                    str(asset_handle),
+                    save=False
+                )
 
+        self.save()
+
+
+    @models.web_method
+    def set_weak_spot(self):
+        ''' Sets the survivor's 'weak_spot' attribute to be a string. The string
+        is a location value, e.g. 'head', 'arms', etc. '''
+
+        self.check_request_params(['weak_spot'])
+        weak_spot = self.params['weak_spot']
+
+        # handle unset
+        if weak_spot == 'UNSET' and self.survivor.get('weak_spot') is not None:
+            del self.survivor['weak_spot']
+        else:
+            weak_spot = weak_spot.capitalize() # idiot-proof
+
+            # sanity check
+            if weak_spot not in ATTRIBUTES.armor_locations:
+                err = "'%s' is not a valid armor location!"
+                raise utils.InvalidUsage(err % weak_spot)
+
+            self.survivor['weak_spot'] = weak_spot
+
+        self.log_event()
         self.save()
 
 
@@ -1396,8 +1423,12 @@ class Survivor(models.UserAsset):
         asset_class = self.params['type']
         asset_handles = self.params['handles']
 
-        if asset_class not in self.game_asset_keys:
-            raise utils.InvalidUsage("The replace_game_assets() method cannot modify asset type '%s'. Allowed types include: %s" % (asset_class, self.game_asset_keys))
+        if asset_class not in ATTRIBUTES.game_asset_keys:
+            err = (
+                "The replace_game_assets() method cannot modify asset type "
+                "'%s'. Allowed types include: %s"
+            )
+            raise utils.InvalidUsage(err % (asset_class, ATTRIBUTES.game_asset_keys))
 
         # first, turn our two lists into dictionaries where we count the handles
         current_dict = {h: self.survivor[asset_class].count(h) for h in self.survivor[asset_class]}
@@ -1971,7 +2002,7 @@ class Survivor(models.UserAsset):
             self.update_returning_survivor_years(save=False)
 
         # 2.) remove armor
-        for loc in self.armor_locations:
+        for loc in ATTRIBUTES.armor_locations:
             self.survivor[loc] = 0
 
         # 3.) remove tokens/gear modifiers
@@ -2535,9 +2566,9 @@ class Survivor(models.UserAsset):
 
         if sex is None:
             self.check_request_params(['sex'])
-            sex = self.params["sex"]
+            sex = self.params["sex"].upper()
 
-        if sex not in ["M","F"]:
+        if sex not in ["M", "F"]:
             msg = "'sex' must be 'M' or 'F'. Survivor sex cannot be '%s'."
             self.logger.exception(msg % sex)
             raise utils.InvalidUsage(msg, status_code=400)
@@ -2586,7 +2617,7 @@ class Survivor(models.UserAsset):
         """ Sets or unsets a status flag, regardless of previous status of that
         flag. Supported flags can be found at self.flags.
 
-        If 'flag' is None, this method assumes that it is being called by a the
+        If 'flag' is None, this method assumes that it is being called by the
         request_response() method and will check for incoming params.
 
         Set the 'unset' kwarg to True to force unset the value.
@@ -2596,7 +2627,7 @@ class Survivor(models.UserAsset):
             self.check_request_params(['flag'])
             flag = self.params["flag"]
 
-        if 'unset' in self.params:
+        if 'unset' in self.params or self.params.get('value', None) == False:
             unset = True
 
         if flag not in self.flags:
@@ -2754,8 +2785,8 @@ class Survivor(models.UserAsset):
 
     @models.web_method
     def default_attribute(self, attrib=None):
-        """ This references the DEFAULTS constant to reset values to their
-        defaults. """
+        """ This references the ATTRIBUTES.defaults dict to reset attribute
+        values to their defaults. """
 
         if attrib is None:
             self.check_request_params(['attribute'])
@@ -2763,7 +2794,7 @@ class Survivor(models.UserAsset):
 
         # sanity check!
         SA = Assets()
-        if attrib not in self.DEFAULTS.keys():
+        if attrib not in ATTRIBUTES.defaults.keys():
             msg = "%s does not have a default value!" % (attrib)
             self.logger.exception(msg)
             raise utils.InvalidUsage(msg, status_code=400)
@@ -2772,14 +2803,14 @@ class Survivor(models.UserAsset):
             self.logger.exception(msg)
             raise utils.InvalidUsage(msg, status_code=400)
 
-        self.survivor[attrib] = self.DEFAULTS[attrib]
+        self.survivor[attrib] = ATTRIBUTES.defaults[attrib]
         msg = "%s defaulted %s '%s' to %s"
         self.log_event(
             msg % (
                 request.User.login,
                 self.pretty_name(),
                 attrib,
-                self.DEFAULTS[attrib]
+                ATTRIBUTES.defaults[attrib]
             )
         )
         self.save()
@@ -2807,7 +2838,7 @@ class Survivor(models.UserAsset):
     def reset_damage(self, save=True):
         """ Remove all damage attribs/bools from the survivor. """
 
-        for d in self.damage_locations:
+        for d in ATTRIBUTES.damage_locations:
             if d in self.survivor.keys():
                 del self.survivor[d]
 
@@ -3773,8 +3804,6 @@ class Survivor(models.UserAsset):
             self.rm_note()
 
         # status flags!
-        elif action == 'set_status_flag':
-            self.set_status_flag()
         elif action == 'toggle_boolean':
             self.toggle_boolean()
 

@@ -60,10 +60,13 @@ def admin_only(func):
         """ checks admin status. runs the func """
         logger = utils.get_logger()
 
-        if flask.request:
+        if flask.has_request_context():
             if API.config['ENVIRONMENT'].get('is_production', False):
-                if not flask.request.User.is_admin():
-                    err = 'Only API admins may export users!'
+                if (
+                    hasattr(flask.request, 'User') and not
+                    flask.request.User.is_admin()
+                ):
+                    err = 'Only API admins may access this endpoint!'
                     raise utils.InvalidUsage(err, 401)
             else:
                 warn = 'API is non-prod. Skipping admin check for %s()'

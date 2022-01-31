@@ -708,19 +708,22 @@ class User(models.UserAsset):
         self.user['latest_activity'] = datetime.now()
         self.user['latest_user_agent'] = ua_string
 
+        if utils.get_api_client() is not None:
+            self.user['latest_api_client'] = utils.get_api_client()
+
         # save the most recent 10 actions in the 'activity_log' list
+        activity_tuple = (
+            datetime.now(), utils.get_api_client(), activity_string
+        )
+
         if self.user.get('activity_log', None) is None:
-            self.user['activity_log'] = [(datetime.now(), activity_string)]
+            self.user['activity_log'] = [activity_tuple]
         else:
-            self.user['activity_log'].insert(
-                0,
-                (datetime.now(), activity_string)
-            )
+            self.user['activity_log'].insert(0, activity_tuple)
             self.user['activity_log'] = self.user['activity_log'][:10]
 
-
         if save:
-            self.save(verbose=False)
+            self.save(verbose=True)
 
 
     def set_latest_authentication(self, save=True):
@@ -1102,6 +1105,13 @@ class User(models.UserAsset):
                 {"created_by": self.user["_id"], "removed": {"$exists": False}, },
                 {"admins": {"$in": [self.user["login"], ]}, "removed": {"$exists": False}, },
             ]})
+        elif qualifier == 'created_by':
+            settlements = utils.mdb.settlements.find(
+                {
+                    'created_by': self.user['_id'],
+                    'removed': {'$exists': False}
+                }
+            )
         elif qualifier == "player":
             settlement_id_set = set()
 
@@ -1262,6 +1272,33 @@ class User(models.UserAsset):
             return output
 
         return survivors
+
+
+    @models.web_method
+    def can_create_settlement(self, raise_on_false=False):
+        """ Checks a free user's settlement count versus the limit we define
+        in config.py; returns False if they're at their limit.
+
+        Use the 'raise_on_false' kwarg to have this raise and return a 405.
+        """
+
+        if flask.request.User.user['subscriber']['level'] > 0:
+            return True
+
+        free_user_max = API.config['NONSUBSCRIBER_SETTLEMENT_LIMIT']
+        user_created = flask.request.User.get_settlements(
+            qualifier = 'created_by',
+            return_type=int
+        )
+
+        if user_created >= free_user_max:
+            if raise_on_false:
+                raise utils.InvalidUsage(
+                    'Free users may only create %s settlements!',
+                    status_code=405
+                )
+
+        return False
 
 
     def check_subscriber_expiration(self):

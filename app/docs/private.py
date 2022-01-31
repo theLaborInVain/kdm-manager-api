@@ -58,7 +58,18 @@ this route will return user info whether you use <code><b>POST</b></code> or
 any other supported method.</p>
         """,
     },
-    "user_dashboard": {
+    "z_user_can_create_settlement": {
+        "name": "/user/can_create_settlement/&lt;user_id&gt;",
+        "methods": ["GET", "OPTIONS"],
+        "desc": """\
+<p>Returns a Boolean representing whether or not a user is able to create a
+new settlement.</p>
+<p><b>Important!</b> This always checks the KD:M API's instance-level
+configuration settings and is therefore more reliable than other methods,
+especially hard-coded integer comparisons, etc.</p>
+        """,
+    },
+    "z_user_dashboard": {
         "name": "/user/dashboard/&lt;user_id&gt;",
         "methods": ["GET", "OPTIONS"],
         "desc": """\
@@ -1370,7 +1381,7 @@ survivor_management = {
             "to the <code>max_bleeding_tokens</code> value.</li></ol>"
         ),
         'examples': [
-            "<code>{value: 4}</code>",
+            "{value: 4}",
         ],
     },
     "survivor_set_status_flag": {
@@ -1380,7 +1391,7 @@ survivor_management = {
         "desc": (
             "<p>The API allows survivors to be 'flagged' with a status, which "
             "is an attribute that always evaluates to Boolean true if it "
-            "exits, but which can <b>never be False</b>.</p>"
+            "exits, but which is <b>never set to Boolean false</b>.</p>"
             "<p>(This may see odd, but as a design pattern, it has its uses as "
             "an unambigious indicator of status: allowing these types of "
             "statuses to be false would result in potentially ambigious double "
@@ -1390,6 +1401,7 @@ survivor_management = {
             "<p>To un-set a flag, <b>POST</b> the flag and the "
             "<code>unset</code> key:</p>"
             "<code>{flag: 'cannot_spend_survival', unset: true}</code>."
+            "<p>Alternately, post the 'value' of Boolean false.</p>"
             "<p>Supported flags include:</p><table>"
             "<tr><td>cannot_activate_two_handed_weapons</td></tr>"
             "<tr><td>cannot_activate_two_plus_str_gear</td></tr>"
@@ -1403,8 +1415,10 @@ survivor_management = {
             "</table>"
         ),
         'examples': [
-            '{retired: true}',
-            '{retired: false}',
+            '{flag: "cannot_spend_survival"}',
+            '{flag: "cannot_consume", "value": false}',
+            '{flag: "departing", "unset": true}',
+            '{flag: "cannot_gain_bleeding_tokens"}'
         ],
     },
     "survivor_set_retired": {
@@ -1450,6 +1464,22 @@ survivor_management = {
             "modal and <b>cannot</b> be toggled using the "
             "<code>toggle_boolean</code> endpoint!</p>"
         ),
+    },
+    "survivor_set_weak_spot": {
+        "name": "/survivor/set_weak_spot/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            "<p><b>POST</b> JSON defining a <code>'weak_spot'</code> value to "
+            "this endpoint to set the survivor's weak spot.</p>"
+            "<p>Set the value to 'UNSET' to remove a weak spot.</p>"
+            "<p>Important!</p> Values supported by this endpoint are survivor "
+            "hit locations, which <u>are capitalized</u> in our data model.</p>"
+        ),
+        'examples': [
+            "<code>{weak_spot: 'Head'}</code>",
+            "<code>{weak_spot: 'UNSET'}</code>",
+        ],
     },
     # deprecated
     "zz_toggle_status_flag": {

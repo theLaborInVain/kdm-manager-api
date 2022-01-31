@@ -1,6 +1,7 @@
-/*                                  */
-/*  the Kingdom Death style sheet!  */
-/*                                  */
+/*                                                  */
+/*          The Kingdom Death style sheet!          */
+/*      published by https://thelaborinvain.com     */
+/*                                                  */
 
 
 /*  
@@ -147,9 +148,6 @@ hr.three_dee {
 /*                      */
 /*  worksheet styles    */
 /*                      */
-.kd.worksheet {
-    
-}
 .kd.worksheet_block {
     border: var(--border-worksheet);
     box-sizing: border-box;
@@ -189,12 +187,12 @@ hr.three_dee {
     font-weight: normal;
     margin: 0 auto 0 auto;
 }
-.kd.worksheet_block_subtitle {
-}
 .kd.worksheet_page_title {  /* for titles outside of boxes */
     margin: 0 auto 0 3%;
 }
 
+
+/*  different types of worksheet rows */
 
 .kd.worksheet_row {
     align-items: center; 
@@ -233,6 +231,10 @@ hr.three_dee {
 .kd.worksheet_row.caption {
     display: block;
 }
+
+
+/*  checkboxes */
+
 .kd.checkbox {
     border: var(--border-checkbox);
     box-sizing: border-box;
@@ -282,6 +284,11 @@ hr.three_dee {
     font-family: 'Ruda';
     margin-left: 0.5rem;
     transition: 1s;
+}
+.kd.checkbox_desc.inset_checkbox_container {
+    display: flex;
+    justify-content: flex-end; 
+    width: 100%; 
 }
 .kd.checkbox_title {
     text-transform: capitalize;
@@ -412,9 +419,15 @@ hr.three_dee {
     width: 100%;
     width: -webkit-fill-available;
 }
+
+.kd.capsule:disabled {
+    color: #aaa;
+}
+
 .kd.worksheet_block .capsule {
     margin: 1.5rem auto 1rem auto;
 }
+
 
 button.kd.capsule {
     width: 100%; 
@@ -527,109 +540,6 @@ select.kd.capsule {
     color: #000;
 }
 
-/*                      */
-/*  survivor sheet      */
-/*                      */
-
-.kd.survivor_sheet div.horizontal_rule {
-    border-top: 0.15rem solid;
-    margin: 0.25rem auto 0.25rem auto;
-    width: 100%; 
-}
-.kd.survivor_sheet.name_and_sex_container div.caption {
-    font-size: var(--font-small);
-}
-.kd.survivor_sheet.name_and_sex_container {
-    display: flex;
-    flex-wrap: wrap;
-}
-.kd.survivor_sheet.name_and_sex_container div.name {
-    font-family: 'Silverado';
-    width: 75%;
-}
-.kd.survivor_sheet.name_and_sex_container div.sex {
-    width: 25%;
-    display: flex;
-    justify-content: space-evenly;
-}
-.kd.survivor_sheet.name_and_sex_container .sex .repeater {
-    align-items: center; 
-    display: flex;
-    font-size: var(--font-small);
-    justify-content: space-around;
-    width: 50%;
-}
-.kd.survivor_sheet.border_box {
-    border: 0.125rem solid;
-    display: flex;
-    justify-content: space-between;
-    margin-top: 0.75rem;
-}
-.kd.survivor_sheet.border_box.borderless {
-    border: 0;
-}
-.kd.survivor_sheet.border_box_inset {
-    align-items: center; 
-    border-right: 0.125rem solid;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; 
-    padding-bottom: 0.25rem;
-    min-width: 15.8%
-}
-.kd.survivor_sheet.border_box_inset:first-child {
-    min-width: 17.5%;
-    justify-content: center;
-}
-.kd.survivor_sheet.border_box_inset:last-child {
-    border: 0;
-    width: 100%;
-}
-.kd.survivor_sheet.border_box_inset.borderless {
-    border: 0; 
-}
-.kd.survivor_sheet.border_box_inset.full_width {
-    display: flex;
-    flex-direction: column;
-}
-.kd.survivor_sheet.border_box_inset .number_container{
-    align-items: center; 
-    border: 0.125rem solid;
-    display: flex;
-    height: 1.75rem;
-    justify-content: center;
-    margin: 0.25rem auto 0.75rem auto; 
-    width: 1.75rem;
-}
-.kd.survivor_sheet.border_box_inset .number_container.borderless {
-    border: 0;
-}
-.kd.survivor_sheet.border_box_inset .number_container.shield {
-    border-bottom: 0;
-    border-image: linear-gradient(to bottom, #000, #000, rgba(0,0,0,0), rgba(0,0,0,0)) 1;
-}
-.kd.survivor_sheet.border_box_inset .number_container.shield::before {
-    content:"";
-    position: absolute;
-    background: linear-gradient(to right, #fff, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 75%, #fff);
-    width: 1.78rem;
-    height: 1rem;
-    margin-top: -0.75rem;
-    z-index:1;
-}
-.kd.survivor_sheet.border_box_inset .number_container.shield::after {
-    content: "";
-    position: absolute;
-    width: inherit;
-    height: inherit;
-    background: rgba(255,255,255,0);
-    border: 0.125rem solid;
-    border-bottom-left-radius: 0.75rem 1rem;
-    border-top-right-radius: 0.75rem 1rem;
-    border-left: 0;
-    border-top: 0;
-    transform: rotate(45deg);
-}
 
 /*                      */
 /*  cards               */

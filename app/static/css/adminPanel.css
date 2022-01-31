@@ -176,6 +176,10 @@ button.toggle_settlement_event_log {float: right; }
     margin-right: 1rem;
     white-space: nowrap;
 }
+.user_activity_table_api_client {
+    font-weight: bold;
+    margin-right: 1rem;
+}
 
 /*  API response */
 .api_response_times td {text-align: center; }
