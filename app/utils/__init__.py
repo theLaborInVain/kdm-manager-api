@@ -207,8 +207,9 @@ class mailSession:
         time.sleep(0.75)
 
 
-    def send(self, reply_to=None, recipients=["toconnell@tyrannybelle.com"],
-        html_msg='This is a <b>test</b> message!', subject="KDM-Manager!"):
+    def send(self, reply_to=None, subject="KD:M API",
+        recipients=API.config['ADMIN_EMAIL_ADDRESSES'],
+        html_msg='This is a <b>test</b> message!'):
 
         """ Generic Emailer. Accepts a list of 'recipients', a 'msg' string and
         a sender name (leave undefinied to use admin@kdm-manager.com). """
@@ -270,7 +271,6 @@ def email_exception(exception):
     e = mailSession()
     e.send(
         subject="API Error! [%s]" % socket.getfqdn(),
-        recipients=API.settings.get('server', 'alert_email').split(','),
         html_msg=s
     )
     e_logger.warn('Exception email sent!')
@@ -293,7 +293,6 @@ def email_error_report(report):
     e = mailSession()
     e.send(
         subject="KDM-Manager Error Report! [%s]" % socket.getfqdn(),
-        recipients=API.settings.get('server', 'alert_email').split(','),
         html_msg=s
     )
 
@@ -477,8 +476,8 @@ def get_application_url(strip_http=False):
     on the default API port defined in settings.cfg. """
 
     fqdn = socket.getfqdn()
-    if fqdn == settings.get("server", "prod_fqdn"):
-        output = settings.get('server', 'prod_app_url')
+    if fqdn == API.config['PRODUCTION']['app_fqdn']:
+        output = API.config['PRODUCTION']['url']
     else:
         output = "https://%s" % (get_host_ip())
 
@@ -736,7 +735,6 @@ api_meta = {
                 datetime.strptime('2016-10-13', '%Y-%m-%d'),
                 units='age'
             ),
-            'panel': settings.get('admin'),
             'limits': {
                 'nonsubscriber_settlements':
                     API.config['NONSUBSCRIBER_SETTLEMENT_LIMIT'],

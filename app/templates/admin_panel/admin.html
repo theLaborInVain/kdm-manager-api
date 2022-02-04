@@ -18,7 +18,7 @@
 
     <h1>KDM API</h1>
     <b>Hostname:</b> {a settings.meta.server.hostname a}<br/>
-    <b>Version:</b> {a settings.meta.api.version a}<br/>
+    <b>Version:</b> {{ VERSION }}<br/>
     <b>Current User:</b> {a user.login a}
 
 	<!-- alerts start here -->
@@ -99,9 +99,6 @@
         <div
             class="kd worksheet_block"
         >
-            <div class="kd_worksheet_row">
-                <b>Panel Revision:</b> {a settings.meta.api.panel.panel_revision a}
-            </div>
             <div class="kd_worksheet_row">
                 <b>Last Refreshed:</b> {a refreshed a} ({a seconds_since_last_refresh a} seconds ago)
             </div>

@@ -25,6 +25,28 @@
 }
 
 @font-face {
+    font-family: 'kdm-manager';
+    src: url('/static/fonts/kdm-manager.eot?#iefix') format('embedded-opentype'),
+        url('/static/fonts/kdm-manager.woff') format('woff'),
+        url('/static/fonts/kdm-manager.woff2') format('woff2'),
+        url('/static/fonts/kdm-manager.ttf') format('truetype');
+}
+.kdm_manager_font {
+    font-family: 'kdm-manager';
+}
+
+@font-face {
+    font-family: 'kd_icons';
+    src: url('/static/fonts/kd_icons.eot?#iefix') format('embedded-opentype'),
+        url('/static/fonts/kd_icons.woff') format('woff'),
+        url('/static/fonts/kd_icons.woff2') format('woff2'),
+        url('/static/fonts/kd_icons.ttf') format('truetype');
+}
+.kd.icons {
+    font-family: 'kd_icons';
+}
+
+@font-face {
     font-family: 'kdm-font-10';
     src: url('/static/fonts/kdm-font-10.eot?#iefix') format('embedded-opentype'),
         url('/static/fonts/kdm-font-10.ttf') format('truetype'),
@@ -505,6 +527,9 @@ select.kd.capsule {
     background: var(--color-kd-green-gradient);
     color: #fff;
 }
+.kd.green_text {
+    color: var(--color-kd-green);
+}
 .kd.pink {
     background: var(--color-kd-pink);
     background: var(--color-kd-pink-gradient);
@@ -525,6 +550,9 @@ select.kd.capsule {
     background: var(--color-kd-yellow);
     background: var(--color-kd-yellow-gradient);
     color: #000;
+}
+.kd.yellow_border {
+    border-color: var(--color-kd-yellow);
 }
 .kd.yellow_text {
     color: var(--color-kd-yellow);

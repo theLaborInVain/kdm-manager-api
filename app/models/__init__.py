@@ -46,6 +46,7 @@ ATTRIBUTE_DEFAULTS = {
     str: 'UNDEFINED',
 }
 
+
 #
 #   model decorators
 #
@@ -97,7 +98,7 @@ def deprecated(method):
     def wrapped(*args, **kwargs):
         """ Logs the deprecated method and its caller. """
 
-        warning = "DEPRECATION WARNING! The %s() method is deprecated!"
+#        warning = "DEPRECATION WARNING! The %s() method is deprecated!"
         logger.warn(warning % method.__name__)
 
         curframe = inspect.currentframe()
@@ -313,6 +314,7 @@ class AssetCollection(object):
         # now, check for a root module and see if we can use that to init
         if hasattr(self, "root_module"):
             self.type = os.path.splitext(self.root_module.__name__)[-1][1:]
+#            self.logger.debug('DEPRECATION WARNING! %s has root_module' % self)
             self.set_assets_from_root_module()
         elif not hasattr(self, 'assets'):
             self.type = self.__module__.split('.')[-1]
@@ -325,6 +327,7 @@ class AssetCollection(object):
 
         # type override - be careful!
         if hasattr(self, "type_override"):
+#            self.logger.debug('DEPRECATION WARNING! %s has type_override' % self)
             self.type = self.type_override
             for a in self.assets.keys():
                 if type(self.assets[a]) != dict:
@@ -364,11 +367,12 @@ class AssetCollection(object):
                 "AssetCollection does not have a 'type' attribute!"
             )
             return 'AssetCollection object (no type; %s assets)' % (
-                len(self.assets)
+                len(getattr(self, 'assets', []))
             )
+
         return "AssetCollection object '%s' (%s assets)" % (
             self.type,
-            len(self.assets)
+            len(getattr(self, 'assets', []))
         )
 
 
@@ -971,19 +975,6 @@ class GameAsset(object):
         return json.dumps(shadow_self.__dict__, default=json_util.default)
 
 
-    #
-    # look-up and manipulation methods below
-    #
-
-    @deprecated
-    def get(self, attrib):
-        """ Wrapper method for trying to retrieve asset object attributes.
-        Returns a None type value if the requested attrib doesn't exist. """
-
-        try:
-            return getattr(self, attrib)
-        except:
-            return None
 
 
 
@@ -993,10 +984,15 @@ class GameAsset(object):
 #
 
 class UserAsset(object):
-    """ The base class for all user asset objects, such as survivors, sessions,
+    """ The base class for all user asset objects, such as survivors,
     settlements and users. All user asset controllers in the 'models' module
     use this as their base class. """
 
+    DEFAULT_ATTRIBUTES = {
+        'created_on': datetime,
+        'created_by': ObjectId,
+        'removed': datetime,
+    }
 
     def __repr__(self):
         """ Default __repr__ method for all user assets. Note that you should
@@ -1011,61 +1007,70 @@ class UserAsset(object):
         return "%s object '%s' [%s]" % (self.collection, name, self._id)
 
 
-    def __init__(self, collection=None, _id=None, normalize_on_init=True,
-        new_asset_attribs={}, Settlement=None):
-        """ The base init() method for all UserAssets. """
+    def __init__(self, *args, **kwargs):
+        """
+        The base init() method for all UserAssets. Three things happen here:
+            1. we initialize basic attributes, self.args, self.kwargs,
+                seslf.logger and self.collection. We also set self.params
+            2. next, we set self._id either by getting it from kwargs or from
+                creating a new asset by calling self.new()
+            3. once we've got self._id, we run self.load() and set self.loaded
+        """
 
-        # initialize basic vars
+
+        #
+        # 1. set basic UserAsset attributes
+        #
+
         self.logger = utils.get_logger()
-        self.normalize_on_init = normalize_on_init
-        self.new_asset_attribs = new_asset_attribs
+        self.args = args
+        self.kwargs = kwargs
+        self.set_request_params()
 
-        if collection is not None:
-            self.collection = collection
-        elif hasattr(self, "collection"):
-            pass
-        else:
+        # try to set self.collection to not None; die if not
+        if not hasattr(self, 'collection'):
+            self.collection = kwargs.get('collection', None)
+
+        if getattr(self, 'collection', None) is None:
             err_msg = (
-                "User assets (settlements, users, etc.) may not be "
+                "User assets (settlements, survivors, users) may not be "
                 "initialized without specifying a collection!"
             )
             self.logger.error(err_msg)
-            raise AssetInitError(err_msg)
+            raise AttributeError(err_msg)
 
-        # here is the fork where we create a new record:
-        if _id is None:
-            self.get_request_params()
-            self.new()
-            _id = self._id
-
-        # if we're initializing with a settlement object already in memory, use
         #   it if this object IS a Settlement, the load() call below will
-        #   overwrite this
-        self.Settlement = Settlement
+        #   overwrite this:
+        self.Settlement = self.kwargs.get('Settlement', None)
 
-        # now do load() and self.loaded stuff
+
+        #
+        # 2. set self._id from kwargs or new()
+        #
+        self._id = ObjectId(self.kwargs.get('_id', None))
+        if self._id is None:
+            self.new()  # sets self._id
+
+        if not isinstance(self._id, ObjectId):
+            err = "The asset OID '%s' is not a valid OID!" % (self._id)
+            self.logger.error(err)
+            raise utils.InvalidUsage(err, status_code=422)
+
+
+        # 3. now do load() and self.loaded stuff
         self.loaded = False
         try:
-            try:
-                self._id = ObjectId(_id)
-            except Exception as e:
-                self.logger.error(e)
-                raise utils.InvalidUsage(
-                    "The asset OID '%s' is not a valid OID! %s" % (_id, e),
-                    status_code=422
-                )
             self.load()
             self.loaded = True
         except Exception as e:
-            self.logger.error(
-                "Could not load _id '%s' from %s!" % (_id, self.collection)
-            )
+            err = "Could not load '%s' from '%s'!" % (self._id, self.collection)
+            self.logger.error(err)
             self.logger.exception(e)
             raise
 
 
         # finally, since we're initialized, we should also be self.loaded; die
-        #   extra bloody if we're not
+        #   bloody if we're not
         if not self.loaded:
             err = "%s UserAsset initialized but not loaded!"
             raise ValueError(err % (self))
@@ -1109,22 +1114,23 @@ class UserAsset(object):
 
         self.set_last_accessed(save=False)
 
-        if self.collection == "settlements":
-            utils.mdb.settlements.save(self.settlement)
-        elif self.collection == "survivors":
-            utils.mdb.survivors.save(self.survivor)
-        elif self.collection == "users":
-            utils.mdb.users.save(self.user)
-        else:
-            raise AssetLoadError("Invalid MDB collection for this asset!")
+        if self.collection not in ['settlements', 'survivors', 'users']:
+            err = "Invalid MDB collection '%s'! Record not saved..."
+            raise AttributeError(err % self.collection)
+
+        utils.mdb[self.collection].save(self.get_record())
+
         if verbose:
-            self.logger.info("Saved %s to mdb.%s successfully!" % (
-                self,
-                self.collection)
-            )
+            msg = "Saved %s to mdb.%s successfully!"
+            self.logger.info(msg % (self, self.collection))
 
 
-    def return_json(self):
+    def jsonize(self):
+        ''' Like serialize(), but returns actual, web-safe JSON. '''
+        return json.dumps(self.get_record(), default=json_util.default)
+
+
+    def json_response(self):
         """ Calls the asset's serialize() method and creates a simple HTTP
         response. """
         return flask.Response(
@@ -1132,40 +1138,6 @@ class UserAsset(object):
             status=200,
             mimetype="application/json"
         )
-
-
-    def get_request_params(self):
-        """ Checks the incoming request (from Flask) for JSON and tries to add
-        it to self.
-
-        Important! The 'verbose' kwarg is deprecated in the 1.0.0 release of the
-        API, as it is no longer require to see request info in non-production
-        environments.
-
-        """
-
-        params = {}
-
-        if flask.request.get_json() is not None:
-            try:
-                params = dict(flask.request.get_json())
-            except ValueError:
-                self.logger.warn(
-                    "%s request JSON could not be converted!" % (
-                        flask.request.method
-                    )
-                )
-                params = flask.request.get_json()
-        else:
-            if flask.request.method != 'GET':
-                self.logger.warn(
-                    "%s type request did not contain JSON data!" % (
-                        flask.request.method
-                    )
-                )
-                self.logger.warn("Request URL: %s" % flask.request.url)
-
-        self.params = params
 
 
     def check_request_params(self, keys=[], verbose=True, raise_exception=True):
@@ -1201,17 +1173,44 @@ class UserAsset(object):
         return True
 
 
+    def set_request_params(self):
+        """ Checks the incoming request (from Flask) for JSON and tries to add
+        it to self.
+
+        Important! The 'verbose' kwarg is deprecated in the 1.0.0 release of the
+        API, as it is no longer require to see request info in non-production
+        environments.
+
+        """
+
+        self.params = {}
+
+        if not flask.has_request_context():
+            return None
+
+        if flask.request.get_json() is not None:
+            try:
+                self.params = dict(flask.request.get_json())
+            except ValueError:
+                self.logger.warn(
+                    "%s request JSON could not be converted!" % (
+                        flask.request.method
+                    )
+                )
+                self.params = flask.request.get_json()
+        else:
+            if flask.request.method != 'GET':
+                self.logger.warn(
+                    "%s type request did not contain JSON data!" % (
+                        flask.request.method
+                    )
+                )
+                self.logger.warn("Request URL: %s" % flask.request.url)
+
+
     #
     #   universal 'get' methods for User Assets
     #
-
-    @models.web_method
-    def get(self):
-        """ The basic 'get' method for user assets. Decorated with the
-        models.web_method decorator, because all assets need to be able to
-        request it (because we do 'get' as an endpoint everywhere)."""
-        return self.serialize()
-
 
     def get_campaign(self, return_type=None):
         """ Returns the campaign handle of the settlement as a string, if
@@ -1322,6 +1321,16 @@ class UserAsset(object):
             player_list.append(p_dict)
 
         return player_list
+
+
+    def get_record(self):
+        ''' Uses self.collection to return self.settlement, self.user or
+        self.survivor, depending. '''
+        record = getattr(self, self.collection[:-1], None)
+        if record is None:
+            err = "Could not get record for '%s'" % (self)
+            raise ValueError(err)
+        return record
 
 
     def get_requester_permissions(self):
@@ -1684,10 +1693,9 @@ class UserAsset(object):
 
         Individual UserAsset model request_response() methods should typically:
 
-        1.) get request parameters
-        2.) respond to special/magic requests for methods that aren't actually
+        1.) respond to special/magic requests for methods that aren't actually
             methods
-        3.) super() this base class method to handle web methods and return the
+        2.) super() this base class method to handle web methods and return the
             standard way
         """
 
@@ -1704,11 +1712,7 @@ class UserAsset(object):
             err = "User action '%s' is not implemented!" % action
             return flask.Response(response = err, status=501)
 
-        return flask.Response(
-            response=self.serialize(),
-            status=200,
-            mimetype="application/json"
-        )
+        return self.json_response()
 
 
 

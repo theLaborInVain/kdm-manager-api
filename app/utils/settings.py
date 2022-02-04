@@ -58,21 +58,6 @@ class Settings:
         return raw_value
 
 
-    def jsonify(self):
-        """ Renders the config object as JSON, set it as an attribute of the
-        settings object AND returns it (just in case you need it right away. """
-
-        d = {}
-
-        for section in self.config.sections():
-            d[section] = {}
-            for option in self.config.options(section):
-                d[section][option] = self.get(section,option)
-        self.config.json = json.dumps(d)
-
-        return self.config.json
-
-
 
 def check_key(k=None):
     """ Laziness/convenience function to check a key without initializing a

@@ -638,11 +638,6 @@ class User(models.UserAsset):
         return json.dumps(output, default=json_util.default)
 
 
-    def jsonize(self):
-        """ Returns JSON of the user's MDB dict. """
-        return json.dumps(self.user, default=json_util.default)
-
-
     #
     #   set/update/modify methods
     #
@@ -1184,7 +1179,6 @@ class User(models.UserAsset):
                     e = utils.mailSession()
                     e.send(
                         subject="Settlement auto-remove! [%s]" % socket.getfqdn(),
-                        recipients=utils.settings.get('server','alert_email').split(','),
                         html_msg=msg
                     )
                     s['removed'] = datetime.now()
@@ -1392,9 +1386,9 @@ class User(models.UserAsset):
         otherwise, super() the base class request_response() method to handle
         web methods. """
 
-        self.get_request_params()
-
-        if action == "dashboard":
+        if action == 'get':
+            return self.json_response()
+        elif action == "dashboard":
             return flask.Response(
                 response=self.serialize('dashboard'),
                 status=200,

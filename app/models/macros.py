@@ -11,5 +11,4 @@ class Assets(models.AssetCollection):
 
     def __init__(self, *args, **kwargs):
         self.is_game_asset = True
-        self.root_module = macros
         models.AssetCollection.__init__(self,  *args, **kwargs)

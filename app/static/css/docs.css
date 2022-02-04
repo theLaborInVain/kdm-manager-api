@@ -38,6 +38,7 @@ code,
  .subsection_header,
  .doc_container {border-radius: 0.3em; }
 
+
 .section_container,
  .subsection_container {margin: 0.5em auto; padding: 1em; }
 
@@ -47,6 +48,17 @@ code,
 .subsection_header {background: #B9F6CA; padding: 1em; }
 
 .doc_container {background-color: #fff; margin: 1em auto; width: 97%; border: 1px solid #ccc; }
+.doc_container.deprecated {color: #aaa; }
+.doc_container.deprecated:before {
+    border: 0.1rem solid;
+    color: #d60000;
+    content: 'DEPRECATED';
+    font-weight: bold;
+    margin-left: 9rem; 
+    padding: 0.3rem;
+    position: absolute;
+    transform: rotate(-5deg);    
+}
 .doc_row {display: flex; flex-direction: row; flex-wrap: wrap; align-items: stretch; }
 .doc_row_key {width: 5em; }
 .doc_row_key,

@@ -82,6 +82,7 @@
             <div
                 class="kd worksheet_row"
                 ng-if="!apiData.releases.all"
+                ng-init="scratch.visibleReleases = {{ ADMIN_PANEL_RELEASES_VISIBLE }}"
             >
                 <img
                     class="tiny_loader"
@@ -100,7 +101,7 @@
                     releasesObject.editingRelease = release;
                     ngShowHide('editReleaseWorksheet')
                 "
-                ng-if="$index < settings.meta.api.panel.panel_releases_visible"
+                ng-if="$index < scratch.visibleReleases"
             >
 
                 <div
@@ -126,12 +127,10 @@
             <button
                 class="clickable kd capsule full_width blue"
                 ng-click="
-                    settings.meta.api.panel.panel_releases_visible =
-                        settings.meta.api.panel.panel_releases_visible + 5
+                    scratch.visibleReleases = scratch.visibleReleases + {{ ADMIN_PANEL_RELEASES_VISIBLE }}
                 "
                 ng-if="
-                    settings.meta.api.panel.panel_releases_visible <
-                    apiData.releases.all.length
+                    scratch.visibleReleases < apiData.releases.all.length
                 "
             >
                 Show more releases...

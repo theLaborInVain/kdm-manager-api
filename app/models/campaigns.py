@@ -1,18 +1,22 @@
-#!/usr/bin/python2.7
+'''
 
-from app import models, utils
-from app.assets import campaigns
+    Campaigns as a collection function like a normal asset collection, but this
+    module also defines a Campaign object that can be initialized when working
+    with campaign assets.
+
+'''
+
+from app import models
 
 class Assets(models.AssetCollection):
+    ''' Super class for initializing an AssetCollection of campaign
+    definitions. '''
 
     def __init__(self, *args, **kwargs):
-        """ Expansion assets are organized in assets/expansions.py according to
-        release date, so when we initialize an asset dict from expansions.py, we
-        manually add a "meta" style key to indicate their release date. """
+        ''' Vanilla init with a type_override that needs deprecated. '''
 
         self.type_override = "campaign"
-        self.root_module = campaigns
-        models.AssetCollection.__init__(self,  *args, **kwargs)
+        models.AssetCollection.__init__(self, *args, **kwargs)
 
 
 class Campaign(models.GameAsset):
@@ -21,7 +25,7 @@ class Campaign(models.GameAsset):
 
     def __init__(self, *args, **kwargs):
 
-        models.GameAsset.__init__(self,  *args, **kwargs)
+        models.GameAsset.__init__(self, *args, **kwargs)
         self.assets = Assets()
         self.baseline()
         self.initialize()
@@ -43,8 +47,3 @@ class Campaign(models.GameAsset):
         self.endeavors = []
         self.saviors = False
         self.survivor_special_attributes = []
-
-
-
-
-

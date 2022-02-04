@@ -21,13 +21,14 @@ import json
 import random
 import os
 import time
+import urllib
 
 # third party imports
 import flask
 #from flask import Response, request
 
 # local imports
-from app import assets, models, utils
+from app import API, assets, models, utils
 from app.models import (
     abilities_and_impairments,
     campaigns,
@@ -124,19 +125,27 @@ class Settlement(models.UserAsset):
     """ This is the base class for all expansions. Private methods exist for
     enabling and disabling expansions (within a campaign/settlement). """
 
+    DATA_MODEL = {
+        'admins': list,
+        'custom_url': str,
+        'campaign': str,
+        'name': str,
+        'version': str,
+    }
+
 
     @utils.metered
     def __init__(self, *args, **kwargs):
-        # initialize asset collections immediately, since we need them to create
-        # create new settlements and normalize existing
+        ''' The Settlement object is the main thing we do here. Init is minimal,
+        since we fall back to the base class UserAsset for a lot of work. '''
 
-        # now initialize a generic settlement object
+        # now initialize a generic settlement objec
         self.collection="settlements"
-        models.UserAsset.__init__(self,  *args, **kwargs) # calls load()
+        models.UserAsset.__init__(self, *args, **kwargs) # calls load()
         self.init_asset_collections()
 
         # now normalize
-        if self.normalize_on_init:
+        if self.kwargs.get('normalize_on_init', False):
             self.normalize()
 
         self.campaign_dict = self.get_campaign(dict)
@@ -237,7 +246,9 @@ class Settlement(models.UserAsset):
 
             # sheet
             "name": flask.request.json.get("name", None),
-            "campaign": flask.request.json.get("campaign", "people_of_the_lantern"),
+            "campaign": flask.request.json.get(
+                "campaign", "people_of_the_lantern"
+            ),
             "lantern_year":             0,
             "population":               0,
             "death_count":              0,
@@ -1055,6 +1066,41 @@ class Settlement(models.UserAsset):
             self.logger.info("Removed '%s' expansion from %s" % (e_dict["name"], self))
 
         self.logger.info("Successfully removed %s expansions from %s" % (len(e_list), self))
+
+        if save:
+            self.save()
+
+
+    @models.web_method
+    def set_custom_url(self, save=True):
+        ''' Checks the MDB to make sure the incoming requested URL is not in use
+        and then sets it. '''
+
+        self.check_request_params(['url'])
+        new_url = self.params['url'].lower()
+
+        # first, validate that it's actually a url
+        parsed = urllib.parse.urlparse('https://kdm-manager.com/%s' % new_url)
+        for forbidden in [parsed.params, parsed.query, parsed.fragment]:
+            if forbidden != '':
+                raise utils.InvalidUsage('This is not a valid URL!', 422)
+        if len(parsed.path.split('/')) > 2:
+            raise utils.InvalidUsage('Do not include slashes!', 422)
+        if len(parsed.path.split(' ')) > 1:
+            raise utils.InvalidUsage('Do not include white spaces!', 422)
+        if len(new_url) < 4:
+            raise utils.InvalidUsage('URLs must be at least 4 characters!', 422)
+
+        # second, check reserved
+        if new_url in API.config['RESERVED_SETTLEMENT_URLS']:
+            raise utils.InvalidUsage('This URL is reserved!', 422)
+
+        # finally, check uniquness
+        existing = utils.mdb.settlements.find_one({'custom_url': new_url})
+        if existing is not None:
+            raise utils.InvalidUsage('This URL is already in use!', 422)
+
+        self.settlement['custom_url'] = new_url
 
         if save:
             self.save()
@@ -4914,14 +4960,12 @@ class Settlement(models.UserAsset):
     def request_response(self, action=None):
         """ Follows the guidance in the base class method. """
 
-        self.get_request_params()
-
         #
         #   custom returns for endpoints that ARE NOT web methods
         #
 
         if action == "get":
-            return flask.Response(response=self.serialize(), status=200, mimetype="application/json")
+            return self.json_response()
         elif action == 'get_summary':
             return flask.Response(response=self.serialize('dashboard'), status=200, mimetype="application/json")
         elif action == 'get_sheet':

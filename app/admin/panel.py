@@ -124,14 +124,14 @@ def serialize_system_logs():
 
     d = {}
 
-    log_root = utils.settings.get("server", "log_root_dir")
+    log_root_dir = os.path.join(API.root_path, '..', 'logs')
 
     for l in ["world", "api", "server", "world_daemon", "gunicorn"]:
-        log_file_name = os.path.join(log_root, "%s.log" % l)
+        log_file_name = os.path.join(log_root_dir, "%s.log" % l)
         if os.path.isfile(log_file_name):
             file_handle = open(log_file_name, "r")
             log_lines = file_handle.readlines()
-            log_limit = utils.settings.get("admin", "log_summary_length")
+            log_limit = API.config['ADMIN_PANEL_LOG_SUMMARY_LINES']
             d[l] = [line for line in reversed(log_lines[-log_limit:])]
         else:
             d[l] = ["'%s' does not exist!" % log_file_name]

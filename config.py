@@ -6,13 +6,21 @@
 
 """
 
-import os
 import socket
 
-class Config(object):
+class Config():
+    ''' Already inherits from object; does not neet to inherit explicitly.'''
+
     ACTIVE_USER_HORIZON = 15    # minutes
+    ADMIN_EMAIL_ADDRESSES = ['toconnell@thelaborinvain.com']
+    ADMIN_PANEL_RELEASES_VISIBLE = 5
+    ADMIN_PANEL_LOG_SUMMARY_LINES = 100
+    AVATAR_DIMENSIONS = [450, 600]
     DEBUG = True
-    DEFAULT_METHODS = ['GET','POST','OPTIONS']
+    DEFAULT_HEADERS = (
+        'ACCESS-CONTROL-ALLOW-ORIGIN, API-KEY, AUTHORIZATION, CONTENT-TYPE'
+    )
+    DEFAULT_METHODS = ['GET', 'POST', 'OPTIONS']
     DEFAULT_GAME_VERSION = 'core_1_6'
     DEV_SSL_CERT = 'deploy/dev_cert.pem'
     DEV_SSL_KEY = 'deploy/dev_key.pem'
@@ -25,7 +33,20 @@ class Config(object):
         'app_fqdn': 'advanced-kdm-manager.c.kdm-manager.internal',
         'url': 'https://api.kdm-manager.com'
     }
-    VERSION = "1.100.664"
+    RESERVED_SETTLEMENT_URLS = [
+        'campaign',
+        'custom', 'custom_url',
+        'deadrock', 'dead_rock',
+        'settlement',
+        'kingdom_death', 'kingdomdeath',
+        'none',
+        'potlantern', 'people_of_the_lantern', 'peopleofthelantern',
+        'potstars', 'people_of_the_stars', 'peopleofthestars',
+        'potsun', 'people_of_the_sun', 'peopleofthesun',
+        'blacklantern', 'the_black_lantern', 'theblacklantern',
+        'monster', 'monsters'
+    ]
+    VERSION = "1.111.731"
 
     if socket.getfqdn() == PRODUCTION['app_fqdn']:
         ENVIRONMENT['is_production'] = True

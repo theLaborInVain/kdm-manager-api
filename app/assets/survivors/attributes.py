@@ -8,6 +8,16 @@
 
 """
 
+attributes = [
+    'Movement',
+    'Accuracy',
+    'Strength',
+    'Evasion',
+    'Luck',
+    'Speed',
+    'bleeding_tokens'
+]
+
 #   default attribute values
 
 defaults = {

@@ -124,9 +124,9 @@ def panel():
     """ Gets the admin panel. Requires basicAuth. """
     return flask.render_template(
         '/admin_panel/_main.html',
-        user = json.dumps(flask.request.User.user, default=json_util.default),
-        api_key = utils.settings.get('keys','api_key'),
-        # **API.config,
+        user=json.dumps(flask.request.User.user, default=json_util.default),
+        api_key=API.config['API_KEY'],
+        **API.config,
     )
 
 
@@ -181,14 +181,14 @@ def admin_get_user(action):
 #   releases! public first, then admin endpoints
 #
 
-@API.route("/releases/<action>", methods=['POST','GET','OPTIONS'])
+@API.route("/releases/<action>", methods=API.config['DEFAULT_METHODS'])
 @crossdomain(origin=['*'])
 def releases_public(action):
     """ Public endpoints re: the releases application. """
     return admin.releases.public_router(action)
 
 
-@API.route("/admin/releases/<action>", methods=['POST','GET','OPTIONS'])
+@API.route("/admin/releases/<action>", methods=API.config['DEFAULT_METHODS'])
 @API.basicAuth.login_required
 def releases_private(action):
     """ How we work with releases. POST a dict with an 'action' value
@@ -226,9 +226,9 @@ def world_json():
 def kingdom_death():
     """ Initializes all game assets and serializes them. """
     return flask.Response(
-        response = assets.kingdom_death(),
-        status = 200,
-        mimetype = "application/json"
+        response=assets.kingdom_death(),
+        status=200,
+        mimetype="application/json"
     )
 
 
@@ -281,7 +281,7 @@ def get_random_names(count):
         mimetype="application/json"
     )
 
-@API.route("/get_random_surnames/<count>", methods=['GET','OPTIONS'])
+@API.route("/get_random_surnames/<count>", methods=['GET', 'OPTIONS'])
 @crossdomain(origin=['*'])
 def get_random_surnames(count):
     """ Rapid-fire random name generator for LAST names. """
@@ -344,11 +344,10 @@ def reset_password(action):
     setattr(flask.request, 'action', action)
     if action == 'request_code':
         return users.initiate_password_reset()
-    elif action == 'reset':
+    if action == 'reset':
         return users.reset_password()
 
     err_msg = "'%s' is not a valid action for this route." % action
-
     return flask.Response(response=err_msg, status=422)
 
 
@@ -368,7 +367,7 @@ def report_error():
     return utils.http_200
 
 
-@API.route("/authorization/<action>", methods=["POST", "GET", "OPTIONS"])
+@API.route("/authorization/<action>", methods=API.config['DEFAULT_METHODS'])
 @crossdomain(origin=['*'])
 def refresh_auth(action):
     """ Uses the 'Authorization' block in the request header to return a fresh
@@ -384,15 +383,16 @@ def refresh_auth(action):
     utils.check_api_key()
     if not "Authorization" in flask.request.headers:
         return utils.http_401
-    else:
-        auth = flask.request.headers["Authorization"]
+
+    auth = flask.request.headers["Authorization"]
 
     if action == "refresh":
         user = users.refresh_authorization(auth)
         if user is not None:
             return get_token(check_pw=False, user_id=user["_id"])
         return utils.http_401
-    elif action == "check":
+
+    if action == "check":
         return users.check_authorization(auth)
 
     # if we strike out, we're obviously not authorized:
@@ -474,7 +474,8 @@ def collection_action(collection, action, asset_id):
 
     if perms is None:
         return utils.http_403
-    elif perms == 'read' and not action.startswith('get'):
+
+    if perms == 'read' and not action.startswith('get'):
         return utils.http_403
 
     if isinstance(asset_object, flask.Response):

@@ -483,6 +483,7 @@ game asset (piece of gear or resource or whatever).</p>
     },
     "zz_settlement_abandon_settlement_id": {
         "name": "/settlement/abandon/&lt;settlement_id&gt;",
+        'deprecated': True,
         "methods": ["POST", "OPTIONS"],
         "desc": (
             "<p>As of January 2021, this route is deprecated. Please use the"
@@ -510,8 +511,25 @@ the timestap of the mark as removed event and purge the settlement
 	#
 	#	settlement SET attributes
 	#
+    "settlement_set_custom_url_settlement_id": {
+        "name": "/settlement/set_custom_url/&lt;settlement_id&gt;",
+        "methods": ["POST", "OPTIONS"],
+        "subsection": "settlement_set_attribute",
+        "desc": (
+            '<p><b>POST</b> an URL fragment to reserve it as the custom '
+            'locator for a settlement.</p>'
+            '<p>All incoming values are forced to lowercase.</p>'
+            '<p>URLs are evaluated by the API, which returns HTTP 422 if '
+            "it doesn't like whatever you're trying to set."
+        ),
+        'examples': [
+            "{url: 'the_black_lantern'}",
+            "{url: 'deadrock'}",
+        ],
+    },
     "settlement_set_attribute_settlement_id": {
         "name": "/settlement/set_attribute/&lt;settlement_id&gt;",
+        "methods": ["POST", "OPTIONS"],
         "subsection": "settlement_set_attribute",
         "desc": (
             "<p><b>POST</b> some JSON containing <code>attribute</code> and "
@@ -524,18 +542,6 @@ the timestap of the mark as removed event and purge the settlement
             "{attribute: 'abandoned', value: true}",
             "{attribute: 'abandoned', value: 'UNSET'}",
         ],
-    },
-
-    "settlement_set_last_accessed_settlement_id": {
-        "name": "/settlement/set_last_accessed/&lt;settlement_id&gt;",
-        "subsection": "settlement_set_attribute",
-        "desc": """\
-<p><b>DEPRECATED.</b></p>
-<p>Starting in June 2021, settlement access information is handled automatically
-by the API.</p>
-<p>This endpoint is dead. Attempting to use it to manually set an access time
-is no longer supported.</p>
-        """,
     },
 
     "settlement_set_name_settlement_id": {
@@ -667,11 +673,8 @@ whereas the code below would decrement by one:</p>
     "settlement_update_toggle_strain_milestone_settlement_id": {
         "name": "/settlement/toggle_strain_milestone/&lt;settlement_id&gt;",
         "subsection": "settlement_update_attribute",
-        "desc": """\
-<p><b>DEPRECATED</b>.</p>
-<p>This endpoint is deprecated in the June 2021 release of the API.</p>
-<p>Use <code>set_strain_milestones</code> instead.</p>
-	""",
+        'deprecated': True,
+        "desc": '<p>Use <code>set_strain_milestones</code> instead.</p>',
     },
     "settlement_set_strain_milestones_settlement_id": {
         "name": "/settlement/set_strain_milestones/&lt;settlement_id&gt;",
@@ -1101,13 +1104,9 @@ endpoint:</p>
     },
     "zz_settlement_replace_lantern_year_settlement_id": {
         "name": "/settlement/replace_lantern_year/&lt;settlement_id&gt;",
+        'deprecated': True,
         "subsection": "settlement_manage_timeline",
-        "desc": """\
-<p><b>DEPRECATED</b>.</p>
-<p>This endpoint was deprecated in the April 2021 release of the API.</p>
-<p>It was removed completely in the June 2021 release.</p>
-<p>Use <code>set_lantern_year</code> instead.</p>
-	""",
+        "desc": '<p>Use <code>set_lantern_year</code> instead.</p>'
     },
 
 
@@ -1119,21 +1118,15 @@ endpoint:</p>
         "name": "/settlement/add_admin/&lt;settlement_id&gt;",
         "subsection": "settlement_admin_permissions",
 	"methods": ["POST","OPTIONS"],
-        "desc": """\
-<p><b>DEPRECATED</b>.</p>
-<p>This endpoint is deprecated in the June 2021 release of the API.</p>
-<p>Use <code>add_settlement_admin</code> instead.</p>
-	""",
+        'deprecated': True,
+        "desc": '<p>Use <code>add_settlement_admin</code> instead.</p>'
     },
     "settlement_rm_admin_settlement_id": {
         "name": "/settlement/rm_admin/&lt;settlement_id&gt;",
         "subsection": "settlement_admin_permissions",
 	"methods": ["POST","OPTIONS"],
-        "desc": """\
-<p><b>DEPRECATED</b>.</p>
-<p>This endpoint is deprecated in the June 2021 release of the API.</p>
-<p>Use <code>rm_settlement_admin</code> instead.</p>
-	""",
+        'deprecated': True,
+        "desc": '<p>Use <code>rm_settlement_admin</code> instead.'
     },
 
 
@@ -1218,7 +1211,6 @@ survivor_management = {
     "_id": {
       "$oid": "5febfb74d174525f6eca199b"
     },
-    "meta": {...},
     "email": "toconnell@thelaborinvain.com",
     "born_in_ly": 0,
     "created_on": {
@@ -1230,7 +1222,27 @@ survivor_management = {
     "settlement": {
       "$oid": "5febfb73d174525f6eca1998"
     },
+    "sex": "M",
+    "hunt_xp": 3,
     ...
+  },
+  "notes": [...],
+  "survival_actions": [
+      {
+          "name": "Dodge",
+          "available": true,
+          "sort_order": 0,
+          "title_tip": "'Dodge' is available by default.",
+          "handle": "dodge",
+          "sub_type": "survival_action",
+          "type": "survival_actions",
+          "type_pretty": "Survival Actions",
+          "sub_type_pretty": "Survival Action",
+          "selector_text": "Dodge"
+      },
+      ...
+  ],
+  ...
 }</code></pre>"""
 	),
     },
@@ -1249,9 +1261,9 @@ survivor_management = {
     },
     "zz_survivor_get_survival_actions": {
         "name": "/survivor/get_survival_actions/&lt;survivor_id&gt;",
+        'deprecated': True,
         "methods": ["GET", "OPTIONS"],
         "desc": (
-            '<p>This endpoint is deprecated.</p>'
             '<p>Please use the <code>survival_actions</code> element returned '
             'by the <code>/survivor/get/&lt;survivor_id&gt;</code> instead.</p>'
         ),
@@ -1298,8 +1310,28 @@ survivor_management = {
             '{attribute: "survival", value: 3}',
             '{attribute: "Head", value: 1}',
             '{attribute: "Understanding", value: 2}',
-            '{attribute: "hunt_xp", value: 6}'
-            '{attribute: "bleeding_tokens", value: 3}',
+            '{attribute: "Luck", value: -3}',
+            '{attribute: "Movement", value: 4}',
+            '{attribute: "hunt_xp", value: 6}',
+            '{attribute: "bleeding_tokens", value: 2}',
+        ],
+    },
+    "survivor_set_attribute_detail": {
+        "name": "/survivor/set_attribute_detail/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            '<p>This is the way to add attribute tokens to a survivor -OR- to '
+            'update their attributes to reflect equipped gear.</p>'
+            '<p><b>POST</b> some JSON reflecting the attribute and the tokens '
+            "and/or gear adjustment using the 'detail' key.</p>"
+            '<p>The examples below show how to add a +1 movement token, '
+            'a -1 luck token and a +2 speed bonus from gear.</p>'
+        ),
+        'examples': [
+            '{attribute: "Movement", detail: "tokens", value: 1}',
+            '{attribute: "Luck", detail: "tokens", value: -1}',
+            '{attribute: "Speed", detail: "gear", value: 2}',
         ],
     },
     "survivor_set_name": {
@@ -1311,32 +1343,19 @@ survivor_management = {
             "survivor's name:</p><code>{name: 'Hungry Basalt'}</code>"
         )
     },
-    "survivor_set_sex": {
+    "zz_survivor_set_sex": {
         "name": "/survivor/set_sex/&lt;survivor_id&gt;",
         "subsection": "survivor_sheet",
+        'deprecated': True,
         "methods": ["POST", "OPTIONS"],
-        "desc": (
-            "<p>This endpoint accepts a one-character-long string of either "
-            "'M' or 'F' and use it to set the survivor's <code>sex</code> "
-            "attribute. </p>"
-            "<p>Note that survivors also have an <code>effective_sex</code> "
-            "attribute that the API changes automatically when certain gear "
-            "and/or A&Is are added to the survivor.</p>"
-            "<code>{'sex': 'F'}</code>"
-        )
+        "desc": '<p>Use the <code>set_attribute</code> route instead.</p>',
     },
-    "survivor_set_survival": {
+    "zz_survivor_set_survival": {
         "name": "/survivor/set_survival/&lt;survivor_id&gt;",
+        'deprecated': True,
         "subsection": "survivor_sheet",
         "methods": ["POST", "OPTIONS"],
-        "desc": (
-            '<p>This endpoint is deprecated.</p>'
-            '<p>Please use the <code>set_attribute</code> route instead.</p>'
-            "<p><b>POST</b> a 'value' to this endpoint to set the survival "
-            "number:</p> <code>{value: '1'}</code>"
-            "<p>PROTIP: the API will ignore negative numbers and default them "
-            "to zero.</p>"
-        )
+        "desc": '<p>Use the <code>set_attribute</code> route instead.</p>',
     },
     "survivor_set_affinities": {
         "name": "/survivor/set_affinities/&lt;survivor_id&gt;",
@@ -1363,26 +1382,12 @@ survivor_management = {
             '{blue: 0}'
         ],
     },
-    "survivor_set_bleeding_tokens": {
+    "zz_survivor_set_bleeding_tokens": {
         "name": "/survivor/set_bleeding_tokens/&lt;survivor_id&gt;",
+        'deprecated': True,
         "subsection": "survivor_sheet",
         "methods": ["POST", "OPTIONS"],
-        "desc": (
-            '<p>This endpoint is deprecated.</p>'
-            '<p>Please use the <code>set_attribute</code> route instead.</p>'
-            "<p><b>POST</b> an integer to this endpoint to set the "
-            "survivor's <code>bleeding_tokens</code> attribute.</p>"
-            "<p>A couple of things to keep in mind about this attribute:"
-            "<ol><li>It cannot go below zero: the API will default "
-            "negative numbers to zero.</li><li>Each survivor has a "
-            "<code>max_bleeding_tokens</code> value that is determined "
-            "by their Fighting Arts, A&Is, etc. The API will default any "
-            "incoming values that are <i>greater</i> than this number back "
-            "to the <code>max_bleeding_tokens</code> value.</li></ol>"
-        ),
-        'examples': [
-            "{value: 4}",
-        ],
+        "desc": '<p>Use the <code>set_attribute</code> route instead.</p>',
     },
     "survivor_set_status_flag": {
         "name": "/survivor/set_status_flag/&lt;survivor_id&gt;",
@@ -1450,6 +1455,13 @@ survivor_management = {
             "<code>{sword: 'bone_blade', wounds: 3}</code>",
         ],
     },
+    "zz_survivor_toggle_boolean": {
+        "name": "/survivor/toggle_boolean/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        'deprecated': True,
+        "methods": ["POST", "OPTIONS"],
+        "desc": '<p>Do not use this endpoint.</p>',
+    },
     "survivor_toggle_sotf_reroll": {
         "name": "/survivor/toggle_sotf_reroll/&lt;survivor_id&gt;",
         "subsection": "survivor_sheet",
@@ -1484,28 +1496,28 @@ survivor_management = {
     # deprecated
     "zz_toggle_status_flag": {
         "name": "/survivor/toggle_status_flag/&lt;survivor_id&gt;",
+        'deprecated': True,
         "methods": ["GET", "OPTIONS"],
         "subsection": "survivor_sheet",
         "desc": (
-            '<p>This endpoint is deprecated.</p>'
             '<p>Please use the <code>set_status_flag</code> route instead.</p>'
         ),
     },
     "zz_survivor_set_affinity": {
         "name": "/survivor/set_affinity/&lt;survivor_id&gt;",
+        'deprecated': True,
         "methods": ["GET", "OPTIONS"],
         "subsection": "survivor_sheet",
         "desc": (
-            '<p>This endpoint is deprecated.</p>'
             '<p>Please use the <code>set_affinities</code> route instead.</p>'
         ),
     },
     "zz_survivor_update_affinities": {
         "name": "/survivor/update_affinities/&lt;survivor_id&gt;",
+        'deprecated': True,
         "methods": ["GET", "OPTIONS"],
         "subsection": "survivor_sheet",
         "desc": (
-            '<p>This endpoint is deprecated.</p>'
             '<p>Please use the <code>set_affinities</code> route instead.</p>'
         ),
     },

@@ -59,26 +59,9 @@ from app.models.survivors import color_schemes, special_attributes
 from app.assets.survivors import attributes as ATTRIBUTES
 
 
-class Assets(models.AssetCollection):
-    """ At present, the only survivor 'assets' are the pre-made survivors, e.g.
-    from the BCS. In Advanced KD:M and maybe Campaigns of Death, this might have
-    to be fleshed out a bit more. """
-
-
-    def __init__(self, *args, **kwargs):
-        """ Similar to the very customized __init__ we do for the Settlements
-        object, this 'asset' is a custom collection of asset dictionaries. """
-
-        self.is_game_asset = True
-        self.type_override = "survivors"
-
-        self.root_module = survivors
-
-        models.AssetCollection.__init__(self,  *args, **kwargs)
-
-
-
-
+#
+#   convenience methods; needs to live somewhere else eventually
+#
 
 def create_many_survivors(params):
     """
@@ -128,6 +111,19 @@ def create_many_survivors(params):
     return output
 
 
+class Assets(models.AssetCollection):
+    ''' Survivor 'assets' are those that are defined in the beta challenge
+    scenarios or the vignettes expansions. '''
+
+    def __init__(self, *args, **kwargs):
+        """ Similar to the very customized __init__ we do for the Settlements
+        object, this 'asset' is a custom collection of asset dictionaries. """
+
+        self.is_game_asset = True
+        self.type_override = "survivors"
+        self.root_module = survivors
+        models.AssetCollection.__init__(self,  *args, **kwargs)
+
 
 class Survivor(models.UserAsset):
     """ This is the class object for survivor objects. It sub-classes the
@@ -171,7 +167,6 @@ class Survivor(models.UserAsset):
 #                setattr(self, attr, getattr(ATTRIBUTES, attr))
 
         # survivor attributes
-        self.stats =                ['Movement','Accuracy','Strength','Evasion','Luck','Speed','bleeding_tokens']
         self.flags =                [
             'cannot_activate_two_handed_weapons',
             'cannot_activate_two_plus_str_gear',
@@ -204,7 +199,7 @@ class Survivor(models.UserAsset):
                 normalize_on_init=False
             )
 
-        if self.normalize_on_init:
+        if self.kwargs.get('normalize_on_init', False):
             self.normalize()
 
 
@@ -288,20 +283,15 @@ class Survivor(models.UserAsset):
         Important! Only attrib keys that are part of the baseline survivor data
         model will be used! Any other keys in 'attribs' will be ignored!
 
-        If this is an internal call, i.e. from the settlement creation method
-        or similar, simply set self.new_asset_attribs to be a dictionary of the
-        required survivor attribs.
-
-        Otherwise, attribs will come from the request params.
-
+        self.kwargs['new_asset_attribs'] is used by default; if it's
+        blank/empty, attribs will come from the request params.
         """
 
         # if called without attribs dict, assume we're responding to a request
         #   and initialize attribs to be request params
-        if self.new_asset_attribs == {}:
+        attribs = self.kwargs.get('new_asset_attribs', {})
+        if attribs == {}:
             attribs = self.params
-        else:
-            attribs = self.new_asset_attribs
 
 
         #
@@ -352,10 +342,10 @@ class Survivor(models.UserAsset):
             'inherited': {'father': {}, 'mother': {}},
             'departing': False,
             'bleeding_tokens': 0,
-            'max_bleeding_tokens': 5,
+            'max_bleeding_tokens': ATTRIBUTES.defaults['max_bleeding_tokens'],
 
             # attributes
-            "Movement": 5,
+            "Movement": ATTRIBUTES.defaults['Movement'],
             "Accuracy": 0,
             "Strength": 0,
             "Evasion":  0,
@@ -1004,7 +994,7 @@ class Survivor(models.UserAsset):
 
         # 3.) ATTRIBS - now check asset dict keys for survivor dict attribs
         for ak in asset_dict.keys():
-            if ak in self.stats:
+            if ak in ATTRIBUTES.attributes:
                 self.update_attribute(ak, asset_dict[ak])
             if ak in self.abs_value_attribs:
                 self.set_attribute(ak, asset_dict[ak])
@@ -1218,11 +1208,7 @@ class Survivor(models.UserAsset):
             raise utils.InvalidUsage(err + str(e))
 
         resize_tuple = tuple(
-            [int(n) for n in utils.settings.get(
-                "api",
-                "avatar_size"
-                ).split(",")
-            ]
+            [int(n) for n in API.config['AVATAR_DIMENSIONS']]
         )
         im.thumbnail(resize_tuple, Image.ANTIALIAS)
         im.save(processed_image, format="PNG")
@@ -1491,7 +1477,7 @@ class Survivor(models.UserAsset):
 
         # 3.) ATTRIBS - now check asset dict keys for survivor dict attribs
         for ak in asset_dict.keys():
-            if ak in self.stats:
+            if ak in ATTRIBUTES.attributes:
                 self.update_attribute(ak, -asset_dict[ak])
             if ak in self.abs_value_attribs:
                 self.default_attribute(ak)
@@ -1749,38 +1735,6 @@ class Survivor(models.UserAsset):
     #
     #   toggles and flags!
     #
-
-    @models.web_method
-    def toggle_boolean(self, attribute=None):
-        """ This is a generic toggle that will toggle any attribute of the
-        survivor that is Boolean. Note that this will only work on attributes
-        that are part of the survivor data model (check the baseline() method)
-        and will not work, for example, on status flags such as 'skip_next_hunt'
-        and similar. """
-
-        if attribute is None:
-            self.check_request_params(["attribute"])
-            attribute = self.params["attribute"]
-
-        if attribute not in self.survivor.keys():
-            msg = "The attribute '%s' is not part of the survivor data model!" % attribute
-            self.logger.error(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
-        elif type(self.survivor[attribute]) != bool:
-            msg = "The attribute '%s' is not type 'bool'!" % attribute
-            self.logger.error(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
-
-        if self.survivor[attribute]:
-            self.survivor[attribute] = False
-        else:
-            self.survivor[attribute] = True
-
-        self.log_event("%s changed %s attribute '%s' to %s" % (request.User.login, self.pretty_name(), attribute, self.survivor[attribute]))
-        self.save()
-
-        pass
-
 
     @models.web_method
     def toggle_damage(self):
@@ -2052,21 +2006,24 @@ class Survivor(models.UserAsset):
         'attrib' kwarg is None, the function assumes that this is part of a call
         to request_response() and will get request params. """
 
-        # divert to alternate/specialized methods, if they exist
-        if attrib == 'survival':
-            return self.set_survival(value=value)
-        elif attrib == 'bleeding_tokens':
-            return self.set_bleeding_tokens()
 
+        # if kwarg 'attrib' is None, we're processing a request
         if attrib is None:
             self.check_request_params(['attribute','value'])
             attrib = self.params["attribute"]
             value = self.params['value']
-            if value is None:
-                value = 0
-            else:
-                value = int(self.params["value"])
 
+        #
+        # divert certain attributes to specialized set methods:
+        #
+        for divert in ['bleeding_tokens', 'sex', 'survival', 'public']:
+            if attrib == divert:
+                return getattr(self, 'set_%s' % divert)()
+
+        # if we're still here, it's an integer that we're trying to set
+        value = int(self.params["value"])
+        if value is None:
+            value = 0
 
         # sanity check!
         if attrib not in self.survivor.keys():
@@ -2137,6 +2094,22 @@ class Survivor(models.UserAsset):
                     raise utils.InvalidUsage("The '%s' attribute of %s may not be undefined!" % (v, u))
             if self.survivor['attribute_detail'][attrib][detail] != value:
                 self.set_attribute_detail(attrib, detail, value, False)
+
+        self.save()
+
+
+    def set_public(self):
+        ''' Expects a request but isn't a web method. We divert to this one from
+        self.set_attribute() calls. '''
+
+        self.check_request_params(['attribute', 'value'])
+        if self.params.get('attribute', None) == 'public':
+            self.survivor['public'] = self.params["value"]
+
+        msg = '%s may be managed by any player.' % self.pretty_name()
+        if not self.survivor['public']:
+            msg = "%s is no longer a public survivor." % self.pretty_name()
+        self.log_event(msg)
 
         self.save()
 
@@ -2564,9 +2537,13 @@ class Survivor(models.UserAsset):
         by request_response() and will look for 'sex' in self.params.
         """
 
+        # try to get a kwarg, a post param and a backoff post param
         if sex is None:
-            self.check_request_params(['sex'])
-            sex = self.params["sex"].upper()
+            sex = self.params.get('value', None)
+            if sex is None:
+                sex = self.params.get("sex", None)
+
+        sex = sex.upper()
 
         if sex not in ["M", "F"]:
             msg = "'sex' must be 'M' or 'F'. Survivor sex cannot be '%s'."
@@ -2881,9 +2858,7 @@ class Survivor(models.UserAsset):
             if e_dict.get('requires_returning_survivor', False):
                 r_years = self.survivor.get('returning_survivor', [])
                 if self.get_current_ly() not in r_years and self.get_current_ly() - 1 not in r_years:
-#                    self.logger.warn("%s not in %s" % (self.get_current_ly(), self.survivor.get('returning_survivor', [])))
                     available = False
-#            self.logger.debug("returning %s" % available)
             return available
 
 
@@ -3740,11 +3715,9 @@ class Survivor(models.UserAsset):
         'action' kwarg appropriately. This is the ancestor of the legacy app
         assets.Survivor.modify() method. """
 
-        self.get_request_params()
-
         # get methods first
         if action == "get":
-            return self.return_json()
+            return self.json_response()
         elif action == "get_lineage":
             return self.get_lineage()
 
@@ -3765,18 +3738,12 @@ class Survivor(models.UserAsset):
 
 
         # misc sheet operations
-        elif action == "set_name":
-            self.set_name()
         elif action == "set_email":
             return self.set_email()     # because we're doing server-side validation
-        elif action == "set_retired":
-            self.set_retired()
         elif action == 'set_parent':
             self.set_parent()
         elif action == "set_partner":
             self.set_partner()
-        elif action == "set_sex":
-            self.set_sex()
         elif action == 'set_special_attribute':
             self.set_special_attribute()
         elif action == 'set_sword_oath':
@@ -3787,8 +3754,6 @@ class Survivor(models.UserAsset):
         # sheet attribute operations
         elif action == "set_many_attributes":   # serial set_attribute()
             self.set_many_attributes()
-        elif action == "set_attribute_detail":  # tokens/gear
-            self.set_attribute_detail()
         elif action == "update_attribute":
             self.update_attribute()
 
@@ -3802,10 +3767,6 @@ class Survivor(models.UserAsset):
             self.update_note()
         elif action == 'rm_note':
             self.rm_note()
-
-        # status flags!
-        elif action == 'toggle_boolean':
-            self.toggle_boolean()
 
         # survival
         elif action == "set_survival":

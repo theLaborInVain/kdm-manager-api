@@ -311,13 +311,7 @@ class World(object):
         # initialize our final dict
         d = copy(utils.api_meta)
 
-        d["meta"]["object"]["panel_revision"] = utils.settings.get(
-            "admin",
-            "panel_revision"
-        )
-
         d["world"] = collections.OrderedDict()
-
 
         # get the raw world info (we'll sort it later)
         raw_world = {}

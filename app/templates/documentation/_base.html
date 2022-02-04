@@ -44,7 +44,10 @@
               </span>
 
               <ul>
-                <li ng-repeat="(subsection_handle, subsection) in section" class="nav_tree_subsection">
+                <li
+                    ng-repeat="(subsection_handle, subsection) in section"
+                    class="nav_tree_subsection"
+                >
 
                   <span
                     class="clickable"
@@ -129,6 +132,7 @@
                         id = "{a doc.handle a}_doc"
                         class="doc_container"
                         ng-repeat="doc in subsection"
+                        ng-class="{'deprecated': doc.deprecated}"
                     >
                         <div class="doc_row">
                             <div class="doc_row_key">Route:</div>

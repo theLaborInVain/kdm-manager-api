@@ -4,16 +4,16 @@
 
 """
 
-from app.assets import principles
 from app import models
 
 
 class Assets(models.AssetCollection):
-
+    ''' Principles AssetCollections have a special method to get mutually
+    exclusive principles. '''
 
     def __init__(self, *args, **kwargs):
-        self.root_module = principles
-        models.AssetCollection.__init__(self,  *args, **kwargs)
+        ''' Vanilla init. '''
+        models.AssetCollection.__init__(self, *args, **kwargs)
 
 
     def get_mutually_exclusive_principles(self):

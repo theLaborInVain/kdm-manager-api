@@ -54,7 +54,8 @@ def verify_password(username, password):
 
     if flask.request.User is None:
         return False
-    elif flask.request.User.user.get("admin", None) is None:
+
+    if flask.request.User.user.get("admin", None) is None:
         msg = (
             "Failed attempt by non-admin user '%s' to access the admin "
             "panel at %s server time."
@@ -84,7 +85,7 @@ def before_request():
     if API.config['KEYS'].get(flask.request.api_key, None) is not None:
         flask.request.api_key_valid = True
 
-    if socket.getfqdn() != API.settings.get('server', 'prod_fqdn'):
+    if socket.getfqdn() != API.config['PRODUCTION']['app_fqdn']:
         flask.request.log_response_time = True
 
 
@@ -139,7 +140,7 @@ def general_exception(exception):
         logger.error('The database is unavailable!')
         utils.email_exception(exception)
 
-    if socket.getfqdn() != API.settings.get('server', 'prod_fqdn'):
+    if socket.getfqdn() != API.config['PRODUCTION']['app_fqdn']:
         err = "'%s' is not production! Raising exception..." % socket.getfqdn()
         logger.error(err)
         raise exception
