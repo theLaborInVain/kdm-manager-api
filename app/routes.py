@@ -326,7 +326,7 @@ def get_token(check_pw=True, user_id=False):
     tok = {
         "_id": str(user_object.user["_id"]),
         'access_token': flask_jwt_extended.create_access_token(
-            identity=user_object.jsonize()
+            identity=user_object.tokenize()
         ),
     }
 
@@ -417,7 +417,7 @@ def new_asset(asset_type):
         output = user_object.serialize('create_new')
         output["Authorization"] = {
             'access_token': flask_jwt_extended.create_access_token(
-                identity=user_object.jsonize()
+                identity=user_object.tokenize()
             ),
             "_id": str(user_object.user["_id"]),
         }
@@ -461,6 +461,7 @@ def collection_action(collection, action, asset_id):
     # update the request object w/ the collection and action
     setattr(flask.request, 'collection', collection)
     setattr(flask.request, 'action', action)
+    setattr(flask.request, 'asset_id', ObjectId(asset_id))
 
     # set the user
     flask.request.User = users.token_to_object(flask.request, strict=False)

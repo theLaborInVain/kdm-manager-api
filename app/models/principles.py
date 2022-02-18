@@ -4,7 +4,7 @@
 
 """
 
-from app import models
+from app import models, utils
 
 
 class Assets(models.AssetCollection):
@@ -13,6 +13,7 @@ class Assets(models.AssetCollection):
 
     def __init__(self, *args, **kwargs):
         ''' Vanilla init. '''
+        self.is_game_asset = False
         models.AssetCollection.__init__(self, *args, **kwargs)
 
 
@@ -56,3 +57,8 @@ class Assets(models.AssetCollection):
                 output[p_dict["name"]] = tuple(alternatives)
 
         return output
+
+
+    def request_response(self):
+        ''' Overrides the default method. Returns a 299. '''
+        return utils.HTTP_299

@@ -73,10 +73,16 @@ core_disorders = {
         'survivor_effect': 'Whenever you suffer brain damage from an <b>Intimidate</b> action, suffer 1 additional brain damage.'
     },
     'post_traumatic_stress': {
-        'flavor_text': 'The last hunt was harrowing. All you can do is cower and relive the trauma. Only time can heal your wounds.',
         'name': 'Post-Traumatic Stress',
         'skip_next_hunt': True,
-        'survivor_effect': 'Next settlement phase, you do not contribute or participate in any endeavors. Skip the next hunt to recover.'
+        'flavor_text': (
+            'The last hunt was harrowing. All you can do is cower and relive '
+            'the trauma. Only time can heal your wounds.'
+        ),
+        'survivor_effect': (
+            'Next settlement phase, you do not contribute or participate in '
+            'any endeavors. Skip the next hunt to recover.'
+        ),
     },
     'prey': {
         'flavor_text': 'You are prey. All there is for you is death.',
@@ -94,13 +100,20 @@ core_disorders = {
         'survivor_effect': 'Whenever you suffer a severe injury, also suffer the <b>frenzy</b> brain trauma.'
     },
     'secretive': {
-        'flavor_text': 'You love secrets. So much, in fact, that you pretend to have many.',
         'name': 'Secretive',
         'on_return': {
             'skip_next_hunt': True,
         },
-        'survivor_effect': 'When you are a <b>returning survivor</b>, you quickly become preoccuiped with your own affairs. You must skip the next hunt to deal with them.'
-        },
+        'flavor_text': (
+            'You love secrets. So much, in fact, that you pretend to have '
+            'many.'
+        ),
+        'survivor_effect': (
+            'When you are a <b>returning survivor</b>, you quickly become '
+            'preoccuiped with your own affairs. You must skip the next hunt '
+            'to deal with them.'
+        ),
+    },
     'seizures': {
         'flavor_text': 'Lingering damage from your head injuries has caused you to experience periods of uncontrollable shaking and absence of thought.',
         'name': 'Seizures',

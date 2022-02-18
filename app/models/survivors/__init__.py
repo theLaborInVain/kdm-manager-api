@@ -15,12 +15,9 @@
 
 # standard library imports
 import base64
-from bson import json_util
-from bson.objectid import ObjectId
 from copy import copy
 from io import BytesIO
 from datetime import datetime
-import gridfs
 import importlib
 import json
 import math
@@ -29,35 +26,34 @@ import random
 # second party imports
 import flask
 from flask import request, Response
-from PIL import Image # PIL.__init__ is empty!
 import pyheif
 import whatimage
+from PIL import Image # PIL.__init__ is empty!
+from bson import json_util
+from bson.objectid import ObjectId
+import gridfs
 
 # local imports
-from app import models, utils
+from app import API, models, utils
 from app.assets import survivors
 from app.models import (
     abilities_and_impairments,
     cursed_items,
     disorders,
     endeavors,
-    epithets,
     fighting_arts,
     gear,
     names,
     saviors,
     settlements,
     survival_actions,
+    tags,
     the_constellations,
     weapon_proficiency
 )
 
 # this is dodgy; needs a refactor
 from app.models.survivors import color_schemes, special_attributes
-
-# direct imports of modules
-from app.assets.survivors import attributes as ATTRIBUTES
-
 
 #
 #   convenience methods; needs to live somewhere else eventually
@@ -69,15 +65,11 @@ def create_many_survivors(params):
     really, really fast.
 
     Adds many survivors to a settlement. Returns a list of the new survivors
-    (fully serialized as dicts and ready to be schleped wherever).
-
-    This method returns a JSON representation of new survivors and, ideally,
-    hands that JSON off to routes.py or similar in fulfillment of a user
-    operation.
+    as dicts (and ready to be schleped wherever).
 
     """
 
-    settlement_id = ObjectId(params.get('settlement_id',None))
+    settlement_id = ObjectId(params.get('settlement_id', None))
 
     male = params.get('male',0)
     female = params.get('female',0)
@@ -90,7 +82,7 @@ def create_many_survivors(params):
             v = 0
 
     output = []
-    for m in range(male):
+    for dummy in range(male):
         S = Survivor(new_asset_attribs={
             'settlement': settlement_id,
             'sex': 'M',
@@ -98,8 +90,8 @@ def create_many_survivors(params):
             'mother': mother,
             'public': public,
         })
-        output.append(S.serialize(return_type=dict))
-    for f in range(female):
+        output.append(S.synthesize())
+    for dummy in range(female):
         S = Survivor(new_asset_attribs={
             'settlement': settlement_id,
             'sex': 'F',
@@ -107,7 +99,8 @@ def create_many_survivors(params):
             'mother': mother,
             'public': public,
         })
-        output.append(S.serialize(return_type=dict))
+        output.append(S.synthesize())
+
     return output
 
 
@@ -129,6 +122,159 @@ class Survivor(models.UserAsset):
     """ This is the class object for survivor objects. It sub-classes the
     models.UserAsset (e.g. just like settlements) and tries to fallback and/or
     super() back to that base class when possible. """
+
+    DATA_MODEL = models.DataModel('settlement')
+
+    # admin
+    DATA_MODEL.add(
+        'meta',
+        dict,
+        {
+            "abilities_and_impairments_version": 1.0,
+            "disorders_version": 1.0,
+            "favorites_version": 1.0,
+            "fighting_arts_version": 1.0,
+            "special_attributes_version": 1.0,
+            "weapon_proficiency_type_version": 1.0,
+        }
+    )
+    DATA_MODEL.add("email", str)
+    DATA_MODEL.add('settlement', ObjectId, immutable=True)
+    DATA_MODEL.add('public', bool)
+
+    # sheet
+    DATA_MODEL.add('name', str, 'Anonymous')
+    DATA_MODEL.add('sex', str, 'R', options=['M', 'F'])
+    DATA_MODEL.add("survival", int, minimum=0)
+    DATA_MODEL.add("Insanity", int, minimum=0)
+
+    # attributes
+    for attr in ['Accuracy', 'Evasion', 'Luck', 'Speed', 'Strength']:
+        DATA_MODEL.add(attr, int)
+    DATA_MODEL.add('Movement', int, 5, minimum=1)
+    DATA_MODEL.add(
+        'attribute_detail',
+        dict,
+        {
+            "Movement": {"tokens": 0, "gear": 0},
+            "Accuracy": {"tokens": 0, "gear": 0},
+            "Strength": {"tokens": 0, "gear": 0},
+            "Evasion":  {"tokens": 0, "gear": 0},
+            "Luck":     {"tokens": 0, "gear": 0},
+            "Speed":    {"tokens": 0, "gear": 0},
+        }
+    )
+
+    # attributes
+    for attr in ['Accuracy', 'Evasion', 'Luck', 'Speed', 'Strength']:
+        DATA_MODEL.add(attr, int)
+    DATA_MODEL.add('Movement', int, 5, minimum=1)
+    DATA_MODEL.add(
+        'attribute_detail',
+        dict,
+        {
+            "Movement": {"tokens": 0, "gear": 0},
+            "Accuracy": {"tokens": 0, "gear": 0},
+            "Strength": {"tokens": 0, "gear": 0},
+            "Evasion":  {"tokens": 0, "gear": 0},
+            "Luck":     {"tokens": 0, "gear": 0},
+            "Speed":    {"tokens": 0, "gear": 0},
+        }
+    )
+
+    # secondary attribs
+    DATA_MODEL.add('affinities', dict, {"red": 0, "blue": 0, "green": 0})
+    DATA_MODEL.add("Understanding", int, 0, minimum=0, maximum=9)
+    DATA_MODEL.add("Courage", int, 0, minimum=0, maximum=9)
+    DATA_MODEL.add("hunt_xp", int, 0, minimum=0)
+    DATA_MODEL.add('returning_survivor', list)
+    DATA_MODEL.add("Weapon Proficiency", int)
+    DATA_MODEL.add("weapon_proficiency_type", str)
+
+    # other
+    DATA_MODEL.add('born_in_ly', int)
+    DATA_MODEL.add("bleeding_tokens", int)
+    DATA_MODEL.add('color_scheme', str, required=False)
+    DATA_MODEL.add("max_bleeding_tokens", int, 5, absolute=True)
+
+    # flags
+    DATA_MODEL.add('departing', bool)
+
+    # misc
+    DATA_MODEL.add('inherited', dict, {'father': {}, 'mother': {}})
+    DATA_MODEL.add("favorite", list)
+    DATA_MODEL.add("fighting_arts_levels", dict)
+
+    # armor locations
+    for location in ['Head', 'Body', 'Arms', 'Waist', 'Legs']:
+        DATA_MODEL.add(location, int, category='armor_location')
+
+    # game asset handle lists
+    for asset_list in [
+        'abilities_and_impairments',
+        'cursed_items',
+        'disorders',
+        'fighting_arts',
+        'tags'
+    ]:
+        DATA_MODEL.add(asset_list, list, category='game_asset_list')
+
+    #
+    # optional attributes start here
+    #
+    for parent in ['father', 'mother']:
+        DATA_MODEL.add(parent, ObjectId, required=False)
+
+    DATA_MODEL.add('retired', bool, required=False)
+    DATA_MODEL.add('retired_in', int, required=False)
+
+    DATA_MODEL.add('died_on', datetime, required=False, category='death')
+    DATA_MODEL.add('died_in', int, required=False, category='death')
+    DATA_MODEL.add('cause_of_death', str, required=False, category='death')
+    DATA_MODEL.add('dead', bool, required=False, category='death')
+
+    # damage locations
+    for location in [
+        "brain_damage_light",
+        "head_damage_heavy",
+        "arms_damage_light",    "arms_damage_heavy",
+        "body_damage_light",    "body_damage_heavy",
+        "waist_damage_light",   "waist_damage_heavy",
+        "legs_damage_light",    "legs_damage_heavy",
+    ]:
+        DATA_MODEL.add(
+            location, bool, required=False,
+            category='damage_location'
+        )
+
+    # transient flags
+    for flag in [
+        'cannot_activate_two_handed_weapons',
+        'cannot_activate_two_plus_str_gear',
+        'cannot_consume',
+        'cannot_be_nominated_for_intimacy',
+        'cannot_gain_bleeding_tokens',
+        'cannot_spend_survival',
+        'cannot_use_fighting_arts',
+        'departing',
+        'skip_next_hunt',
+        'sotf_reroll',
+    ]:
+        DATA_MODEL.add(flag, bool, required=False, category='flag')
+
+    # special attributes
+    for sa_key in special_attributes.Assets().assets.keys():
+        DATA_MODEL.add(
+            sa_key, bool, required=False, category='special_attributes'
+        )
+
+    # silly stuff / after-thoughts / one-offs, etc.
+    DATA_MODEL.add('constellation', str, required=False)
+    DATA_MODEL.add(
+        'sword_oath', dict, {'sword': None, 'wounds': 0}, required=False
+    )
+    DATA_MODEL.add('weak_spot', str, required=False)
+#    DATA_MODEL.add('zz_test', str, 12345)
 
 
     def __repr__(self):
@@ -160,29 +306,6 @@ class Survivor(models.UserAsset):
         self.SpecialAttributes = special_attributes.Assets()
         self.WeaponProficiency = weapon_proficiency.Assets()
 
-        # programmatically set attributes from the attributes.py file
-        # debug/troubleshooting only!
-#        for attr in ATTRIBUTES.__dict__:
-#            if not attr.startswith('__'):
-#                setattr(self, attr, getattr(ATTRIBUTES, attr))
-
-        # survivor attributes
-        self.flags =                [
-            'cannot_activate_two_handed_weapons',
-            'cannot_activate_two_plus_str_gear',
-            'cannot_consume',
-            'cannot_be_nominated_for_intimacy',
-            'cannot_gain_bleeding_tokens',
-            'cannot_spend_survival',
-            'cannot_use_fighting_arts',
-            'departing',
-            'skip_next_hunt',
-        ]
-        self.abs_value_attribs =    ['max_bleeding_tokens', ]
-        self.min_zero_attribs =     ["hunt_xp","Courage","Understanding"]
-        self.min_one_attribs =      ["Movement"]
-
-
         # if we're doing a new survivor, it will happen when we subclass the
         #   models.UserAsset class; otherwise, the base class method will call
         #   self.load():
@@ -191,7 +314,7 @@ class Survivor(models.UserAsset):
         # this makes the baby jesus cry
         if self.Settlement is None:
             if request and request.collection != 'survivor':
-                self.logger.warn(
+                self.logger.warning(
                     "%s Initializing Settlement object! THIS IS BAD FIX IT" % self
                 )
             self.Settlement = settlements.Settlement(
@@ -199,208 +322,52 @@ class Survivor(models.UserAsset):
                 normalize_on_init=False
             )
 
+        # asset normalization!
+        self.perform_save = False
         if self.kwargs.get('normalize_on_init', False):
             self.normalize()
-
-
-    def load(self):
-        """ Calls the base class load() method and then sets a few additional,
-        survivor-specific attributes. """
-
-        super().load()
-
-        # 2021-05-18 this is deprecated / legacy and needs to die
-        self.settlement_id = self.survivor["settlement"]
-
-
-
-    def save(self, verbose=True, bypass_post_process=False):
-        """ Do custom post-process for survivors and then super the base class
-        func (i.e. the UserAsset.save() method) to go the generic save. """
-
-
-        #
-        #   SURVIVOR POST PROCESS! - January 2018; September 2021
-        #
-
-        post_process_routes = [
-            'set_attribute',
-            'set_weapon_proficiency_type'
-        ]
-
-        # never post-process an uninitialized Survivor:
-        if getattr(self, 'Settlement', None) is None:
-            bypass_post_process = True
-
-        if (
-            not bypass_post_process and
-            request and hasattr(request, 'action') and
-            request.action in post_process_routes
-        ):
-            self.post_process()
-
-        # finally, call the base class method (passing the verb flag through)
-        super().save(verbose=verbose)
-
-
-    def post_process(self):
-        """ Certain routes require a post-processing past to apply rules, biz
-        logic, etc. """
-
-        # sanity check/warning about needing Settlement
-        # https://github.com/theLaborInVain/kdm-manager-api/issues/55
-        if not getattr(self, 'loaded', False):
-            err = (
-                'post_process() has been called on an uninitialized object! '
-                'This can cause major errors if business logic in this '
-                'method requires an initialized Settlement attribute! '
-                'Ignoring...'
-            )
-            self.logger.warn(err)
-            return True
-
-        # biz logic for weapon proficiency
-        w_handle = self.survivor.get("weapon_proficiency_type", None)
-        if w_handle is not None:
-            w_handle = self.survivor["weapon_proficiency_type"]
-            w_dict = self.WeaponProficiency.get_asset(w_handle)
-            if self.survivor.get('Weapon Proficiency', 0) >= 3:
-                if w_dict['specialist_ai'] not in self.survivor['abilities_and_impairments']:
-                    self.logger.info("%s Weapon specialization reached, but A&I not present! Adding A&I..." % (self))
-                    self.add_game_asset("abilities_and_impairments", w_dict['specialist_ai'], save=False)
-            if self.survivor.get('Weapon Proficiency', 0) >= 8:
-                if w_dict['master_ai'] not in self.survivor['abilities_and_impairments']:
-                    self.logger.info("%s Weapon mastery reached, but A&I not present! Adding A&I..." % (self))
-                    self.add_game_asset("abilities_and_impairments", w_dict['master_ai'], save=False)
 
 
     def new(self):
         """ Creates a new survivor.
 
-        The 'attribs' dictionary will be used, after initialization, to add or
-        overwrite all key/value pairs on self.survivor.
+        Leverages the models.DataModel() object to create a "blank" or default
+        survivor sheet, and then uses the incoming 'new_asset_attribs' kwarg
+        or the post params (as a fallback) to populate user-supplied values.
 
-        Important! Only attrib keys that are part of the baseline survivor data
-        model will be used! Any other keys in 'attribs' will be ignored!
-
-        self.kwargs['new_asset_attribs'] is used by default; if it's
-        blank/empty, attribs will come from the request params.
         """
 
-        # if called without attribs dict, assume we're responding to a request
-        #   and initialize attribs to be request params
+        # get incoming survivor attribs before anything else
         attribs = self.kwargs.get('new_asset_attribs', {})
         if attribs == {}:
             attribs = self.params
 
-
-        #
-        #   Can't create a survivor without initializing a settlement! do
-        #       that first, and fail bigly if you cannot
-        #
-
+        # initialize a settlement
         self.Settlement = settlements.Settlement(_id=attribs["settlement"])
-        self.settlement_id = self.Settlement.settlement["_id"]
 
         # 0. create a record that we're going to save to MDB and use to
         #   initialize the new survivor
-        self.survivor = {
-
-            # meta and housekeeping
-            "meta": {
-                "abilities_and_impairments_version": 1.0,
-                "disorders_version": 1.0,
-                "epithets_version": 1.0,
-                "favorites_version": 1.0,
-                "fighting_arts_version": 1.0,
-                "special_attributes_version": 1.0,
-                "weapon_proficiency_type_version": 1.0,
-            },
+        self.survivor = self.DATA_MODEL.new()
+        self.survivor.update({
             "email":        request.User.login,
             "born_in_ly":   self.get_current_ly(),
             "created_on":   datetime.now(),
             "created_by":   request.User._id,
-            "settlement":   self.settlement_id,
-            "public":       False,
-
-            # survivor sheet
-            "name":     "Anonymous",
-            "sex":      "R",
-            "survival": 0,
-            "hunt_xp":  0,
-            "Insanity": 0,
-            "Head":     0,
-            "Arms":     0,
-            "Body":     0,
-            "Waist":    0,
-            "Legs":     0,
-            "Courage":  0,
-            "Understanding": 0,
-            "affinities": {"red":0,"blue":0,"green":0},
-
-            # misc
-            'inherited': {'father': {}, 'mother': {}},
-            'departing': False,
-            'bleeding_tokens': 0,
-            'max_bleeding_tokens': ATTRIBUTES.defaults['max_bleeding_tokens'],
-
-            # attributes
-            "Movement": ATTRIBUTES.defaults['Movement'],
-            "Accuracy": 0,
-            "Strength": 0,
-            "Evasion":  0,
-            "Luck":     0,
-            "Speed":    0,
-            "attribute_detail": {
-                "Movement": {"tokens": 0, "gear": 0},
-                "Accuracy": {"tokens": 0, "gear": 0},
-                "Strength": {"tokens": 0, "gear": 0},
-                "Evasion":  {"tokens": 0, "gear": 0},
-                "Luck":     {"tokens": 0, "gear": 0},
-                "Speed":    {"tokens": 0, "gear": 0},
-            },
-
-            # weapon proficiency 
-            "Weapon Proficiency": 0,
-            "weapon_proficiency_type": None,
-
-            # game assets
-            "abilities_and_impairments": [],
-            "cursed_items": [],
-            "disorders": [],
-            "epithets": [],
-            "favorite": [],
-            "fighting_arts": [],
-            "fighting_arts_levels": {},
-        }
-
-        c_dict = self.get_campaign(dict)
+            "settlement":   self.Settlement._id,
+        })
 
         # 0.a apply/overwrite attribs that go with our data model
-        for a in attribs.keys():
-            if a in self.survivor.keys():
-                forbidden_keys = ['settlement']
-                if a not in forbidden_keys and attribs[a] != None:
-                    self.survivor[a] = attribs[a]
+        for attr, value in attribs.items():
+            if self.DATA_MODEL.is_valid(attr, value):
+                self.survivor[attr] = value
 
-        # 0.b for bools, keep 'em bool, e.g. in case they come in as 'checked'
-        for boolean in ["public"]:
-            self.survivor[boolean] = bool(self.survivor[boolean])
-
-        # 0.c if sex is "R", pick a random sex
-        if self.survivor["sex"] == "R":
-            self.survivor["sex"] = random.choice(["M","F"])
-
-        # 0.d sanity check new attribs; die violently if we fail here
-        if self.survivor["sex"] not in ["M","F"]:
-            msg = "Invalid survivor 'sex' attrib '%s' received! Must be 'M' or 'F' and str type!" % (self.survivor["sex"])
-            self.logger.exception(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
+        # 0.b if sex is outside the data model, pick a random sex from the model
+        if not self.DATA_MODEL.is_valid('sex', self.survivor["sex"]):
+            self.survivor["sex"] = self.DATA_MODEL.random_choice('sex')
 
         # 0.e check for an avatar and add it BEFORE we save
         if 'avatar' in attribs.keys():
             self.set_avatar(attribs['avatar'], log_event=False, save=False)
-
 
         # 1. insert the record we've been developing and call the base class
         #   load() method, which will initialize and let us use class methods
@@ -417,7 +384,7 @@ class Survivor(models.UserAsset):
         self.log_event(action="create")
 
         # 3. parents and newborn status/operations, including inheritance
-        self.survivor_birth(attribs)
+        self.__survivor_birth(attribs)
 
         # 4. increment survivial if we're named
         if self.survivor["name"].upper() != "ANONYMOUS" and self.survivor["survival"] == 0:
@@ -427,6 +394,9 @@ class Survivor(models.UserAsset):
         # 5. settlement buffs - move this to a separate function
         if request.User.get_preference("apply_new_survivor_buffs"):
 
+            # grab the campaign: we'll need it in a second
+            c_dict = self.get_campaign(dict)
+
             def apply_buff_list(l):
                 """ Private helper to apply a dictionary of bonuses. """
                 for d in l:
@@ -434,7 +404,8 @@ class Survivor(models.UserAsset):
                         if k == "affinities":
                             self.update_affinities(d[k])
                         elif k == "abilities_and_impairments":
-                            if type(d[k]) != list:
+#                            if type(d[k]) != list:
+                            if not isinstance(d[k], list):
                                 msg = "The 'abilities_and_impairments' bonus must be a list! Failing on %s" % d
                                 self.logger.exception(msg)
                                 raise Exception(msg)
@@ -481,7 +452,7 @@ class Survivor(models.UserAsset):
         # Add our campaign's founder epithet if the survivor is a founder
         if self.is_founder():
             founder_epithet = self.get_campaign(dict).get("founder_epithet", "founder")
-            self.add_game_asset("epithets", founder_epithet)
+            self.add_game_asset("tags", founder_epithet)
 
         # log and save
         self.logger.info("%s created by %s (%s)" % (self, request.User, self.Settlement))
@@ -490,14 +461,12 @@ class Survivor(models.UserAsset):
         return self._id
 
 
-    def survivor_birth(self, attribs = {}):
-        """ DO NOT CALL THIS METHOD OUTSIDE OF self.new() UNLESS YOU REALLY KNOW
-        WHAT YOU ARE DOING AND WHY YOU ARE DOING IT.
-
+    def __survivor_birth(self, attribs = {}):
+        '''
         This is basically a carve out from the new() method. All of the
         procedural stuff below use to happen in that sequence, but we are doing
         it in its own method for clarity, maintainability, etc.
-        """
+        '''
 
         def process_one_parent(parent_type, parent_oid, primary_donor_parent=False):
             """ Private method for processing ONE of a new survivor's parents.
@@ -513,7 +482,7 @@ class Survivor(models.UserAsset):
                 'abilities_and_impairments': [],
                 'disorders': [],
                 'fighting_arts': [],
-                'weapon_proficiency_type': None,
+                'weapon_proficiency_type': '',
                 'Weapon Proficiency': 0,
                 'surname': None,
             }
@@ -569,7 +538,7 @@ class Survivor(models.UserAsset):
                                 self.survivor['inherited'][parent_type]['Weapon Proficiency'] = self.survivor['Weapon Proficiency']
                                 self.log_event(action="inherit", key=p_log_str, value="1/2 weapon proficiency levels", agent="automation", event_type="inherit")
                             else:
-                                self.logger.warn("Unrecognized primary donor parent 'special' key '%s' is ignored!" % (special))
+                                self.logger.warning("Unrecognized primary donor parent 'special' key '%s' is ignored!" % (special))
 
 
         # 1.) process parents here and do inheritance
@@ -589,11 +558,6 @@ class Survivor(models.UserAsset):
             self.newborn = True
             parent_string = ' and '.join(self.parent_names)
 
-#            genitive_appellation = "Son"
-#            if self.survivor["sex"] == "F":
-#                genitive_appellation = "Daughter"
-
-
         # 3.d log the birth/joining
         if self.newborn:
             self.log_event("%s born to %s!" % (self.pretty_name(), parent_string), action="born", agent="automation")
@@ -607,61 +571,42 @@ class Survivor(models.UserAsset):
         """ In which we force the survivor's mdb document to adhere to the biz
         logic of the game and our own data model. """
 
-        self.perform_save = False
+        self.__bug_fixes()
+        self.__baseline()
 
-        self.bug_fixes()
-        self.baseline()
-        self.duck_type()
 
         #
         #   asset migrations (names to handles)
         #
 
         if self.survivor["meta"].get("abilities_and_impairments_version", None) is None:
-            self.convert_abilities_and_impairments()
+            self.__convert_abilities_and_impairments()
             self.perform_save = True
 
         if self.survivor["meta"].get("disorders_version", None) is None:
-            self.convert_disorders()
-            self.perform_save = True
-
-        if self.survivor["meta"].get("epithets_version", None) is None:
-            self.convert_epithets()
+            self.__convert_disorders()
             self.perform_save = True
 
         if self.survivor["meta"].get("favorites_version", None) is None:
-            self.convert_favorite()
+            self.__convert_favorite()
             self.perform_save = True
 
         if self.survivor["meta"].get("fighting_arts_version", None) is None:
-            self.convert_fighting_arts()
+            self.__convert_fighting_arts()
             self.perform_save = True
 
         if self.survivor["meta"].get("special_attributes_version", None) is None:
-            self.convert_special_attributes()
+            self.__convert_special_attributes()
             self.perform_save = True
 
         if self.survivor["meta"].get("weapon_proficiency_type_version", None) is None:
-            self.convert_weapon_proficiency_type()
+            self.__convert_weapon_proficiency_type()
             self.perform_save = True
 
 
         #
         #   user asset normalization
         #
-
-        if self.survivor['name'] != utils.html_stripper(self.survivor['name']):
-            self.survivor['name'] = utils.html_stripper(self.survivor['name'])
-            self.perform_save = True
-
-        #
-        #   game asset normalization - TKTK fix this up
-        #
-
-        if 'ability_customizations' in self.survivor.keys():
-            del self.survivor['ability_customizations']
-            self.logger.debug("%s Removing deprecated attribute 'ability_customizations'." % self)
-            self.perform_save = True
 
         # handle orphan partners
         if self.survivor.get('partner_id', None) is not None:
@@ -670,34 +615,31 @@ class Survivor(models.UserAsset):
                 self.set_partner("UNSET")
 
         # add the savior key if we're dealing with a savior
-        if self.is_savior() and not "savior" in self.survivor.keys():
+        if self.is_savior() and "savior" not in self.survivor.keys():
             self.survivor["savior"] = self.is_savior()
-            self.perform_save
+            self.perform_save = True
 
-        # enforce minimum attributes for certain attribs
-        self.min_attributes()
+        # finally, apply the data model
+        corrected_record = self.DATA_MODEL.apply(self.survivor)
+        if corrected_record != self.survivor:
+            self.logger.warning('[%s] data model corrections applied!' % self)
+            self.survivor = corrected_record
+            self.perform_save = True
 
         if self.perform_save:
             self.logger.info("%s survivor modified during normalization! Saving changes..." % self)
             self.save()
 
 
-    def serialize(self, return_type=None, include_meta=True):
-        """ Renders the survivor as JSON. We don't serialize to anything else."""
+    def synthesize(self):
+        """ Renders a dictionary representing the Survivor's Sheet, but with
+        additional data that is critical to business logic in the API and in
+        consumer webapps. """
 
-        # tidy these up prior to serialization
-        for k in ["abilities_and_impairments", "fighting_arts", "disorders"]:
-            self.survivor[k] = sorted(self.survivor[k])
-
-
-        # start the insanity
         output = {}
 
-        if include_meta:
-            output = self.get_serialize_meta()
-
         # build the sheet: don't forget to add cursed items to it
-        output.update({"sheet": self.survivor})
+        output["sheet"] = self.get_record()
         output["sheet"].update({"effective_sex": self.get_sex()})
         output["sheet"].update({"can_be_nominated_for_intimacy": self.can_be_nominated_for_intimacy()})
         output["sheet"].update({"can_gain_bleeding_tokens": self.can_gain_bleeding_tokens()})
@@ -721,17 +663,12 @@ class Survivor(models.UserAsset):
             output["dragon_traits"].update({"active_cells": self.get_dragon_traits("active_cells")})
             output["dragon_traits"].update({"available_constellations": self.get_dragon_traits("available_constellations")})
 
-        # now add the additional top-level items ("keep it flat!" -khoa)
+        # now add the additional top-level items
         output.update({"notes": self.get_notes()})
         output.update({"survival_actions": self.get_survival_actions("JSON")})
 
-        # epithets will soon be replaced by tags
-        output['sheet']['tags'] = self.survivor['epithets']
 
-        if return_type == dict:
-            return output
-
-        return json.dumps(output, default=json_util.default)
+        return output
 
 
     @models.web_method
@@ -807,7 +744,7 @@ class Survivor(models.UserAsset):
             for ai_handle in ci_dict["abilities_and_impairments"]:
                 self.add_game_asset('abilities_and_impairments', ai_handle)
 
-        self.add_game_asset("epithets", "cursed")
+        self.add_game_asset("tags", "cursed")
 
         # append it, save and exit
         self.survivor["cursed_items"].append(ci_dict["handle"])
@@ -859,7 +796,7 @@ class Survivor(models.UserAsset):
 
         # rm the epithet if we have no curses
         if self.survivor['cursed_items'] == []:
-            self.rm_game_asset("epithets", "cursed")
+            self.rm_game_asset("tags", "cursed")
 
         # remove it, save and exit
         self.survivor["cursed_items"].remove(ci_dict["handle"])
@@ -883,14 +820,14 @@ class Survivor(models.UserAsset):
             )
             self.logger.error(err % (self, user_email))
             return True
-        else:
-            self.survivor['favorite'].append(user_email)
-            self.log_event(
-                '%s added %s to their favorite survivors.' % (
-                    user_email,
-                    self.pretty_name()
-                )
+
+        self.survivor['favorite'].append(user_email)
+        self.log_event(
+            '%s added %s to their favorite survivors.' % (
+                user_email,
+                self.pretty_name()
             )
+        )
 
         self.save()
 
@@ -912,18 +849,19 @@ class Survivor(models.UserAsset):
             )
             self.logger.error(err % (self, user_email))
             return True
-        else:
-            self.survivor['favorite'].remove(user_email)
-            self.log_event(
-                '%s removed %s from their favorite survivors.' % (
-                    user_email,
-                    self.pretty_name()
-                )
+
+        self.survivor['favorite'].remove(user_email)
+        self.log_event(
+            '%s removed %s from their favorite survivors.' % (
+                user_email,
+                self.pretty_name()
             )
+        )
 
         self.save()
 
 
+    @models.web_method
     def add_game_asset(self, asset_class=None, asset_handle=None,
                        apply_related=True, save=True, log_event=True):
 
@@ -982,22 +920,28 @@ class Survivor(models.UserAsset):
                 err = (
                     "%s max for '%s' (%s) has already been reached! Ignoring..."
                 )
-                self.logger.warn(
+                self.logger.warning(
                     err % (self, asset_dict["handle"], asset_class)
                 )
                 return False
 
         # 2.) STATUS - set status flags if they're in the dict
-        for flag in self.flags:
+        for flag in self.DATA_MODEL.category('flag'):
             if asset_dict.get(flag, None) is True:
                 self.set_status_flag(flag)
 
         # 3.) ATTRIBS - now check asset dict keys for survivor dict attribs
-        for ak in asset_dict.keys():
-            if ak in ATTRIBUTES.attributes:
-                self.update_attribute(ak, asset_dict[ak])
-            if ak in self.abs_value_attribs:
-                self.set_attribute(ak, asset_dict[ak])
+        for asset_k, asset_v in asset_dict.items():
+            if (
+                isinstance(asset_v, int) and
+                not isinstance(asset_v, bool) and
+                self.DATA_MODEL.is_valid(asset_k, asset_v, log_errors=True)
+            ):
+                model = getattr(self.DATA_MODEL, asset_k)
+                if model.get('absolute', False):
+                    self.set_attribute(asset_k, asset_v, save=False)
+                else:
+                    self.update_attribute(asset_k, asset_v, save=False)
 
         # RETIRED mostly this is for the 'Fear of the Dark' disorder, TBH
         if 'retire' in asset_dict.keys():
@@ -1009,13 +953,13 @@ class Survivor(models.UserAsset):
 
         # 4.) EPITHETS - check for 'epithet' key
         if asset_dict.get("epithet", None) is not None:
-            self.add_game_asset("epithets", asset_dict["epithet"], save=save)
+            self.add_game_asset("tags", asset_dict["epithet"], save=save)
 
         # 5.) AFFINITIES - some assets add permanent affinities
         if asset_dict.get('affinities', None) is not None:
             self.update_affinities(asset_dict["affinities"])
 
-        # 6.) RELATED - add any related 
+        # 6.) RELATED - add any related
         if apply_related and asset_dict.get("related", None) is not None:
             self.logger.info("Automatically applying %s related asset handles to %s" % (len(asset_dict["related"]), self))
             for related_handle in asset_dict["related"]:
@@ -1101,20 +1045,23 @@ class Survivor(models.UserAsset):
 
             # filter out 'strain' fighting arts that we haven't unlocked
             for k in list(available.keys()):
-                if A.get_asset(k).get('strain_milestone', None) != None:
+                if A.get_asset(k).get('strain_milestone', None) is not None:
                     if A.get_asset(k)['strain_milestone'] not in self.Settlement.settlement['strain_milestones']:
                         del available[k]
 
             asset_handle = random.choice(list(available.keys()))
-            self.logger.info("%s selected '%s' asset handle at random." % (self, asset_handle))
+            info = "%s selected '%s' asset handle at random."
+            self.logger.info(info % (self, asset_handle))
 
 
         #   4.) try to get the asset; bomb out if we can't
-        asset_dict = A.get_asset(asset_handle)
+        asset_dict = A.get_asset(
+            asset_handle, raise_exception_if_not_found=False
+        )
         if asset_dict is None:
-            msg = "%s.Assets() class does not include handle '%s'!" % (asset_class, asset_handle)
-            self.logger.exception(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
+            err = "%s.Assets() class does not include handle '%s'!"
+            err = err % (asset_class, asset_handle)
+            raise utils.InvalidUsage(err, status_code=400)
 
 
         # exit preprocessing with a valid class name and asset dictionary
@@ -1133,7 +1080,7 @@ class Survivor(models.UserAsset):
         """
 
         # no param enforcement here
-        for color in ['red','green','blue']:
+        for color in ['red', 'green', 'blue']:
             self.survivor["affinities"][color] = self.params.get(color, 0)
 
         # log it
@@ -1250,8 +1197,8 @@ class Survivor(models.UserAsset):
 
     @models.web_method
     def set_color_scheme(self):
-        """ Sets (or unsets) the survivor's top-level 'color_scheme' attribute.
-        """
+        ''' Web-only method that processes a request to update the survivor's
+        color_scheme attribute. '''
 
         # first, handle unsets
         if (
@@ -1263,12 +1210,13 @@ class Survivor(models.UserAsset):
             self.log_event(msg % (request.User.login, self.pretty_name()))
             self.save()
             return True
-        elif (
+
+        if (
             'unset' in self.params and
             self.survivor.get('color_scheme', None) is None
         ):
             msg = '%s Ignoring bogus request to unset color scheme...' % self
-            self.logger.warn(msg)
+            self.logger.warning(msg)
             return False
 
         self.check_request_params(['handle'])
@@ -1329,18 +1277,24 @@ class Survivor(models.UserAsset):
         """ Much like the set_many_attributes() route/method, this one WILL ONLY
         WORK WITH A REQUEST object present.
 
-        Iterates over a list of assets to add and calls add_game_asset() once for
-        every asset in the array. """
+        Iterates over a list of assets to add and calls add_game_asset() once
+        for every asset in the array. """
 
         # initialize and sanity check!
         self.check_request_params(['game_assets','action'])
         action = self.params['action']
         updates = self.params['game_assets']
 
-        if type(updates) != list:
-            raise utils.InvalidUsage("The add_many_game_assets() method requires the 'assets' param to be an array/list!")
-        elif action not in ['add','rm']:
-            raise utils.InvalidUsage("add_many_game_assets() 'action' param must be 'add' or 'rm'.")
+#        if type(updates) != list:
+        if not isinstance(updates, list):
+            err = (
+                "The add_many_game_assets() method requires the 'assets' param "
+                "to be an array/list!"
+            )
+            raise utils.InvalidUsage(err)
+        if action not in ['add','rm']:
+            err = "add_many_game_assets() 'action' param must be 'add' or 'rm'."
+            raise utils.InvalidUsage(err)
 
         for u in updates:
             asset_class = u.get('type', None)
@@ -1349,9 +1303,10 @@ class Survivor(models.UserAsset):
             err = "set_many_game_assets() is unable to process hash: %s" % u
             usg = " Should be: {handle: 'string', type: 'string'}"
             err_msg = err + usg
+
             if asset_class is None:
                 raise utils.InvalidUsage(err_msg)
-            elif asset_handle is None:
+            if asset_handle is None:
                 raise utils.InvalidUsage(err_msg)
 
             if action == 'add':
@@ -1385,7 +1340,7 @@ class Survivor(models.UserAsset):
             weak_spot = weak_spot.capitalize() # idiot-proof
 
             # sanity check
-            if weak_spot not in ATTRIBUTES.armor_locations:
+            if weak_spot not in self.DATA_MODEL.category('armor_location'):
                 err = "'%s' is not a valid armor location!"
                 raise utils.InvalidUsage(err % weak_spot)
 
@@ -1409,12 +1364,16 @@ class Survivor(models.UserAsset):
         asset_class = self.params['type']
         asset_handles = self.params['handles']
 
-        if asset_class not in ATTRIBUTES.game_asset_keys:
+        if asset_class not in self.DATA_MODEL.category('game_asset_list'):
             err = (
                 "The replace_game_assets() method cannot modify asset type "
                 "'%s'. Allowed types include: %s"
             )
-            raise utils.InvalidUsage(err % (asset_class, ATTRIBUTES.game_asset_keys))
+            raise utils.InvalidUsage(
+                err % (
+                    asset_class, self.DATA_MODEL.category('game_asset_list')
+                )
+            )
 
         # first, turn our two lists into dictionaries where we count the handles
         current_dict = {h: self.survivor[asset_class].count(h) for h in self.survivor[asset_class]}
@@ -1427,20 +1386,20 @@ class Survivor(models.UserAsset):
         for h in current_dict.keys():
             delta = current_dict[h] - incoming_dict.get(h, 0)
             if delta > 0:
-                for i in range(delta):
+                for dummy in range(delta):
                     handles_to_rm.append(h)
 
         handles_to_add = []
         for h in incoming_dict.keys():
             delta = incoming_dict[h] - current_dict.get(h, 0)
             if delta > 0:
-                for i in range(delta):
+                for dummy in range(delta):
                     handles_to_add.append(h)
 
 
         # bail if we've got no changes
         if handles_to_add == [] and handles_to_rm == []:
-            self.logger.warn('Ignoring bogus replace_game_assets() operation: no changes to make...')
+            self.logger.warning('Ignoring bogus replace_game_assets() operation: no changes to make...')
             return True
 
         # otherwise, if we're doing changes, do them one at a time
@@ -1452,6 +1411,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
+    @models.web_method
     def rm_game_asset(self, asset_class=None, asset_handle=None, rm_related=True, save=True):
         """ The inverse of the add_game_asset() method, this one most all the
         same stuff, except it does it in reverse order:
@@ -1467,20 +1427,26 @@ class Survivor(models.UserAsset):
 
         # 1.) fail gracefully if this is a bogus request
         if asset_dict["handle"] not in self.survivor[asset_class]:
-            self.logger.warn("%s Attempt to remove non-existent key '%s' from '%s'. Ignoring..." % (self, asset_dict["handle"], asset_class))
+            self.logger.warning("%s Attempt to remove non-existent key '%s' from '%s'. Ignoring..." % (self, asset_dict["handle"], asset_class))
             return False
 
         # 2.) STATUS - unset status flags if they're in the dict
-        for flag in self.flags:
+        for flag in self.DATA_MODEL.category('flag'):
             if asset_dict.get(flag, None) is True:
                 self.set_status_flag(flag, unset=True)
 
         # 3.) ATTRIBS - now check asset dict keys for survivor dict attribs
-        for ak in asset_dict.keys():
-            if ak in ATTRIBUTES.attributes:
-                self.update_attribute(ak, -asset_dict[ak])
-            if ak in self.abs_value_attribs:
-                self.default_attribute(ak)
+        for asset_k, asset_v in asset_dict.items():
+            if (
+                isinstance(asset_v, int) and
+                not isinstance(asset_v, bool) and
+                self.DATA_MODEL.is_valid(asset_k, asset_v, log_errors=True)
+            ):
+                model = getattr(self.DATA_MODEL, asset_k)
+                if model.get('absolute', False):
+                    self.default_attribute(asset_k, save=False)
+                else:
+                    self.update_attribute(asset_k, asset_v, save=False)
 
         # RETIRED mostly this is for the 'Fear of the Dark' disorder, TBH
         if 'retire' in asset_dict.keys():
@@ -1488,13 +1454,13 @@ class Survivor(models.UserAsset):
 
         # 4.) EPITHETS - check for 'epithet' key
         if asset_dict.get("epithet", None) is not None:
-            self.rm_game_asset("epithets", asset_dict["epithet"])
+            self.rm_game_asset("tags", asset_dict["epithet"])
 
         # 5.) AFFINITIES - some assets add permanent affinities: rm those
         if asset_dict.get('affinities', None) is not None:
             self.update_affinities(asset_dict["affinities"], operation="rm")
 
-        # 6.) RELATED - rm any related 
+        # 6.) RELATED - rm any related
         if rm_related and asset_dict.get("related", None) is not None:
             self.logger.info("Automatically removing %s related asset handles from %s" % (len(asset_dict["related"]), self))
             for related_handle in asset_dict["related"]:
@@ -1642,7 +1608,7 @@ class Survivor(models.UserAsset):
 
 
     @models.web_method
-    def update_attribute(self, attribute=None, modifier=None):
+    def update_attribute(self, attribute=None, modifier=None, save=True):
         """ Adds 'modifier' value to self.survivor value for 'attribute'. """
 
         if attribute is None or modifier is None:
@@ -1652,38 +1618,23 @@ class Survivor(models.UserAsset):
 
         # hand off to update_survival or damage_brain if that's the shot
         if attribute == 'survival':
-            self.update_survival(modifier)
-            return True
-        elif attribute == 'brain_event_damage':
-            self.damage_brain(modifier)
-            return True
+            return self.set_survival(
+                value = self.survivor['survival'] + modifier,
+                save=save
+            )
+        if attribute == 'brain_event_damage':
+            return self.__damage_brain(modifier)
 
-        # sanity check!
-        if attribute not in self.survivor.keys():
-            msg = "%s does not have '%s' attribute!" % (self, attribute)
-            self.logger.exception(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
-        elif type(self.survivor[attribute]) != int:
-            msg = "%s '%s' attribute is not an int type! (It's a '%s')"
-            err = msg % (self, attribute, type(self.survivor[attribute]))
-            self.logger.exception(err)
-            raise utils.InvalidUsage(err, status_code=400)
-        else:
-            pass
+        # validate the change
+        self.DATA_MODEL.is_valid(attribute, modifier, raise_on_failure=True)
 
-        # ok, do it, but enforce mins
-        self.survivor[attribute] = self.survivor[attribute] + modifier
-        if attribute in self.min_zero_attribs and self.survivor[attribute] < 0:
-            self.survivor[attribute] = 0
-        if attribute in self.min_one_attribs and self.survivor[attribute] < 1:
-            self.survivor[attribute] = 1
+        # make the update; control for min/max
+        self.survivor[attribute] = self.DATA_MODEL.minmax(
+            attribute,
+            self.survivor[attribute] + modifier
+        )
 
-        # force a max of 9 for courage and understanding
-        if attribute in ['Courage','Understanding']:
-            if self.survivor[attribute] > 9:
-                self.survivor[attribute] = 9
-
-        # log completion of the update 
+        # log completion of the update
         self.log_event("%s updated %s attribute '%s' to %s" % (
                 request.User.login,
                 self.pretty_name(),
@@ -1691,45 +1642,30 @@ class Survivor(models.UserAsset):
                 self.survivor[attribute]
             )
         )
-        self.save()
-
-
-    def update_returning_survivor_years(self, add_year=None, save=True):
-        """ Adds the current LY to the survivor's 'returning_survivor' attrib
-        (i.e. list) by default. Set 'add_year' to any integer to add an arbitrary
-        value. """
-
-        if add_year is None:
-            add_year = self.Settlement.get_current_ly()
-
-        if not 'returning_survivor' in self.survivor.keys():
-            self.survivor['returning_survivor'] = []
-
-        self.survivor['returning_survivor'].append(add_year)
-
-        self.survivor['returning_survivor'] = list(set(self.survivor['returning_survivor']))
 
         if save:
             self.save()
 
 
-    @models.deprecated
-    def update_survival(self, modifier=None, save=True):
-        """ Adds 'modifier' to survivor["survival"]. Respects settlement rules
-        about whether to enforce the Survival Limit. Will not go below zero.
+    def update_returning_survivor_years(self, add_year=None, save=True):
+        """ Adds the current LY to the survivor's 'returning_survivor' attrib
+        (i.e. list) by default. Set 'add_year' to any integer to add an
+        arbitrary value. """
 
-        Important! This method is only used internally by the API and we
-        intentionally DO NOT expose it to external users.
-        """
+        if add_year is None:
+            add_year = self.Settlement.get_current_ly()
 
-        if modifier is None:
-            raise utils.InvalidUsage("The 'modifier' kwarg is required!")
+        if 'returning_survivor' not in self.survivor.keys():
+            self.survivor['returning_survivor'] = []
 
-        return self.set_survival(
-            value = self.survivor['survival'] + modifier,
-            save=save
+        self.survivor['returning_survivor'].append(add_year)
+
+        self.survivor['returning_survivor'] = list(
+            set(self.survivor['returning_survivor'])
         )
 
+        if save:
+            self.save()
 
 
     #
@@ -1748,16 +1684,7 @@ class Survivor(models.UserAsset):
         #   sanity check
         #
 
-        locations = [
-            'brain_damage_light',
-            'head_damage_heavy',
-            'arms_damage_light', 'arms_damage_heavy',
-            'body_damage_light', 'body_damage_heavy',
-            'waist_damage_light', 'waist_damage_heavy',
-            'legs_damage_light', 'legs_damage_heavy',
-        ]
-
-        if loc not in locations:
+        if loc not in self.DATA_MODEL.category('damage_location'):
             err = "The damage location '%s' cannot be toggled!" % loc
             raise utils.InvalidUsage(err)
 
@@ -1879,7 +1806,6 @@ class Survivor(models.UserAsset):
             self.survivor['cause_of_death'] = "Unspecified"
             if 'cause_of_death' in self.params:
                 try:
-#                    self.survivor['cause_of_death'] = self.params["cause_of_death"].encode('ascii','ignore')
                     self.survivor['cause_of_death'] = str(self.params["cause_of_death"])
                 except Exception as e:
                     self.logger.exception(e)
@@ -1899,7 +1825,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    def damage_brain(self, dmg=0):
+    def __damage_brain(self, dmg=0):
         """ Inflicts brain event damage on the survivor."""
 
         remainder = self.survivor['Insanity'] - dmg
@@ -1936,7 +1862,7 @@ class Survivor(models.UserAsset):
         #
 
         if not 'departing' in self.survivor.keys():
-            self.logger.warn('%s is not a Departing Survivor! Skipping bogus return() request...' % self)
+            self.logger.warning('%s is not a Departing Survivor! Skipping bogus return() request...' % self)
 
         def finish():
             """ Private method for concluding the return. Enhances DRYness. """
@@ -1956,7 +1882,7 @@ class Survivor(models.UserAsset):
             self.update_returning_survivor_years(save=False)
 
         # 2.) remove armor
-        for loc in ATTRIBUTES.armor_locations:
+        for loc in self.DATA_MODEL.category('armor_location'):
             self.survivor[loc] = 0
 
         # 3.) remove tokens/gear modifiers
@@ -2016,38 +1942,43 @@ class Survivor(models.UserAsset):
         #
         # divert certain attributes to specialized set methods:
         #
-        for divert in ['bleeding_tokens', 'sex', 'survival', 'public']:
+        for divert in [
+            'bleeding_tokens',
+            'public',
+            'sex',
+            'survival',
+            'weapon_proficiency_type'
+        ]:
             if attrib == divert:
                 return getattr(self, 'set_%s' % divert)()
 
         # if we're still here, it's an integer that we're trying to set
-        value = int(self.params["value"])
+        value = int(value)
         if value is None:
             value = 0
 
-        # sanity check!
-        if attrib not in self.survivor.keys():
-            msg = "%s does not have '%s' attribute!" % (self, attrib)
-            self.logger.exception(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
-        elif type(self.survivor[attrib]) != int:
-            msg = "%s '%s' attribute is not an int type!" % (self, attrib)
-            self.logger.exception(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
+        # validate
+        self.DATA_MODEL.is_valid(attrib, value, raise_on_failure=True)
 
         #   necessity check - issue 434
         if self.survivor[attrib] == value:
-            self.logger.debug("%s No change to '%s' attrib (%s -> %s). Ignoring..." % (self, attrib, self.survivor[attrib], value))
+            err = "%s No change to '%s' attrib (%s -> %s). Ignoring..."
+            self.logger.info(err % (self, attrib, self.survivor[attrib], value))
             return True
 
-        self.survivor[attrib] = value
-        self.log_event("%s set %s '%s' to %s" % (request.User.login, self.pretty_name(), attrib, value))
+        self.survivor[attrib] = self.DATA_MODEL.minmax(attrib, value)
 
-        # save is optional; do it now if we're doing it
+        self.log_event(
+            "%s set %s '%s' to %s" % (
+                request.User.login, self.pretty_name(), attrib, value
+            )
+        )
+
         if save:
             self.save()
 
 
+    @models.web_method
     def set_many_attributes(self):
         """ This basically reads a list of attributes to update and then updates
         them in the order they appear. """
@@ -2061,22 +1992,37 @@ class Survivor(models.UserAsset):
             detail_updates = self.params['attribute_details']
 
         # type check
-        if type(attr_updates) != list or type(detail_updates) != list:
-            raise utils.InvalidUsage("The set_many_attributes() method requires 'attributes' and 'attribute_details' params to be array/list types!")
+#        if type(attr_updates) != list or type(detail_updates) != list:
+        if (
+            not isinstance(attr_updates, list) or not
+            isinstance(detail_updates, list)
+        ):
+            err = (
+                "The set_many_attributes() method requires 'attributes' and "
+                "'attribute_details' params to be array/list types!"
+            )
+            raise utils.InvalidUsage(err)
 
         # do attr_updates first
         for u in attr_updates:
-            if type(u) != dict:
-                raise utils.InvalidUsage("The set_many_attributes() method 'attributes' must be hashes!")
+#            if type(u) != dict:
+            if not isinstance(u, dict):
+                err = (
+                    "The set_many_attributes() method 'attributes' must be "
+                    "hashes (i.e. dictionaries)!"
+                )
+                raise utils.InvalidUsage(err)
+
             attrib = u.get('attribute', None)
             value = u.get('value', None)
 
             err = "set_many_attributes() is unable to process hash: %s" % u
             usg = " Should be: {attribute: 'string', value: 'int'}"
             err_msg = err + usg
+
             if attrib is None:
                 raise utils.InvalidUsage(err_msg)
-            elif value is None:
+            if value is None:
                 raise utils.InvalidUsage(err_msg)
 
             if self.survivor[attrib] != value:
@@ -2084,8 +2030,13 @@ class Survivor(models.UserAsset):
 
         # do detail updates
         for u in detail_updates:
-            if type(u) != dict:
-                raise utils.InvalidUsage("The set_many_attributes() method 'attribute_details' must be hashes!")
+#            if type(u) != dict:
+            if not isinstance(u, dict):
+                err = (
+                    "The set_many_attributes() method 'attribute_details' must "
+                    "be hashes (dictionaries)!"
+                )
+                raise utils.InvalidUsage(err)
             attrib = u.get('attribute',None)
             detail = u.get('detail',None)
             value  = u.get('value',None)
@@ -2194,23 +2145,21 @@ class Survivor(models.UserAsset):
         current_constellation = self.survivor.get("constellation", False)
 
         # figure out if we're unsetting
-        if unset is None:
-            if "unset" in self.params:
-                unset = True
-            else:
-                unset = False
+        if unset is not None or self.params.get('unset', False):
+            unset = True
 
         # if we're going to unset, do unset
         if unset and current_constellation:
             del self.survivor["constellation"]
             self.log_event("%s unset Constellation" % request.User.login)
             self.rm_game_asset(
-                "epithets",
+                "tags",
                 "the_%s" % current_constellation.lower()
             )
             return True
-        elif unset and not current_constellation:
-            self.logger.warn(
+
+        if unset and not current_constellation:
+            self.logger.warning(
                 "%s has no Constellation! Ignoring unset request..." % (self)
             )
             return False
@@ -2220,46 +2169,52 @@ class Survivor(models.UserAsset):
             self.check_request_params(['constellation'])
             constellation = self.params["constellation"]
 
-            # sanity check for issue #47
-            if constellation is None:
-                raise utils.InvalidUsage('Constellation cannot be None (null)!')
-
         # check if this is redundant, if not, do the update
         if current_constellation == constellation:
             err = "%s Constellation is already %s. Ignoring request..."
-            self.logger.warn(err % (self.pretty_name(), constellation))
+            self.logger.warning(err % (self.pretty_name(), constellation))
             return False
-        else:
-            if current_constellation:
-                self.rm_game_asset(
-                    "epithets",
-                    "the_%s" % current_constellation.lower()
-                )
 
-            # make the update
-            self.survivor["constellation"] = constellation
-            self.add_game_asset("epithets", "the_%s" % constellation.lower())
 
-            # event log the update
-            self.log_event(
-                "%s set %s constellation to '%s'" % (
-                    request.User.login,
-                    self.pretty_name(),
-                    constellation
-                ),
-                event_type = "potstars_constellation"
+        #
+        # if we're still here, get ready to do the work
+        #
+
+        # validate first
+        self.DATA_MODEL.is_valid(
+            'constellation', constellation, raise_on_failure=True
+        )
+
+        # unset the current constellation's related game assets
+        if current_constellation:
+            self.rm_game_asset(
+                "tags",
+                "the_%s" % current_constellation.lower()
             )
 
-            # event log the PotStars event
-            if not current_constellation:
-                log_msg = "%s has become one of the People of the Stars!"
-                self.log_event(
-                    log_msg % self.pretty_name(),
-                    event_type="potstars_constellation"
-                )
+        # make the update
+        self.survivor["constellation"] = constellation
+        self.add_game_asset("tags", "the_%s" % constellation.lower())
 
-            # only save if we get this far
-            self.save()
+        # event log the update
+        self.log_event(
+            "%s set %s constellation to '%s'" % (
+                request.User.login,
+                self.pretty_name(),
+                constellation
+            ),
+            event_type = "potstars_constellation"
+        )
+
+        # event log the PotStars event
+        if not current_constellation:
+            log_msg = "%s has become one of the People of the Stars!"
+            self.log_event(
+                log_msg % self.pretty_name(),
+                event_type="potstars_constellation"
+            )
+
+        self.save()
 
 
     @models.web_method
@@ -2275,13 +2230,15 @@ class Survivor(models.UserAsset):
         # sanity checks
         if new_email == self.survivor["email"]:
             msg = "%s Survivor email unchanged! Ignoring request..." % self
-            self.logger.warn(msg)
+            self.logger.warning(msg)
             return Response(response=msg, status=200)
-        elif not '@' in new_email:
+
+        if not '@' in new_email:
             msg = "'%s Survivor email '%s' does not look like an email address! Ignoring..." % (self, new_email)
-            self.logger.warn(msg)
+            self.logger.warning(msg)
             return Response(response=msg, status=422)
-        elif utils.mdb.users.find_one({'login': new_email}) is None:
+
+        if utils.mdb.users.find_one({'login': new_email}) is None:
             msg = "The email address '%s' is not associated with any known user." % new_email
             self.logger.error(msg)
             return Response(response=msg, status=422)
@@ -2322,7 +2279,8 @@ class Survivor(models.UserAsset):
 
         # bail if we don't have a change.
         if new_name == self.survivor["name"]:
-            self.logger.warn("%s Survivor name unchanged! Ignoring set_name() call..." % self)
+            warn = "%s Survivor name unchanged! Ignoring set_name() call..."
+            self.logger.warning(warn % self)
             return True
 
         # now do it!
@@ -2330,11 +2288,22 @@ class Survivor(models.UserAsset):
         self.survivor["name"] = new_name
 
         if save:
-            self.log_event("%s renamed %s to %s" % (request.User.login, old_name, new_name))
+            self.log_event(
+                "%s renamed %s to %s" % (
+                    request.User.login, old_name, new_name
+                )
+            )
             self.save()
 
-        if update_survival and old_name.upper() == "ANONYMOUS" and new_name.upper() != old_name.upper():
-            self.update_survival(1, save=save)
+        if (
+            update_survival and
+            old_name.upper() == "ANONYMOUS" and
+            new_name.upper() != old_name.upper()
+        ):
+            self.set_survival(
+                value = self.survivor['survival'] + 1,
+                save=save
+            )
 
 
     @models.web_method
@@ -2353,15 +2322,17 @@ class Survivor(models.UserAsset):
             raise utils.InvalidUsage(err)
 
         new_parent = utils.mdb.survivors.find_one({"_id": oid})
+
         if new_parent is None:
             raise utils.InvalidUsage("Parent OID '%s' does not exist!" % oid)
-        elif new_parent['settlement'] != self.survivor['settlement']:
+
+        if new_parent['settlement'] != self.survivor['settlement']:
             err = 'Parent and child must belong to the same settlement!'
             raise utils.InvalidUsage(err)
 
         if oid == self.survivor.get(role, None):
             err = "%s %s is already %s. Ignoring request..."
-            self.logger.warn(err % (self, role, new_parent["name"]))
+            self.logger.warning(err % (self, role, new_parent["name"]))
             return True
 
         self.survivor[role] = ObjectId(oid)
@@ -2396,8 +2367,9 @@ class Survivor(models.UserAsset):
             self.log_event("%s no longer has a partner." % self.pretty_name())
             self.save()
             return True
-        elif partner_oid == 'UNSET' and not 'partner_id' in self.survivor.keys():
-            self.logger.warn('%s Ignoring bogus request to unset partner...' % self)
+
+        if partner_oid == 'UNSET' and not 'partner_id' in self.survivor.keys():
+            self.logger.warning('%s Ignoring bogus request to unset partner...' % self)
             return True
 
 
@@ -2411,9 +2383,10 @@ class Survivor(models.UserAsset):
         # ok, we've got a good OID for the new partner, let's check a.) whether
         # this is the current partner or b.) whether this is an update
         if partner['_id'] == self.survivor.get('partner_id', None):
-            self.logger.warn("%s Ignoring bogus request to set partner (already set)." % self)
+            self.logger.warning("%s Ignoring bogus request to set partner (already set)." % self)
             return True
-        elif self.survivor.get('partner_id', None) is not None and partner['_id'] != self.survivor['partner_id']:
+
+        if self.survivor.get('partner_id', None) is not None and partner['_id'] != self.survivor['partner_id']:
             if update_partner:
                 P = Survivor(_id=self.survivor['partner_id'])
                 P.set_partner(partner_oid='UNSET', update_partner=False)
@@ -2434,7 +2407,7 @@ class Survivor(models.UserAsset):
         """ Set to true or false. Backs off to request params is 'retired' kwarg
         is None. Does a little user-friendliness/sanity-checking."""
 
-        if retired == None:
+        if retired is None:
             self.check_request_params(["retired"])
             retired=self.params["retired"]
 
@@ -2446,7 +2419,7 @@ class Survivor(models.UserAsset):
             self.survivor["retired"] == retired
         ):
             err = "%s Already has 'retired' = '%s'. Ignoring bogus request..."
-            self.logger.warn(err % (self, retired))
+            self.logger.warning(err % (self, retired))
             return True
 
         self.survivor["retired"] = retired
@@ -2489,11 +2462,10 @@ class Survivor(models.UserAsset):
             self.save()
             self.log_event("%s unset savior status for %s" % (request.User.login, self.pretty_name()))
             return True
-        elif unset and not self.is_savior():
+
+        if unset and not self.is_savior():
             self.logger.error("%s Not a savior: cannot unset savior status!" % (self))
             return False
-        else:
-            pass    # moving along...
 
         # now handle 'set' operations
         if color is None:
@@ -2507,7 +2479,7 @@ class Survivor(models.UserAsset):
 
         # remove previous if we're switching
         if self.is_savior() and color != self.is_savior():
-            self.logger.warn("%s changing savior color from %s to %s..." % (self, self.is_savior(), color))
+            self.logger.warning("%s changing savior color from %s to %s..." % (self, self.is_savior(), color))
             s_dict = self.Saviors.get_asset_by_color(self.is_savior())
             for ai_handle in s_dict["abilities_and_impairments"]:
                 self.rm_game_asset("abilities_and_impairments", ai_handle, rm_related=False)
@@ -2576,9 +2548,9 @@ class Survivor(models.UserAsset):
         self.survivor[handle] = value
 
         if value and 'epithet' in sa_dict:
-            self.add_game_asset('epithets', sa_dict['epithet'])
+            self.add_game_asset('tags', sa_dict['epithet'])
         elif not value and 'epithet' in sa_dict:
-            self.rm_game_asset('epithets', sa_dict['epithet'])
+            self.rm_game_asset('tags', sa_dict['epithet'])
 
         if value:
             msg = "%s added '%s' to %s." % (request.User.login, sa_dict['name'], self.pretty_name())
@@ -2592,7 +2564,7 @@ class Survivor(models.UserAsset):
     @models.web_method
     def set_status_flag(self, flag=None, unset=False):
         """ Sets or unsets a status flag, regardless of previous status of that
-        flag. Supported flags can be found at self.flags.
+        flag.
 
         If 'flag' is None, this method assumes that it is being called by the
         request_response() method and will check for incoming params.
@@ -2604,10 +2576,10 @@ class Survivor(models.UserAsset):
             self.check_request_params(['flag'])
             flag = self.params["flag"]
 
-        if 'unset' in self.params or self.params.get('value', None) == False:
+        if 'unset' in self.params or self.params.get('value', None) is False:
             unset = True
 
-        if flag not in self.flags:
+        if flag not in self.DATA_MODEL.category('flag'):
             msg = "Survivor status flag '%s' cannot be set!" % flag
             raise utils.InvalidUsage(msg, status_code=400)
 
@@ -2719,12 +2691,14 @@ class Survivor(models.UserAsset):
 
 
     @models.web_method
-    def set_weapon_proficiency_type(self, handle=None):
+    def set_weapon_proficiency_type(self, handle=None, save=True):
         """ Sets the self.survivor["weapon_proficiency_type"] string to a
         handle. """
 
+        # if this is a request, and has the 'unset' param, process it and
+        #   return immediately
         if self.params.get('unset', None) is not None:
-            self.survivor['weapon_proficiency_type'] = None
+            self.survivor['weapon_proficiency_type'] = ''
             msg = '%s unset weapon proficiency type for %s.' % (
                 request.User.login,
                 self.pretty_name()
@@ -2733,27 +2707,63 @@ class Survivor(models.UserAsset):
             self.save()
             return True
 
+        # now, do normal processing
         if handle is None:
             self.check_request_params(["handle"])
             handle = self.params["handle"]
 
-        W = weapon_proficiency.Assets()
-        h_dict = W.get_asset(handle)
+        # bail if we get a blank/empty handle (it's not a change)
+        if handle == '':
+            return True
 
+        # bail if this is unnecessary
         if self.survivor['weapon_proficiency_type'] == handle:
             self.logger.debug(
                 "%s No change to Weapon Proficiency type. Ignoring..." % self
             )
             return True
 
-        self.survivor["weapon_proficiency_type"] = handle
+        # now, validate, update and log
+        if self.DATA_MODEL.is_valid(
+            'weapon_proficiency_type', handle, raise_on_failure=True
+        ):
+            self.survivor["weapon_proficiency_type"] = handle
+
+        w_dict = self.WeaponProficiency.get_asset(handle)
         msg = "%s set weapon proficiency type to '%s' for %s" % (
             request.User.login,
-            h_dict["handle"],
+            w_dict["name"],
             self.pretty_name()
         )
         self.log_event(msg)
-        self.save()
+
+        #
+        # formerly included in __post_process(); could stand to be DRYer
+        #
+
+        #   specialist
+        if self.survivor.get('Weapon Proficiency', 0) >= 3:
+            if w_dict['specialist_ai'] not in self.survivor['abilities_and_impairments']:
+                info = "%s Weapon specialization reached, but A&I not present!"
+                self.logger.info(info % self)
+                self.add_game_asset(
+                    "abilities_and_impairments",
+                    w_dict['specialist_ai'],
+                    save=False
+                )
+        #   master
+        if self.survivor.get('Weapon Proficiency', 0) == 8:
+            if w_dict['master_ai'] not in self.survivor['abilities_and_impairments']:
+                info = "%s Weapon mastery reached, but A&I not present!"
+                self.logger.info(info % self)
+                self.add_game_asset(
+                    "abilities_and_impairments",
+                    w_dict['master_ai'],
+                    save=False
+                )
+
+        if save:
+            self.save()
 
 
     #
@@ -2761,36 +2771,33 @@ class Survivor(models.UserAsset):
     #
 
     @models.web_method
-    def default_attribute(self, attrib=None):
-        """ This references the ATTRIBUTES.defaults dict to reset attribute
-        values to their defaults. """
+    def default_attribute(self, attrib=None, save=True):
+        ''' Sets 'attrib' to its default value (as defined in the Survivor
+        class data model. '''
 
+        # get the attrib
         if attrib is None:
             self.check_request_params(['attribute'])
             attrib = self.params["attribute"]
 
-        # sanity check!
-        SA = Assets()
-        if attrib not in ATTRIBUTES.defaults.keys():
-            msg = "%s does not have a default value!" % (attrib)
-            self.logger.exception(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
-        if attrib not in self.survivor.keys():
-            msg = "%s does not have '%s' attribute!" % (self, attrib)
-            self.logger.exception(msg)
-            raise utils.InvalidUsage(msg, status_code=400)
+        # get the model
+        model = getattr(self.DATA_MODEL, attrib)
 
-        self.survivor[attrib] = ATTRIBUTES.defaults[attrib]
+        # use the model's default
+        self.survivor[attrib] = model['default']
+
         msg = "%s defaulted %s '%s' to %s"
         self.log_event(
             msg % (
                 request.User.login,
                 self.pretty_name(),
                 attrib,
-                ATTRIBUTES.defaults[attrib]
+                self.survivor[attrib]
             )
         )
-        self.save()
+
+        if save:
+            self.save()
 
 
     @models.web_method
@@ -2815,7 +2822,7 @@ class Survivor(models.UserAsset):
     def reset_damage(self, save=True):
         """ Remove all damage attribs/bools from the survivor. """
 
-        for d in ATTRIBUTES.damage_locations:
+        for d in self.DATA_MODEL.category('damage_location'):
             if d in self.survivor.keys():
                 del self.survivor[d]
 
@@ -2842,9 +2849,11 @@ class Survivor(models.UserAsset):
 
     def get_available_endeavors(self, return_type=None):
         """ Works like a miniature version of the Settlement method of the same
-        name. Returns a list of handles instead of a big-ass JSON thing, however.
+        name. Returns a list of handles instead of a big-ass JSON thing,
+        however.
 
-        Set 'return_type' to dict to get a dictionary instead of a list of handles.
+        Set 'return_type' to dict to get a dictionary instead of a list of
+        handles.
         """
 
         E = endeavors.Assets()
@@ -2857,7 +2866,11 @@ class Survivor(models.UserAsset):
             available = True
             if e_dict.get('requires_returning_survivor', False):
                 r_years = self.survivor.get('returning_survivor', [])
-                if self.get_current_ly() not in r_years and self.get_current_ly() - 1 not in r_years:
+                if (
+                    self.get_current_ly() not in
+                    r_years and
+                    self.get_current_ly() - 1 not in r_years
+                ):
                     available = False
             return available
 
@@ -2918,7 +2931,6 @@ class Survivor(models.UserAsset):
             traits.append("Destined disorder")
 
         # check fighting arts for "Fated Blow", "Frozen Star", "Unbreakable", "Champion's Rite"
-#        for fa in ["Fated Blow","Frozen Star","Unbreakable","Champion's Rite"]:
         FA = fighting_arts.Assets()
         for fa in ['champions_rite', 'fated_blow', 'frozen_star', 'unbreakable']:
             if fa in self.survivor["fighting_arts"]:
@@ -2940,6 +2952,7 @@ class Survivor(models.UserAsset):
         if int(self.survivor["Courage"]) >= 9:
             traits.append("9 Courage (max)")
 
+        # support multiple return_type vars
         if return_type == "active_cells":
             cells = set()
             C = the_constellations.Assets()
@@ -2948,7 +2961,8 @@ class Survivor(models.UserAsset):
                 if t in c_map.keys():
                     cells.add(c_map[t])
             return list(cells)
-        elif return_type == 'available_constellations':
+
+        if return_type == 'available_constellations':
             constellations = set()
             active_cells = self.get_dragon_traits('active_cells')
             C = the_constellations.Assets()
@@ -2960,25 +2974,6 @@ class Survivor(models.UserAsset):
 
         # if no return_type, just return the trait list
         return traits
-
-
-    @models.deprecated
-    def get_epithets(self, return_type=None):
-        """ Returns survivor epithet (handles) as a list, unless the
-        'return_type' kwarg is set to 'pretty', which gets you a nice
-        string. """
-
-        e = self.survivor["epithets"]
-
-        if return_type == "pretty":
-            E = epithets.Assets()
-            output = ""
-            for e_handle in e:
-                e_asset = E.get_asset(e_handle)
-                output += e_asset["name"]
-            return output
-
-        return e
 
 
 
@@ -3080,7 +3075,7 @@ class Survivor(models.UserAsset):
         back. """
 
         parents = []
-        for p in ["father","mother"]:
+        for p in ["father", "mother"]:
             if p in self.survivor.keys():
                 parents.append(self.survivor[p])
 
@@ -3111,7 +3106,7 @@ class Survivor(models.UserAsset):
         def invert_sex(s):
             if s == "M":
                 return "F"
-            elif s == "F":
+            if s == "F":
                 return "M"
 
         for ai_dict in self.list_assets("abilities_and_impairments"):
@@ -3152,7 +3147,7 @@ class Survivor(models.UserAsset):
                         available_actions[sa_key]["available"] = False
                         available_actions[sa_key]["title_tip"] = title_tip
                 elif available:
-                    sa = SA.get_asset(sa_key)
+                    sa = survival_actions.Assets().get_asset(sa_key)
                     sa["available"] = True
                     sa["title_tip"] = title_tip
                     available_actions[sa_key] = sa
@@ -3162,18 +3157,14 @@ class Survivor(models.UserAsset):
         #   action starts here. initialize and set defaults first:
         #
 
-        AI = abilities_and_impairments.Assets()
-        SA = survival_actions.Assets()
-
         available_actions = self.Settlement.get_survival_actions()
-
 
         # check A&Is and FAs/SFAs   # disorders coming soon! TKTK
         attrib_keys = ['abilities_and_impairments', 'fighting_arts']
 
         for ak in attrib_keys:
             for a_dict in self.list_assets(ak):             # iterate assets
-                if "survival_actions" in a_dict.keys():     # check for SA key
+                if "survival_actions" in a_dict.keys():     # check for survival actions key
 
                     # handle 'enable' keys; special logic re: can't use FAs
                     if ak == 'fighting_arts' and self.cannot_use_fighting_arts():
@@ -3181,27 +3172,41 @@ class Survivor(models.UserAsset):
                     else:
                         update_available(
                             a_dict["survival_actions"].get("enable", []),
-                            available = True,
-                            title_tip = "Available due to '%s'" % a_dict["name"],
+                            available=True,
+                            title_tip="Available due to '%s'" % a_dict["name"],
                         )
 
                     # handle 'disable' keys
                     update_available(
                         a_dict["survival_actions"].get("disable", []),
-                        available = False,
-                        title_tip = "Impairment '%s' prevents %s from using this ability." % (a_dict["name"], self.survivor["name"])
+                        available=False,
+                        title_tip="Impairment '%s' prevents %s from using this ability." % (a_dict["name"], self.survivor["name"])
                     )
 
 
         # support JSON return
         if return_type == 'JSON':
             output = []
-            for k, v in available_actions.items():
-                output.append(v)
+            for dummy, action_dict in available_actions.items():
+                output.append(action_dict)
             return sorted(output, key=lambda k: k['sort_order'])
 
         # dict return
         return available_actions
+
+
+    def get_tags(self, return_type=None):
+        ''' Returns survivor tags as a list. '''
+
+        if return_type == "pretty":
+            AssetCollection = tags.Assets()
+            output = ""
+            for t_handle in self.survivor['tags']:
+                t_asset = AssetCollection.get_asset(t_handle)
+                output += t_asset["name"]
+            return output
+
+        return self.survivor['tags']
 
 
 
@@ -3397,14 +3402,11 @@ class Survivor(models.UserAsset):
 
 
 
-
-
-
     #
-    #   conversion and normalization methods
+    #   private conversion and normalization methods
     #
 
-    def baseline(self):
+    def __baseline(self):
         """ Baselines the MDB doc to bring it into compliance with our general
         data model for survivors.
 
@@ -3416,59 +3418,64 @@ class Survivor(models.UserAsset):
         be portable, so we inflict/enforce a lot of the model on the 'database'.
         """
 
-        if not "meta" in self.survivor.keys():
-            self.logger.warn("Creating 'meta' key for %s" % self)
+        if "meta" not in self.survivor.keys():
+            self.logger.warning("Creating 'meta' key for %s" % self)
             self.survivor["meta"] = {}
             self.perform_save = True
 
-        if not "attribute_detail" in self.survivor.keys():
+        if "attribute_detail" not in self.survivor.keys():
             self.reset_attribute_details(save=False)
             self.perform_save = True
 
-        if not 'affinities' in self.survivor.keys():
-            self.survivor["affinities"] = {"red":0,"blue":0,"green":0}
+        if 'affinities' not in self.survivor.keys():
+            self.survivor["affinities"] = self.DATA_MODEL.affinities['default']
             self.perform_save = True
 
-        if not 'bleeding_tokens' in self.survivor.keys():
+        if 'bleeding_tokens' not in self.survivor.keys():
             self.survivor["bleeding_tokens"] = 0
             self.logger.info("Adding baseline 'bleeding_tokens' (int) attrib to %s" % self)
             self.perform_save = True
 
-        if not 'max_bleeding_tokens' in self.survivor.keys():
+        if 'max_bleeding_tokens' not in self.survivor.keys():
             self.survivor["max_bleeding_tokens"] = 5
             self.logger.info("Adding baseline 'max_bleeding_tokens' (int) attrib to %s" % self)
             self.perform_save = True
 
-        if not 'cursed_items' in self.survivor.keys():
+        if 'cursed_items' not in self.survivor.keys():
             self.survivor["cursed_items"] = []
             self.perform_save = True
 
-        if not 'public' in self.survivor.keys():
+        if 'public' not in self.survivor.keys():
             self.survivor["public"] = False
             self.perform_save = True
         elif self.survivor["public"] == "checked":
             self.survivor["public"] = True
             self.perform_save = True
 
-        if not 'fighting_arts_levels' in self.survivor.keys():
+        if 'fighting_arts_levels' not in self.survivor.keys():
             self.survivor['fighting_arts_levels'] = {}
             self.perform_save = True
 
         if 'in_hunting_party' in self.survivor.keys():
-            if self.survivor['in_hunting_party'] == True:
+            if self.survivor['in_hunting_party'] is True:
                 self.survivor['departing'] = True
             else:
                 self.survivor['departing'] = False
             del self.survivor['in_hunting_party']
-            self.logger.info("Removed deprecated attribute 'in_hunting_party' from %s" % self)
+            msg = "Removed deprecated attribute 'in_hunting_party' from %s"
+            self.logger.info(msg % self)
             self.perform_save = True
 
-        if not 'favorite' in self.survivor.keys():
+        if 'favorite' not in self.survivor.keys():
             self.survivor["favorite"] = []
             self.perform_save = True
 
+        if self.survivor.get('epithets', None) is not None:
+            self.__deprecate_epithets()
+            self.perform_save = True
 
-    def bug_fixes(self, force_save=False):
+
+    def __bug_fixes(self, force_save=False):
         """ This should be called during normalize() BEFORE you call baseline().
 
         Compare with the way this works on the Settlement object. Make sure all
@@ -3478,13 +3485,19 @@ class Survivor(models.UserAsset):
 
         # 2017-10-25 The "king's_step" bug
         if "king's_step" in self.survivor['fighting_arts']:
-            self.logger.debug("%s King's Step bad asset handle detected! Fixing..." % (self))
+            msg = "%s King's Step bad asset handle detected! Fixing..."
+            self.logger.debug(msg % self)
             self.survivor['fighting_arts'].remove("king's_step")
             self.survivor['fighting_arts'].append('kings_step')
             self.perform_save = True
 
         # 2017-10-28 The "weak spot" bug (other bad A&Is)
-        for bad_handle in ['Weak Spot', 'Intracranial hemmorhage','Weak spot: arms', "Weak spot is body."]:
+        for bad_handle in [
+            'Weak Spot',
+            'Intracranial hemmorhage',
+            'Weak spot: arms',
+            "Weak spot is body.",
+        ]:
             if bad_handle in self.survivor['abilities_and_impairments']:
                 self.logger.debug("%s Bad asset handle '%s' detected! Fixing..." % (self, bad_handle))
                 self.survivor['abilities_and_impairments'].remove(bad_handle)
@@ -3494,7 +3507,7 @@ class Survivor(models.UserAsset):
         # https://github.com/toconnell/kdm-manager/issues/341
 
         if 'acid_palms' in self.survivor['abilities_and_impairments']:
-            self.logger.warn("[BUG] Detected 'acid_palms' in survivor A&I list!")
+            self.logger.warning("[BUG] Detected 'acid_palms' in survivor A&I list!")
             self.survivor['abilities_and_impairments'].remove('acid_palms')
             if 'gorm' in self.Settlement.get_expansions():
                 self.survivor['abilities_and_impairments'].append('acid_palms_gorm')
@@ -3513,68 +3526,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-    def duck_type(self):
-        """ Duck-types certain survivor sheet attributes, e.g. to make sure they
-        didn't experience a type change due to bad form input, etc. """
-
-        # enforce ints first
-        int_types = [
-            "Insanity",
-            "Accuracy",
-            "Evasion",
-            "Luck",
-            "Movement",
-            "Speed",
-            "Strength",
-            "Arms",
-            "Body",
-            "Head",
-            "Legs",
-            "Waist",
-            "Understanding",
-            "Courage",
-            "survival",
-            "hunt_xp",
-            "bleeding_tokens",
-            "max_bleeding_tokens",
-            "Weapon Proficiency",
-        ]
-
-        for attrib in int_types:
-            if type(self.survivor[attrib]) != int:
-                self.logger.warn("%s Duck-typed '%s' attrib to int." % (self, attrib))
-                self.survivor[attrib] = int(self.survivor[attrib])
-                self.perform_save = True
-
-        # now translate checkbox ui stuff to bools
-        for checked_attrib in ['dead','sotf_reroll','retired']:
-            if checked_attrib in self.survivor.keys() and self.survivor[checked_attrib] == 'checked':
-                self.survivor[checked_attrib] = True
-                self.logger.warn("%s Duck-typed '%s' attrib from 'checked' to True" % (self, checked_attrib))
-                self.perform_save = True
-
-        if type(self.survivor["name"]) not in [str]:
-            self.survivor["name"] = str(self.survivor["name"])
-            self.perform_save = True
-
-
-    def min_attributes(self):
-        """ Applies assorted game rules to the survivor. """
-
-        for attrib in self.min_zero_attribs:
-            if self.survivor[attrib] < 0:
-                self.survivor[attrib] = 0
-                self.logger.warn("%s Survivor '%s' attrib normalized to minimum value of zero." % (self, attrib))
-                self.perform_save = True
-
-        for attrib in self.min_one_attribs:
-            if self.survivor[attrib] < 1:
-                self.survivor[attrib] = 0
-                self.logger.warn("%s Survivor '%s' attrib normalized to minimum value of one." % (self, attrib))
-                self.perform_save = True
-
-
-    def convert_abilities_and_impairments(self):
+    def __convert_abilities_and_impairments(self):
         """ Swaps out A&I names for handles. """
 
         new_ai = []
@@ -3588,7 +3540,7 @@ class Survivor(models.UserAsset):
         self.logger.info("Converted A&Is from names (legacy) to handles for %s" % (self))
 
 
-    def convert_disorders(self):
+    def __convert_disorders(self):
         """ Swaps out disorder names for handles. """
 
         new_d = []
@@ -3602,23 +3554,7 @@ class Survivor(models.UserAsset):
         self.logger.info("Converted Disorders from names (legacy) to handles for %s" % (self))
 
 
-    def convert_epithets(self):
-        """ Tries to convert epithets to handles. Drops anything it cannot. """
-
-        E = epithets
-
-        new_epithets = []
-
-        for e_dict in self.list_assets("epithets"):
-            new_epithets.append(e_dict["handle"])
-            self.logger.info("%s Converted '%s' epithet name to handle '%s'" % (self, e_dict["name"], e_dict["handle"]))
-
-        self.survivor["epithets"] = new_epithets
-        self.survivor["meta"]["epithets_version"] = 1.0
-        self.logger.info("Converted epithets from names (legacy) to handles for %s" % (self))
-
-
-    def convert_favorite(self):
+    def __convert_favorite(self):
         """ Turns the 'favorite' attribute from a string to a list of email
         addresses. """
 
@@ -3632,11 +3568,9 @@ class Survivor(models.UserAsset):
         self.logger.info("Converted 'favorite' attrib from str (legacy) to list for %s" % (self))
 
 
-    def convert_fighting_arts(self):
+    def __convert_fighting_arts(self):
         """ Tries to convert Fighting Art names to to handles. Drops anything
         that it cannot convert. """
-
-        FA = fighting_arts
 
         new_fa_list = []
 
@@ -3649,31 +3583,11 @@ class Survivor(models.UserAsset):
 
         self.survivor["fighting_arts"] = new_fa_list
         self.survivor["meta"]["fighting_arts_version"] = 1.0
-        self.logger.info("Converted Fighting Arts from names (legacy) to handles for %s" % (self))
+        msg = "Converted Fighting Arts from names (legacy) to handles for %s"
+        self.logger.info(msg % (self))
 
 
-    def convert_weapon_proficiency_type(self):
-        """ Swaps out names for handles. """
-
-        # first normalize an empty string to None type
-        if self.survivor["weapon_proficiency_type"] == "":
-            self.survivor["weapon_proficiency_type"] = None
-
-        if self.survivor["weapon_proficiency_type"] != None:
-            w_name = self.survivor["weapon_proficiency_type"]
-            W = weapon_proficiency.Assets()
-            w_dict = W.get_asset_from_name(w_name)
-            if w_dict is None:
-                self.logger.error("%s Weapon proficiency type '%s' could not be migrated!" % (self, w_name))
-            else:
-                self.survivor["weapon_proficiency_type"] = w_dict["handle"]
-                self.logger.info("%s Migrated weapon proficiency type '%s' to '%s'" % (self, w_name, w_dict["handle"]))
-
-        self.survivor["meta"]["weapon_proficiency_type_version"] = 1.0
-        self.logger.info("Converted weapon proficiency type name (legacy) to handle for %s" % (self))
-
-
-    def convert_special_attributes(self):
+    def __convert_special_attributes(self):
         """ This one's...a hot mess on account of this feature having never
         been properly implemented in the legacy app.
 
@@ -3695,13 +3609,46 @@ class Survivor(models.UserAsset):
                 name, handle = i
                 if name in self.survivor['expansion_attribs'].keys():
                     self.survivor[handle] = True
-#                    self.logger.debug(name)
             del self.survivor['expansion_attribs']
         else:
             pass
 
         self.survivor["meta"]["special_attributes_version"] = 1.0
-        self.logger.info("Converted survivor special attributes for %s" % (self))
+        self.logger.info(
+            "Converted survivor special attributes for %s" % (self)
+        )
+
+
+    def __convert_weapon_proficiency_type(self):
+        """ Swaps out names for handles. """
+
+        # first normalize an empty string to None type
+        if self.survivor["weapon_proficiency_type"] == "":
+            self.survivor["weapon_proficiency_type"] = None
+
+        if self.survivor["weapon_proficiency_type"] is not None:
+            w_name = self.survivor["weapon_proficiency_type"]
+            W = weapon_proficiency.Assets()
+            w_dict = W.get_asset_from_name(w_name)
+            if w_dict is None:
+                self.logger.error("%s Weapon proficiency type '%s' could not be migrated!" % (self, w_name))
+            else:
+                self.survivor["weapon_proficiency_type"] = w_dict["handle"]
+                self.logger.info("%s Migrated weapon proficiency type '%s' to '%s'" % (self, w_name, w_dict["handle"]))
+
+        self.survivor["meta"]["weapon_proficiency_type_version"] = 1.0
+        self.logger.info("Converted weapon proficiency type name (legacy) to handle for %s" % (self))
+
+
+
+
+    def __deprecate_epithets(self):
+        ''' Changes self.survivor['epithets'] to self.survivor['tags']. '''
+        self.survivor['tags'] = copy(self.survivor.get('epithets', []))
+        del self.survivor['epithets']
+        self.logger.info("Converted epithets to tags for %s" % (self))
+
+
 
 
 
@@ -3715,71 +3662,24 @@ class Survivor(models.UserAsset):
         'action' kwarg appropriately. This is the ancestor of the legacy app
         assets.Survivor.modify() method. """
 
-        # get methods first
+        # methods with returns first; nothing comes after if these are the
+        #   incoming action we're responding to
         if action == "get":
             return self.json_response()
-        elif action == "get_lineage":
+        if action == "get_lineage":
             return self.get_lineage()
+        if action == "set_email":
+            return self.set_email()
+        if action == "set_avatar":
+            return self.set_avatar()
 
-
-        # controllers with biz logic - i.e. fancy-pants methods
-        elif action == "controls_of_death":
-            self.controls_of_death()
-
-        # add/rm assets
-        elif action == "add_game_asset":
-            self.add_game_asset()
-        elif action == "rm_game_asset":
-            self.rm_game_asset()
-        elif action == "set_many_game_assets":  # serial add/rm game asset calls
-            self.set_many_game_assets()
-        elif action == "replace_game_assets":
-            self.replace_game_assets()
-
-
-        # misc sheet operations
-        elif action == "set_email":
-            return self.set_email()     # because we're doing server-side validation
-        elif action == 'set_parent':
-            self.set_parent()
-        elif action == "set_partner":
-            self.set_partner()
-        elif action == 'set_special_attribute':
-            self.set_special_attribute()
-        elif action == 'set_sword_oath':
-            self.set_sword_oath()
-        elif action == "set_weapon_proficiency_type":
-            self.set_weapon_proficiency_type()
-
-        # sheet attribute operations
-        elif action == "set_many_attributes":   # serial set_attribute()
-            self.set_many_attributes()
-        elif action == "update_attribute":
-            self.update_attribute()
-
-        # notes
-        elif action == 'add_note':
+        # now, process 'action', routing to the appropriate web method above
+        #   with special handling for if the action is 'add_note'
+        if action == 'add_note':
             if 'serialize_on_response' in self.params:
                 self.add_note()
             else:
                 return self.add_note()
-        elif action == 'update_note':
-            self.update_note()
-        elif action == 'rm_note':
-            self.rm_note()
-
-        # survival
-        elif action == "set_survival":
-            self.set_survival()
-
-        # manager-only / non-game methods
-        elif action == "set_avatar":
-            return self.set_avatar()
-        elif action == "set_color_scheme":
-            self.set_color_scheme()
-        elif action == "toggle_sotf_reroll":
-            self.toggle_sotf_reroll()
-
         else:
             # first, if we have a method matching 'action', try to execute it
             #   as long as it's not an internal-only method
@@ -3802,7 +3702,7 @@ class Survivor(models.UserAsset):
                 status=200,
                 mimetype="application/json"
             )
-        else:
-            return utils.http_200
+
+        return utils.http_200
 
 # ~fin

@@ -47,7 +47,7 @@ from app.models.settlements import Settlement
 
 
 # laaaaaazy
-logger = utils.get_logger()
+LOGGER = utils.get_logger()
 
 #
 #   JWT helper methods here!
@@ -109,7 +109,7 @@ def check_authorization(token):
                 verify=False
             )["identity"]
         )
-        logger.info("[%s (%s)] authorization check failed: %s!" % (
+        LOGGER.info("[%s (%s)] authorization check failed: %s!" % (
             decoded["login"],
             decoded["_id"]["$oid"],
             e)
@@ -139,7 +139,6 @@ def refresh_authorization(expired_token):
     user = dict(json.loads(decoded["identity"]))
     login = user["login"]
     pw_hash = user["password"]
-
     return utils.mdb.users.find_one({"login": login, "password": pw_hash})
 
 
@@ -232,7 +231,7 @@ def initiate_password_reset():
             subject='KDM-Manager password reset request!'
         )
     except Exception as e:
-        logger.error(e)
+        LOGGER.error(e)
         raise
 
     # exit 200
@@ -262,7 +261,7 @@ def token_to_object(request, strict=True):
     auth_token = request.headers.get("Authorization", None)
     if auth_token is None:
         msg = "'Authorization' header missing!"
-        logger.error(msg)
+        LOGGER.error(msg)
         raise utils.InvalidUsage(msg, status_code=401)
 
     # now, try to decode the token and get a dict
@@ -279,10 +278,10 @@ def token_to_object(request, strict=True):
             user_dict = refresh_authorization(auth_token)
             return User(_id=user_dict["_id"])
     except jwt.DecodeError:
-        logger.error("Incorrectly formatted token!")
-        logger.error("Token contents: |%s|" % auth_token)
+        LOGGER.error("Incorrectly formatted token!")
+        LOGGER.error("Token contents: |%s|" % auth_token)
     except Exception as e:
-        logger.exception(e)
+        LOGGER.exception(e)
 
     err = "Incoming JWT could not be processed!"
     raise utils.InvalidUsage(err, status_code=422)
@@ -321,7 +320,7 @@ def import_user(user_data=None):
         data['user']['login'],
         data['user']['_id']
     )
-    logger.warn(msg)
+    LOGGER.warn(msg)
 
     try:
         new_user_oid = utils.mdb.users.save(data['user'])
@@ -338,14 +337,14 @@ def import_user(user_data=None):
         'assets_dict' dictionary (called 'data' here). """
 
         imported_assets = 0
-        logger.warn("Importing %s assets..." % asset_name)
+        LOGGER.warn("Importing %s assets..." % asset_name)
         try:
             for asset in data[asset_name]:
                 imported_assets += 1
                 utils.mdb[asset_name].save(asset)
         except KeyError:
-            logger.error('No %s assets found in user data!' % asset_name)
-        logger.warn("%s %s assets imported." % (imported_assets, asset_name))
+            LOGGER.error('No %s assets found in user data!' % asset_name)
+        LOGGER.warn("%s %s assets imported." % (imported_assets, asset_name))
 
     # load the important user assets to local
     for asset_collection in [
@@ -361,11 +360,11 @@ def import_user(user_data=None):
         if utils.mdb.settlements.find_one(
             {"_id": survivor["settlement"]}
         ) is None:
-            logger.error("Survivor %s belongs to a non-existent settlement (%s)!" % (
+            LOGGER.error("Survivor %s belongs to a non-existent settlement (%s)!" % (
                 survivor['_id'], survivor['settlement']
                 )
             )
-            logger.warn("Removing survivor %s from mdb..." % (survivor["_id"]))
+            LOGGER.warn("Removing survivor %s from mdb..." % (survivor["_id"]))
             utils.mdb.survivors.remove({"_id": survivor["_id"]})
 
     # next import avatars
@@ -373,7 +372,7 @@ def import_user(user_data=None):
     for avatar in data["avatars"]:
         if gridfs.GridFS(utils.mdb).exists(avatar["_id"]):
             gridfs.GridFS(utils.mdb).delete(avatar["_id"])
-            logger.info("Removed object %s from local GridFS." % avatar["_id"])
+            LOGGER.info("Removed object %s from local GridFS." % avatar["_id"])
             gridfs.GridFS(utils.mdb).put(
                 avatar["blob"],
                 _id=avatar["_id"],
@@ -382,12 +381,12 @@ def import_user(user_data=None):
                 created_on=avatar["created_on"]
             )
             imported_avatars += 1
-        logger.info("Imported %s avatars!" % imported_avatars)
+        LOGGER.info("Imported %s avatars!" % imported_avatars)
 
     # legacy webapp: clean up sessions
     culled = utils.mdb.sessions.remove({"login": data["user"]["login"]})
     if culled['n'] > 0:
-        logger.info(
+        LOGGER.info(
             "Removed %s session(s) belonging to incoming user!" % culled['n']
         )
 
@@ -485,7 +484,6 @@ class User(models.UserAsset):
         self.user = {
             'created_on': datetime.now(),
             'login': username,
-#            'password': md5(password).hexdigest(),
             'password': generate_password_hash(password),
             'preferences': {},
             'collection': {"expansions": []},
@@ -494,7 +492,7 @@ class User(models.UserAsset):
         }
         self._id = utils.mdb.users.insert(self.user)
         self.load()
-        logger.info("New user '%s' created!" % username)
+        self.logger.info("New user '%s' created!" % username)
 
         return self.user["_id"]
 
@@ -574,6 +572,18 @@ class User(models.UserAsset):
             )
 
         return assets_dict
+
+
+    def tokenize(self):
+        ''' Returns a version of the User object that DOES NOT include the
+        user's recent history, so as not to hit the 4k limit on cookie size
+        in most browsers. '''
+
+        slim_record = {}
+        for key in ['_id', 'login', 'password']:
+            slim_record[key] = self.get_record()[key]
+
+        return json.dumps(slim_record, default=json_util.default)
 
 
     def serialize(self, return_type=None):

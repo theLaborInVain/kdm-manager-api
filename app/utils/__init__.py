@@ -32,6 +32,7 @@ from pymongo import MongoClient
 
 # local imports
 from app import API
+from app.models import versions
 from app.utils import crossdomain as crossdomain_module
 from app.utils import settings
 
@@ -323,7 +324,7 @@ def metered(method):
             duration.microseconds,
             method.__name__,
             ", ".join(args[1:]),
-            " ".join(["%s: %s" % (k, v) for k,v in kwargs.items()])
+            ", ".join(["%s: %s" % (k, v) for k,v in kwargs.items()])
             )
         )
         return result
@@ -654,8 +655,8 @@ thirty_days_ago = datetime.now() - timedelta(days=30)
 
 # 200s
 http_200 = flask.Response(response="OK!", status=200)
-http_299 = flask.Response(
-    response="Warning! This endpoint is deprecated!",
+HTTP_299 = flask.Response(
+    response="This endpoint is deprecated!",
     status=299
 )
 
@@ -729,6 +730,16 @@ def create_subscriptions_dict():
 
 api_meta = {
     "meta": {
+        'monster': {
+            'copyright': (
+                'Copyright © 2016 - %s Adam Poots Games, LLC. All Rights '
+                'Reserved'
+            ) % datetime.now().year,
+            'version': versions.Assets().get_asset(
+                API.config['DEFAULT_GAME_VERSION'],
+                exclude_keys=['assets']
+            ),
+        },
         "api": {
             "version": API.config['VERSION'],
             "age": get_time_elapsed_since(
@@ -749,8 +760,9 @@ api_meta = {
         },
         "info": {
             "about": "https://github.com/theLaborInVain/kdm-manager-api",
-            "copyright": "The Labor in Vain (2015 - %s)" %
-                    datetime.now().strftime("%Y"),
+            "copyright": (
+                "Copyright © 2015 - %s The Labor in Vain, Inc."
+            ) % datetime.now().year,
             "license": {
                 'url': (
                     "https://github.com/theLaborInVain/"

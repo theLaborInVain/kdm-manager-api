@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 from app import models
 
+
 class Assets(models.AssetCollection):
 
     def __init__(self, *args, **kwargs):

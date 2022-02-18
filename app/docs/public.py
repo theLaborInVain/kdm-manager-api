@@ -1,5 +1,10 @@
-""" These are the public endpoints that we document for the API. Nothing here
-requires JWT or other credentials to access. """
+"""
+
+    These are the public endpoints that we document for the API. Nothing here
+    requires JWT or other credentials to access.
+
+"""
+
 
 #
 #   dashboard-related endpoints first
@@ -39,6 +44,11 @@ game_asset_lookups = {
             '<p>While the other public routes (below) in this section allow '
             'more targeted asset retrieval, this endpoint, which is optimized '
             'for speed, just dumps <i>everything</i>.</p>'
+            '<p><b>Important!</b> This endpoint dumps game assets at the '
+            'HEAD revision of the game, typically the latest release published '
+            'by Kingdom Death.</p>'
+            '<p>To get the current HEAD revision, simply <code>/stat</code> '
+            'the API.</p>'
         ),
     },
     'game_asset': {
@@ -223,9 +233,7 @@ to do gear lookups:</p>
     },
     'game_asset_innovations': {
         'name': '/game_asset/innovations',
-        'desc': """\
-<p>Returns a JSON representation of all known Innovations.</p>
-        """,
+        'desc': '<p>Returns a JSON representation of all Innovations.</p>',
     },
     'game_asset_locations': {
         'name': '/game_asset/locations',
@@ -265,54 +273,24 @@ want to show a user a list of all of these assets in a tracker app.</p>
 the API will return the definitions of all assets.</p>
         """,
     },
-    'game_asset_principles': {
-        'name': '/game_asset/principles',
-        'desc': """\
-<p>Dumps principles as JSON. Princples are represented as dictionaries of info
-about the asset itself as well as some actual python code that describes
-when to show webapp controls for adding them:</p>
-<pre><code>
-    "death": {
-        "name": "Death",
-        "handle": "death",
-        "sort_order": 1,
-        "milestone": "First time death count is updated",
-        "show_controls": ['int(self.settlement["death_count"]) >= 1'],
-        "option_handles": ["graves", "cannibalize"],
-    },
-</code></pre>
-<p><b>Important!</b> Please <u>do not</u> build anything around that code, as it
-is deprecated and will be going away when the legacy https://kdm-manager webapp
-goes away (in late 2019).</p>
-        """,
-    },
     'game_asset_resources': {
         'name': '/game_asset/resources',
-        'desc': (
-            '<p>Returns a JSON representation of all known resources.</p>'
-        ),
+        'desc': '<p>Returns a JSON representation of all known resources.</p>',
     },
     'game_asset_strain_milestones': {
         'name': '/game_asset/strain_milestones',
-        'desc': """\
-<p>Returns a JSON representation of all known Strain Milestones.</p>
-        """,
+        'desc': '<p>Returns a JSON representation of all Strain Milestones.</p>'
     },
     'game_asset_survival_actions': {
         'name': '/game_asset/survival_actions',
-        'desc': """\
-<p>Returns a JSON representation of all known Survival Actions.</p>
-        """,
+        'desc': '<p>Returns a JSON representation of all Survival Actions.</p>'
     },
 
     'zz_game_asset_settlements': {
         'name': '/game_asset/settlements',
+        'deprecated': True,
         'desc': (
             '<p>Starting February 2021, this endpoint is deprecated.</p>'
-            '<p>It will return a 299 and, in April 2021, it will be removed '
-            'completely!</p>'
-            '<p>Please use <code>/kingdom_Death</code> to retrieve a complete '
-            'list of assets available for creating new settlements.</p>.'
         ),
     },
 }

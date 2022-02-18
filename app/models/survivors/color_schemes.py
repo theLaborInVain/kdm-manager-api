@@ -4,23 +4,18 @@
 
 """
 
-from app.assets.survivors import color_schemes
 from app import models
-
+from app.assets.survivors import color_schemes
 
 class Assets(models.AssetCollection):
 
-
     def __init__(self, *args, **kwargs):
-        self.root_module = color_schemes
+        ''' Basic init followed by a quick loop to set the HTML 'style_string'
+        attribute, which is used in the webapp. '''
+
+        self.root_module = color_schemes    # has to be set; unusual path
+
         models.AssetCollection.__init__(self,  *args, **kwargs)
-
-        self.post_process()
-
-
-    def post_process(self):
-        """ Creates the 'style_string' attribute based on the key/value pairs
-        in the 'style' attrib. """
 
         for asset_dict in self.get_dicts():
             style_string = ""

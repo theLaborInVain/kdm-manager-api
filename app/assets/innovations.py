@@ -357,7 +357,7 @@ innovation = {
             'Your settlement leans into the storm. If everyone holds strong, '
             'you will triumph.<br/>'
             'At the start of the settlement phase, gain +1'
-            '<font class="kdm_font">d</font> for every 10 population.'
+            '<font class="kdm_manager_font">E</font> for every 10 population.'
         )
     },
     "accept_darkness": {
@@ -649,7 +649,7 @@ expansion = {
         "survivor_buff": 'Newborn survivors are born with +1 permanent strength and the <font class="maroon_text">Pristine</font> ability.',
         "newborn_survivor": {
             "Strength": 1,
-            "abilities_and_impairments": ["Pristine"],
+            "abilities_and_impairments": ["pristine"],
         },
     },
 

@@ -37,7 +37,6 @@ from app.models import (
     disorders,
     gear,
     endeavors,
-    epithets,
     events,
     expansions,
     fighting_arts,
@@ -53,6 +52,7 @@ from app.models import (
     strain_milestones,
     survival_actions,
     survivors,
+    tags,
     versions,
     weapon_masteries,
     weapon_proficiency,
@@ -101,7 +101,7 @@ class Assets(models.AssetCollection):
             for c in sorted(CA.get_handles()):
                 asset = CA.get_asset(c)
                 asset_repr = {"handle": c, "name": asset["name"]}
-                for optional_key in ["subtitle", "default",'ui']:
+                for optional_key in ["subtitle", "default", 'ui']:
                     if optional_key in asset.keys():
                         asset_repr[optional_key] = asset[optional_key]
                 self.assets[mod_string].append(asset_repr)
@@ -109,6 +109,9 @@ class Assets(models.AssetCollection):
         self.assets["macros"] = macros.Assets().assets
 
 
+#    def request_response(self):
+#        ''' Overrides the default method. Returns a 299. '''
+#        return utils.HTTP_299
 
 
 #
@@ -124,14 +127,6 @@ class Assets(models.AssetCollection):
 class Settlement(models.UserAsset):
     """ This is the base class for all expansions. Private methods exist for
     enabling and disabling expansions (within a campaign/settlement). """
-
-    DATA_MODEL = {
-        'admins': list,
-        'custom_url': str,
-        'campaign': str,
-        'name': str,
-        'version': str,
-    }
 
 
     @utils.metered
@@ -262,7 +257,6 @@ class Settlement(models.UserAsset):
             'patterns':                 [],
             "principles":               [],
             "storage":                  [],
-            "custom_epithets":          [],
             "strain_milestones":        [],
             "version":                  'core_1_6',
         }
@@ -584,7 +578,7 @@ class Settlement(models.UserAsset):
             output["game_assets"].update(self.get_available_assets(events))
             output["game_assets"].update(self.get_available_assets(monsters))
             output["game_assets"].update(self.get_available_assets(causes_of_death, handles=False))
-            output["game_assets"].update(self.get_available_assets(epithets))
+            output["game_assets"].update(self.get_available_assets(tags))
             output["game_assets"].update(self.get_available_assets(fighting_arts))
             output["game_assets"].update(self.get_available_assets(disorders))
             output['game_assets'].update(self.get_available_assets(endeavors))
@@ -622,9 +616,6 @@ class Settlement(models.UserAsset):
                     exclude_dead_survivors=False, return_type='JSON'
             )
             output['game_assets']['monster_volumes_options'] = self.get_available_monster_volumes()
-
-            # transitional to their deprecation, epithets as tags
-            output["game_assets"]['tags'] = output['game_assets']['epithets']
 
             if flask.request.log_response_time:
                 stop = datetime.now()
@@ -2652,7 +2643,7 @@ class Settlement(models.UserAsset):
         for s in self.survivors:
             available_e = s.get_available_endeavors()
             if available_e != []:
-                s_dict = s.serialize(dict, False)
+                s_dict = s.synthesize()
                 s_dict['endeavors'] = available_e
                 survivor_endeavors.append(s_dict)
         available['survivors'] = survivor_endeavors
@@ -3313,7 +3304,7 @@ class Settlement(models.UserAsset):
         options = []
         for gear in compatible:
             if (
-                gear['handle'] not in self.settlement['patterns'] and
+                gear['handle'] not in self.settlement.get('patterns', []) and
                 gear.get('sub_type', None) == 'pattern'
             ):
                 options.append(gear)
@@ -3685,10 +3676,8 @@ class Settlement(models.UserAsset):
             all_survivors = utils.mdb.survivors.find(query).sort('name')
             for s in all_survivors:
                 # init the survivor
-                S = survivors.Survivor(_id=s["_id"], Settlement=self, normalize_on_init=False)
-                S.bug_fixes(force_save=True)
+                S = survivors.Survivor(_id=s["_id"], Settlement=self)
                 self.survivors.append(S)
-#            self.logger.debug("%s Initialized %s survivors!" % (self, len(self.survivors)))
             return True
 
         # now make a copy of self.survivors and work it to fulfill the request
@@ -3703,7 +3692,7 @@ class Settlement(models.UserAsset):
 
         # early returns
         if return_type == 'departing':
-            return [s.serialize(dict, False) for s in output_list if s.is_departing()]
+            return [s.synthesize() for s in output_list if s.is_departing()]
 
         #
         # late/fancy returns start here
@@ -3751,17 +3740,17 @@ class Settlement(models.UserAsset):
 
             for s in output_list:
                 if s.survivor.get('departing', None) == True:
-                    groups['departing']['survivors'].append(s.serialize(dict, False))
+                    groups['departing']['survivors'].append(s.synthesize())
                 elif s.survivor.get('dead', None) == True:
-                    groups['the_dead']['survivors'].append(s.serialize(dict, False))
+                    groups['the_dead']['survivors'].append(s.synthesize())
                 elif s.survivor.get('retired', None) == True:
-                    groups['retired']['survivors'].append(s.serialize(dict, False))
+                    groups['retired']['survivors'].append(s.synthesize())
                 elif s.survivor.get('skip_next_hunt', None) == True:
-                    groups['skip_next']['survivors'].append(s.serialize(dict, False))
+                    groups['skip_next']['survivors'].append(s.synthesize())
                 elif 'favorite' in s.survivor.keys() and flask.request.User.login in s.survivor['favorite']:
-                    groups['favorite']['survivors'].append(s.serialize(dict, False))
+                    groups['favorite']['survivors'].append(s.synthesize())
                 else:
-                    groups['available']['survivors'].append(s.serialize(dict, False))
+                    groups['available']['survivors'].append(s.synthesize())
 
             # make it JSON-ish
             output = []
@@ -3771,7 +3760,7 @@ class Settlement(models.UserAsset):
             return output
 
         # default return; assumes that we want a list of dictionaries
-        return [s.serialize(dict, False) for s in output_list]
+        return [s.synthesize() for s in output_list]
 
 
     def get_survival_actions(self, return_type=dict):
@@ -4411,11 +4400,6 @@ class Settlement(models.UserAsset):
             self.logger.info("Creating 'admins' key for %s" % (self))
             creator = utils.mdb.users.find_one({"_id": self.settlement["created_by"]})
             self.settlement["admins"] = [creator["login"]]
-            self.perform_save = True
-
-        if not "custom_epithets" in self.settlement.keys():
-            self.logger.info("Creating 'custom_epithets' key for %s" %(self))
-            self.settlement["custom_epithets"] = []
             self.perform_save = True
 
         founder = self.get_founder()

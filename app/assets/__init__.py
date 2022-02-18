@@ -27,7 +27,7 @@ import flask
 from app import API, utils
 from app.models import settlements, survivors, users
 
-
+LOGGER = utils.get_logger()
 
 #
 #	Methods for creating and working with user assets, e.g. survivors,
@@ -86,7 +86,7 @@ def get_user_asset(collection=None, asset_id=None):
     if collection == "settlement":
         return settlements.Settlement(_id=asset_id)
     elif collection == "survivor":
-        return survivors.Survivor(_id=asset_id)
+        return survivors.Survivor(_id=asset_id, normalize_on_init=True)
     elif collection == "user":
         return users.User(_id=asset_id)
 

@@ -31,9 +31,11 @@ import inspect
 import json
 import os
 from user_agents import parse as ua_parse
+import random
 
 # third party imports
 import flask
+import werkzeug
 
 # local imports
 from app import API, models, utils
@@ -98,7 +100,7 @@ def deprecated(method):
     def wrapped(*args, **kwargs):
         """ Logs the deprecated method and its caller. """
 
-#        warning = "DEPRECATION WARNING! The %s() method is deprecated!"
+        warning = "DEPRECATION WARNING! The %s() method is deprecated!"
         logger.warn(warning % method.__name__)
 
         curframe = inspect.currentframe()
@@ -245,6 +247,8 @@ class StructuredObject(object):
 
         if verbose:
             self.logger.info('Saved changes to %s' % self)
+
+
 
 #
 #   The AssetCollection object starts here!
@@ -574,7 +578,7 @@ class AssetCollection(object):
     #
 
     def get_asset(self, handle=None, backoff_to_name=False,
-        raise_exception_if_not_found=True):
+        raise_exception_if_not_found=True, exclude_keys=[]):
 
         """ Return an asset dict based on a handle. Return None if the handle
         cannot be retrieved. """
@@ -588,16 +592,22 @@ class AssetCollection(object):
         # if the asset is still None, we want to raise an expception
         if asset is None and raise_exception_if_not_found:
             if not backoff_to_name:
-                msg = "The handle '%s' could not be found in %s!" % (
-                    handle,
-                    self.get_handles()
-                )
+                curframe = inspect.currentframe()
+                calframe = inspect.getouterframes(curframe, 2)
+                caller_function = calframe[1][3]
+                msg = (
+                    "%s() -> get_asset() "
+                    "The handle '%s' could not be found in %s!"
+                ) % (caller_function, handle, self.get_handles() )
                 self.logger.error(msg)
             elif backoff_to_name:
                 msg = "After backoff to name lookup, asset handle '%s' is not\
                 in %s and could not be retrieved." % (handle, self.get_names())
                 self.logger.error(msg)
             raise utils.InvalidUsage(msg, status_code=500)
+
+        for key in exclude_keys:
+            del asset[key]
 
         # finally, return the asset (or the NoneType)
         return asset
@@ -988,11 +998,6 @@ class UserAsset(object):
     settlements and users. All user asset controllers in the 'models' module
     use this as their base class. """
 
-    DEFAULT_ATTRIBUTES = {
-        'created_on': datetime,
-        'created_by': ObjectId,
-        'removed': datetime,
-    }
 
     def __repr__(self):
         """ Default __repr__ method for all user assets. Note that you should
@@ -1016,6 +1021,7 @@ class UserAsset(object):
                 creating a new asset by calling self.new()
             3. once we've got self._id, we run self.load() and set self.loaded
         """
+
 
 
         #
@@ -1047,9 +1053,10 @@ class UserAsset(object):
         #
         # 2. set self._id from kwargs or new()
         #
-        self._id = ObjectId(self.kwargs.get('_id', None))
+        self._id = self.kwargs.get('_id', None)
         if self._id is None:
             self.new()  # sets self._id
+        self._id = ObjectId(self._id)   # duck-typing is a victimless crime
 
         if not isinstance(self._id, ObjectId):
             err = "The asset OID '%s' is not a valid OID!" % (self._id)
@@ -1088,9 +1095,11 @@ class UserAsset(object):
         for attr in ['_id', 'collection']:
             if not hasattr(self, attr):
                 raise AssetLoadError('load() requires self.%s attr!' % attr)
-            if not isinstance(self.collection, str):
-                err = "self.collection must be 'str' type (not %s)"
-                raise AssetLoadError(err % type(self.collection))
+
+        if not isinstance(self.collection, str):
+            err = "self.collection must be 'str' type (not %s)"
+            raise AssetLoadError(err % type(self.collection))
+
 
         # use self.collection to set the mdb_doc
         mdb_doc = utils.mdb[self.collection].find_one({"_id": self._id})
@@ -1125,9 +1134,19 @@ class UserAsset(object):
             self.logger.info(msg % (self, self.collection))
 
 
-    def jsonize(self):
-        ''' Like serialize(), but returns actual, web-safe JSON. '''
-        return json.dumps(self.get_record(), default=json_util.default)
+    def serialize(self, include_api_meta=True):
+        ''' Calls the user object's self.synthesize() method if it can (falls
+        back to self.get_record() if it can't) and returns it as JSON. '''
+
+        output = {}
+        if include_api_meta:
+            output = self.get_serialize_meta()
+
+        output = self.get_record()
+        if hasattr(self, 'synthesize'):
+            output = self.synthesize()
+
+        return json.dumps(output, default=json_util.default)
 
 
     def json_response(self):
@@ -1186,6 +1205,13 @@ class UserAsset(object):
         self.params = {}
 
         if not flask.has_request_context():
+            return None
+
+        try:
+            flask.request.get_json()
+        except werkzeug.exceptions.BadRequest:
+            err = '[%s] %s Could not decode request JSON...'
+            self.logger.info(err % (flask.request.method, flask.request))
             return None
 
         if flask.request.get_json() is not None:
@@ -1292,7 +1318,7 @@ class UserAsset(object):
         #   return an empty dict if there are no survivors (no survivors == no
         #   players).
         settlement_survivor_records = utils.mdb.survivors.find(
-            {'settlement': self.settlement_id}
+            {'settlement': self.get_settlement_id()}
         )
         if settlement_survivor_records is None:
             return []
@@ -1365,23 +1391,16 @@ class UserAsset(object):
 
         output = deepcopy(utils.api_meta)
 
-        if list(output['meta'].keys()) != [
-            'api',
-            'server',
-            'info',
-            'subscriptions',
-            'kdm-manager',
-            'object'
-            ]:
-
+        if list(output['meta'].keys()) != list(utils.api_meta['meta'].keys()):
             stack = inspect.stack()
             the_class = stack[1][0].f_locals["self"].__class__
             the_method = stack[1][0].f_code.co_name
             msg = "models.UserAsset.get_serialize_meta() got modified 'meta'\
-            (%s) dict during call by %s.%s()!" % (
+            (%s) dict during call by %s.%s()! %s" % (
                 output['meta'].keys(),
                 the_class,
-                the_method
+                the_method,
+                utils.api_meta['meta'].keys()
             )
             self.logger.error(" ".join(msg.split()))
 
@@ -1391,8 +1410,16 @@ class UserAsset(object):
     def get_settlement_record(self):
         """ Settlement and Survivor models have self.settlement_id, which this
             method uses to retrieve the raw settlement record from MDB. """
-        return utils.mdb.settlements.find_one({'_id': self.settlement_id})
+        return utils.mdb.settlements.find_one({'_id': self.get_settlement_id()})
 
+
+    def get_settlement_id(self):
+        ''' Returns the OID for the UserAsset's settlement. '''
+        if self.collection == 'settlements':
+            return self.get_record()['_id']
+        if self.collection == 'survivors':
+            return self.get_record()['settlement']
+        raise utils.InvalidUsage('%s asset has no settlement ID!' % self)
 
 
     #
@@ -1444,9 +1471,7 @@ class UserAsset(object):
             A = models.innovations.Assets()
         else:
             A = importlib.import_module('app.models.%s' % attrib).Assets()
-#            exec("A = models.%s.Assets()" % attrib)
 
-#        exec("asset_list = self.%s['%s']" % (self.collection[:-1], attrib))
         asset_list = getattr(self, self.collection[:-1])[attrib]
 
         for a in asset_list:
@@ -1715,6 +1740,236 @@ class UserAsset(object):
         return self.json_response()
 
 
+#
+#   data model class object!
+#
+
+class DataModel(object):
+    ''' Object-oriented data model object initialized with one of our UserAsset
+    objects. '''
+
+    def __init__(self, unique_foreign_key=None):
+        ''' Initialize with a unique foreign key value. The self.admin_attribs
+        attrib gets set ABSOLUTELY LAST so that it can be used later to ignore
+        non-data-model attributes of this object. '''
+
+        self.logger = utils.get_logger()
+        self.unique_foreign_key = unique_foreign_key
+        self.admin_attribs = [
+            'logger', 'unique_foreign_key', 'admin_attribs'
+        ]
+
+        self.add('_id', ObjectId, required=False, immutable=True)
+        self.add('created_on', datetime, required=False, immutable=True)
+        self.add('created_by', ObjectId, required=False, immutable=True)
+        self.add('modified_on', datetime, required=False)
+        self.add('last_accessed', datetime, required=False)
+        self.add('removed', datetime, required=False)
+
+
+    def add(self, name=None, a_type=None, default_value=None, **kwargs):
+        ''' Adds an attribute to the model. '''
+
+        # sanity checks
+        if name is None or a_type is None:
+            err = 'Cannot add DataModel attribute without name and type!'
+            raise AttributeError(err)
+        if not isinstance(a_type, type):
+            err = 'Attribute type must be a type, e.g. int, str, etc.'
+            raise AttributeError(err)
+
+        # set default, if not provided
+        if default_value is None and a_type != datetime:
+            default_value = a_type()
+        if default_value is None and a_type == datetime:
+            default_value = datetime.now()
+
+        # create the dict and set it as an attr
+        attribute_dict = {
+            'name': name,
+            'type': a_type,
+            'default': default_value,
+            'required': True,
+        }
+        attribute_dict.update(kwargs)
+
+        setattr(self, name, attribute_dict)
+
+
+    def category(self, cat):
+        ''' Returns a list of attribute keys if those attributes have the
+        'category' value of 'cat'. '''
+
+        output = []
+        for key in self.attribs():
+            attr = getattr(self, key)
+            if attr.get('category', None) == cat:
+                output.append(key)
+        return output
+
+
+    def new(self):
+        ''' Returns a dictionary representing a new one of...whatever this
+        is. Uses all attributes and sets them to their defaults. '''
+
+        output = {}
+        for key in self.attribs():
+            attr = getattr(self, key)
+            if attr.get('required', False):
+                output[key] = attr['default']
+        return output
+
+
+    def apply(self, record):
+        ''' Applies the data model to 'record', which should be a dict
+        representing an instance of this data model.
+
+        Returns a corrected version of 'record'.
+        '''
+
+        record = deepcopy(record)
+
+        # first part: normalize all extant attrs and add missing required attrs
+        for attr in self.serialize():
+
+            # check for missing required attributes
+            if attr['required'] and attr['name'] not in record.keys():
+                warn = "Adding required attr '%s' to record (default: '%s')..."
+                self.logger.warning(warn % (attr['name'], attr['default']))
+                record[attr['name']] = attr['default']
+
+            # in this loop, check the record itself, based on its attrs
+            if attr['name'] in record.keys():
+
+                # first, check if the attribute is the right type
+                if type(record[attr['name']]) != attr['type']:
+                    warn = "Forcing '%s' attribute to %s type..."
+                    self.logger.warning(warn % (attr['name'], attr['type']))
+                    record[attr['name']] = attr['type'](record[attr['name']])
+
+                # next, kill HTML and strip
+                if attr['type'] == str:
+                    orig_len = len(record[attr['name']])
+                    record[attr['name']] = utils.html_stripper(
+                        record[attr['name']]
+                    ).strip()
+                    if orig_len > len(record[attr['name']]):
+                        warn = "Stripped HTML from '%s' attr..."
+                        self.logger.warning(warn % (attr['name']))
+
+                # next, check if it's in allowed options:
+                if (
+                    attr.get('options', None) is not None and
+                    record[attr['name']] not in attr['options']
+                ):
+                    warn = "'%s' attr has invalid option '%s'. Random choice..."
+                    self.logger.warning(
+                        warn % (attr['name'], record[attr['name']])
+                    )
+                    record[attr['name']] = self.random_choice(attr['name'])
+
+                # min/max it if it's an int
+                if attr['type'] == int:
+                    minmax = self.minmax(attr['name'], record[attr['name']])
+                    if record[attr['name']] != minmax:
+                        warn = "Correcting '%s' attr to min/max: %s"
+                        self.logger.warning(warn % (attr['name'], minmax))
+                        record[attr['name']] = minmax
+
+
+        # lastly, delete keys that aren't part of the model
+        bogus_keys = []
+        for key in record.keys():
+            if key not in self.attribs():
+                bogus_keys.append(key)
+        for key in bogus_keys:
+            warn = "Removing unknown attr '%s' from record..."
+            self.logger.warning(warn % key)
+            del record[key]
+
+        return record
+
+
+    def attribs(self, return_type=list):
+        ''' Returns a list of keys representing the attributes. '''
+        return sorted([
+            key for key in self.__dict__.keys()
+            if key not in self.admin_attribs
+        ])
+
+
+    def is_valid(self, key, value, log_errors=False, return_error=False,
+                raise_on_failure=False):
+
+        ''' Checks whether or not 'attrib' can be set to 'value' without
+        violating the model. '''
+
+        failure = None
+
+        attribute = getattr(self, key, None)
+
+        # checks are cascading, so we do an elif, so we don't fire more than one
+        if attribute is None:
+            failure = "'%s' is not a part of the data model!" % key
+        elif attribute.get('immutable', False):
+            failure = "'%s' value cannot be changed!" % key
+        elif not isinstance(value, attribute['type']):
+            err = "'%s' value '%s' must be %s type (not %s)!"
+            failure = err % (key, value, attribute['type'], type(value))
+        elif attribute.get('options', None) is not None:
+            if value not in attribute['options']:
+                err = "'%s' is not a valid option for '%s'. Options: %s"
+                failure = err % (value, key, attribute['options'])
+
+        #
+        # process failure
+        #
+        if failure is not None:
+            failure = 'Data model validation failure! ' + failure
+            if log_errors:
+                self.logger.error(failure)
+            if raise_on_failure:
+                raise utils.InvalidUsage(failure, 422)
+            if return_error:
+                return failure
+            return False
+
+        return True
+
+
+    def random_choice(self, attr):
+        ''' Throws an error if the attribute doesn't have an 'options' key. The
+        options key, obviously must map to a value that is a list. '''
+
+        attribute = getattr(self, attr)
+        if attribute.get('options', None) is None:
+            raise AttributeError("'%s' parameter does not have options!" % attr)
+
+        return random.choice(attribute['options'])
+
+
+    def serialize(self):
+        ''' Serializes the model, i.e. returns a list of dicts. '''
+        return [getattr(self, attr) for attr in self.attribs()]
+
+
+    def minmax(self, attr, value):
+        ''' Determines if 'value' is too high or twoo low for 'attribute' and
+        returns the adjusted value. '''
+
+        attribute = getattr(self, attr)
+
+        if attribute.get('minimum', None) is not None:
+            if value < attribute['minimum']:
+                return attribute['minimum']
+
+        if attribute.get('maximum', None) is not None:
+            if value > attribute['maximum']:
+                return attribute['maximum']
+
+        return value
+
+
 
 #
 #   KillboardAsset starts here
@@ -1780,6 +2035,7 @@ class KillboardAsset:
 
         if perform_save:
             self.save()
+
 
 
 

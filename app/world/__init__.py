@@ -40,7 +40,6 @@ from app.admin import notifications
     # models
 from app.models import killboard as killboard_model
 from app.models import campaigns as campaigns_models
-from app.models import epithets as epithets_models
 from app.models import innovations as innovations_models
 from app.models import monsters as monster_models
 from app.models import principles as principles_mod
@@ -406,7 +405,7 @@ class World(object):
 
         # init
         S = survivors_models.Survivor(_id=survivor["_id"], normalize_on_init=False)
-        survivor["epithets"] = S.get_epithets("pretty")
+        survivor["tags"] = S.get_tags("pretty")
         survivor["age"] = utils.get_time_elapsed_since(survivor["created_on"], "age")
 
         # redact/remove
