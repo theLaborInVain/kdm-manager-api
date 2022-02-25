@@ -1022,8 +1022,6 @@ class UserAsset(object):
             3. once we've got self._id, we run self.load() and set self.loaded
         """
 
-
-
         #
         # 1. set basic UserAsset attributes
         #

@@ -165,23 +165,6 @@ class Survivor(models.UserAsset):
         }
     )
 
-    # attributes
-    for attr in ['Accuracy', 'Evasion', 'Luck', 'Speed', 'Strength']:
-        DATA_MODEL.add(attr, int)
-    DATA_MODEL.add('Movement', int, 5, minimum=1)
-    DATA_MODEL.add(
-        'attribute_detail',
-        dict,
-        {
-            "Movement": {"tokens": 0, "gear": 0},
-            "Accuracy": {"tokens": 0, "gear": 0},
-            "Strength": {"tokens": 0, "gear": 0},
-            "Evasion":  {"tokens": 0, "gear": 0},
-            "Luck":     {"tokens": 0, "gear": 0},
-            "Speed":    {"tokens": 0, "gear": 0},
-        }
-    )
-
     # secondary attribs
     DATA_MODEL.add('affinities', dict, {"red": 0, "blue": 0, "green": 0})
     DATA_MODEL.add("Understanding", int, 0, minimum=0, maximum=9)
@@ -1944,6 +1927,7 @@ class Survivor(models.UserAsset):
         #
         for divert in [
             'bleeding_tokens',
+            'damage',
             'public',
             'sex',
             'survival',
@@ -1951,6 +1935,10 @@ class Survivor(models.UserAsset):
         ]:
             if attrib == divert:
                 return getattr(self, 'set_%s' % divert)()
+
+        # special diversion for damage locations
+        if attrib in self.DATA_MODEL.category('damage_location'):
+            return self.__set_damage()
 
         # if we're still here, it's an integer that we're trying to set
         value = int(value)
@@ -2816,6 +2804,27 @@ class Survivor(models.UserAsset):
 
         if save:
             self.save()
+
+
+    def __set_damage(self, save=True):
+        ''' Private diversion route from the public set_attribute() method.
+        Requires a request. Sets a damage location to a bool value. '''
+
+        attrib = self.params.get("attribute", None)     # location
+        value = bool(self.params.get('value', False))   # boolean on/off
+
+        self.DATA_MODEL.is_valid(attrib, value, raise_on_failure=True)
+
+        self.survivor[attrib] = value
+
+        if value:
+            self.log_event(value=attrib, key="ON")
+        else:
+            self.log_event(value=attrib, key="OFF")
+
+        if save:
+            self.save()
+
 
 
     @models.web_method

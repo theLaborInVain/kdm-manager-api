@@ -1287,6 +1287,22 @@ survivor_management = {
             "<p>Hit this endpoint to reset all damage locations.</p>"
         )
     },
+    "zz_survivor_toggle_damage": {
+        "name": "/survivor/toggle_damage/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        'deprecated': True,
+        "desc": (
+            '<p><b>POST</b> a damage location to this endpoint to toggle it on '
+            'or off.</p>'
+            '<p>This endpoint is deprecated. Use <code>set_attribute</code> '
+            'instead (and <b>POST</b> a Boolean).</p>'
+        ),
+        'examples': [
+            "{'location': 'brain_damage_light'}",
+            "{'location': 'waist_damage_heavy'}",
+        ],
+    },
     "survivor_set_attribute": {
         "name": "/survivor/set_attribute/&lt;survivor_id&gt;",
         "subsection": "survivor_sheet",
@@ -1302,15 +1318,26 @@ survivor_management = {
             "includes both <code>attribute</code> and <code>value</code> keys, "
             "with an integer value for <code>value</code>.</p>"
             "<p>You can use this one to update pretty much any attribute of "
-            "the survivor sheet that is an integer, and it is essentially the "
+            "the survivor sheet, including damage, and it is essentially the "
             "same as the <code>set_many_attributes</code> route (except for "
-            "how it only does one attribute at a time).</p>"
+            "how it only does one attribute at a time).</p> "
+            "<p>Refer to the following table for damage 'attributes':</p><table>"
+            '<tr><th></th><th><div class="kd checkbox"></div></th><th><div class="kd checkbox heavy"></div></th></tr>'
+            '<tr><td>brain</td><td>brain_damage_light</td><td></td>'
+            '<tr><td class="kdm_manager_font">b</td><td></td><td>head_damage_heavy</td>'
+            '<tr><td class="kdm_manager_font">d</td><td>arms_damage_light</td><td>arms_damage_heavy</td>'
+            '<tr><td class="kdm_manager_font">c</td><td>body_damage_light</td><td>body_damage_heavy</td>'
+            '<tr><td class="kdm_manager_font">e</td><td>waist_damage_light</td><td>waist_damage_heavy</td>'
+            '<tr><td class="kdm_manager_font">f</td><td>legs_damage_light</td><td>legs_damage_heavy</td>'
+            '</table>'
         ),
         'examples': [
             '{attribute: "survival", value: 3}',
             '{attribute: "Head", value: 1}',
             '{attribute: "Understanding", value: 2}',
             '{attribute: "Luck", value: -3}',
+            '{attribute: "brain_damage_light", value: true}',
+            '{attribute: "legs_damage_heavy", value: false}',
             '{attribute: "Movement", value: 4}',
             '{attribute: "hunt_xp", value: 6}',
             '{attribute: "bleeding_tokens", value: 2}',
@@ -1637,7 +1664,7 @@ survivor_management = {
             "list of favorite survivors, we actually make a list of users on "
             "the survivor who have made the survivor one of their favorites."
             "</p><p>To add a user's OID to the survivor's list of users who "
-            "have starred it, use the <code>users_email</code> key and an "
+            "have starred it, use the <code>user_email</code> key and an "
             "OID."
         ),
         'examples': [
