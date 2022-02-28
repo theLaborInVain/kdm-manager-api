@@ -46,7 +46,7 @@ class Config():
         'blacklantern', 'the_black_lantern', 'theblacklantern',
         'monster', 'monsters'
     ]
-    VERSION = "1.116.782"
+    VERSION = "1.117.785"
 
     if socket.getfqdn() == PRODUCTION['app_fqdn']:
         ENVIRONMENT['is_production'] = True

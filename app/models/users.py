@@ -69,7 +69,7 @@ def authenticate(username=None, password=None):
         return None
 
     # initialize U as None, i.e. our default/failure return
-    U = None
+    user_object = None
 
     # grab the user's MDB document, but DO NOT initialize the User:
     user = utils.mdb.users.find_one({"login": username})
@@ -78,19 +78,22 @@ def authenticate(username=None, password=None):
     #   initialized User object if they succeed:
     if user is not None:
         if check_password_hash(user['password'], password):
-            U = User(_id=user["_id"])
+            user_object = User(_id=user["_id"])
         else:
             try:
-                if safe_str_cmp(user["password"], md5(password.encode()).hexdigest()):
-                    U = User(_id=user["_id"])
+                if safe_str_cmp(
+                    user["password"],
+                    md5(password.encode()).hexdigest()
+                ):
+                    user_object = User(_id=user["_id"])
             except UnicodeEncodeError as e:
                 raise utils.InvalidUsage(e)
 
     # timestamp this authentication
-    if U is not None:
-        U.set_latest_authentication()
+    if user_object is not None:
+        user_object.set_latest_authentication()
 
-    return U
+    return user_object
 
 
 
@@ -163,32 +166,33 @@ def reset_password():
             ) % var_desc
             return flask.Response(response=err, status=400)
 
-    user = utils.mdb.users.find_one({'login': user_login, 'recovery_code': recovery_code})
+    user = utils.mdb.users.find_one(
+        {'login': user_login, 'recovery_code': recovery_code}
+    )
     if user is None:
+        msg = "The password recovery code supplied is not valid for user '%s'."
         return flask.Response(
-            response="The password recovery code supplied is not valid for user '%s'." % (user_login),
-            status="400"
+            response=msg % user_login,
+            status=400
         )
 
-    U = User(_id = user["_id"])
-    del U.user['recovery_code']
-    U.update_password(new_password)
+    user_object = User(_id=user["_id"])
+    del user_object.user['recovery_code']
+    user_object.update_password(new_password)
     return utils.http_200
 
 
 def initiate_password_reset():
     """ Attempts to start the mechanism for resetting a user's password.
-    Unlike a lot of methods, this one handles the whole flask.request processing and
-    is very...self-contained. """
+    Unlike a lot of methods, this one handles the whole flask.request processing
+    and is very...self-contained. """
 
     # first, validate the post
     incoming_json = flask.request.get_json()
     user_login = incoming_json.get('username', None)
     if user_login is None:
-        return flask.Response(
-            response = "A valid user email address must be included in password reset requests!",
-            status = 400
-        )
+        msg = "A valid email address is required for password reset requests!"
+        return flask.Response(response=msg, status=400)
 
     # normalize emails issue #501
     user_login = user_login.strip().lower()
@@ -841,7 +845,7 @@ class User(models.UserAsset):
 #        self.set_verified_email(new_value=True, save=False)
 
         # log and save
-        self.logger.info(info % (self, level, flask.request.User.user['login']))
+        self.logger.info(info % (self, level, self.user['login']))
         self.save()
 
 
@@ -978,9 +982,8 @@ class User(models.UserAsset):
     #   get methods
     #
 
-    def get_age(self, return_type="years"):
+    def get_age(self):
         """ Returns the user's age. """
-
         return utils.get_time_elapsed_since(self.user["created_on"], 'age')
 
 
@@ -1363,7 +1366,9 @@ class User(models.UserAsset):
 
         if not 'preferences' in self.user.keys():
             self.user['preferences'] = {'preserve_sessions': False}
-            self.logger.warn("%s has no 'preferences' attrib! Normalizing..." % self)
+            self.logger.warn(
+                "%s has no 'preferences' attrib! Normalizing..." % self
+            )
             self.perform_save = True
 
         # 'patron' becomes 'subscriber' in the 1.0.0 release
@@ -1373,7 +1378,7 @@ class User(models.UserAsset):
             self.logger.warn("%s Normalized 'patron' to 'subscriber'!" % self)
             self.perform_save = True
 
-        if not 'subscriber' in self.user.keys():
+        if 'subscriber' not in self.user.keys():
             self.user['subscriber'] = {'level': 0}
             self.logger.warn("%s Added 'subscriber' dict to user!" % self)
             self.perform_save = True
