@@ -140,8 +140,8 @@ class Settlement(models.UserAsset):
         self.init_asset_collections()
 
         # now normalize
-        if self.kwargs.get('normalize_on_init', False):
-            self.normalize()
+#        if self.kwargs.get('normalize_on_init', False):
+        self.normalize()
 
         self.campaign_dict = self.get_campaign(dict)
 

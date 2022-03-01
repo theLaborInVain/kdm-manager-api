@@ -66,9 +66,7 @@
 
 .kd.icon.settlement_event {
     background-image:
-        url('https://api.kdm-manager.com/static/media/images/settlement_event.png'),
-        url('https://192.168.0.110:8013/static/media/images/settlement_event.png')
-    ;
+        url('https://api.kdm-manager.com/static/media/images/settlement_event.png');
     background-size: 1em;
     background-repeat: no-repeat;
     background-position: center;
@@ -76,9 +74,7 @@
 }
 .kd .deck_icon {    /* for when display requires the inline deck icon */
     background-image:
-        url('https://api.kdm-manager.com/static/media/images/deck_icon.png'),
-        url('https://192.168.0.110:8013/static/media/images/deck_icon.png')
-    ;
+        url('https://api.kdm-manager.com/static/media/images/deck_icon.png');
     background-size: 1em;
     background-repeat: no-repeat;
     background-position: center;
