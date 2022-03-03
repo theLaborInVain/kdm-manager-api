@@ -784,9 +784,9 @@ class Settlement(models.UserAsset):
             'type': M.type,
             'raw_name': monster_string,
         }
-        for a in ['comment','level']:
+        for a in ['comment', 'level']:
             if hasattr(M, a):
-                killboard_dict[a] = M.get(a)
+                killboard_dict[a] = getattr(M, a)
 
         utils.mdb.killboard.insert(killboard_dict)
         msg = (
