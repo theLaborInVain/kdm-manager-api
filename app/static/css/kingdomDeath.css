@@ -270,6 +270,17 @@ hr.three_dee {
     text-align: center; 
     width: inherit;
 }
+.kd.checkbox.dotted {
+    background: #000;
+    background-color: #000;
+}
+.kd.checkbox.dotted:after {
+    color: #fff;
+    content: "\25Cf";
+    font-size: 0.75rem;
+    margin: -0.21rem 0 0 -0.1rem;
+    position: absolute;
+}
 .kd.checkbox.large {
     border: 0.125rem solid;
     height: 1.2rem;

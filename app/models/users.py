@@ -21,6 +21,7 @@ import io
 import inspect
 import os
 import pickle
+import pytz
 import random
 import socket
 import string
@@ -28,6 +29,7 @@ from urllib.parse import urlparse
 
 # third party imports
 from dateutil.relativedelta import relativedelta
+from dateutil.tz import tzlocal
 import flask
 from hashlib import md5
 import json
@@ -486,7 +488,7 @@ class User(models.UserAsset):
 
         # now do it
         self.user = {
-            'created_on': datetime.now(),
+            'created_on': datetime.now(tzlocal()),
             'login': username,
             'password': generate_password_hash(password),
             'preferences': {},
@@ -714,7 +716,7 @@ class User(models.UserAsset):
         """
 
         self.user['latest_action'] = activity_string
-        self.user['latest_activity'] = datetime.now()
+        self.user['latest_activity'] = datetime.now(tzlocal())
         self.user['latest_user_agent'] = ua_string
 
         if utils.get_api_client() is not None:
@@ -722,7 +724,7 @@ class User(models.UserAsset):
 
         # save the most recent 10 actions in the 'activity_log' list
         activity_tuple = (
-            datetime.now(), utils.get_api_client(), activity_string
+            datetime.now(tzlocal()), utils.get_api_client(), activity_string
         )
 
         if self.user.get('activity_log', None) is None:
@@ -739,7 +741,7 @@ class User(models.UserAsset):
         """ Sets the self.user['latest_authentication'] value to datetime.now().
         Saves, optionally. """
 
-        self.user['latest_authentication'] = datetime.now()
+        self.user['latest_authentication'] = datetime.now(tzlocal())
         if save:
             self.save(verbose=False)
 
@@ -758,7 +760,7 @@ class User(models.UserAsset):
             if n_handle == 'RESET':
                 self.user['notifications'] = {}
             else:
-                self.user['notifications'][n_handle] = datetime.now()
+                self.user['notifications'][n_handle] = datetime.now(tzlocal())
 
         self.save()
 
@@ -830,14 +832,14 @@ class User(models.UserAsset):
 
         # now make the change
         if self.user['subscriber'].get('created_on', None) is None:
-            self.user['subscriber']['created_on'] = datetime.now()
+            self.user['subscriber']['created_on'] = datetime.now(tzlocal())
 
         self.user['subscriber']['level'] = level
         self.user['subscriber']['desc'] = utils.settings.get(
             'subscribers',
             'level_%s' % level
         )
-        self.user['subscriber']['updated_on'] = datetime.now()
+        self.user['subscriber']['updated_on'] = datetime.now(tzlocal())
 
         info = '%s subscriber level set to %s (admin: %s)'
 
@@ -901,7 +903,7 @@ class User(models.UserAsset):
         if 'admin' in self.user.keys():
             del self.user["admin"]
         else:
-            self.user["admin"] = datetime.now()
+            self.user["admin"] = datetime.now(tzlocal())
         self.save()
 
 
@@ -1158,7 +1160,7 @@ class User(models.UserAsset):
             pass
         else:
             for s in settlements:
-                asset_age = datetime.now() - s['created_on']
+                asset_age = datetime.now(tzlocal()) - s['created_on']
                 older_than_cutoff = asset_age.days > utils.settings.get(
                     'users','free_user_settlement_age_max'
                 )
@@ -1194,7 +1196,7 @@ class User(models.UserAsset):
                         subject="Settlement auto-remove! [%s]" % socket.getfqdn(),
                         html_msg=msg
                     )
-                    s['removed'] = datetime.now()
+                    s['removed'] = datetime.now(tzlocal())
                     utils.mdb.settlements.save(s)
                     settlements.remove(s)
 
@@ -1230,9 +1232,14 @@ class User(models.UserAsset):
         """ Returns a dictionary of subscriber information. """
 
         self.user['subscriber'].update(
-            {'age': utils.get_time_elapsed_since(
-                self.user['subscriber'].get('created_on', datetime.now()),
-                'age')
+            {
+                'age': utils.get_time_elapsed_since(
+                    self.user['subscriber'].get(
+                        'created_on',
+                        datetime.now(tzlocal())
+                    ),
+                'age'
+                )
             }
         )
 
@@ -1269,7 +1276,8 @@ class User(models.UserAsset):
                 "removed": {"$exists": False},
             })
         else:
-            raise Exception("'%s' is not a valid qualifier for this method!" % qualifier)
+            err = "'%s' is not a valid qualifier for this method!" % qualifier
+            raise AttributeError(err)
 
         if return_type == int:
             return survivors.count()

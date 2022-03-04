@@ -158,10 +158,10 @@
                     <div>
                 		<b>OID:</b> {a workWithUser.user._id.$oid a}<br/>
 		                <b>User Age:</b> {a workWithUser.user.age a}<br/>
-                        <b>Created On:</b> {a workWithUser.user.created_on.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
-                        <b>Latest Sign-in:</b> {a workWithUser.user.latest_sign_in.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
+                        <b>Created On:</b> {a workWithUser.user.created_on.$date | date:'yyyy-MM-dd @ h:mma Z' a}<br/>
+                        <b>Latest Sign-in:</b> {a workWithUser.user.latest_authentication.$date | date:'yyyy-MM-dd @ h:mma Z' a}<br/>
                         <b>Latest API client:</b> {a workWithUser.user.latest_api_client a}</br/>
-                        <b>Latest Activity:</b> {a workWithUser.user.latest_activity.$date | date:'yyyy-MM-dd @ h:mma' a}<br/>
+                        <b>Latest Activity:</b> {a workWithUser.user.latest_activity.$date | date:'yyyy-MM-dd @ h:mma Z' a}<br/>
         	            <b>Latest Action:</b> {a workWithUser.user.latest_action a}<br/>
                 		<b>Settlements created:</b> {a workWithUser.user.settlements_created a}<br/>
                 		<b>Survivors created:</b> {a workWithUser.user.survivors_created a}<br/>

@@ -14,7 +14,7 @@ myApp.config(['$interpolateProvider', function($interpolateProvider) {
 
 myApp.filter('trustedHTML', function($sce) {return $sce.trustAsHtml;});
 
-myApp.controller('globalController', function($scope, $http, $interval, $q, $timeout) {
+myApp.controller('globalController', function($scope, $rootScope, $http, $interval, $q, $timeout) {
 
 
     // inject some date calc methods into the root scope
@@ -24,8 +24,12 @@ myApp.controller('globalController', function($scope, $http, $interval, $q, $tim
         var age = $scope.now - birthday;
         return Math.round(age / (1000 * 60 * 60 * 24));
     };
-
-
+    
+    $rootScope.getTimezone = function() {
+        var TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        return TZ;
+    };
+    
 	//
     // re-usable UI/UX methods
 	//
