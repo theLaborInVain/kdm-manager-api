@@ -87,6 +87,16 @@ core = {
             'craft this gear.'
         ),
     },
+    'consecutive_spaces': {
+        'name': 'Consecutive Spaces',
+        'desc': (
+            'When a survivor is instructed to move consecutive spaces, they '
+            'must move without occupying the same space more than once.<br/>'
+            'A survivor could not, for example, move back and forth between '
+            'two spaces to fulfill consecutive space movement. They could, '
+            'however, move around a monster or move in a straight line.'
+        ),
+    },
     'consume': {
         'name': 'Consume',
         'type': 'special_rule',

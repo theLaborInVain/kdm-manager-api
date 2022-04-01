@@ -146,8 +146,8 @@ class World(object):
 
     @utils.metered
     def refresh_all_assets(self, force=False):
-        """ Updates all assets. Set 'force' to True to ignore 'max_age' and
-        'asset_max_age'. A wrapper for self.refresh_asset(). """
+        """ Updates all assets. Set 'force' to True to ignore 'max_age'.
+        A wrapper for self.refresh_asset(). """
 
         if force:
             self.logger.warn('Beginning forced asset refresh...')
@@ -171,7 +171,7 @@ class World(object):
     @utils.metered
     def refresh_asset(self, asset_key=None, force=False):
         """ Updates a single asset. Checks the 'max_age' of the asset and falls
-        back to settings.world.asset_max_age if it can't find one.
+        back to config.WORLD_ASSET_MAX_AGE if it can't find one.
 
         Set 'force' to True if you want to force a refresh, regardless of the
         asset's age. """
@@ -229,7 +229,9 @@ class World(object):
 
         # basic init
         if self.assets.get(asset_key, None) is None:
-            msg = "Could not refresh '%s' asset: no such asset exists!" % asset_key
+            msg = (
+                "Could not refresh '%s' asset: no such asset exists!"
+            ) % asset_key
             self.logger.exception(msg)
             raise Exception(msg)
 
@@ -238,7 +240,7 @@ class World(object):
 
         # default the asset's 'max_age' attribute if it hasn't got one
         if asset_dict.get("max_age", None) is None:
-            asset_dict["max_age"] = utils.settings.get("world", "asset_max_age") * 60
+            asset_dict["max_age"] = API.config['WORLD_ASSET_MAX_AGE'] * 60
 
         return asset_dict
 

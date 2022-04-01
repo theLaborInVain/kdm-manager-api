@@ -617,6 +617,12 @@ product_lines = {
         'released': datetime(2021, 11, 25, 12, tzinfo=USCENTRAL),
     },
 
+    'grimmory': {
+        'released': datetime(2022,3,1, 12, tzinfo=USCENTRAL),
+        'name': 'Grimmory',
+        'ui': {'pretty_category': 'White Box'},
+    },
+
 
 }
 
@@ -741,6 +747,7 @@ miscellaneous = {
         'name': 'Sunlion Armor (Beta)',
         'ui': {'pretty_category': 'Enhancement'},
     },
+
 
 }
 

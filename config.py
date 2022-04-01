@@ -6,6 +6,7 @@
 
 """
 
+import pytz
 import socket
 
 class Config():
@@ -46,7 +47,10 @@ class Config():
         'blacklantern', 'the_black_lantern', 'theblacklantern',
         'monster', 'monsters'
     ]
-    VERSION = "1.119.794"
+    TIMEZONE = pytz.timezone('US/Central')
+    VERSION = "1.121.800"
+    WORLD_ASSET_MAX_AGE = 15    # minutes
+    WORLD_REFRESH_INTERVAL = 5  # minutes
 
     if socket.getfqdn() == PRODUCTION['app_fqdn']:
         ENVIRONMENT['is_production'] = True

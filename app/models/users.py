@@ -48,7 +48,8 @@ from app.models import user_preferences
 from app.models.settlements import Settlement
 
 
-# laaaaaazy
+# constants
+
 LOGGER = utils.get_logger()
 
 #
@@ -1160,7 +1161,11 @@ class User(models.UserAsset):
             pass
         else:
             for s in settlements:
-                asset_age = datetime.now(tzlocal()) - s['created_on']
+
+                # get asset age
+                created_on = API.config['TIMEZONE'].localize(s['created_on'])
+                asset_age = datetime.now(tzlocal()) - created_on
+
                 older_than_cutoff = asset_age.days > utils.settings.get(
                     'users','free_user_settlement_age_max'
                 )

@@ -11,7 +11,7 @@ import argparse
 import time
 
 # local imports
-from app import utils, world
+from app import API, utils, world
 from app.admin import purge
 
 
@@ -47,7 +47,7 @@ def start_daemon():
     while True:
         purge.purge_removed_settlements(arm=True)
         WORLD.refresh_all_assets()
-        time.sleep(utils.settings.get("world", "refresh_interval") * 60)
+        time.sleep(API.config['WORLD_REFRESH_INTERVAL'] * 60)
 
 
 if __name__ == "__main__":

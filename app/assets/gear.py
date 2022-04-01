@@ -5788,3 +5788,62 @@ halloween_survivors_series_2 = {
     },
 }
 
+grimmory = {
+    'gusk_knife_blindside': {
+        'name': 'Gusk Knife (Blindside)',
+        'type': 'gear_recipe',
+        'expansion': 'grimmory',
+        'keywords': ['weapon', 'melee', 'dagger', 'shield', 'bone'],
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 5,
+        'affinities': {'bottom': 'green'},
+        'desc': (
+            'If paired, this gains <b>Grimstep</b> & <b>Blindside</b>.<br/>'
+            '<b>Blindside:</b> When you wound the monster from its blind spot, '
+            'all of its reflex reactions become failure reactions until this '
+            'attack ends.'
+        ),
+        'rules': ['Paired', 'Block 1'],
+        'recipes': [
+            {
+                'prefix_text': '1x Dense Bone from a level 3 Gorm',
+                'resource_types': {'organ': 1, 'scrap': 1},
+            },
+            {
+                'prefix_text': '1x bone resource from a level 3 monster',
+                'resource_handles': {'perfect_bone': 1},
+                'resource_types': {'organ': 1, 'scrap': 1},
+            },
+        ],
+    },
+    'gusk_knife_grimstep': {
+        'name': 'Gusk Knife (Grimstep)',
+        'type': 'gear_recipe',
+        'expansion': 'grimmory',
+        'keywords': ['weapon', 'melee', 'dagger', 'shield', 'bone'],
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 5,
+        'affinities': {'bottom': 'green'},
+        'desc': (
+            'If paired, this gains <b>Grimstep</b> & <b>Blindside</b>.<br/>'
+            '<b>Grimstep:</b> When you are attacking and block a hit, you may '
+            'move up to 6 <b>consecutive</b> spaces. If you do, your next '
+            'wound attempt this attack gains strength equal to the number of '
+            'spaces moved.'
+        ),
+        'rules': ['Paired', 'Block 1'],
+        'recipes': [
+            {
+                'prefix_text': '1x Dense Bone from a level 3 Gorm',
+                'resource_types': {'organ': 1, 'scrap': 1},
+            },
+            {
+                'prefix_text': '1x bone resource from a level 3 monster',
+                'resource_handles': {'perfect_bone': 1},
+                'resource_types': {'organ': 1, 'scrap': 1},
+            },
+        ],
+    },
+}
