@@ -467,6 +467,7 @@ male = [
     "Vimme",
     "Vivec",
     "Vlad",
+    'Volodymyr',
     "Voltaire",
     "Ward",
     "Wallace",

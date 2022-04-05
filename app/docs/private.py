@@ -1303,6 +1303,19 @@ survivor_management = {
             "{'location': 'waist_damage_heavy'}",
         ],
     },
+    "survivor_set_abilities_and_impairments": {
+        "name": "/survivor/set_abilities_and_impairments/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        'desc': (
+            "<p>Set the survivor's <code>abilities_and_impairments</code> list,"
+            " automatically logging add/remove operations required to sync the "
+            "existing list with the incoming one.</p>"
+        ),
+        'examples': [
+            '{value: ["bitter_frenzy", "cancerous_illness", "tinker"]}'
+        ],
+    },
     "survivor_set_attribute": {
         "name": "/survivor/set_attribute/&lt;survivor_id&gt;",
         "subsection": "survivor_sheet",
@@ -1316,7 +1329,7 @@ survivor_management = {
             "you want, then look at other endpoints.</p>"
             "<p>For this endpoint, you want to <b>POST</b> some JSON that "
             "includes both <code>attribute</code> and <code>value</code> keys, "
-            "with an integer value for <code>value</code>.</p>"
+            "with an appropriate type value for <code>value</code>.</p>"
             "<p>You can use this one to update pretty much any attribute of "
             "the survivor sheet, including damage, and it is essentially the "
             "same as the <code>set_many_attributes</code> route (except for "
@@ -1330,8 +1343,11 @@ survivor_management = {
             '<tr><td class="kdm_manager_font">e</td><td>waist_damage_light</td><td>waist_damage_heavy</td>'
             '<tr><td class="kdm_manager_font">f</td><td>legs_damage_light</td><td>legs_damage_heavy</td>'
             '</table>'
+            '<p><b>Important!</b> For updating attributes that are lists of '
+            'game assets, please use <code>replace_game_assets</code>.</p>.'
         ),
         'examples': [
+            '{attribute: "abilities_and_impairments", value: ["crystal_skin", "dead_inside", "prepared"]}',
             '{attribute: "survival", value: 3}',
             '{attribute: "Head", value: 1}',
             '{attribute: "Understanding", value: 2}',

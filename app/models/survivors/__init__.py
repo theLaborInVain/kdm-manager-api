@@ -946,7 +946,12 @@ class Survivor(models.UserAsset):
         if apply_related and asset_dict.get("related", None) is not None:
             self.logger.info("Automatically applying %s related asset handles to %s" % (len(asset_dict["related"]), self))
             for related_handle in asset_dict["related"]:
-                self.add_game_asset(asset_class, related_handle, apply_related=False, save=save)
+                self.add_game_asset(
+                    asset_class,
+                    related_handle,
+                    apply_related=False,
+                    save=save
+                )
 
         # 7.) EXCLUDED - rm any excluded
         for excluded_handle in asset_dict.get('excluded', []):
@@ -1910,6 +1915,41 @@ class Survivor(models.UserAsset):
     #
 
     @models.web_method
+    def set_abilities_and_impairments(self, save=True):
+        ''' A web-only method that allows the survivor's
+        'abilities_and_impairments' list to be set, automatically handling add
+        and remove operations. '''
+
+        self.check_request_params(['value'])
+        new_list = self.params['value']
+
+        if not isinstance(new_list, list):
+            err = "The 'value' param should be a list of handles."
+            raise utils.InvalidUsage(err)
+
+        # get the add/rm lists
+        add_list, rm_list = utils.list_compare(
+            self.survivor['abilities_and_impairments'],
+            new_list
+        )
+
+        if add_list != []:
+            [
+                self.add_game_asset('abilities_and_impairments', ai)
+                for ai in add_list
+            ]
+
+        if rm_list != []:
+            [
+                self.rm_game_asset('abilities_and_impairments', ai)
+                for ai in rm_list
+            ]
+
+        if save:
+            self.save()
+
+
+    @models.web_method
     def set_attribute(self, attrib=None, value=None, save=True):
         """ Adds 'modifier' value to self.survivor value for 'attribute'. If the
         'attrib' kwarg is None, the function assumes that this is part of a call
@@ -1926,6 +1966,7 @@ class Survivor(models.UserAsset):
         # divert certain attributes to specialized set methods:
         #
         for divert in [
+            'abilities_and_impairments',
             'bleeding_tokens',
             'damage',
             'public',
