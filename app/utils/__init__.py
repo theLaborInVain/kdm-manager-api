@@ -5,6 +5,7 @@ from bson import json_util
 from bson.objectid import ObjectId
 import configparser
 from datetime import datetime, timedelta
+from dateutil.tz import tzlocal
 import email
 from email.header import Header as email_Header
 from email.mime.multipart import MIMEMultipart
@@ -16,6 +17,7 @@ import json
 import logging
 import os
 import platform
+import pytz
 import smtplib
 import socket
 from string import Template
@@ -35,6 +37,9 @@ from app import API
 from app.models import versions
 from app.utils import crossdomain as crossdomain_module
 from app.utils import settings
+
+
+USCENTRAL = pytz.timezone('US/Central')
 
 # initialize convenience libraries/methods for lazy importing
 crossdomain = crossdomain_module.crossdomain
@@ -514,9 +519,11 @@ def get_time_elapsed_since(start_time, units=None, round_seconds=True):
     representing the elapsed time.
     """
 
-    delta = (datetime.now() - start_time)
+    start_time = start_time.replace(tzinfo=USCENTRAL)
+
+    delta = (datetime.now(tzlocal()) - start_time)
     days = delta.days
-    years = relativedelta(datetime.now(), start_time).years
+    years = relativedelta(datetime.now(tzlocal()), start_time).years
     offset = delta.total_seconds()
 
     offset_hours = offset / 3600.0
