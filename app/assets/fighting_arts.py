@@ -37,9 +37,11 @@ fighting_art = {
         'name': 'Extra Sense'
     },
     'last_man_standing': {
-        'desc': 'While you are the only survivor on the showdown board, you may not gain bleeding tokens or be knocked down.',
+        'desc': (
+            'While you are the only survivor on the showdown board, you may '
+            'not gain bleeding tokens or be knocked down.'
+        ),
         'name': 'Last Man Standing',
-#        'cannot_gain_bleeding_tokens': True,
     },
     'leader': {
         'desc': 'Whenever you <b>encourage</b> a survivor, they gain +1 speed token until the end of the round.<br/>Once per hunt phase, you may inspire another survivor. They use your understanding and courage to resolve a hunt or story event. (Example: if you have 3+ courage you can inspire another survivor to walk the path of the brave during <b>Overwhelming Darkness</b>.)',
@@ -541,7 +543,11 @@ secret_fighting_art = {
 
     # spid
     'death_touch': {
-        'desc': 'Gain +1 accuracy when attacking with Fist & Tooth.<br/>When you wound a monster, it gains -1 toughness until the end of your attack.<br/>You cannot use this if you are male.',
+        'desc': (
+            'Gain +1 accuracy when attacking with Fist & Tooth.<br/>When you '
+            'wound a monster, it gains -1 toughness until the end of your '
+            'attack.<br/>You cannot use this if you are male.'
+        ),
         'epithet': 'black_widow',
         'expansion': 'spidicules',
         'name': 'Death Touch',

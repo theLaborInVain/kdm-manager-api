@@ -19,6 +19,32 @@ VERSIONS = OrderedDict({
         'released': datetime(2015,9,1),
         'desc': 'Original Kickstarter release.',
         'name': 'Original Kickstarter release.',
+        'assets': {
+            'abilities_and_impairments': {
+                "club_specialization": {
+                    "name": "Specialization - Club",
+                    "desc": (
+                        "All clubs in your gear grid gain <b>paired</b>. "
+                        "Cannot use this with two-handed clubs."
+                    ),
+                },
+                "mastery_club": {
+                "name": "Mastery - Club",
+                "desc": (
+                    "If you are a Club Master, all Clubs in your gear grid "
+                    "gain <b>Savage</b>. On a <b>Perfect hit</b> with a Club, "
+                    "gain <i>+3 strength</i> until the end of the attack."
+                ),
+                "weapon_proficiency": "club",
+                "weapon_name": "club",
+                "current_survivor": {
+                    "abilities_and_impairments": ["club_specialization"]},
+                "new_survivor": {
+                    "abilities_and_impairments": ["club_specialization"]},
+                'epithet': 'club_master',
+                },
+            }
+        },
     },
     'core_1_4': {
         'major': 1,

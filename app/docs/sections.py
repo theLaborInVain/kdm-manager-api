@@ -281,8 +281,12 @@ order. If you get them back out of order, open a ticket.</p>
     "survivor_sheet":{
         "name": "Survivor Sheet",
         "desc": (
-            "Endpoints documented here are allow a survivor's 'sheet' to "
-            "be managed."
+            "<p>Endpoints documented here are allow a survivor's 'sheet' to "
+            "be managed.</p>"
+            "<p>For most operations, you want to start with the "
+            "<code>set_attribute</code> method, which lets you post some basic "
+            "JSON and update most of the info that the API let's you record "
+            "about survivors.</p>"
         ),
     },
     "survivor_gear_management":{

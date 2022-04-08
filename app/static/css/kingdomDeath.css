@@ -145,6 +145,7 @@ hr.three_dee {
     --color-kd-brown-gradient: linear-gradient(#997030, #a47a41, #997030);
     --color-kd-card-gradient: radial-gradient(#fff, #fff, #f8f8f8, #fffff9);
     --color-kd-resource-card-gradient: radial-gradient(#FBF7F7, #FBF7F7, #F4ECD2, #E7D09D);
+    --color-kd-disorder-card-gradient: radial-gradient(circle at 50% 25%, #787273, #645E60, #393536, #2F2327, #000);
     --color-kd-green: #4CB848;
     --color-kd-green-gradient: radial-gradient(#0d0, #4CB848);
     --color-kd-death-grey: #313131;
@@ -155,6 +156,7 @@ hr.three_dee {
     --color-kd-grey: #f2f2f2;
     --color-kd-pink: #F35295;
     --color-kd-pink-gradient: radial-gradient(#F06DbC, #F35295);
+    --color-kd-promo-gradient: radial-gradient(circle, #5Dd7F2, #50CAF5, #3FACCF);
     --color-kd-red: #B92426;
     --color-kd-red-gradient: linear-gradient(#DC2426, #B92426);
     --color-kd-silver-gradient: linear-gradient(to right, #eaebeb, #efefef, #fefefe, #efefef, #eaebeb);
@@ -265,7 +267,7 @@ hr.three_dee {
 .kd.checkbox:after {
     content: attr(caption-text);
     font-size: var(--font-small);
-    margin-top: 1.2rem;
+    margin: 1.2rem 0 0 -0.1rem;
     position: absolute;
     text-align: center; 
     width: inherit;
@@ -529,6 +531,22 @@ select.kd.capsule {
 .kd.death_grey_text {
     color: #616161;
 }
+.kd.disorder_gradient {
+    background: #000;
+    background: var(--color-kd-death-grey);
+    color: #fff;
+}
+.kd.disorder_purple,
+    .kd.disorders_purple {
+    background: var(--color-kd-disorder-purple);
+    color: #fff;
+}
+.kd.fighting_art_red,
+    .kd.fighting_arts_red {
+    background: var(--color-kd-fighting-art-red);
+    background: var(--color-kd-fighting-art-red-gradient);
+    color: #fff;
+}
 .kd.green {
     background: var(--color-kd-green);
     background: var(--color-kd-green-gradient);
@@ -544,6 +562,10 @@ select.kd.capsule {
 }
 .kd.pink_text {
     color: var(--color-kd-pink);
+}
+.kd.promo {
+    color: #fff;
+    background: var(--color-kd-promo-gradient);
 }
 .kd.red {
     background: var(--color-kd-red);
@@ -585,13 +607,18 @@ select.kd.capsule {
 }
 
 .kd.card.container {
-    box-sizing: border-box;
-    border-radius: var(--border-radius-card);
+    background: #fff;
     background: var(--color-kd-card-gradient);
+    border-radius: var(--border-radius-card);
+    box-sizing: border-box;
     box-shadow: var(--box-shadow-default);
     display: flex;
     margin: auto;
     min-height: 3in;
+}
+
+.kd.card.container.bridge {
+    width: 3in;
 }
 
 .kd.card.face {
@@ -623,12 +650,20 @@ select.kd.capsule {
 .kd.card.title_bar div:first-child { /*  title goes first in a title bar */
     font-family: 'silverado';
     text-align: center;
+    width: 100%;
 }
 .kd.card.title_bar div:last-child { /*  keywords go last in a title bar */
     font-size: 0.8rem;
     margin: 0 auto;
     text-align: center; 
     width: 70%;
+}
+
+.kd.card.body {
+    margin: 0 auto 1rem auto;
+    min-height: 10rem;
+    text-align: center;
+    width: 90%;
 }
 
 .kd.card.face.footer div {
@@ -652,6 +687,121 @@ select.kd.capsule {
     position: absolute; 
     padding-bottom: 0.75rem;
     width: 2rem;
+}
+
+
+
+/*  disorders   */
+.kd.card.disorder.container {
+    background: #000;
+    background: var(--color-kd-disorder-card-gradient);
+}
+.kd.card.disorder.title:before,
+    .kd.card.disorder.title:after {
+    content: "";
+}
+.kd.card.disorder.title {
+    color: #fff;
+    font-family: 'Silverado';
+    font-size: var(--font-large);
+    margin-bottom: 2rem;
+    text-transform: none;
+    width: 100%; 
+}
+.kd.card.disorder.flavor_text,
+    .kd.card.disorder.survivor_effect {
+    color: #fff;
+    margin: 0 auto 0.5rem auto;
+    text-align: center;
+    width: 90%;
+}
+.kd.card.disorder.flavor_text {
+    font-style: italic;
+}
+.kd.card.disorder.survivor_effect {
+    min-height: 10rem;
+}
+
+/*  fighting_arts   */
+.kd.card.fighting_art.container {
+    background: var(--color-kd-card-gradient);
+    min-height: 3.5in;
+    width: 3in;
+}
+.kd.card.fighting_art.title:before,
+    .kd.card.fighting_art.title:after {
+    content: "";
+}
+.kd.card.fighting_art.title {
+    font-family: 'Silverado';
+    font-size: var(--font-large);
+    text-transform: none;
+    width: 100%; 
+}
+.kd.card.fighting_art.subtitle {
+    font-size: var(--font-medium);
+    text-transform: lowercase;
+}
+.kd.card.fighting_art.subtitle:before,
+    .kd.card.fighting_art.subtitle:after {
+    content: " - ";
+}
+.kd.card.fighting_art.gradient_span {
+    height: 1.5rem;
+    border: 0;
+    margin: 0 0 1rem 0;
+}
+.kd.card.fighting_art.level_container:last-child {
+    margin-bottom: 2rem;
+}
+.kd.card.fighting_art.level_number {
+    align-items: center;
+    background: var(--color-kd-death-grey);
+    background-color: var(--color-kd-death-grey);
+    border-radius: 50%;
+    color: #fff;
+    display: flex; flex: 0 0 2rem;
+    height: 2rem;
+    justify-content: center;
+    margin: 0 1rem 0 0.5rem;
+    text-align:center;
+}
+.kd.card.fighting_art.level_desc {
+    margin: 0 0.5rem 0 0;
+}
+.kd.card.fighting_art.strain_threshold_container {
+    box-sizing: border-box;
+    border-bottom-right-radius: var(--border-radius-card);
+    border-bottom-left-radius: var(--border-radius-card);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin: 1rem auto 0 auto;
+    padding: 3%;
+    width: 100%;
+}
+.kd.card.fighting_art.strain_threshold_blocks_container {
+    margin-bottom: 0;
+    margin-top: -6.5%;
+    text-align: center;
+    width: 100%;
+}
+.kd.card.fighting_art.strain_threshold_blocks_container span {
+    margin-right: 1.5vw;
+}
+.strain_block {
+    background: #fff;
+    border-color: #5Dd7F2;
+    border: 0.1em solid #5Dd7F2;
+    display: inline-block;
+    height: 0.75rem;
+    margin-bottom: -0.3vh;
+    width: 0.75rem;
+}
+.kd.card.fighting_art.strain_threshold_desc {
+    font-size: 0.7em;
+    text-align: center;
+    width: 100%;
 }
 
 

@@ -1498,12 +1498,24 @@ survivor_management = {
             "<code>{sword: 'bone_blade', wounds: 3}</code>",
         ],
     },
-    "zz_survivor_toggle_boolean": {
-        "name": "/survivor/toggle_boolean/&lt;survivor_id&gt;",
+    "survivor_set_fighting_art_level": {
+        "name": "/survivor/set_fighting_art_level/&lt;survivor_id&gt;",
         "subsection": "survivor_sheet",
-        'deprecated': True,
         "methods": ["POST", "OPTIONS"],
-        "desc": '<p>Do not use this endpoint.</p>',
+        "desc": (
+            "<p>For Fighting Arts that support a level, such as the <i>Silk "
+            "Surgeon</i> FA from <b>Spidicules</b>.</p>"
+            "<p><b>POST</b> a Fighting Art handle and a list of which levels "
+            "the survivor has.</p>"
+            "<p><code>levels</code> should be a list of integers.</p>"
+            "<p>(Supersedes the long-deprecated "
+            "<code>toggle_fighting_arts_level</code> endpoint, which should "
+            "no longer be used as of Jan 2022.)</p>"
+        ),
+        'examples': [
+            "<code>{handle: 'silk_surgeon', levels: [0,1]}</code>",
+            "<code>{handle: 'silk_surgeon', levels: [0,3,2]}</code>",
+        ],
     },
     "survivor_toggle_sotf_reroll": {
         "name": "/survivor/toggle_sotf_reroll/&lt;survivor_id&gt;",
@@ -1516,7 +1528,7 @@ survivor_management = {
             "endpoint will create it and set it to <code>true</code>.</p>"
             "<p><b>Warning!<b></p> This attribute, since it is only used with "
             "certain campaign content, is <b>not</b> part of the survivor data "
-            "modal and <b>cannot</b> be toggled using the "
+            "model and <b>cannot</b> be toggled using the "
             "<code>toggle_boolean</code> endpoint!</p>"
         ),
     },

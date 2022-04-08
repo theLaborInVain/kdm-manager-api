@@ -177,9 +177,15 @@ expansion_disorders = {
     },
     'tiny_arachnophobia': {
         'expansion': 'spidicules',
-        'flavor_text': 'You are irrationally scared by tiny spiders and the things they produce.',
+        'flavor_text': (
+            'You are irrationally scared by tiny spiders and the things they '
+            'produce.'
+        ),
         'name': 'Tiny Arachnophobia',
-        'survivor_effect': 'You cannot carry any gear with the amber keyword. You cannot gain any resources with the silk keyword.'
+        'survivor_effect': (
+            'You cannot carry any gear with the amber keyword. You cannot gain '
+            'any resources with the silk keyword.'
+        ),
     },
 
     # dragon king
@@ -200,7 +206,10 @@ expansion_disorders = {
         'expansion': 'dragon_king',
         'flavor_text': "You're not ready to love.",
         'name': 'Performance Anxiety',
-        'survivor_effect': 'You cannot be nominated for <b>Intimacy</b>.<br/>Cure this disorder if you have 8+ courage.'
+        'survivor_effect': (
+            'You cannot be nominated for <b>Intimacy</b>.<br/>Cure this '
+            'disorder if you have 8+ courage.'
+        ),
     },
     'superstitious': {
         'expansion': 'dragon_king',

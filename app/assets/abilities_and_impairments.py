@@ -729,7 +729,12 @@ expansion_ai = {
         'type': 'ability'
     },
     'presage': {
-        'desc': 'Each time you attack, before drawing hit locations, loudly say a name. You lightly bite the eye in your cheek to see what it sees. If you draw any hit locations with that name, gain +3 insanity and +10 strength when attempting to wound them.',
+        'desc': (
+            'Each time you attack, before drawing hit locations, loudly say a '
+            'name. You lightly bite the eye in your cheek to see what it sees. '
+            'If you draw any hit locations with that name, gain +3 insanity '
+            'and +10 strength when attempting to wound them.'
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': 'Presage',
@@ -744,7 +749,12 @@ expansion_ai = {
         'type': 'ability'
     },
     'psychovore': {
-        'desc': "Once per showdown, you may eat an adjacent survivor's disorder. If you do, remove the disorder. They gain 1 bleeding token and you gain +1 permanent strength. At the end of the showdown, if you haven't eaten a disorder, you die.",
+        'desc': (
+            "Once per showdown, you may eat an adjacent survivor's disorder. "
+            "If you do, remove the disorder. They gain 1 bleeding token and "
+            "you gain +1 permanent strength. At the end of the showdown, if "
+            "you haven't eaten a disorder, you die."
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': 'Psychovore',
@@ -882,16 +892,6 @@ weapon_mastery = {
         "new_survivor": {"abilities_and_impairments": ["spear_specialization"]},
         'epithet': 'spear_master',
     },
-# 1.3
-#    "mastery_club": {
-#        "name": "Mastery - Club",
-#        "desc": "If you are a Club Master, all Clubs in your gear grid gain <b>Savage</b>. On a <b>Perfect hit</b> with a Club, gain <i>+3 strength</i> until the end of the attack.",
-#        "weapon_proficiency": "club",
-#        "weapon_name": "club",
-#        "current_survivor": {"abilities_and_impairments": ["club_specialization"]},
-#        "new_survivor": {"abilities_and_impairments": ["club_specialization"]},
-#        'epithet': 'club_master',
-#    },
     "mastery_fist_and_tooth": {
         "name": "Mastery - Fist & Tooth",
         "desc": "While a survivor is a Fist & Tooth Master, they gain <i>+2 permanent accuracy</i> and <i>+2 permanent strength</i> (they receive this bonus even when not attacking with Fist and Tooth).",
@@ -962,11 +962,6 @@ weapon_specializations = {
         "name": "Specialization - Club",
         "desc": "When attacking with a club, on a <b>perfect hit</b>, double your wound attempt total on the first selected hit location.<br/>Limit, once per attack.",
     },
-# 1.3
-#    "club_specialization": {
-#        "name": "Specialization - Club",
-#        "desc": "All clubs in your gear grid gain <b>paired</b>. Cannot use this with two-handed clubs.",
-#    },
     "twilight_sword_specialization": {
         "name": "Specialization - Twilight Sword",
         "desc": "This sentient sword improves as it's used. Gain the effect as proficiency rank increases. Rank 2: Ignore <b>Cumbersome</b> on Twilight Sword. Rank 4: When attacking with the Twilight Sword, ignore <b>slow</b> and gain +2 speed. Rank 6: Twilight Sword gains <b>Deadly</b>.",

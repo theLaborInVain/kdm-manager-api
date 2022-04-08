@@ -283,6 +283,7 @@ class Survivor(models.UserAsset):
         self.AbilitiesAndImpairments = abilities_and_impairments.Assets()
         self.CursedItems = cursed_items.Assets()
         self.Disorders = disorders.Assets()
+        self.FightingArts = fighting_arts.Assets()
         self.Names = names.Assets()
         self.Saviors = saviors.Assets()
         self.ColorSchemes = color_schemes.Assets()
@@ -1184,6 +1185,62 @@ class Survivor(models.UserAsset):
 
 
     @models.web_method
+    def set_fighting_art_level(self, save=True):
+        ''' Web-only method for setting a Fighting Art 'levels' list.
+
+        In the data model, survivors have a top-level key called
+        'fighting_arts_levels', which is a dictionary: the keys of that dict
+        are Fighting Art handles and the values of those keys are lists of
+        integers.
+
+        'survivor': {
+            'fighting_arts_levels': {
+                'silk_surgeon': [
+                    1, 2
+                ]
+            },
+        }
+        '''
+
+        self.check_request_params(['handle', 'levels'])
+
+        # set the FA for logging purposes
+        fighting_art_handle = self.params['handle']
+        fighting_art = self.FightingArts.get_asset(fighting_art_handle)
+
+        # idiot-proof the levels list
+        new_levels = sorted(
+            list(
+                set(
+                    [int(lvl) for lvl in self.params['levels']]
+                )
+            )
+        )
+
+        # add a handle if one doesn't exist
+        if not self.survivor['fighting_arts_levels'].get(
+            fighting_art_handle, False
+        ):
+            self.survivor['fighting_arts_levels'][fighting_art_handle] = []
+
+        # finally, set it and log
+        self.survivor['fighting_arts_levels'][fighting_art_handle] = new_levels
+
+        msg = "%s set %s Fighting Art levels for '%s' to include %s"
+        self.log_event(msg %
+            (
+                request.User.login,
+                self.pretty_name(),
+                fighting_art['name'],
+                new_levels
+            )
+        )
+
+        if save:
+            self.save()
+
+
+    @models.web_method
     def set_color_scheme(self):
         ''' Web-only method that processes a request to update the survivor's
         color_scheme attribute. '''
@@ -1696,6 +1753,15 @@ class Survivor(models.UserAsset):
 
         Assumes that this is an API request and does not process any args that
         do not come in the request object.
+
+        Basically you get this:
+
+            'fighting_arts_levels': {
+                'silk_surgeon': [
+                    1, 2
+                ]
+            },
+
         """
 
         self.check_request_params(['handle', 'level'])
