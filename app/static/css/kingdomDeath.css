@@ -1114,3 +1114,20 @@ select.kd.capsule {
     margin-left: 0.2rem;
     margin-top: -0.1rem;  
 }
+
+
+/* bleeding token */
+.kd.bleeding_token {
+    border: 0.2rem solid;
+    border-radius: 80% 0 55% 50% / 55% 0 80% 50%;
+    height: 2rem;
+    transform: rotate(-45deg);
+    transition: 0.5s;
+    width: 2rem;
+}
+.kd.bleeding_token.active {
+    border-color: #fff;
+    box-shadow: var(--box-shadow-default);
+    background: var(--color-kd-special-showdown);
+    background: var(--color-kd-bleeding-token);
+}

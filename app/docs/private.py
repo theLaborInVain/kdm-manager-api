@@ -848,30 +848,34 @@ nemesis monster's handle and the levels that are complete.</p>
 <code>{"handle": "manhunter", "levels": [1]}</code>
 	""",
     },
-    "settlement_add_milestone_settlement_id": {
+    "settlement_set_milestones_settlement_id": {
+        "name": "/settlement/set_milestones/&lt;settlement_id&gt;",
+        "subsection": "settlement_manage_principles",
+        "desc": (
+            "<p><b>POST</b> some JSON containing the list of the settlement's "
+            "milestone handles to update the settlement record.</p>"
+            "<p>PROTIP: a list of the settlement's available milestones can be "
+            "found in the "
+            "<code>settlement.game_assets.milestones_options</code> that comes "
+            "down from the API with the settlement data.</p>"
+
+        ),
+        'examples': [
+            "{'milestone_story_events': ['pop_15', 'game_over', 'first_death']}",
+            "{'milestone_story_events': ['first_child']}",
+        ],
+    },
+    "zz_settlement_add_milestone_settlement_id": {
+        'deprecated': True,
         "name": "/settlement/add_milestone/&lt;settlement_id&gt;",
         "subsection": "settlement_manage_principles",
-        "desc": """\
-<p><b>POST</b> a milestone handle (get it from <code>game_assets</code>
-to this route to add it to the settlement's list of milestones:</p>
-<code>{handle: 'game_over'}</code>
-<p>...or...</p>
-<code>{handle: 'innovations_5'}</code>
-<p>This endpoint will gracefully fail and politely ignore dupes.</p>
-	""",
+        "desc": '<p>Use <code>set_milestones</code> instead.</p>'
     },
-    "settlement_rm_milestone_settlement_id": {
+    "zz_settlement_rm_milestone_settlement_id": {
+        'deprecated': True,
         "name": "/settlement/rm_milestone/&lt;settlement_id&gt;",
         "subsection": "settlement_manage_principles",
-        "desc": """\
-<p><b>POST</b> a milestone handle (get it from <code>game_assets</code> to this
-route to remove it from the settlement's list of milestones:</p>
-<code>{handle: 'pop_15'}</code>
-<p>...or...</p>
-<code>{handle: 'first_death'}</code>
-<p>This endpoint will gracefully fail and politely ignore attempts to remove
-handles that are not present.</p>
-	""",
+        "desc": '<p>Use <code>set_milestones</code> instead.</p>'
     },
     "settlement_set_principle_settlement_id": {
         "name": "/settlement/set_principle/&lt;settlement_id&gt;",
