@@ -1473,19 +1473,6 @@ survivor_management = {
             '{flag: "cannot_gain_bleeding_tokens"}'
         ],
     },
-    "survivor_set_retired": {
-        "name": "/survivor/set_retired/&lt;survivor_id&gt;",
-        "subsection": "survivor_sheet",
-        "methods": ["POST", "OPTIONS"],
-        "desc": (
-            "<p>Takes a Boolean object as the value for a key called "
-            "<code>retired</code>. Rejects anything else.</p>"
-        ),
-        'examples': [
-            '{retired: true}',
-            '{retired: false}',
-        ],
-    },
     "survivor_set_sword_oath": {
         "name": "/survivor/set_sword_oath/&lt;survivor_id&gt;",
         "subsection": "survivor_sheet",
@@ -1521,21 +1508,6 @@ survivor_management = {
             "<code>{handle: 'silk_surgeon', levels: [0,3,2]}</code>",
         ],
     },
-    "survivor_toggle_sotf_reroll": {
-        "name": "/survivor/toggle_sotf_reroll/&lt;survivor_id&gt;",
-        "subsection": "survivor_sheet",
-        "methods": ["GET", "POST", "OPTIONS"],
-        "desc": (
-            "<p>Hit this end point to toggle the survivor record's"
-            "<code>sotf_reroll</code> attribute.</p>"
-            "<p>If the record does not have this attribute, accessing this "
-            "endpoint will create it and set it to <code>true</code>.</p>"
-            "<p><b>Warning!<b></p> This attribute, since it is only used with "
-            "certain campaign content, is <b>not</b> part of the survivor data "
-            "model and <b>cannot</b> be toggled using the "
-            "<code>toggle_boolean</code> endpoint!</p>"
-        ),
-    },
     "survivor_set_weak_spot": {
         "name": "/survivor/set_weak_spot/&lt;survivor_id&gt;",
         "subsection": "survivor_sheet",
@@ -1553,6 +1525,24 @@ survivor_management = {
         ],
     },
     # deprecated
+    "zz_survivor_set_retired": {
+        'deprecated': True,
+        "name": "/survivor/set_retired/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            '<p>Please use the <code>set_attribute</code> route instead.</p>'
+        ),
+    },
+    "zz_survivor_toggle_sotf_reroll": {
+        "name": "/survivor/toggle_sotf_reroll/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "desc": (
+            '<p>Please use the <code>set_attribute</code> route instead.</p>'
+        ),
+        'deprecated': True,
+    },
     "zz_toggle_status_flag": {
         "name": "/survivor/toggle_status_flag/&lt;survivor_id&gt;",
         'deprecated': True,

@@ -446,8 +446,8 @@ hr.three_dee {
 }
 .kd.capsule.full_width,
     .capsule.full_width {
-    margin: 3%;
-    width: 98%;
+    margin: 3% auto;
+    min-width: 90%;
     width: -webkit-fill-available;
 }
 

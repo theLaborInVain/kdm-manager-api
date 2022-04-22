@@ -257,7 +257,6 @@ class Survivor(models.UserAsset):
         'sword_oath', dict, {'sword': None, 'wounds': 0}, required=False
     )
     DATA_MODEL.add('weak_spot', str, required=False)
-#    DATA_MODEL.add('zz_test', str, 12345)
 
 
     def __repr__(self):
@@ -933,7 +932,7 @@ class Survivor(models.UserAsset):
 
         # levels!?
         if asset_dict.get('levels', None) is not None:
-            self.survivor["fighting_arts_levels"][asset_dict["handle"]] = []
+            self.survivor["fighting_arts_levels"][asset_dict["handle"]] = [0]
 
         # 4.) EPITHETS - check for 'epithet' key
         if asset_dict.get("epithet", None) is not None:
@@ -2036,6 +2035,7 @@ class Survivor(models.UserAsset):
             'bleeding_tokens',
             'damage',
             'public',
+            'retired',
             'sex',
             'survival',
             'weapon_proficiency_type'
@@ -2047,28 +2047,28 @@ class Survivor(models.UserAsset):
         if attrib in self.DATA_MODEL.category('damage_location'):
             return self.__set_damage()
 
-        # if we're still here, it's an integer that we're trying to set
-        value = int(value)
-        if value is None:
-            value = 0
 
-        # validate
-        self.DATA_MODEL.is_valid(attrib, value, raise_on_failure=True)
+        # duck type
+        value = self.DATA_MODEL.duck_type(attrib, value)
 
-        #   necessity check - issue 434
-        if self.survivor[attrib] == value:
+        # necessity check - issue 434
+        if self.survivor.get(attrib, 'VALUENOTDEFINED') == value:
             err = "%s No change to '%s' attrib (%s -> %s). Ignoring..."
             self.logger.info(err % (self, attrib, self.survivor[attrib], value))
             return True
 
-        self.survivor[attrib] = self.DATA_MODEL.minmax(attrib, value)
+        # validate
+        self.DATA_MODEL.is_valid(attrib, value, raise_on_failure=True)
 
+        # set it and log it
+        self.survivor[attrib] = self.DATA_MODEL.minmax(attrib, value)
         self.log_event(
             "%s set %s '%s' to %s" % (
                 request.User.login, self.pretty_name(), attrib, value
             )
         )
 
+        # optional save
         if save:
             self.save()
 
@@ -2503,16 +2503,20 @@ class Survivor(models.UserAsset):
         is None. Does a little user-friendliness/sanity-checking."""
 
         if retired is None:
-            self.check_request_params(["retired"])
-            retired=self.params["retired"]
+            retired = self.params.get("retired", None)
+            if retired is None:
+                retired = self.params.get('value', None)
+                if retired is None:
+                    raise utils.InvalidUsage("'retired' or 'value' required!")
 
         if type(retired) != bool:
-            retired = bool(retired)
+            raise utils.InvalidUsage('Boolean required!')
 
-        if (
-            "retired" in self.survivor.keys() and
-            self.survivor["retired"] == retired
-        ):
+#        if (
+#            "retired" in self.survivor.keys() and
+#            self.survivor["retired"] == retired
+#        ):
+        if self.survivor.get('retired', 'UNDEFINED') == retired:
             err = "%s Already has 'retired' = '%s'. Ignoring bogus request..."
             self.logger.warning(err % (self, retired))
             return True

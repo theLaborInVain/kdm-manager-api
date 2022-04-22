@@ -1896,6 +1896,13 @@ class DataModel(object):
         ])
 
 
+    def duck_type(self, attrib, value):
+        ''' Retruns 'value' as the correct type for 'attrib'. '''
+
+        attribute = getattr(self, attrib)
+        return attribute['type'](value)
+
+
     def is_valid(self, key, value, log_errors=False, return_error=False,
                 raise_on_failure=False):
 
@@ -1952,7 +1959,7 @@ class DataModel(object):
 
 
     def minmax(self, attr, value):
-        ''' Determines if 'value' is too high or twoo low for 'attribute' and
+        ''' Determines if 'value' is too high or too low for 'attribute' and
         returns the adjusted value. '''
 
         attribute = getattr(self, attr)
