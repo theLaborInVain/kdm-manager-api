@@ -87,6 +87,14 @@ core = {
             'craft this gear.'
         ),
     },
+    'cleavage_x': {
+        'name': 'Cleavage X',
+        'type': 'special_rule',
+        'desc': (
+            'A gear special rule. When you attempt to wound a hit location '
+            'with a persistent injury, gain +X luck for that wound attempt.'
+        ),
+    },
     'consecutive_spaces': {
         'name': 'Consecutive Spaces',
         'desc': (
@@ -244,6 +252,22 @@ core = {
         'type': 'keyword',
         'desc': """A gear keyword. This gear Is hard to keep quiet.""",
     },
+    'novel_proficiency': {
+        'name': 'Novel Proficiency',
+        'type': 'special_rule',
+        'desc': (
+            "When a survivor's proficiency level reaches specialization and "
+            'they have at least 3 courage, they can develop something new.'
+            'They may select a novel weapon proficiency that matches their '
+            'weapon type, instead of continuing with normal weapon '
+            'proficiency<br/>.'
+            'When a survivor with a novel proficency reaches mastery, it '
+            'becomes an innovation and all survivors gain the benefit of its '
+            'specialization rules. A campaign can have both types of weapon '
+            'proficiencies, so it is possible for a settlement to have sword '
+            'mastery and a novel sword mastery.'
+        ),
+    },
     'obstacle': {
         'name': 'Obstacle',
         'type': 'keyword',
@@ -312,6 +336,15 @@ core = {
         'name': 'Reach',
         'type': 'special_rule',
         'desc': """A gear special rule. Reach weapons are long enough to attack monsters when the survivor Is not adjacent. Reach specifies the maximum number of spaces away that a survivor can attack with this weapon."""
+    },
+    'refined': {
+        'name': 'Refined',
+        'beta': True,
+        'type': 'special_rule',
+        'desc': (
+            'When this fails to wound, you may reroll the '
+            'wound attempt. Limit, once per attack.'
+        ),
     },
     'savage': {
         'name': 'Savage',

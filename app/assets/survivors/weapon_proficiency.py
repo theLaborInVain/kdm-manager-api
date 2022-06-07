@@ -56,11 +56,6 @@ weapon_proficiency = {
         "specialist_ai": "scythe_specialization",
         "master_ai": "mastery_scythe",
     },
-    "sword": {
-        "name": "Sword",
-        "specialist_ai": "sword_specialization",
-        "master_ai": "mastery_sword",
-    },
     "shield": {
         "name": "Shield",
         "specialist_ai": "shield_specialization",
@@ -71,6 +66,20 @@ weapon_proficiency = {
         "specialist_ai": "spear_specialization",
         "master_ai": "mastery_spear",
     },
+
+    # sword
+    "sword": {
+        "name": "Sword",
+        "specialist_ai": "sword_specialization",
+        "master_ai": "mastery_sword",
+    },
+    "novel_sword": {
+        "name": "Novel Sword",
+        'expansion': 'willow',
+        "specialist_ai": "novel_sword_specialization",
+        "master_ai": "novel_sword_mastery",
+    },
+
     "twilight_sword": {
         "name": "Twilight Sword",
         "excluded_campaigns": ["people_of_the_stars","people_of_the_sun"],

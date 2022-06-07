@@ -622,6 +622,16 @@ product_lines = {
         'name': 'Grimmory',
         'ui': {'pretty_category': 'White Box'},
     },
+    'pascha': {
+        'name': 'Pascha',
+        'released': datetime(2022,4,22,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
+    'willow': {
+        'name': 'Willow',
+        'released': datetime(2022,4,22,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
 
 
 }

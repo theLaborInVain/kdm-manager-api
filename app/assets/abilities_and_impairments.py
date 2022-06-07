@@ -946,13 +946,42 @@ weapon_mastery = {
         "new_survivor": {"abilities_and_impairments": ["dagger_specialization"]},
         'epithet': 'dagger_master',
     },
+
+    # sword
     "mastery_sword": {
         "name": "Mastery - Sword",
-        "desc": "A Sword master gains +1 accuracy, +1 strength, and +1 speed when attacking with a Sword.",
+        "desc": (
+            'A Sword master gains +1 accuracy, +1 strength, and +1 speed when '
+            'attacking with a Sword.'
+        ),
         "weapon_proficiency": "sword",
         "weapon_name": "sword",
-        "current_survivor": {"abilities_and_impairments": ["sword_specialization"]},
-        "new_survivor": {"abilities_and_impairments": ["sword_specialization"]},
+        "current_survivor": {
+            "abilities_and_impairments": ["sword_specialization"]
+        },
+        "new_survivor": {
+            "abilities_and_impairments": ["sword_specialization"]
+        },
+        'epithet': 'sword_master',
+    },
+    "novel_sword_mastery": {
+        "name": "Novel Sword Mastery",
+        "desc": (
+            '<font class="kdm_font">c</font> <font class="kdm_font">a</font>: '
+            'For the rest of the showdown, all your swords gain the two-handed '
+            'keyword and <b>Deflect 1</b>. When attacking with them, double '
+            'your strength attribute.<br/>'
+            'All survivors gain novel sword specialization in addition to '
+            'their other weapon proficiencies.'
+        ),
+        "weapon_proficiency": "sword",
+        "weapon_name": "sword",
+        "current_survivor": {
+            "abilities_and_impairments": ["novel_sword_specialization"]
+        },
+        "new_survivor": {
+            "abilities_and_impairments": ["novel_sword_specialization"]
+        },
         'epithet': 'sword_master',
     },
 }
@@ -971,10 +1000,6 @@ weapon_specializations = {
         "name": "Specialization - Axe",
         "desc":  "When attacking with an axe, if your wound attempt fails, you may ignore it and attempt to wound the selected hit location again. Limit, once per attack.",
     },
-    "spear_specialization": {
-        "name": "Specialization - Spear",
-        "desc": "When attacking with a spear, if you draw a <b>trap</b>, roll 1d10. On a 7+, cancel the <b>trap</b>. Discard it, then reshuffle the hit location discard into the hit location deck and draw a new card. Limit, once per round.",
-    },
     "fist_and_tooth_specialization": {
         "name": "Specialization - Fist & Tooth",
         "desc":  "You may stand (if knocked down) at the start of the monster's turn or the survivor's turn. Limit once per round.",
@@ -991,10 +1016,7 @@ weapon_specializations = {
         "name": "Specialization - Shield",
         "desc": 'While a shield is in your gear grid, you are no longer knocked down after <b>collision</b> with a monster. While a shield is in your gear grid, add <font class="inline_shield">1</font> to all hit locations.',
     },
-    "sword_specialization": {
-        "name": "Specialization - Sword",
-        "desc": "When attacking with a sword, after drawing hit locations, make a wound attempt and then select a hit location to resolve with that result. Limit, once per attack.",
-    },
+
     "dagger_specialization": {
         "name": "Specialization - Dagger",
         "desc": "When attacking with a Dagger, if a wound attempt fails, after performing any reactions, you may discard another drawn hit location card to attempt to wound that hit location again. Limit, once per attack.",
@@ -1016,5 +1038,34 @@ weapon_specializations = {
     "katar_specialization": {
         "name": "Specialization - Katar",
         "desc": "When attacking with a Katar, cancel reactions on the first selected hit location.",
+    },
+
+    "spear_specialization": {
+        "name": "Specialization - Spear",
+        "desc": (
+            'When attacking with a spear, if you draw a <b>trap</b>, roll '
+            '1d10. On a 7+, cancel the <b>trap</b>. Discard it, then reshuffle '
+            'the hit location discard into the hit location deck and draw a '
+            'new card. Limit, once per round.'
+        ),
+    },
+
+    # sword
+    "sword_specialization": {
+        "name": "Specialization - Sword",
+        "desc": (
+            'When attacking with a sword, after drawing hit locations, make a '
+            'wound attempt and then select a hit location to resolve with that '
+            'result. Limit, once per attack.'
+        ),
+    },
+    'novel_sword_specialization': {
+        'name': 'Novel Sword Specialization',
+        'expansion': 'pascha',
+        'desc': (
+            'After resolving a monsters action, if you ignored a hit from it '
+            'with <b>block</b> or <b>delfect</b>, you may activate a sword and '
+            'attack.'
+        ),
     },
 }

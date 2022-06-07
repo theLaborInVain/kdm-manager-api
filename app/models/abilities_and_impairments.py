@@ -5,8 +5,7 @@
 
 """
 
-from app import models, utils
-from app.assets import abilities_and_impairments
+from app import models
 
 
 class Assets(models.AssetCollection):
@@ -15,7 +14,6 @@ class Assets(models.AssetCollection):
         """ The init method for the A&I asset collection calls the
         set_default_max_values() methods from the base class. """
 
-        self.root_module = abilities_and_impairments
         models.AssetCollection.__init__(self,  *args, **kwargs)
         self.set_default_max_values()
 

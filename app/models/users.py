@@ -12,30 +12,26 @@
 """
 
 # standard library imports
-from bson import json_util
-from bson.objectid import ObjectId
 from copy import copy
-from datetime import datetime, timedelta
-import gridfs
+from datetime import datetime
+from hashlib import md5
 import io
-import inspect
 import os
+import json
 import pickle
-import pytz
 import random
 import socket
 import string
 from urllib.parse import urlparse
 
 # third party imports
-from dateutil.relativedelta import relativedelta
+from bson import json_util
+from bson.objectid import ObjectId
 from dateutil.tz import tzlocal
 import flask
-from hashlib import md5
-import json
+import gridfs
 import jwt
 import pymongo
-import werkzeug
 from werkzeug.security import (
     safe_str_cmp,
     generate_password_hash,
@@ -327,7 +323,7 @@ def import_user(user_data=None):
         data['user']['login'],
         data['user']['_id']
     )
-    LOGGER.warn(msg)
+    LOGGER.warning(msg)
 
     try:
         new_user_oid = utils.mdb.users.save(data['user'])
@@ -344,14 +340,14 @@ def import_user(user_data=None):
         'assets_dict' dictionary (called 'data' here). """
 
         imported_assets = 0
-        LOGGER.warn("Importing %s assets..." % asset_name)
+        LOGGER.warning("Importing %s assets..." % asset_name)
         try:
             for asset in data[asset_name]:
                 imported_assets += 1
                 utils.mdb[asset_name].save(asset)
         except KeyError:
             LOGGER.error('No %s assets found in user data!' % asset_name)
-        LOGGER.warn("%s %s assets imported." % (imported_assets, asset_name))
+        LOGGER.warning("%s %s assets imported." % (imported_assets, asset_name))
 
     # load the important user assets to local
     for asset_collection in [
@@ -371,7 +367,7 @@ def import_user(user_data=None):
                 survivor['_id'], survivor['settlement']
                 )
             )
-            LOGGER.warn("Removing survivor %s from mdb..." % (survivor["_id"]))
+            LOGGER.warning("Removing survivor %s from mdb..." % (survivor["_id"]))
             utils.mdb.survivors.remove({"_id": survivor["_id"]})
 
     # next import avatars
@@ -406,6 +402,15 @@ def import_user(user_data=None):
 
 class User(models.UserAsset):
     """ This is the main controller for all user objects. """
+
+    DATA_MODEL = models.DataModel('user')
+    DATA_MODEL.add('login', str)
+    DATA_MODEL.add('password', str)
+    DATA_MODEL.add('preferences', dict)
+    DATA_MODEL.add('collection', dict, {"expansions": []})
+    DATA_MODEL.add('notifications', dict)
+    DATA_MODEL.add('subscriber', dict, {'level': 0})
+
 
     def __repr__(self):
         """ Custom repr for User objects. """
@@ -455,7 +460,6 @@ class User(models.UserAsset):
         """ Calls the base class load() method and then sets self.login. """
 
         super().load()
-
         self.login = self.user['login']
 
 
@@ -465,7 +469,7 @@ class User(models.UserAsset):
         """
 
         self.logger.info("Creating new user...")
-        self.check_request_params(['username','password'])
+        self.check_request_params(['username', 'password'])
 
         # clean up the incoming values so that they conform to our data model
         username = self.params["username"].strip().lower()
@@ -473,32 +477,28 @@ class User(models.UserAsset):
 
         # do some minimalistic validation (i.e. rely on front-end for good data)
         #   and barf if it fails #separationOfConcerns
-
-        msg = "The email address '%s' does not appear to be a valid email address!" % username
+        msg = "The email address '%s' is not a valid email address!" % username
         if not '@' in username:
             raise utils.InvalidUsage(msg)
-        elif not '.' in username:
+        if not '.' in username:
             raise utils.InvalidUsage(msg)
 
         # make sure the new user doesn't already exist
-
-        msg = "The email address '%s' is already in use by another user!" % username
+        msg = "The email address '%s' is in use by another user!" % username
         if utils.mdb.users.find_one({'login': username}) is not None:
             raise utils.InvalidUsage(msg)
 
-
         # now do it
-        self.user = {
+        self.user = self.DATA_MODEL.new()
+        self.user.update({
             'created_on': datetime.now(tzlocal()),
             'login': username,
             'password': generate_password_hash(password),
-            'preferences': {},
-            'collection': {"expansions": []},
-            'notifications': {},
-            'subscriber': {'level': 0},
-        }
+        })
         self._id = utils.mdb.users.insert(self.user)
-        self.load()
+
+        self.load() # call load to set self.login, etc.
+
         self.logger.info("New user '%s' created!" % username)
 
         return self.user["_id"]
@@ -543,7 +543,7 @@ class User(models.UserAsset):
                 assets_dict["survivors"].append(s)
 
         msg = "%s Exported %s survivors!"
-        self.logger.debug(msg % (self, len(assets_dict["survivors"])))
+#        self.logger.debug(msg % (self, len(assets_dict["survivors"])))
 
         # now we have to go to GridFS to get avatars
         for s in assets_dict["survivors"]:
@@ -660,6 +660,33 @@ class User(models.UserAsset):
     #
 
     @models.web_method
+    def set_favorite_survivors(self, save=True):
+        '''
+        Requires a request context. Updates the user's favorite survivors list.
+
+        We very intentionally DO NOT initialize survivors or settlements here,
+        since we want to avoid expanding the footprint of this method to involve
+        janitorial work around removed settlements/survivors, etc.
+        '''
+
+        self.check_request_params(['favorite_survivors'])
+        new_favorites = self.params['favorite_survivors']
+
+        add_list, rm_list = utils.list_compare(
+            self.user['favorite_survivors'],
+            new_favorites
+        )
+
+        if add_list != []:
+            [self.user['favorite_survivors'].append(s_id) for s_id in add_list]
+        if rm_list != []:
+            [self.user['favorite_survivors'].remove(s_id) for s_id in rm_list]
+
+        if save:
+            self.save()
+
+
+    @models.web_method
     def set_collection(self):
         """ Expects/requires a request context. Evaluates the incoming request
         and hands off add/rm jobs to private/non-request methods. """
@@ -680,13 +707,16 @@ class User(models.UserAsset):
             if add_list != []:
                 [self.add_expansion_to_collection(exp) for exp in add_list]
             if rm_list != []:
-                [self.rm_expansion_to_collection(exp) for exp in add_list]
+                [self.rm_expansion_from_collection(exp) for exp in add_list]
 
 
     def set_current_settlement(self):
-        """ This should probably more accurately be called 'default_current_settlement'
-        or something along those lines, because it basically tries a series of
-        back-offs to set a settlement for a user who hasn't got one set. """
+        """
+        This should probably more accurately be called
+        'default_current_settlement' or something along those lines, because it
+        basically tries a series of back-offs to set a settlement for a user
+        who hasn't got one set.
+        """
 
         if "current_settlement" in self.user.keys():
             return True
@@ -694,15 +724,15 @@ class User(models.UserAsset):
         settlements = self.get_settlements()
         if len(settlements) != 0:
             self.user["current_settlement"] = settlements[0]["_id"]
-            self.logger.warn("Defaulting 'current_settlement' to %s for %s" % (settlements[0]["_id"], self))
+            self.logger.warning("Defaulting 'current_settlement' to %s for %s" % (settlements[0]["_id"], self))
         elif len(settlements) == 0:
-            self.logger.debug("User %s does not own or administer any settlements!" % self)
+#            self.logger.debug("User %s does not own or administer any settlements!" % self)
             p_settlements = self.get_settlements(qualifier="player")
             if len(p_settlements) != 0:
                 self.user["current_settlement"] = p_settlements[0]["_id"]
-                self.logger.warn("Defaulting 'current_settlement' to %s for %s" % (p_settlements[0]["_id"], self))
+                self.logger.warning("Defaulting 'current_settlement' to %s for %s" % (p_settlements[0]["_id"], self))
             elif len(p_settlements) == 0:
-                self.logger.warn("Unable to default a 'current_settlement' value for %s" % self)
+                self.logger.warning("Unable to default a 'current_settlement' value for %s" % self)
                 self.user["current_settlement"] = None
 
         self.save()
@@ -754,7 +784,8 @@ class User(models.UserAsset):
 
         self.check_request_params(['notifications'])
         notification_list = self.params['notifications']
-        if type(notification_list) != list:
+
+        if not isinstance(notification_list, list):
             raise utils.InvalidUsage("This method requires a list of handles!")
 
         for n_handle in sorted(notification_list):
@@ -773,7 +804,8 @@ class User(models.UserAsset):
 
         self.check_request_params(['preferences'])
         pref_list = self.params['preferences']
-        if type(pref_list) != list:
+
+        if not isinstance(pref_list, list):
             raise utils.InvalidUsage("'preferences' must be a list type!")
 
         for pref_dict in pref_list:
@@ -796,10 +828,16 @@ class User(models.UserAsset):
         """ Sets self.user['recovery_code'] to a random value. Returns the code
         when it is called. """
 
-        r_code = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(30))
+        r_code = ''.join(random.SystemRandom().choice(
+            string.ascii_uppercase + string.digits) for _ in range(30)
+        )
         self.user["recovery_code"] = r_code
-        self.logger.info("'%s set recovery code '%s' for their account" % (self, r_code))
+
+        msg = "'%s set recovery code '%s' for their account"
+        self.logger.info(msg % (self, r_code))
+
         self.save()
+
         return self.user["recovery_code"]
 
 
@@ -823,7 +861,7 @@ class User(models.UserAsset):
             raise TypeError("set_subscriber_level() requires an int!")
 
         if self.user['subscriber']['level'] == level:
-            self.logger.warn(
+            self.logger.warning(
                 '%s Subscriber level is already %s. Ignoring...' % (
                     self,
                     self.user['subscriber']['level'],
@@ -905,7 +943,9 @@ class User(models.UserAsset):
             del self.user["admin"]
         else:
             self.user["admin"] = datetime.now(tzlocal())
-        self.save()
+
+        if save:
+            self.save()
 
 
     #
@@ -926,10 +966,11 @@ class User(models.UserAsset):
 
         if handle in self.user['collection']['expansions']:
             err = "%s Expansion '%s' already added to collection. Ignoring..."
-            self.logger.warn(err % (self, handle))
+            self.logger.warning(err % (self, handle))
             return True
 
         self.user['collection']['expansions'].append(handle)
+
         self.save()
 
 
@@ -947,7 +988,7 @@ class User(models.UserAsset):
 
         if handle not in self.user['collection']['expansions']:
             err = "%s Expansion '%s' not found in collection. Ignoring..."
-            self.logger.warn(err % (self, handle))
+            self.logger.warning(err % (self, handle))
             return True
 
         self.user['collection']['expansions'].remove(handle)
@@ -1027,12 +1068,14 @@ class User(models.UserAsset):
                 return friends.count()
             else:
                 return 0
-        elif return_type == list:
+
+        if return_type == list:
             if friends is None:
                 return []
             else:
                 return [f["login"] for f in friends]
-        elif return_type == 'JSON':
+
+        if return_type == 'JSON':
             return json.dumps(list(friends), default=json_util.default)
 
         return friends
@@ -1043,12 +1086,12 @@ class User(models.UserAsset):
         'return_type' kwarg blank for a datetime stamp.
         """
 
-        la = self.user["latest_activity"]
+        latest = self.user["latest_activity"]
 
         if return_type is not None:
-            return utils.get_time_elapsed_since(la, return_type)
+            return utils.get_time_elapsed_since(latest, return_type)
 
-        return la
+        return latest
 
 
     def get_preference(self, p_key):
@@ -1171,7 +1214,7 @@ class User(models.UserAsset):
                 )
                 if older_than_cutoff and self.user['_id'] == s['created_by']:
                     warn_msg = "%s settlement '%s' is more than %s days old!"
-                    self.logger.warn(
+                    self.logger.warning(
                         warn_msg % (
                             self,
                             s['name'],
@@ -1211,12 +1254,15 @@ class User(models.UserAsset):
 
         if return_type == int:
             return len(settlements)
-        elif return_type == list:
+
+        if return_type == list:
             output = [s["_id"] for s in settlements]
             return output
-        elif return_type == 'list_of_dicts':
+
+        if return_type == 'list_of_dicts':
             return settlements
-        elif return_type == "asset_list":
+
+        if return_type == "asset_list":
             output = []
             for s in settlements:
                 try:
@@ -1224,8 +1270,8 @@ class User(models.UserAsset):
                     sheet = json.loads(S.serialize('dashboard'))
                     output.append(sheet)
                 except Exception as e:
-                    logger.error("Could not serialize %s" % s)
-                    logger.exception(e)
+                    self.logger.error("Could not serialize %s" % s)
+                    self.logger.exception(e)
                     raise
 
             return output
@@ -1284,9 +1330,11 @@ class User(models.UserAsset):
             err = "'%s' is not a valid qualifier for this method!" % qualifier
             raise AttributeError(err)
 
+        # returns
         if return_type == int:
             return survivors.count()
-        elif return_type == list:
+
+        if return_type == list:
             output = [s["_id"] for s in survivors]
             output = list(set(output))
             return output
@@ -1302,11 +1350,11 @@ class User(models.UserAsset):
         Use the 'raise_on_false' kwarg to have this raise and return a 405.
         """
 
-        if flask.request.User.user['subscriber']['level'] > 0:
+        if self.user['subscriber']['level'] > 0:
             return True
 
         free_user_max = API.config['NONSUBSCRIBER_SETTLEMENT_LIMIT']
-        user_created = flask.request.User.get_settlements(
+        user_created = self.get_settlements(
             qualifier = 'created_by',
             return_type=int
         )
@@ -1342,7 +1390,7 @@ class User(models.UserAsset):
         expires_in = subscription_max - subscription_age
 
         if expires_in < 0:
-            self.logger.warn('%s SUBSCRIPTION EXPIRED' % self)
+            self.logger.warning('%s SUBSCRIPTION EXPIRED' % self)
             self.set_subscriber_level(0)
 
 
@@ -1357,29 +1405,37 @@ class User(models.UserAsset):
     def baseline(self):
         """ Baseline the user record to our data model. """
 
-        if not 'collection' in self.user.keys():
+        if 'collection' not in self.user.keys():
             self.user['collection'] = {"expansions": [], }
-            self.logger.info("%s Baselined 'collection' key into user dict." % self)
+            self.logger.info(
+                "%s Baselined 'collection' key into user dict." % self
+            )
             self.perform_save = True
 
-        if not 'notifications' in self.user.keys():
+        if 'notifications' not in self.user.keys():
             self.user['notifications'] = {}
-            self.logger.info("%s Baselined 'notifications' key into user dict." % self)
+            self.logger.info(
+                "%s Baselined 'notifications' key into user dict." % self
+            )
+            self.perform_save = True
+
+        # create 'favorite_survivors' if it doesn't exist
+        if not isinstance(self.user.get('favorite_survivors', None), list):
+            self.user['favorite_survivors'] = []
             self.perform_save = True
 
 
     def bug_fixes(self):
         """ Fix bugs! """
-        pass
 
 
     def normalize(self):
         """ Force/coerce the user into compliance with our data model for users.
         """
 
-        if not 'preferences' in self.user.keys():
+        if 'preferences' not in self.user.keys():
             self.user['preferences'] = {'preserve_sessions': False}
-            self.logger.warn(
+            self.logger.warning(
                 "%s has no 'preferences' attrib! Normalizing..." % self
             )
             self.perform_save = True
@@ -1388,17 +1444,17 @@ class User(models.UserAsset):
         if 'patron' in self.user.keys():
             self.user['subscriber'] = self.user['patron']
             del self.user['patron']
-            self.logger.warn("%s Normalized 'patron' to 'subscriber'!" % self)
+            self.logger.warning("%s Normalized 'patron' to 'subscriber'!" % self)
             self.perform_save = True
 
         if 'subscriber' not in self.user.keys():
             self.user['subscriber'] = {'level': 0}
-            self.logger.warn("%s Added 'subscriber' dict to user!" % self)
+            self.logger.warning("%s Added 'subscriber' dict to user!" % self)
             self.perform_save = True
 
         if isinstance(self.user['subscriber']['level'], str):
             warn = "%s Subscriber 'level' is str type! Normalizing to int..."
-            self.logger.warn(warn % self)
+            self.logger.warning(warn % self)
             self.user['subscriber']['level'] = int(
                 self.user['subscriber']['level']
             )
@@ -1416,13 +1472,13 @@ class User(models.UserAsset):
 
         if action == 'get':
             return self.json_response()
-        elif action == "dashboard":
+        if action == "dashboard":
             return flask.Response(
                 response=self.serialize('dashboard'),
                 status=200,
                 mimetype="application/json"
             )
-        elif action == "get_friends":
+        if action == "get_friends":
             return flask.Response(
                 response=self.get_friends('JSON'),
                 status=200,

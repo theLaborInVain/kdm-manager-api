@@ -563,6 +563,7 @@ female = [
     "Charli",
     "Charlotte",
     "Chell",
+    "Chelli",
     "Cheree",
     "Chevette",
     "Ciaran",
@@ -773,6 +774,7 @@ female = [
     "Rhea",
     "Rhianon",
     "Rhys",
+    "Riri",
     "Ria",
     "Rika",
     "Ripley",
@@ -922,6 +924,7 @@ neuter = [
 ]
 
 surname = [
+    "Aphra",
     "Atreides",
     "Black",
     "Blackfist",

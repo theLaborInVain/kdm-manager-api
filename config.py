@@ -48,7 +48,7 @@ class Config():
         'monster', 'monsters'
     ]
     TIMEZONE = pytz.timezone('US/Central')
-    VERSION = "1.128.832"
+    VERSION = "1.132.850"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 

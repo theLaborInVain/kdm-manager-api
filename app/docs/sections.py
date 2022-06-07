@@ -310,10 +310,7 @@ order. If you get them back out of order, open a ticket.</p>
     "survivor_admin":{
         "name": "Survivor administration",
         "desc": (
-            "In order to help facilitate 'quality of life' type features, "
-            "the API supports a handful of endpoints that allow users to "
-            "manager survivors by tagging them and setting various "
-            "non-game-related attributes that can be used for sorting, etc."
+            'General purpose survivor administration endpoints.'
         ),
     },
     "survivor_relationships":{

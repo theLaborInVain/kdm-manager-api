@@ -648,7 +648,7 @@ class Survivor(models.UserAsset):
 
         # now add the additional top-level items
         output.update({"notes": self.get_notes()})
-        output.update({"survival_actions": self.get_survival_actions("JSON")})
+        output.update({"survival_actions": self.__get_survival_actions("JSON")})
 
 
         return output
@@ -2512,10 +2512,6 @@ class Survivor(models.UserAsset):
         if type(retired) != bool:
             raise utils.InvalidUsage('Boolean required!')
 
-#        if (
-#            "retired" in self.survivor.keys() and
-#            self.survivor["retired"] == retired
-#        ):
         if self.survivor.get('retired', 'UNDEFINED') == retired:
             err = "%s Already has 'retired' = '%s'. Ignoring bogus request..."
             self.logger.warning(err % (self, retired))
@@ -2589,7 +2585,13 @@ class Survivor(models.UserAsset):
         for ai_handle in s_dict["abilities_and_impairments"]:
             self.add_game_asset("abilities_and_impairments", ai_handle, apply_related=False)
 
-        self.log_event("A savior is born! %s applied %s savior status to %s" % (request.User.login, color, self.pretty_name()), event_type="savior_birth")
+        self.log_event(
+            "A savior is born! %s applied %s savior status to %s" % (
+                request.User.login,
+                color,
+                self.pretty_name()),
+                event_type="savior_birth"
+            )
 
         self.save()
 
@@ -3246,73 +3248,6 @@ class Survivor(models.UserAsset):
         return split_name[-1]
 
 
-    def get_survival_actions(self, return_type=dict):
-        """ Returns the SA's available to the survivor based on current
-        impairments, etc. Use 'return_type' = 'JSON' to get a list of dicts
-        back, rather than a single dict.
-
-        Important! There's a ton of business logic here, given that there's a
-        lot of interplay among game assets, so read this carefully and all the
-        way through before making changes!
-        """
-
-        # helper called later
-        def update_available(sa_key_list, available=False, title_tip=None):
-            """ Inline helper func to update the list of available_actions while
-            iterating over survivor attributes. """
-
-            for sa_key in sa_key_list:
-                if not available:
-                    if sa_key in available_actions.keys():
-                        available_actions[sa_key]["available"] = False
-                        available_actions[sa_key]["title_tip"] = title_tip
-                elif available:
-                    sa = survival_actions.Assets().get_asset(sa_key)
-                    sa["available"] = True
-                    sa["title_tip"] = title_tip
-                    available_actions[sa_key] = sa
-
-
-        #
-        #   action starts here. initialize and set defaults first:
-        #
-
-        available_actions = self.Settlement.get_survival_actions()
-
-        # check A&Is and FAs/SFAs   # disorders coming soon! TKTK
-        attrib_keys = ['abilities_and_impairments', 'fighting_arts']
-
-        for ak in attrib_keys:
-            for a_dict in self.list_assets(ak):             # iterate assets
-                if "survival_actions" in a_dict.keys():     # check for survival actions key
-
-                    # handle 'enable' keys; special logic re: can't use FAs
-                    if ak == 'fighting_arts' and self.cannot_use_fighting_arts():
-                        pass
-                    else:
-                        update_available(
-                            a_dict["survival_actions"].get("enable", []),
-                            available=True,
-                            title_tip="Available due to '%s'" % a_dict["name"],
-                        )
-
-                    # handle 'disable' keys
-                    update_available(
-                        a_dict["survival_actions"].get("disable", []),
-                        available=False,
-                        title_tip="Impairment '%s' prevents %s from using this ability." % (a_dict["name"], self.survivor["name"])
-                    )
-
-
-        # support JSON return
-        if return_type == 'JSON':
-            output = []
-            for dummy, action_dict in available_actions.items():
-                output.append(action_dict)
-            return sorted(output, key=lambda k: k['sort_order'])
-
-        # dict return
-        return available_actions
 
 
     def get_tags(self, return_type=None):
@@ -3520,6 +3455,79 @@ class Survivor(models.UserAsset):
 
         return False
 
+
+    #
+    #   private get and evaluation methods
+    #
+
+    def __get_survival_actions(self, return_type=dict):
+        """ Returns the SA's available to the survivor based on current
+        impairments, etc. Use 'return_type' = 'JSON' to get a list of dicts
+        back, rather than a single dict.
+
+        Important! There's a ton of business logic here, given that there's a
+        lot of interplay among game assets, so read this carefully and all the
+        way through before making changes!
+        """
+
+        # helper called later
+        def update_available(sa_key_list, available=False, title_tip=None):
+            """ Inline helper func to update the list of available_actions while
+            iterating over survivor attributes. """
+
+            for sa_key in sa_key_list:
+                if not available:
+                    if sa_key in available_actions.keys():
+                        available_actions[sa_key]["available"] = False
+                        available_actions[sa_key]["title_tip"] = title_tip
+                elif available:
+                    sa = survival_actions.Assets().get_asset(sa_key)
+                    sa["available"] = True
+                    sa["title_tip"] = title_tip
+                    available_actions[sa_key] = sa
+
+
+        #
+        #   action starts here. initialize and set defaults first:
+        #
+
+        available_actions = self.Settlement.get_survival_actions()
+
+        # check A&Is and FAs/SFAs   # disorders coming soon! TKTK
+        attrib_keys = ['abilities_and_impairments', 'fighting_arts']
+
+        for ak in attrib_keys:
+            for a_dict in self.list_assets(ak):             # iterate assets
+                if "survival_actions" in a_dict.keys():     # check for key
+
+                    # handle 'enable' keys; special logic re: can't use FAs
+                    if ak == 'fighting_arts' and self.cannot_use_fighting_arts():
+                        pass
+                    else:
+                        update_available(
+                            a_dict["survival_actions"].get("enable", []),
+                            available=True,
+                            title_tip="Available due to '%s'" % a_dict["name"],
+                        )
+
+                    # handle 'disable' keys
+                    slug="Impairment '%s' prevents %s from using this ability."
+                    update_available(
+                        a_dict["survival_actions"].get("disable", []),
+                        available=False,
+                        title_tip=slug % (a_dict["name"], self.survivor["name"])
+                    )
+
+
+        # support JSON return
+        if return_type == 'JSON':
+            output = []
+            for dummy, action_dict in available_actions.items():
+                output.append(action_dict)
+            return sorted(output, key=lambda k: k['sort_order'])
+
+        # dict return
+        return available_actions
 
 
     #

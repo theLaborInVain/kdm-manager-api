@@ -136,6 +136,19 @@ arbitrary keys and will completely fail any request that includes
 unsupported keys!</p>
         """,
     },
+    "user_set_favorite_survivors": {
+        "name": "/user/set_favorite_survivors/&lt;user_id&gt;",
+	"subsection": "user_attribute_management",
+        "desc": (
+            "<b>POST</b> a list of the OIDs of the user's favorite survivors "
+            "to this endpoint."
+        ),
+        'examples': [
+            '{"favorite_survivors":\
+                ["61e73e68a7be7402739ff615", "5fad50306515930c165b006f"]\
+             }',
+        ],
+    },
     "user_set_preferences": {
         "name": "/user/set_preferences/&lt;user_id&gt;",
 	"subsection": "user_attribute_management",
@@ -148,22 +161,6 @@ preferences handle and the key is a Boolean:</p>
 <p>Since this is mostly a sysadmin/back-of-house kind of route,
 it fails pretty easily if you try to <b>POST</b> something it doesn't
 like. The good news, is that it should fail pretty descriptively.</p>
-        """,
-    },
-    "user_add_expansion_to_collection": {
-        "name": "/user/add_expansion_to_collection/&lt;user_id&gt;",
-        "subsection": "user_collection_management",
-        "desc": """\
-<p>Starting in July of 2021, this endpoint is deprecated.</p>
-<p>Please use <code>/user/set_expansions/&lt;user_id&gt;</code> instead.</p>
-        """,
-    },
-    "user_rm_expansion_from_collection": {
-        "name": "/user/rm_expansion_from_collection/&lt;user_id&gt;",
-        "subsection": "user_collection_management",
-        "desc": """\
-<p>Starting in July of 2021, this endpoint is deprecated.</p>
-<p>Please use <code>/user/set_expansions/&lt;user_id&gt;</code> instead.</p>
         """,
     },
     "user_set_collection": {
@@ -185,6 +182,24 @@ like. The good news, is that it should fail pretty descriptively.</p>
 'collection', and that key's value is going to be a hash, and that hash will
 have the 'expansions' key, etc.</p>
 <p>Just follow the example JSON above.</p>
+        """,
+    },
+    "zz_user_add_expansion_to_collection": {
+        'deprecated': True,
+        "name": "/user/add_expansion_to_collection/&lt;user_id&gt;",
+        "subsection": "user_collection_management",
+        "desc": """\
+<p>Starting in July of 2021, this endpoint is deprecated.</p>
+<p>Please use <code>/user/set_expansions/&lt;user_id&gt;</code> instead.</p>
+        """,
+    },
+    "zz_user_rm_expansion_from_collection": {
+        'deprecated': True,
+        "name": "/user/rm_expansion_from_collection/&lt;user_id&gt;",
+        "subsection": "user_collection_management",
+        "desc": """\
+<p>Starting in July of 2021, this endpoint is deprecated.</p>
+<p>Please use <code>/user/set_expansions/&lt;user_id&gt;</code> instead.</p>
         """,
     },
 }
@@ -1263,15 +1278,6 @@ survivor_management = {
             'endpoint.</p>'
         ),
     },
-    "zz_survivor_get_survival_actions": {
-        "name": "/survivor/get_survival_actions/&lt;survivor_id&gt;",
-        'deprecated': True,
-        "methods": ["GET", "OPTIONS"],
-        "desc": (
-            '<p>Please use the <code>survival_actions</code> element returned '
-            'by the <code>/survivor/get/&lt;survivor_id&gt;</code> instead.</p>'
-        ),
-    },
 
     # survivor shset
     "survivor_reset_attribute_details": {
@@ -1429,13 +1435,6 @@ survivor_management = {
             '{blue: 0}'
         ],
     },
-    "zz_survivor_set_bleeding_tokens": {
-        "name": "/survivor/set_bleeding_tokens/&lt;survivor_id&gt;",
-        'deprecated': True,
-        "subsection": "survivor_sheet",
-        "methods": ["POST", "OPTIONS"],
-        "desc": '<p>Use the <code>set_attribute</code> route instead.</p>',
-    },
     "survivor_set_status_flag": {
         "name": "/survivor/set_status_flag/&lt;survivor_id&gt;",
         "subsection": "survivor_sheet",
@@ -1525,6 +1524,13 @@ survivor_management = {
         ],
     },
     # deprecated
+    "zz_survivor_set_bleeding_tokens": {
+        "name": "/survivor/set_bleeding_tokens/&lt;survivor_id&gt;",
+        'deprecated': True,
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": '<p>Use the <code>set_attribute</code> route instead.</p>',
+    },
     "zz_survivor_set_retired": {
         'deprecated': True,
         "name": "/survivor/set_retired/&lt;survivor_id&gt;",
@@ -1568,6 +1574,26 @@ survivor_management = {
         "subsection": "survivor_sheet",
         "desc": (
             '<p>Please use the <code>set_affinities</code> route instead.</p>'
+        ),
+    },
+    "zz_add_favorite": {
+        'deprecated': True,
+        "name": "/survivor/add_favorite/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            '<p>This endpoint is deprecated and will be removed in 2023.</p>'
+            '<p>Please use <code>set_favorite_survivors</code> instead.</p>'
+        ),
+    },
+    "zz_rm_favorite": {
+        'deprecated': True,
+        "name": "/survivor/rm_favorite/&lt;survivor_id&gt;",
+        "subsection": "survivor_sheet",
+        "methods": ["POST", "OPTIONS"],
+        "desc": (
+            '<p>This endpoint is deprecated and will be removed in 2023.</p>'
+            '<p>Please use <code>set_favorite_survivors</code> instead.</p>'
         ),
     },
 
@@ -1663,7 +1689,7 @@ survivor_management = {
     "survivor_set_color_scheme": {
         "name": "/survivor/set_color_scheme/&lt;survivor_id&gt;",
         "methods": ["POST", "OPTIONS"],
-        "subsection": "survivor_admin",
+        "subsection": "survivor_sheet",
         "desc": (
             "<p><b>POST</b> a <code>color_scheme</code> handle to this "
             "endpoint to set the Survivor Sheet attribute of the same name.</p>"
@@ -1673,37 +1699,6 @@ survivor_management = {
         "examples": [
             "{color_scheme: 'TK'}"
         ],
-    },
-    "add_favorite": {
-        "name": "/survivor/add_favorite/&lt;survivor_id&gt;",
-        "subsection": "survivor_admin",
-        "methods": ["POST", "OPTIONS"],
-        "desc": (
-            '<p>The API takes a bit of an unusual approach to making a '
-            "survivor a 'favorite' or starred survivor due to the fact that "
-            "users can remove settlements (i.e. the parent record of a "
-            "survivor record). Rather than having the User record contain a "
-            "list of favorite survivors, we actually make a list of users on "
-            "the survivor who have made the survivor one of their favorites."
-            "</p><p>To add a user's OID to the survivor's list of users who "
-            "have starred it, use the <code>user_email</code> key and an "
-            "OID."
-        ),
-        'examples': [
-            "{user_email: 'toconnell@thelaborinvain.com'}"
-        ]
-    },
-    "rm_favorite": {
-        "name": "/survivor/rm_favorite/&lt;survivor_id&gt;",
-        "subsection": "survivor_admin",
-        "methods": ["POST", "OPTIONS"],
-        "desc": (
-            "<p>This is effectively the reverse of the "
-            "<code>add_favorite</code> endpoint (above):</p>"
-        ),
-        'examples': [
-            "{user_email: 'toconnell@thelaborinvain.com'}"
-        ]
     },
     "survivor_set_email": {
         "name": "/survivor/set_email/&lt;survivor_id&gt;",

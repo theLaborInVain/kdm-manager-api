@@ -534,7 +534,7 @@ class Settlement(models.UserAsset):
         })
 
         # retrieve user assets
-        if return_type in [None, "sheet",'campaign','survivors']:
+        if return_type in [None, "sheet", 'campaign', 'survivors']:
             output.update({"user_assets": {}})
             output["user_assets"].update({"players": self.get_players()})
             output["user_assets"].update({"survivors": self.get_survivors()})
@@ -562,7 +562,7 @@ class Settlement(models.UserAsset):
                 self.logger.debug('serialize(%s) [%s] %s' % (return_type, duration, self))
 
         # create game_assets
-        if return_type in [None, 'game_assets','campaign']:
+        if return_type in [None, 'game_assets', 'campaign']:
             start = datetime.now()
             output.update({"game_assets": {}})
             output["game_assets"].update(self.get_available_assets(innovations))
@@ -3764,7 +3764,7 @@ class Settlement(models.UserAsset):
 
 
     def get_survival_actions(self, return_type=dict):
-        """ Returns a dictionary of survival actions available to the survivor
+        """ Returns a dictionary of survival actions available to survivors
         based on campaign type. Individual SAs are either 'available' or not,
         depending on whether they're unlocked. """
 

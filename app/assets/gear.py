@@ -5847,3 +5847,57 @@ grimmory = {
         ],
     },
 }
+
+pascha = {
+    'ashen_shears': {
+        'name': 'Ashen Shears',
+        'beta': True,
+        'type': 'gear_recipe',
+        'expansion': 'pascha',
+        'keywords': ['weapon', 'melee', 'scissors', 'two-handed', 'bone'],
+        'rules': ['Slow', 'Frail', 'Block 1'],
+        'speed': 1,
+        'accuracy': 6,
+        'strength': 6,
+        'affinities': {'top': 'red', 'right': 'green'},
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 1, 'green': 1}},
+            'desc': 'This gains <b>Cleavage 3</b>.'
+        },
+        'recipes': [
+            {
+                'locations': ['weapon_crafter'],
+                'resource_handles': {'perfect_hide': 1},
+                'resource_types': {'organ': 1, 'scrap': 3},
+            },
+        ],
+    },
+}
+
+willow = {
+    'refined_lantern_sword': {
+        'name': 'Refined Lantern Sword',
+        'beta': True,
+        'type': 'gear_recipe',
+        'expansion': 'pascha',
+        'keywords': ['weapon', 'melee', 'sword', 'finesse', 'metal'],
+        'rules': ['Sharp', 'Refined'],
+        'speed': 3,
+        'accuracy': 5,
+        'strength': 5,
+        'affinities': {'left': 'red', 'right': 'blue'},
+        'desc': (
+            '<b>Refined:</b> When this fails to wound, you may reroll the '
+            'wound attempt. Limit, once per attack.'
+        ),
+        'recipes': [
+            {
+                'prefix_text': '1x <font class="kdm_manager_font">E</font>',
+                'innovations': ['scrap_smelting'],
+                'gear_handles': {'lantern_sword': 1},
+                'resource_handles': {'perfect_bone': 1},
+                'suffix_text': '5x Resource from a level 3 monster',
+            },
+        ],
+    },
+}
