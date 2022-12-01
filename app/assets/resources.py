@@ -811,19 +811,25 @@ expansions = {
         'type': 'spidicules_resources',
         'name': 'Unlaid Eggs',
         'keywords': ['organ','consumable'],
-        'desc': 'During the settlement phase, you may <b class="special-rule">consume</b> and archive these delicious little eggs to gain 10 survival.',
+        'desc': (
+            'During the settlement phase, you may '
+            '<b class="special-rule">consume</b> and archive these '
+            'delicious little eggs to gain 10 survival.'
+        ),
         'copies': 1,
-        'rules_text': 'During the settlement phase, you may <b class="special-rule">consume</b> and archive these delicious little eggs to gain 10 survival.',
     },
     'venom_sac': {
         'expansion': 'spidicules',
         'type': 'spidicules_resources',
         'name': 'Venom Sac',
         'keywords': ['organ', 'consumable'],
-        'desc': '<b class="special-rule">Consume:</b> Archive this card and roll 1d10. On a 1-5, you die instantly. On a 6+, gain the <b class="fighting-art secret-fighting-art">Death Touch</b> Secret Fighting Art.',
+        'desc': (
+                '<b class="special-rule">Consume:</b> Archive this card and '
+                'roll 1d10. On a 1-5, you die instantly. On a 6+, gain the '
+                '<b class="fighting-art secret-fighting-art">Death Touch</b> '
+                'Secret Fighting Art.'
+        ),
         'copies': 1,
-        'rules_text': '<b class="special-rule">Consume:</b> Archive this card and roll 1d10. On a 1-5, you die instantly. On a 6+, gain the <b class="fighting-art secret-fighting-art">Death Touch</b> Secret Fighting Art.',
-        #'fighting_arts': ['death_touch'] TODO: secret_fighting_arts?
     },
 
 

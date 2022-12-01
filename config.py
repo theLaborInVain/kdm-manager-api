@@ -14,8 +14,17 @@ class Config():
 
     ACTIVE_USER_HORIZON = 15    # minutes
     ADMIN_EMAIL_ADDRESSES = ['toconnell@thelaborinvain.com']
+    ADMIN_PANEL_RELEASES_DEFAULT_SECTIONS = [
+        'Administration',
+        'Corrections and fixes',
+        'Enhancements',
+        'Expansion content',
+        'Deprecations',
+        'kingdomDeath.css',
+        'Version 3',
+        'Version 4',
+    ]
     ADMIN_PANEL_RELEASES_VISIBLE = 5
-    ADMIN_PANEL_LOG_SUMMARY_LINES = 100
     AVATAR_DIMENSIONS = [450, 600]
     DEBUG = True
     DEFAULT_HEADERS = (
@@ -48,7 +57,7 @@ class Config():
         'monster', 'monsters'
     ]
     TIMEZONE = pytz.timezone('US/Central')
-    VERSION = "1.132.850"
+    VERSION = "1.136.871"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 

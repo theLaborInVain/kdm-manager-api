@@ -72,7 +72,8 @@
     background-position: center;
     color: rgba(255,255,255,0);
 }
-.kd .deck_icon {    /* for when display requires the inline deck icon */
+.kd .deck_icon,
+ .kd.deck_icon {    /* for when display requires the inline deck icon */
     background-image:
         url('https://api.kdm-manager.com/static/media/images/deck_icon.png');
     background-size: 1em;
@@ -80,7 +81,8 @@
     background-position: center;
     color: rgba(255,255,255,0);
 }
-.kd .deck_icon:after {
+.kd .deck_icon:after,
+ .kd.deck_icon:after {
     color: rgba(255,255,255);
     content: attr(deck);
     font-size: var(--font-small);
@@ -176,6 +178,9 @@ hr.three_dee {
     padding: 1rem;
     padding-top: 0.5rem;
 }
+.kd.worksheet_block.flex {
+    display: flex;
+}
 .kd.worksheet_block.lined > div:not(.worksheet_block_title, .worksheet_block_subtitle) {
     border-bottom: 0.1rem solid #CBCBCB;
     min-height: 3rem;
@@ -253,6 +258,9 @@ hr.three_dee {
 }
 
 
+/* tile buttons */ 
+
+
 /*  checkboxes */
 
 .kd.checkbox {
@@ -305,6 +313,7 @@ hr.three_dee {
 }
 .kd.checkbox.red {
     border-color: var(--color-kd-red);
+    background: none;
 }
 .kd.checkbox.red.checked {
     background: var(--color-kd-red);

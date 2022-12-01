@@ -30,6 +30,7 @@
             class="clickable kd worksheet_row lined"
             ng-repeat="alert in webappAlerts"
             ng-click="ngShowHide(alert._id.$oid + '_controls')"
+            ng-class-even="'zebra'"
         >
 
             <div class="kd checkbox checked"></div> 
@@ -66,12 +67,12 @@
         </div> <!-- kd worksheet_row webappAlerts repeater -->
 
         <div
-            class="clickable kd worksheet_row lined borderless"
+            class="clickable kd worksheet_row"
             ng-click="ngShow('createNewAlert')"
         >
-            <div class="kd checkbox"></div>
+            <div class="kd checkbox red"></div>
             <div class="kd checkbox_desc">
-                Click/tap to create a new webapp alert!
+                Create a new webapp alert!
             </div>
         </div>
 

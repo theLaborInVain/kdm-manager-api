@@ -105,8 +105,6 @@ myApp.controller('adminPanelController', function($scope, $http, $interval) {
 
         $scope.getRecentUsers();
 
-        $http.get('admin/get/logs').then(function(result){$scope.logs = result.data;});
-
         $http.get('world').then(function(result){
             $scope.world = result.data;
             $scope.ngVisible.mainSpinner = false;

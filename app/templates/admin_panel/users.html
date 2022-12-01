@@ -5,6 +5,68 @@
         <img src="/static/media/images/loading_io.gif" >
     </div>
 
+
+    <!-- user stats -->
+    <div
+        class="kd worksheet_block"
+    >
+
+        <h3 class="kd title">User Stats</h3>
+
+        <div
+            class="clickable kd worksheet_row lined"
+            ng-click="ngShow('userAgentPopularityContest')"
+        >
+            <div class="kd checkbox red"></div>
+            <div class="kd checkbox_desc">
+                User agent popularity contest
+            </div>
+        </div>
+
+        <div
+            class="clickable kd worksheet_row zebra"
+            ng-click="ngShow('apiResponseTimes')"
+        >
+            <div class="kd checkbox red"></div>
+            <div class="kd checkbox_desc">
+                API response times
+            </div>
+        </div>
+
+    </div> <!-- worksheet block -->
+
+
+    <!-- user counts -->
+
+    <div class="kd attributes_table">
+        <div
+            class="large_cell"
+        >
+            <div class="title">Users</div>
+            <span>
+                {a world.world.total_users.value a}
+            </span>
+        </div>
+        <div
+            class="cell"
+        >
+            <div class="title">Lvl. 0</div>
+            <span>
+                {a world.world.total_users.value - world.world.total_subscribers.value a}
+            </span>
+        </div>
+        <div
+            class="cell"
+            ng-repeat="t in world.world.subscribers_by_level.value"
+            ng-click="scratch.subscriberToolTip = settings.meta.subscriptions['level_' + t.level]"
+        >
+            <div class="title">Lvl. {a t.level a}</div>
+            <span> {a t.count a}</span>
+        </div>
+    </div> <!-- attributes table -->
+
+
+    <!-- user admin controls -->
     <div
         class="kd worksheet_block"
     >
@@ -73,54 +135,6 @@
         </form>
 
     </div> <!-- kd worksheet_block -->
-
-
-    <div
-        class="kd worksheet_block"
-    >
-
-        <div
-            class="clickable kd worksheet_row"
-            ng-click="ngShow('userAgentPopularityContest')"
-        >
-            <div class="kd checkbox"></div>
-            <div class="kd checkbox_desc">
-                View user Agent popularity contest
-            </div>
-        </div>
-
-    </div> <!-- worksheet block -->
-
-
-    <!-- user counts -->
-
-    <div class="kd attributes_table">
-        <div
-            class="large_cell"
-        >
-            <div class="title">Users</div>
-            <span>
-                {a world.world.total_users.value a}
-            </span>
-        </div>
-        <div
-            class="cell"
-        >
-            <div class="title">Lvl. 0</div>
-            <span>
-                {a world.world.total_users.value - world.world.total_subscribers.value a}
-            </span>
-        </div>
-        <div
-            class="clickable cell"
-            ng-repeat="t in world.world.subscribers_by_level.value"
-            ng-click="scratch.subscriberToolTip = settings.meta.subscriptions['level_' + t.level]"
-        >
-            <div class="title">Lvl. {a t.level a}</div>
-            <span> {a t.count a}</span>
-        </div>
-    </div> <!-- attributes table -->
-
 
     <!--
 
@@ -318,6 +332,30 @@
         <div
             class="clickable kd capsule"
             ng-click="ngHide('userAgentPopularityContest')"
+        >
+            Close
+        </div>
+
+    </div> <!-- modal_inner -->
+
+</div> <!-- UA popularity contest -->
+
+<div
+    id="apiResponseTimes"
+    class="modal_outer hidden"
+    ng-click="ngHide('apiResponseTimes')"
+>
+
+    <div
+        class="modal_inner slender_modal"
+        ng-click="$event.stopPropagation()"
+    >
+
+        {% include 'admin_panel/api_response_times.html' %}
+
+        <div
+            class="clickable kd capsule"
+            ng-click="ngHide('apiResponseTimes')"
         >
             Close
         </div>

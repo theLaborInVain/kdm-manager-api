@@ -8,7 +8,6 @@
 # standard library imports
 from datetime import datetime, timedelta
 import json
-import os
 
 # second party imports
 from bson import json_util
@@ -41,16 +40,30 @@ def get_settlement_data():
     for timestamp in sorted(sorting_hat.keys(), reverse=True):
         sorted_ids.append(sorting_hat[timestamp])
 
+    # create the recent settlements array
     recent_settlements = []
-    for s in utils.mdb.settlements.find({"_id": {"$in": sorted_ids}}):
-        s['creator_email'] = utils.mdb.users.find_one(
-            {'_id': s['created_by']}
+    for settlement in utils.mdb.settlements.find(
+        {
+            "_id": {"$in": sorted_ids}
+        }
+    ):
+        # add settlement creator email (for easy display)
+        settlement['creator_email'] = utils.mdb.users.find_one(
+            {'_id': settlement['created_by']}
         )['login']
-        s['age'] = utils.get_time_elapsed_since(s['created_on'], 'age')
-        s['players'] = utils.mdb.survivors.find(
-            {"settlement": s['_id']}
+
+        # add settlement age
+        settlement['age'] = utils.get_time_elapsed_since(
+            settlement['created_on'],
+            'age'
+        )
+
+        # add a list of players
+        settlement['players'] = utils.mdb.survivors.find(
+            {"settlement": settlement['_id']}
         ).distinct('email')
-        recent_settlements.append(s)
+
+        recent_settlements.append(settlement)
 
     return json.dumps(recent_settlements, default=json_util.default)
 
@@ -84,25 +97,27 @@ def get_user_data():
 
     active_user_count = 0
     recent_user_count = 0
+
     final_user_output = []
-    for u in recent_users:
-        u['age'] = utils.get_time_elapsed_since(u['created_on'], 'age')
-        u['latest_activity_age'] = utils.get_time_elapsed_since(
-            u['latest_activity'],
+    for user in recent_users:
+        user['age'] = utils.get_time_elapsed_since(user['created_on'], 'age')
+        user['latest_activity_age'] = utils.get_time_elapsed_since(
+            user['latest_activity'],
             'age'
         )
-        if u["latest_activity"] > (datetime.now() - timedelta(
-                minutes = API.config['ACTIVE_USER_HORIZON']
+
+        if user["latest_activity"] > (datetime.now() - timedelta(
+            minutes=API.config['ACTIVE_USER_HORIZON']
         )):
             active_user_count += 1
-            u['is_active'] = True
+            user['is_active'] = True
         else:
             recent_user_count += 1
-            u['is_active'] = False
-        final_user_output.append(u)
+            user['is_active'] = False
+        final_user_output.append(user)
 
     # create the final output dictionary
-    d = {
+    output = {
         "meta": {
             "active_user_horizon": API.config['ACTIVE_USER_HORIZON'],
             "active_user_count": active_user_count,
@@ -115,26 +130,6 @@ def get_user_data():
         "user_agent_stats": ua_data,
         "user_info": final_user_output,
     }
+
     # and return it as json
-    return json.dumps(d, default=json_util.default)
-
-
-def serialize_system_logs():
-    """ Returns JSON represent application/system log output. """
-
-    d = {}
-
-    log_root_dir = os.path.join(API.root_path, '..', 'logs')
-
-    for l in ["world", "api", "server", "world_daemon", "gunicorn"]:
-        log_file_name = os.path.join(log_root_dir, "%s.log" % l)
-        if os.path.isfile(log_file_name):
-            file_handle = open(log_file_name, "r")
-            log_lines = file_handle.readlines()
-            log_limit = API.config['ADMIN_PANEL_LOG_SUMMARY_LINES']
-            d[l] = [line for line in reversed(log_lines[-log_limit:])]
-        else:
-            d[l] = ["'%s' does not exist!" % log_file_name]
-
-
-    return json.dumps(d, default=json_util.default)
+    return json.dumps(output, default=json_util.default)

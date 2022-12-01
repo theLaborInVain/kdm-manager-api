@@ -592,9 +592,15 @@ secret_fighting_art = {
         },
     },
     'suppressed_shadow': {
-        'desc': 'You no longer cast a shadow and you never hesitate. Ignore First Strike.<br/>On a <b>Perfect Hit</b>, your first wound attempt of the attack automatically succeeds and inflicts a critical wound.<br/>If you die during the showdown, place a Shade minion in the space you occupied.',
         'expansion': 'sunstalker',
         'name': 'Suppressed Shadow',
+        'desc': (
+            'You no longer cast a shadow and you never hesitate. Ignore First '
+            'Strike.<br/>On a <b>Perfect Hit</b>, your first wound attempt of '
+            'the attack automatically succeeds and inflicts a critical '
+            'wound.<br/>If you die during the showdown, place a Shade minion '
+            'in the space you occupied.'
+        ),
     },
 
 
@@ -613,6 +619,18 @@ secret_fighting_art = {
         'epithet': 'black_guard',
         'name': 'Black Guard Style',
         'endeavors': ['black_guard_style'],
+    },
+
+    # badar
+    'crescent_step_beta': {
+        'beta': True,
+        'expansion': 'badar',
+        'name': 'Crescent Step',
+        'desc': (
+            'During your act, when your attack ends, gain '
+            '<font class="kdm_font">c</font>.'
+            'Limit, once per round.'
+        ),
     },
 
 }

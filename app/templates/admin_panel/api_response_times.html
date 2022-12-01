@@ -1,35 +1,33 @@
- <div class="flex_item_basic flex_item_double_wide api">
-     <h2>API Response Times (last seven days)</h2>
-     <table class="api_response_times">
-     <tr>
-         <th>Method</th>
-         <th>Route</th>
-         <th>#</th>
-         <th>24Hrs</th>
-         <th>Avg.</th>
-         <th>Min</th>
-         <th>Max</th>
-     </tr>
-     <tr ng-repeat="r in world.world.api_response_times.value">
-         <td>{a r._id.method a}</td>
-         <td class="url"><code>/{a r._id.url a}</code></td>
-         <td>{a r.count a}</td>
-         <td>{a r.last_24_avg | limitTo:5 a}</td>
-         <td
-            ng-class="{'warning': r.avg_time >= 2, 'error': r.avg_time >=4}"
-         >
-            {a r.avg_time | limitTo:5 a}
-         </td>
-         <td
-            ng-class="{'warning': r.min_time >= 2, 'error': r.min_time >=4}"
-         >
-            {a r.min_time | limitTo:5 a}
-         </td>
-         <td
-            ng-class="{'warning': r.max_time >= 2, 'error': r.max_time >=4}"
-         >
-            {a r.max_time | limitTo:5 a}
-         </td>
-     </tr>
-     </table>
- </div>
+<h2>API Response Times (last seven days)</h2>
+<table class="api_response_times">
+<tr>
+    <th>Method</th>
+    <th>Route</th>
+    <th>#</th>
+    <th>24Hrs</th>
+    <th>Avg.</th>
+    <th>Min</th>
+    <th>Max</th>
+</tr>
+<tr ng-repeat="r in world.world.api_response_times.value">
+    <td>{a r._id.method a}</td>
+    <td class="url"><code>/{a r._id.url a}</code></td>
+    <td>{a r.count a}</td>
+    <td>{a r.last_24_avg | limitTo:5 a}</td>
+    <td
+       ng-class="{'warning': r.avg_time >= 2, 'error': r.avg_time >=4}"
+    >
+       {a r.avg_time | limitTo:5 a}
+    </td>
+    <td
+       ng-class="{'warning': r.min_time >= 2, 'error': r.min_time >=4}"
+    >
+       {a r.min_time | limitTo:5 a}
+    </td>
+    <td
+       ng-class="{'warning': r.max_time >= 2, 'error': r.max_time >=4}"
+    >
+       {a r.max_time | limitTo:5 a}
+    </td>
+</tr>
+</table>

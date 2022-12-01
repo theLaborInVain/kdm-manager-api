@@ -632,6 +632,11 @@ product_lines = {
         'released': datetime(2022,4,22,12, tzinfo=USCENTRAL),
         'ui': {'pretty_category': 'White Box'},
     },
+    'badar': {
+        'name': 'Badar',
+        'released': datetime(2022,5,31,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
 
 
 }

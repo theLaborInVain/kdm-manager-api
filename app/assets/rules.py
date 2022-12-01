@@ -87,24 +87,6 @@ core = {
             'craft this gear.'
         ),
     },
-    'cleavage_x': {
-        'name': 'Cleavage X',
-        'type': 'special_rule',
-        'desc': (
-            'A gear special rule. When you attempt to wound a hit location '
-            'with a persistent injury, gain +X luck for that wound attempt.'
-        ),
-    },
-    'consecutive_spaces': {
-        'name': 'Consecutive Spaces',
-        'desc': (
-            'When a survivor is instructed to move consecutive spaces, they '
-            'must move without occupying the same space more than once.<br/>'
-            'A survivor could not, for example, move back and forth between '
-            'two spaces to fulfill consecutive space movement. They could, '
-            'however, move around a monster or move in a straight line.'
-        ),
-    },
     'consume': {
         'name': 'Consume',
         'type': 'special_rule',
@@ -252,22 +234,6 @@ core = {
         'type': 'keyword',
         'desc': """A gear keyword. This gear Is hard to keep quiet.""",
     },
-    'novel_proficiency': {
-        'name': 'Novel Proficiency',
-        'type': 'special_rule',
-        'desc': (
-            "When a survivor's proficiency level reaches specialization and "
-            'they have at least 3 courage, they can develop something new.'
-            'They may select a novel weapon proficiency that matches their '
-            'weapon type, instead of continuing with normal weapon '
-            'proficiency<br/>.'
-            'When a survivor with a novel proficency reaches mastery, it '
-            'becomes an innovation and all survivors gain the benefit of its '
-            'specialization rules. A campaign can have both types of weapon '
-            'proficiencies, so it is possible for a settlement to have sword '
-            'mastery and a novel sword mastery.'
-        ),
-    },
     'obstacle': {
         'name': 'Obstacle',
         'type': 'keyword',
@@ -337,15 +303,6 @@ core = {
         'type': 'special_rule',
         'desc': """A gear special rule. Reach weapons are long enough to attack monsters when the survivor Is not adjacent. Reach specifies the maximum number of spaces away that a survivor can attack with this weapon."""
     },
-    'refined': {
-        'name': 'Refined',
-        'beta': True,
-        'type': 'special_rule',
-        'desc': (
-            'When this fails to wound, you may reroll the '
-            'wound attempt. Limit, once per attack.'
-        ),
-    },
     'savage': {
         'name': 'Savage',
         'type': 'special_rule',
@@ -359,62 +316,96 @@ core = {
     'sentient': {
         'name': 'Sentient',
         'type': 'special_rule',
-        'desc': """A gear special rule. A survivor must be insane to activate this gear.""",
+        'desc': (
+            'A gear special rule. A survivor must be insane to activate '
+            'this gear.'
+        ),
     },
     'set': {
         'name': 'Set',
         'type': 'keyword',
-        'desc': """A gear keyword listed on some armor cards. This means this armor is part of an armor set.""",
+        'desc': (
+            'A gear keyword listed on some armor cards. This means this armor '
+            'is part of an armor set.'
+        ),
     },
     'sharp': {
         'name': 'Sharp',
         'type': 'special_rule',
-        'desc': """A gear special rule. Add 1dlO strength to each wound attempt using this gear. This d1O is not a wound roll, and cannot cause critical wounds.""",
+        'desc': (
+            'A gear special rule. Add 1dlO strength to each wound attempt '
+            'using this gear. This d1O is not a wound roll, and cannot cause '
+            'critical wounds.'
+        ),
     },
     'sickle': {
         'name': 'Sickle',
         'type': 'keyword',
-        'desc': """A gear keyword. In certain situations, this can be used to harvest herbs.""",
+        'desc': (
+            'A gear keyword. In certain situations, this can be used to '
+            'harvest herbs.'
+        ),
     },
     'slow': {
         'name': 'Slow',
         'type': 'special_rule',
-        'desc': """A gear special rule. Slow weapons always have an attack speed of 1. Do not add speed modifiers.""",
+        'desc': (
+            'A gear special rule. Slow weapons always have an attack speed of '
+            '1. Do not add speed modifiers.'
+        ),
     },
     'soluble': {
         'name': 'Soluble',
         'type': 'keyword',
-        'desc': """A gear keyword. Able to be dissolved in liquid.""",
+        'desc': 'A gear keyword. Able to be dissolved in liquid.',
     },
     'stinky': {
         'name': 'Stinky',
         'type': 'keyword',
-        'desc': """A gear keyword. This item has a strong odor.""",
+        'desc': 'A gear keyword. This item has a strong odor.',
     },
     'tool': {
         'name': 'Tool',
         'type': 'keyword',
-        'desc': """A gear keyword. Some tools trigger story events or grant bonuses.""",
+        'desc': (
+            'A gear keyword. Some tools trigger story events or grant bonuses.'
+        ),
     },
     'two_handed': {
         'name': 'Two-handed',
         'type': 'keyword',
-        'desc': """A gear keyword. This weapon requires two hands to use. Some gear and rules do not work with two-handed weapons.""",
+        'desc': (
+            'A gear keyword. This weapon requires two hands to use. Some gear '
+            'and rules do not work with two-handed weapons.'
+        ),
     },
     'unique': {
         'name': 'Unique',
         'type': 'special_rule',
-        'desc': """A gear special rule. A settlement may only have one copy of this gear card at a time.""",
+        'desc': (
+            'A gear special rule. A settlement may only have one copy of this '
+            'gear card at a time.'
+        ),
     },
     'unwieldy': {
         'name': 'Unwieldy',
         'type': 'special_rule',
-        'desc': """A gear special rule. If any attack dice roll results are 1, the weapon causes 1 random damage to the survivor for each 1 roiled. Continue the attack as normal.""",
+        'desc': (
+            'A gear special rule. If any attack dice roll results are 1, the '
+            'weapon causes 1 random damage to the survivor for each 1 roiled. '
+            'Continue the attack as normal.'
+        ),
     },
     'vital': {
         'name': 'Vital',
         'type': 'special_rule',
-        'desc': """A gear special rule. If the settlement has any gear with this rule, the survivors cannot depart without this gear. If the survivor holding Vital gear perishes before the showdown, another survivor must pick up the Vital gear (discarding gear to make room in their grid if needed).""",
+        'desc': (
+            'A gear special rule. If the settlement has any gear with this '
+            'rule, the survivors cannot depart without this gear. If the '
+            'survivor holding Vital gear perishes before the showdown, '
+            'another survivor must pick up the Vital gear (discarding gear '
+            'to make room in their grid if needed).'
+        ),
     },
 }
 
@@ -432,12 +423,87 @@ expansion = {
         'expansion': 'sunstalker',
         'type': 'special_rule',
         'name': 'Prismatic',
-        'desc': 'Your complete affinities and incomplete affinity halves count as all colors.',
+        'desc': (
+            'Your complete affinities and incomplete affinity halves count '
+            'as all colors.'
+        ),
     },
     'shadow_walk': {
         'expansion': 'sunstalker',
         'type': 'special_rule',
         'name': 'Shadow Walk',
         'desc': None,
+    },
+
+    # grimmory
+    'consecutive_spaces': {
+        'name': 'Consecutive Spaces',
+        'desc': (
+            'When a survivor is instructed to move consecutive spaces, they '
+            'must move without occupying the same space more than once.<br/>'
+            'A survivor could not, for example, move back and forth between '
+            'two spaces to fulfill consecutive space movement. They could, '
+            'however, move around a monster or move in a straight line.'
+        ),
+    },
+
+    # Pascha
+    'cleavage_x': {
+        'name': 'Cleavage X',
+        'type': 'special_rule',
+        'expansion': 'pascha',
+        'desc': (
+            'A gear special rule. When you attempt to wound a hit location '
+            'with a persistent injury, gain +X luck for that wound attempt.'
+        ),
+    },
+
+    # willow
+    'novel_proficiency': {
+        'name': 'Novel Proficiency',
+        'type': 'special_rule',
+        'expansion': 'willow',
+        'desc': (
+            "When a survivor's proficiency level reaches specialization and "
+            'they have at least 3 courage, they can develop something new.'
+            'They may select a novel weapon proficiency that matches their '
+            'weapon type, instead of continuing with normal weapon '
+            'proficiency<br/>.'
+            'When a survivor with a novel proficency reaches mastery, it '
+            'becomes an innovation and all survivors gain the benefit of its '
+            'specialization rules. A campaign can have both types of weapon '
+            'proficiencies, so it is possible for a settlement to have sword '
+            'mastery and a novel sword mastery.'
+        ),
+    },
+    'refined': {
+        'name': 'Refined',
+        'type': 'special_rule',
+        'expansion': 'willow',
+        'desc': (
+            'When this fails to wound, you may reroll the '
+            'wound attempt. Limit, once per attack.'
+        ),
+    },
+
+    # badar
+    'cleave': {
+        'expansion': 'badar',
+        'name': 'Cleave',
+        'desc': (
+            'You may spend '
+            '<font class="kdm_font">c</font><font class="kdm_font">a</font>'
+            'to activate and attack with this weapon. If you do, it gains the '
+            'two-handed keyword, +4 strength, and <b>slow</b> for the attack.'
+            '<br/>'
+            'You cannot use <b>Cleave</b> if an injury or or other effect is '
+            'preventing you from activating gear with the two-handed keyword.'
+        ),
+    },
+    'sealed': {
+        'expansion': 'badar',
+        'name': 'Sealed',
+        'desc': (
+        ),
     },
 }

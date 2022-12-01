@@ -729,7 +729,10 @@ core = {
         'type': 'catarium',
         'name': 'White Lion Gauntlet',
         'keywords': ['armor','set','fur','heavy'],
-        'desc': 'When you <b>Pounce</b>, gain +1 accuracy for your next attack this turn.',
+        'desc': (
+            'When you <b>Pounce</b>, gain +1 accuracy for your next attack '
+            'this turn.'
+        ),
         'armor': 2,
         'location': 'arms',
     },
@@ -741,7 +744,11 @@ core = {
         'location': 'head',
         'affinities': {'bottom': 'red'},
         'affinity_bonus': {
-            'desc': '<font class="kdm_font">a</font> and 1 survival: Roar. <b>Non-Deaf Insane</b> survivors gain +2 strength until end of round. All other survivors gain +1 insanity.',
+            'desc': (
+                '<font class="kdm_font">a</font> and 1 survival: Roar. '
+                '<b>Non-Deaf Insane</b> survivors gain +2 strength until end '
+                'of round. All other survivors gain +1 insanity.'
+            ),
             'requires': {
                 'puzzle': {'red': 1},
                 'complete': {'blue': 1},
@@ -5897,6 +5904,42 @@ willow = {
                 'gear_handles': {'lantern_sword': 1},
                 'resource_handles': {'perfect_bone': 1},
                 'suffix_text': '5x Resource from a level 3 monster',
+            },
+        ],
+    },
+}
+
+badar = {
+    'toxicimitar': {
+        'name': 'Toxicimitar',
+        'beta': True,
+        'type': 'gear_recipe',
+        'expansion': 'badar',
+        'keywords': ['weapon', 'melee', 'scimitar', 'other'],
+        'rules': ['Sharp', 'Cleave'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 2,
+        'affinities': {'top': 'blue'},
+        'desc': (
+            'The blade is toxic. On <b>Arrival</b>, lose '
+            '<font class="inline_shield">1</font> at all hit locations. '
+            'When this wounds the monster the 3rd time, it gains a -1 movement '
+            'and -1 evasion token.<br/>'
+            '<b>Sealed</b> - gain the <b>Crescent Step</b> '
+            '<span class="kd deck_icon" deck="SF">SF</span>'
+        ),
+        'recipes': [
+            {
+                'prefix_text':
+                    '1x <b>Venom Sac</b> from a level 3 Spidicules',
+                'resource_types': {'iron': 1, 'bone': 1},
+            },
+            {
+                'prefix_text':
+                    '1x <b>Organ</b> resource from a level 3 monster',
+                'resource_handles': {'perfect_organ': 1},
+                'resource_types': {'iron': 1, 'bone': 1},
             },
         ],
     },

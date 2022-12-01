@@ -40,6 +40,7 @@ settlement = [
     "Deadrock",
     "Death Heim",
     "Death Mountain",
+    'Dedheim',
     "Devil's Crossing",
     "Doomhaven",
     "Doomrock",

@@ -50,6 +50,14 @@ weapon_proficiency = {
         "specialist_ai": "katar_specialization",
         "master_ai": "mastery_katar",
     },
+
+    # sealed gear
+    'sealed_gear': {
+        'name': 'Sealed gear',
+        'expansion': 'badar',
+    },
+
+
     "scythe": {
         "name": "Scythe",
         "expansion": "dragon_king",
@@ -79,7 +87,6 @@ weapon_proficiency = {
         "specialist_ai": "novel_sword_specialization",
         "master_ai": "novel_sword_mastery",
     },
-
     "twilight_sword": {
         "name": "Twilight Sword",
         "excluded_campaigns": ["people_of_the_stars","people_of_the_sun"],

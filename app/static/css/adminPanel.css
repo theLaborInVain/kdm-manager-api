@@ -13,6 +13,9 @@ table {border-collapse: collapse; width: 90%; margin: 1.5% auto;}
 td {word-wrap: break-word; word-break: break-all;}
 td.int_key {width: 10%; word-break: inherit;}
 
+.italic, .italics {
+    font-style: italic;
+}
 .bold {
     font-weight: bold;
 }
@@ -83,9 +86,7 @@ td.int_key {width: 10%; word-break: inherit;}
 
 
 
-/* flex box borders */
-.api {border: 0.2em solid #DDFFDD; }
-.users {border: 0.2em solid #FFDDDD; }
+/* flex box borders - DEPRECATED */
 .world {border: 0.2em solid #DDDDFF; }
 
 
@@ -268,15 +269,14 @@ button.toggle_settlement_event_log {float: right; }
     display: flex;
     flex-wrap: nowrap;
     justify-content: space-between;
-    min-width: 10%;
 }
 .admin_panel_edit_release_item_buttons * {  /* the buttons */
     height: 100%; 
+    margin: 0 0.1rem 0 0.1rem;
 }
 .admin_panel_edit_release_item_body {
     box-sizing: border-box;
     padding: 0.25rem;
-    width: 90%;
 }
 .admin_panel_edit_release_item_body:focus,
     .admin_panel_edit_release_item_detail:focus {
@@ -353,6 +353,9 @@ button.toggle_settlement_event_log {float: right; }
 .modal_button_raft button:focus,
     .modal_button:focus {
     border: 0;
+}
+
+.modal_close_button {
 }
 
 /* wide resolution */
