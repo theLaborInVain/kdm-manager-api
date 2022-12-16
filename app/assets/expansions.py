@@ -637,6 +637,43 @@ product_lines = {
         'released': datetime(2022,5,31,12, tzinfo=USCENTRAL),
         'ui': {'pretty_category': 'White Box'},
     },
+    'doll': {
+        'name': 'Doll',
+        'released': datetime(2022,8,9,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
+    'summer_cyrus': {
+        'name': 'Summer Cyrus',
+        'released': datetime(2022,8,9,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
+    'summer_aya': {
+        'name': 'Summer Aya',
+        'released': datetime(2022,9,30,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
+    'summer_goth_twilight_knight': {
+        'name': 'Summer Goth - Twilight Knight',
+        'released': datetime(2022,9,30,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
+
+    # halloween 2022
+    'reapokratis': {
+        'name': 'Reapokratis',
+        'released': datetime(2022,10,31,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
+    'erza_of_dedheim': {
+        'name': 'Erza of Dedheim',
+        'released': datetime(2022,10,31,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
+    'halloween_survivor_flower_knight_costume': {
+        'name': 'Halloween Survivor - Flower Knight Costume',
+        'released': datetime(2022,10,31,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
 
 
 }
@@ -757,9 +794,28 @@ miscellaneous = {
         ],
     },
 
+
+    # potsun enhancements
     'sunlion_armor_beta': {
         'released': datetime(2021,11,25, 12, tzinfo=USCENTRAL),
         'name': 'Sunlion Armor (Beta)',
+        'ui': {'pretty_category': 'Enhancement'},
+    },
+    'white_sunlion_armor': {
+        'name': 'White Sunlion Armor',
+        'released': datetime(2022,11,25,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'Enhancement'},
+        'subtitle': (
+            'Augments <b>People of the Sun</b> campaign; includes '
+            '<b>Bleeding Corpse Lily</b> terrain and Strange Resource.'
+        ),
+    },
+
+
+    # screaming sun / oni armor
+    'screaming_sun_armor': {
+        'name': 'Screaming Sun Armor',
+        'released': datetime(2022,11,25,12, tzinfo=USCENTRAL),
         'ui': {'pretty_category': 'Enhancement'},
     },
 

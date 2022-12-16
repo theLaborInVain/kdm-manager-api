@@ -1,3 +1,10 @@
+'''
+
+    Innovation assets dictionaries. There are two, one called 'expansions'
+    that sets the sub_type attrib when initialized.
+
+'''
+
 innovation = {
     #
     #   Innovations 
@@ -19,7 +26,9 @@ innovation = {
     "language": {
         "name": "Language",
         "innovation_type": "starting innovation",
-        "consequences": ["hovel","inner_lantern","drums","paint","symposium","ammonia"],
+        "consequences": [
+            "hovel","inner_lantern","drums","paint","symposium","ammonia"
+        ],
         "survival_limit": 1,
         "survival_action": "encourage",
     },
@@ -175,7 +184,10 @@ innovation = {
         "name": "Final Fighting Art",
         "innovation_type": "education",
         "survival_limit": 1,
-        "settlement_buff": """Once per showdown, you may select a card from the discard pile or wound stack and place it on top of the AI deck.""",
+        "settlement_buff": (
+            'Once per showdown, you may select a card from the discard pile or '
+            'wound stack and place it on top of the AI deck.'
+        ),
     },
 
     # core - science
@@ -232,7 +244,10 @@ innovation = {
         "name": "Forbidden Dance",
         "innovation_type": "music",
         "consequences": ["petal_spiral", "choreia","heart_flute"],
-        "survivor_buff": "When a survivor uses the <b>Synchronized Strike</b> secret fighting art, reroll missed attack rolls once.",
+        "survivor_buff": (
+            'When a survivor uses the <b>Synchronized Strike</b> secret '
+            'fighting art, reroll missed attack rolls once.'
+        ),
         "endeavors": ['forbidden_dance_default'],
     },
     "song_of_the_brave": {
@@ -257,7 +272,13 @@ innovation = {
     "heart_flute": {
         "name": "Heart Flute",
         "innovation_type": "music",
-        'survivor_buff': 'When a survivor uses the <b>Synchronized Strike</b> fighting art, their <font class="kdm_pink_font">attack assist</font> may spend 1 survival to change any monster <font class="kdm_font">e</font> to a <font class="kdm_font">e</font> <b>FAILURE</b> before any wound attempts are made. Limit, once per attack.',
+        'survivor_buff': (
+            'When a survivor uses the <b>Synchronized Strike</b> fighting art, '
+            'their <font class="kdm_pink_font">attack assist</font> may spend '
+            '1 survival to change any monster <font class="kdm_font">e</font> '
+            'to a <font class="kdm_font">e</font> <b>FAILURE</b> before any '
+            'wound attempts are made. Limit, once per attack.'
+        ),
         "endeavors": ['heart_flute_devils_melody']
     },
 
@@ -672,4 +693,3 @@ expansion = {
         'departing_survival_bonus': {'all': 1,},
     },
 }
-

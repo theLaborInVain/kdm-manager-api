@@ -1474,9 +1474,12 @@ expansions = {
         'name': 'Lantern Bloom',
         'keywords': ['flower','hide'],
         'rules': ['Perishable'],
-        'desc': '<b class="special-rule">Perishable.</b> <br/>You may <b class="special-rule">consume</b> and archive this during the showdown to gain +3 luck tokens, -1 permanent luck, and the <b class="disorder">Flower Addiction</b> disorder.',
+        'desc': (
+            'You may <b class="special-rule">consume</b> and archive this '
+            'during the showdown to gain +3 luck tokens, -1 permanent luck, '
+            'and the <b class="disorder">Flower Addiction</b> disorder.'
+        ),
         'copies': 3,
-        'rules_text': 'You may <b class="special-rule">consume</b> and archive this during the showdown to gain +3 luck tokens, -1 permanent luck, and the <b class="disorder">Flower Addiction</b> disorder.'
     },
     'lantern_bud': {
         'expansion': 'flower_knight',
@@ -1484,9 +1487,13 @@ expansions = {
         'name': 'Lantern Bud',
         'keywords': ['flower','scrap',],
         'rules': ['Perishable'],
-        'desc': '<b class="special-rule">Perishable.</b> <br/>You may <b class="special-rule">consume</b> and archive this during the settlement phase to gain +3 <font class="kdm_font">d</font>, skip the next hunt, and gain the <b class="disorder">Flower Addiction</b> disorder.',
+        'desc': (
+            'You may <b class="special-rule">consume</b> and archive this '
+            'during the settlement phase to gain +3 '
+            '<font class="kdm_font">d</font>, skip the next hunt, and gain '
+            'the <b class="disorder">Flower Addiction</b> disorder.'
+        ),
         'copies': 1,
-        'rules_text': 'You may <b class="special-rule">consume</b> and archive this during the settlement phase to gain +3 <font class="kdm_font">d</font>, skip the next hunt, and gain the <b class="disorder">Flower Addiction</b> disorder.',
     },
     'osseous_bloom': {
         'expansion': 'flower_knight',
@@ -1494,9 +1501,14 @@ expansions = {
         'name': 'Osseous Bloom',
         'keywords': ['flower','bone'],
         'rules': ['Perishable'],
-        'desc': '<b class="special-rule">Perishable.</b> <br/>You may <b class="special-rule">consume</b> and archive this during the showdown to remove all your bleeding and negative attribute tokens and gain the <b class="disorder">Flower Addiction</b> disorder.',
+        'desc': (
+            'You may <b '
+            'class="special-rule">consume</b> and archive this during the '
+            'showdown to remove all your bleeding and negative attribute '
+            'tokens and gain the <b class="disorder">Flower Addiction</b> '
+            'disorder.'
+        ),
         'copies': 5,
-        'rules_text': 'You may <b class="special-rule">consume</b> and archive this during the showdown to remove all your bleeding and negative attribute tokens and gain the <b class="disorder">Flower Addiction</b> disorder.',
     },
     'sighing_bloom': {
         'expansion': 'flower_knight',
@@ -1504,9 +1516,13 @@ expansions = {
         'name': 'Sighing Bloom',
         'keywords': ['flower','organ',],
         'rules': ['Perishable'],
-        'desc': '<b class="special-rule">Perishable.</b> <br/>You may <b class="special-rule">consume</b> and archive this during the showdown to gain 3 survival, 3 insanity, and the <b class="disorder">Flower Addiction</b> disorder.',
+        'desc': (
+            'You may '
+            '<b class="special-rule">consume</b> and archive this during the '
+            'showdown to gain 3 survival, 3 insanity, and the '
+            '<b class="disorder">Flower Addiction</b> disorder.'
+        ),
         'copies': 3,
-        'rules_text': 'You may <b class="special-rule">consume</b> and archive this during the showdown to gain 3 survival, 3 insanity, and the <b class="disorder">Flower Addiction</b> disorder.',
     },
     'warbling_bloom': {
         'expansion': 'flower_knight',
@@ -1515,18 +1531,12 @@ expansions = {
         'keywords': ['flower','hide'],
         'rules': ['Perishable'],
         'desc': (
-            '<b class="special-rule">Perishable.</b> <br/>You may plant this '
+            'You may plant this '
             'during the settlement phase to archive it and gain +1 population. '
             'The survivor is born with the <b class="disorder">Flower '
             "Addiction</b> disorder and a face just like the Warbling Bloom's."
         ),
         'copies': 2,
-        'rules_text': (
-            'You may plant this during the settlement phase to archive it and '
-            'gain +1 population. The survivor is born with the '
-            '<b class="disorder">Flower Addiction</b> disorder and a face just '
-            "like the Warbling Bloom's."
-        ),
     },
 
 
@@ -1540,6 +1550,32 @@ expansions = {
             '<b>Consume:</b> Archive this and gain the <b>Armored Fist</b> '
             'fighting art.'
         ),
+    },
+
+    # Summer Aya
+    'fresh_kill': {
+        'name': 'Fresh Kill',
+        'expansion': 'summer_aya',
+        'type': 'strange_resources',
+        'keywords': ['bone', 'hide', 'organ', 'consumable'],
+        'desc': (
+            '<font class="kdm_manager_font">A</font> <b>consume:</b> Archive '
+            'this and set your survival equal to half of your survival limit, '
+            'rounded up.'
+        ),
+    },
+
+    # white sunlion armor
+    'bleeding_corpse_lily': {
+        'name': 'Bleeding Corpse Lily',
+        'expansion': 'white_sunlion_armor',
+        'type': 'strange_resources',
+        'keywords': ['perfect', 'flower', 'organ'],
+        'desc': (
+            'When you gain this, gain the <b>White Sunlion Mask</b> and '
+            '<b>Beast Kunai</b> pattern cards.'
+        ),
+        'flavor_text': 'Smells of rust and rot.',
     },
 
 }

@@ -2272,6 +2272,7 @@ core = {
 tenth_anniversary_survivors = {
     'teleric_eye_tac': {
         'name': 'Teleric Eye Tac',
+        'pattern_id': -6,
         'type': 'pattern',
         'expansion': 'tenth_anniversary_survivors',
         'keywords': ['item', 'jewelry', 'other'],
@@ -2309,6 +2310,7 @@ tenth_anniversary_survivors = {
     },
     'tempered_spear': {
         'type': 'pattern',
+        'pattern_id': -3,
         'expansion': 'tenth_anniversary_survivors',
         'name': 'Tempered Spear',
         'speed': 2,
@@ -2362,6 +2364,7 @@ tenth_anniversary_survivors = {
     },
     'plated_shield': {
         'type': 'pattern',
+        'pattern_id': -2,
         'expansion': 'tenth_anniversary_survivors',
         'name': 'Plated Shield',
         'keywords': ['weapon', 'melee', 'shield', 'finesse', 'metal'],
@@ -2398,6 +2401,7 @@ tenth_anniversary_survivors = {
     },
     'tempered_axe': {
         'type': 'pattern',
+        'pattern_id': -4,
         'expansion': 'tenth_anniversary_survivors',
         'name': 'Tempered Axe',
         'keywords': ['weapon', 'melee', 'axe', 'finesse', 'metal'],
@@ -2441,6 +2445,7 @@ tenth_anniversary_survivors = {
     },
     'tempered_dagger': {
         'type': 'pattern',
+        'pattern_id': -5,
         'expansion': 'tenth_anniversary_survivors',
         'name': 'Tempered Dagger',
         'keywords': ['weapon', 'melee', 'dagger', 'finesse', 'metal'],
@@ -2485,6 +2490,7 @@ tenth_anniversary_survivors = {
     },
     'vault_key_earrings': {
         'type': 'pattern',
+        'pattern_id': -1,
         'expansion': 'tenth_anniversary_survivors',
         'name': 'Vault Key Earrings',
         'keywords': ['item', 'jewelry', 'fragile'],
@@ -3246,7 +3252,10 @@ lion_god = {
         'keywords': ['item','soluble','symbol','other'],
         'affinities': {'left': 'green', 'top': 'blue', 'right': 'red'},
         'affinity_bonus': {
-            'desc': "At the start of your act, you may spend 3 insanity to gain 1 survival or 1 survival to gain 3 insanity.",
+            'desc': (
+                'At the start of your act, you may spend 3 insanity to gain 1 '
+                'survival or 1 survival to gain 3 insanity.'
+            ),
             'requires': {'puzzle': {'green':1,'blue':1,'red':1}},
         },
     },
@@ -3258,7 +3267,10 @@ lion_god = {
         'add_affinity': ['blue'],
         'affinities': {'left': 'red', 'top': 'red'},
         'affinity_bonus': {
-            'desc': "For every 10 insanity you have, gain +1 speed and +1 strength.",
+            'desc': (
+                'For every 10 insanity you have, gain +1 speed and '
+                '+1 strength.'
+            ),
             'requires': {'complete': {'blue': 2}, 'puzzle': {'red': 1}},
         },
     },
@@ -3268,7 +3280,10 @@ lion_god = {
         'name': 'Death Mehndi',
         'keywords': ['item','soluble','symbol','other'],
         'rules': ['Cursed'],
-        'desc': 'On a <b>Perfect hit</b>, gain 1d10 insanity. -4 to all brain trauma rolls.',
+        'desc': (
+            'On a <b>Perfect hit</b>, gain 1d10 insanity. -4 to all brain '
+            'trauma rolls.'
+        ),
         'add_affinity': ['blue','green','red'],
     },
     'glyph_of_solitude': {
@@ -3578,8 +3593,26 @@ sunstalker = {
         'type': 'sacred_pool',
         'name': 'Sun Vestments',
         'affinities': {'right': 'red'},
+        'keywords': ['item', 'silk', 'flammable'],
+        'desc': 'Ignore <b>Cumbersome</b>',
+        'affinity_bonus': {
+            'requires': {'complete': {'red': 2}},
+            'desc': (
+                'When you have any +1 strength tokens, increase the range of '
+                'your <b>Perfect hits</b> by 1.'
+            ),
+        },
         'recipes': [
-            {'locations': [{'handle':'sacred_pool', 'level':2}], 'resource_handles': {'golden_whiskers': 1, 'pustules': 2}, 'resource_types': {'hide': 6} },
+            {
+                'locations': [
+                    {'handle':'sacred_pool', 'level':2}
+                ],
+                'resource_handles': {
+                    'golden_whiskers': 1,
+                    'pustules': 2
+                },
+                'resource_types': {'hide': 6}
+            },
         ],
     },
     'sunring_bow': {
@@ -3708,6 +3741,7 @@ white_box = {
         'name': 'Afterdeath Brew',
         'expansion': 'oktoberfest_aya',
         'type': 'pattern',
+        'pattern_id': -8,
         'keywords': ['item', 'consumable', 'soluble', 'other'],
         'affinities': {'right': 'green'},
         'desc': (
@@ -3745,6 +3779,7 @@ white_box = {
         'name': 'Brave Dirndl',
         'expansion': 'oktoberfest_aya',
         'type': 'pattern',
+        'pattern_id': -9,
         'armor': 1,
         'location': 'body',
         'aux_location': 'waist',
@@ -3786,6 +3821,7 @@ white_box = {
         'name': 'Durendal',
         'expansion': 'oktoberfest_aya',
         'type': 'pattern',
+        'pattern_id': -7,
         'rules': ['Ethereal'],
         'keywords': ['weapon', 'melee', 'sword', 'metal', 'other'],
         'speed': 2,
@@ -3827,6 +3863,7 @@ white_box = {
         'name': 'Black Ghost Dagger',
         'expansion': 'halloween_white_speaker_2019',
         'type': 'pattern',
+        'pattern_id': -10,
         'keywords': ['weapon', 'melee', 'dagger', 'metal', 'other'],
         'affinities': {'top': 'blue', 'bottom': 'red'},
         'footnote': {
@@ -3881,6 +3918,7 @@ white_box = {
         'expansion': 'halloween_ringtail_vixen_2020',
         'name': 'Vixen Tail',
         'type': 'pattern',
+        'pattern_id': -12,
         'keywords': ['item','fur','flammable','other'],
         'affinities': {'bottom': 'green'},
         'desc': (
@@ -3913,6 +3951,7 @@ white_box = {
         'expansion': 'halloween_ringtail_vixen_2020',
         'name': 'Brazen Bat',
         'type': 'pattern',
+        'pattern_id': -11,
         'keywords': ['weapon','melee','club'],
         'speed': 2,
         'accuracy': 5,
@@ -3947,10 +3986,12 @@ white_box = {
         ],
     },
 
+    # winter solstice lucy
     'grim_muffler': {
         'expansion': 'winter_solstice_lucy',
         'name': 'Grim Muffler',
         'type': 'pattern',
+        'pattern_id': -14,
         'keywords': ['item','cloth','fur','heavy'],
         'armor': 1,
         'location': 'chest',
@@ -5675,7 +5716,8 @@ pinups_of_death_2 = {
 sunlion_armor_beta = {
     'white_sunlion_mask': {
         'name': 'White Sunlion Mask',
-        'type': 'gear_recipe',
+        'beta': True,
+        'type': 'beta_gear_recipe',
         'expansion': 'sunlion_armor_beta',
         'armor': 1,
         'location': 'head',
@@ -5702,6 +5744,7 @@ sunlion_armor_beta = {
 halloween_survivors_series_2 = {
     'big_bite_costume': {
         'type': 'pattern',
+        'pattern_id': -18,
         'expansion': 'halloween_survivors_series_2',
         'name': 'Big Bite Costume',
         'keywords': ['item'],
@@ -5740,6 +5783,7 @@ halloween_survivors_series_2 = {
     },
     'gold_cat_costume': {
         'type': 'pattern',
+        'pattern_id': -15,
         'expansion': 'halloween_survivors_series_2',
         'name': 'Gold Cat Costume',
         'keywords': ['item'],
@@ -5758,6 +5802,7 @@ halloween_survivors_series_2 = {
     },
     'retching_costume': {
         'type': 'pattern',
+        'pattern_id': -17,
         'expansion': 'halloween_survivors_series_2',
         'name': 'Retching Costume',
         'keywords': ['item'],
@@ -5777,6 +5822,7 @@ halloween_survivors_series_2 = {
     },
     'screaming_costume': {
         'type': 'pattern',
+        'pattern_id': -16,
         'expansion': 'halloween_survivors_series_2',
         'name': 'Screaming Costume',
         'keywords': ['item'],
@@ -5798,7 +5844,7 @@ halloween_survivors_series_2 = {
 grimmory = {
     'gusk_knife_blindside': {
         'name': 'Gusk Knife (Blindside)',
-        'type': 'gear_recipe',
+        'type': 'beta_gear_recipe',
         'expansion': 'grimmory',
         'keywords': ['weapon', 'melee', 'dagger', 'shield', 'bone'],
         'speed': 3,
@@ -5826,7 +5872,7 @@ grimmory = {
     },
     'gusk_knife_grimstep': {
         'name': 'Gusk Knife (Grimstep)',
-        'type': 'gear_recipe',
+        'type': 'beta_gear_recipe',
         'expansion': 'grimmory',
         'keywords': ['weapon', 'melee', 'dagger', 'shield', 'bone'],
         'speed': 3,
@@ -5859,7 +5905,7 @@ pascha = {
     'ashen_shears': {
         'name': 'Ashen Shears',
         'beta': True,
-        'type': 'gear_recipe',
+        'type': 'beta_gear_recipe',
         'expansion': 'pascha',
         'keywords': ['weapon', 'melee', 'scissors', 'two-handed', 'bone'],
         'rules': ['Slow', 'Frail', 'Block 1'],
@@ -5885,7 +5931,7 @@ willow = {
     'refined_lantern_sword': {
         'name': 'Refined Lantern Sword',
         'beta': True,
-        'type': 'gear_recipe',
+        'type': 'beta_gear_recipe',
         'expansion': 'pascha',
         'keywords': ['weapon', 'melee', 'sword', 'finesse', 'metal'],
         'rules': ['Sharp', 'Refined'],
@@ -5913,7 +5959,7 @@ badar = {
     'toxicimitar': {
         'name': 'Toxicimitar',
         'beta': True,
-        'type': 'gear_recipe',
+        'type': 'beta_gear_recipe',
         'expansion': 'badar',
         'keywords': ['weapon', 'melee', 'scimitar', 'other'],
         'rules': ['Sharp', 'Cleave'],
@@ -5940,6 +5986,505 @@ badar = {
                     '1x <b>Organ</b> resource from a level 3 monster',
                 'resource_handles': {'perfect_organ': 1},
                 'resource_types': {'iron': 1, 'bone': 1},
+            },
+        ],
+    },
+}
+
+doll = {
+    'needle_sword': {
+        'name': 'Needle Sword',
+        'beta': True,
+        'type': 'beta_gear',
+        'expansion': 'doll',
+        'keywords': ['weapon', 'melee', 'sword'],
+        'speed': 3,
+        'accuracy': 2,
+        'strength': 1,
+        'rules': ['Cursed', 'Frail'],
+        'desc': 'On a <b>Perfect hit</b>, the monster suffers a wound.',
+        'affinity_bonus': {
+            'requires': {'complete': {'green': 3}},
+            'desc': 'This gains +1 <b>Perfect hit</b> range.',
+        },
+        'recipes': [
+            {
+                'prefix_text': (
+                    'If you reach <b>The Finale</b>, you may instead find the '
+                    'ruins of a broken doll. Gain the <b>Mechanical Heart</b> '
+                    'and <b>Needle Sword</b> beta gear. Limit, once per '
+                    'campaign. (Hunt Event 100)'
+                )
+            },
+        ]
+    },
+    'mechanical_heart': {
+        'name': 'Mechanical Heart',
+        'beta': True,
+        'type': 'beta_gear',
+        'expansion': 'doll',
+        'keywords': ['item', 'metal', 'heavy'],
+        'affinities':
+            {
+                'top': 'green',
+                'right': 'green',
+                'bottom': 'green',
+                'left': 'green'
+            },
+        'rules': ['Cursed', 'Center'],
+        'desc': (
+            'Add <font class="inline_shield">9</font> to all hit locations. '
+            'Reduce damage you suffer to 1. You can no longer remove your '
+            'armor gear or gain armor points.'
+        ),
+        'recipes': [
+            {
+                'prefix_text': (
+                    'If you reach <b>The Finale</b>, you may instead find the '
+                    'ruins of a broken doll. Gain the <b>Mechanical Heart</b> '
+                    'and <b>Needle Sword</b> beta gear. Limit, once per '
+                    'campaign. (Hunt Event 100)'
+                )
+            },
+        ]
+    },
+}
+
+
+summer_cyrus = {
+    'sighing_acanthus_hat': {
+        'name': 'Sighing Acanthus Hat',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'summer_cyrus',
+        'keywords': ['herb', 'flammable'],
+        'location': 'head',
+        'armor': 1,
+        'affinities': {'right': 'blue'},
+        'rules': ['Accessory'],
+        'affinity_bonus': {
+            'desc': (
+                'When you draw the trap, gain a reroll token. If wearing no '
+                'armor, gain 2.'
+            ),
+            'requires': {
+                'puzzle': {'blue': 1},
+                'complete': {'red': 1},
+            },
+        },
+        'recipes': [
+            {
+                'resource_handles': {
+                    'fresh_acanthus': 2,
+                    'black_lichen': 1,
+                },
+                'suffix_text':
+                    '1 x <b>Sighing Bloom</b> or 1 x <b>Perfect Organ</b>',
+            },
+        ],
+    },
+    'acanthus_underwear': {
+        'name': 'Acanthus Underwear',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'summer_cyrus',
+        'keywords': ['underwear', 'herb', 'flammable'],
+        'location': 'body',
+        'aux_location': 'waist',
+        'armor': 1,
+        'affinities': {'right': 'green', 'left': 'blue'},
+        'rules': ['Accessory'],
+        'affinity_bonus': {
+            'desc': (
+                '+1 strength and +1 evasion for each reroll token you have.'
+            ),
+            'requires': {
+                'puzzle': {'green': 1, 'blue': 1},
+            },
+        },
+        'recipes': [
+            {
+                'endeavor_tokens': 1, 'resource_handles': {'fresh_acanthus': 1}
+            },
+        ],
+    },
+    'sighing_sarong': {
+        'name': 'Sighing Sarong',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'summer_cyrus',
+        'keywords': ['overwear', 'cloth'],
+        'location': 'waist',
+        'aux_location': 'legs',
+        'armor': 2,
+        'affinities': {'left': 'green'},
+        'rules': ['Accessory'],
+        'desc': 'On <b>Arrival</b>, gain a reroll token.',
+        'recipes': [
+            {
+                'endeavor_tokens': 1,
+                'resource_handles': {'fresh_acanthus': 1},
+                'suffix_text':
+                    '1 x <b>Sighing Bloom</b> or 1 x <b>Perfect Organ</b>',
+            },
+        ],
+    },
+}
+
+summer_aya = {
+    'survival_spear': {
+        'name': 'Survival Spear',
+        'beta': True,
+        'type': 'beta_gear',
+        'expansion': 'summer_aya',
+        'keywords': ['weapon', 'melee', 'spear', 'two-handed'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 3,
+        'affinities': {'top': 'red', 'right': 'red', 'left': 'green'},
+        'rules': ['Reach 2', 'Unique'],
+        'desc': (
+            'This gains a +1 strength token after each time the wielder '
+            'performs a survival action.'
+        ),
+        'affinity_bonus': {
+            'desc': (
+                'On <b>Arrival</b>, gain <span class="kd deck_icon" deck="SR">'
+                'SR</span> <b>Fresh Kill</b>.'
+            ),
+            'requires': {
+                'puzzle': {'red': 2, 'green': 1},
+            },
+        },
+        'recipes': [
+            {
+                'prefix_text': (
+                    'When you scavenge a <b>Survivor Corpse</b> and roll a '
+                    '10+, gain the <b>Survival Spear</b> beta gear.<br/>'
+                    'Limit, once per campaign.'
+                ),
+            },
+        ],
+    },
+}
+
+summer_goth_twilight_knight = {
+    'blackstar_bikini': {
+        'name': 'Blackstar Bikini',
+        'type': 'pattern',
+        'pattern_id': -21,
+        'expansion': 'summer_goth_twilight_knight',
+        'armor': 2,
+        'location': 'body',
+        'aux_location': 'waist',
+        'keywords': ['armor', 'seed', 'void fabric', 'other'],
+        'rules': ['+1 Evasion'],
+        'affinities': {'right': 'green', 'left': 'green'},
+        'desc': (
+            'When you are hit roll 1d10. On a 7+, you narrowly avoid it. '
+            'Ignore the hit.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'leather': 1,
+                    'perfect_hide': 1,
+                    'cocoon_membrane': 1,
+                },
+                'events': ['oxidation'],
+                'crafting_process': [
+                    (
+                        'During <font class="kdm_manager_font">S</font> '
+                        '<b>Oxidation</b>, a survivor with <b>Analyze</b> '
+                        'realizes the potential of the fabric.'
+                    ),
+                    (
+                        'The survivor rubs the fabric on the smooth surface of '
+                        'the <b>Final Lantern</b>.'
+                    ),
+                    (
+                        'They press a finger to their eye and cut out the '
+                        'delicate straps of a dizzying garment.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'ghost_garters_arms': {
+        'name': 'Ghost Garters - Arms',
+        'type': 'pattern',
+        'pattern_id': 30,
+        'expansion': 'summer_goth_twilight_knight',
+        'armor': 1,
+        'location': 'arms',
+        'keywords': ['seed', 'void fabric', 'other'],
+        'rules': ['Accessory'],
+        'affinities': {'top': 'red', 'bottom': 'blue'},
+        'desc': (
+            'When you wound the monster add '
+            '<font class="inline_shield">1</font> to all hit locations. '
+            'Limit, once per round unless you are not wearing arm armor.'
+        ),
+        'recipes': [
+            {
+                'endeavors': 1,
+                'resource_handles': {
+                    'lantern_tube': 1,
+                },
+                'events': ['lantern_research'],
+                'crafting_process': [
+                    (
+                        'During <font class="kdm_manager_font">S</font> '
+                        '<b>Lantern Research</b>, an <b>insane</b> survivor '
+                        'sees shadowy hands in the light.'
+                    ),
+                    (
+                        'They chase the shadow from lantern to lantern, '
+                        'trapping it in folds of void fabric.'
+                    ),
+                    (
+                        'Survivors pull the cloth taut around the shadow '
+                        'hands and cut, revealing gloves.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'ghost_garters_legs': {
+        'name': 'Ghost Garters - Legs',
+        'type': 'pattern',
+        'pattern_id': 29,
+        'expansion': 'summer_goth_twilight_knight',
+        'armor': 1,
+        'location': 'legs',
+        'keywords': ['seed', 'void fabric', 'other'],
+        'rules': ['Accessory'],
+        'affinities': {'top': 'blue', 'bottom': 'red'},
+        'desc': (
+            'When you wound the monster you may remove a bleeding token. '
+            'Limit, once per round unless you are not wearing leg armor.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'perfect_hide': 1,
+                    'black_lichen': 1,
+                },
+                'locations': ['exhausted_lantern_hoard'],
+                'crafting_process': [
+                    (
+                        'A <b>Secretive</b> survivor searches deep inside the '
+                        '<b>Exhausted Lantern Hoard</b>.'
+                    ),
+                    (
+                        'They wrap themselves in discarded pieces of black '
+                        'fabric and drift off in darkness.'
+                    ),
+                    (
+                        'Awake, a new sense of calm guides their steady hand '
+                        'as they sew fabric stockings.'
+                    ),
+                ],
+            },
+        ],
+    },
+}
+
+
+white_sunlion_armor = {
+    'white_sunlion_mask_2022': {
+        'expansion': 'white_sunlion_armor',
+        'type': 'gear_recipe',
+        'name': 'White Sunlion Mask',
+        'armor': 2,
+        'location': 'head',
+        'keywords': ['armor', 'mask'],
+        'rules': ['Accessory'],
+        'affinities': {'left': 'red', 'bottom': 'red'},
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 2}},
+            'desc': (
+                'When you <b>Pounce</b> and attack from the blind spot, '
+                'add +4 strength for the attack.'
+            ),
+        },
+        'recipes': [
+            {
+                'resource_handles': {
+                    'bleeding_corpse_lily': 1, 'golden_whiskers': 1
+                },
+                'resource_types': {'bone': 1},
+            },
+        ],
+    },
+    'beast_kunai': {
+        'expansion': 'white_sunlion_armor',
+        'type': 'gear_recipe',
+        'name': 'Beast Kunai',
+        'keywords': ['melee', 'dagger', 'tool', 'bone'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 4,
+        'affinities': {'bottom': 'red'},
+        'desc': (
+            'At the end of your attack with any melee weapon, '
+            'you may place yourself in any unoccupied space adjacent '
+            'to the monster.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'bleeding_corpse_lily': 1, 'lion_claw': 1, 'perfect_bone': 1
+                },
+            },
+        ],
+    },
+}
+
+screaming_sun_armor = {
+    'screaming_oni_mask': {
+        'name': 'Screaming Oni Mask',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'screaming_sun_armor',
+        'armor': 2,
+        'location': 'head',
+        'keywords': ['armor', 'bone', 'mask'],
+        'affinities': {'left': 'blue'},
+        'desc': (
+            '<font class="kdm_manager_font">A</font>: Scold. '
+            'Non-deaf knocked down survivors suffer &#9733; brain damage '
+            'and stand. Limit, once per roud.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'spiral_horn': 1,
+                    'skull': 1,
+                    'perfect_bone': 1
+                },
+            },
+        ],
+    },
+}
+
+reapokratis = {
+    'gloom_cowl': {
+        'name': 'Gloom Cowl',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'reapokratis',
+        'armor': 3,
+        'location': 'head',
+        'keywords': ['armor', 'gloomy', 'leather'],
+        'add_affinity': ['blue', 'red'],
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 1, 'blue': 1}},
+            'desc': (
+                'Your attacks gain +2 accuracy when attacking a monster you '
+                'are adjacent to.'
+            ),
+        },
+        'recipes': [
+            {
+                'resource_handles': {
+                    'dark_water': 1,
+                    'leather': 1,
+                },
+                'resource_types': {
+                    'scrap': 1
+                },
+            },
+            {
+                'resource_handles': {
+                    'perfect_organ': 1,
+                    'leather': 1,
+                },
+                'resource_types': {
+                    'scrap': 1
+                },
+            },
+        ],
+    },
+}
+
+erza_of_dedheim = {
+    'ghostlink_pumpkin': {
+        'name': 'Ghostlink Pumpkin',
+        'type': 'seed_pattern',
+        'pattern_id': 31,
+        'expansion': 'erza_of_dedheim',
+        'keywords': ['item', 'consumable'],
+        'affinities': {'right': 'green', 'left': 'green'},
+        'desc': (
+            '<font class="kdm_manager_font">A</font> Consume: '
+            'Suffer <b>frenzy</b> and become <b>doomed</b> until end of round. '
+            'Convert all your attribute tokens to +1 strength tokens. '
+            'Limit, once per showdown.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'black_lichen': 1,
+                    'muculent_droppings': 1,
+                },
+                'innovations': ['graves'],
+                'crafting_process': [
+                    (
+                        'A hungry survivor mixes droppings and lichen together '
+                        'into a pungent slurry.'
+                    ),
+                    (
+                        'It is not tasty. They abandon their creation atop '
+                        'some <b>Graves</b> after a single bite.'
+                    ),
+                    (
+                        'Harvest the plant that eventually sprouts from the '
+                        'discarded meal with a <b>sickle</b>.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'scythe_of_doom': {
+        'name': 'Scythe of Doom',
+        'type': 'seed_pattern',
+        'pattern_id': 32,
+        'expansion': 'erza_of_dedheim',
+        'keywords': [
+            'weapon', 'melee', 'scythe', 'grand', 'two-handed', 'other'
+        ],
+        'affinities': {'left': 'blue'},
+        'speed': 2,
+        'accuracy': 5,
+        'strength': 13,
+        'rules': ['Doombound', 'Devastating 2', 'Deadly', 'Sharp'],
+        'desc': (
+            '<b>Doombound:</b> When you become <b>doomed</b>, place a doom '
+            'token on this. You must archive a doom token to activate this. '
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'iron': 3,
+                    'leather': 1,
+                },
+                'resource_types': {'bone': 1},
+                'locations': ['blacksmith'],
+                'crafting_process': [
+                    (
+                        'A survivor returns from <b>Golden Ember</b> (Hunt '
+                        'Event 73) with a skull.'
+                    ),
+                    (
+                        'A <b>Possessed</b> survivor becomes jealous while '
+                        'speaking with the long dead skull.'
+                    ),
+                    (
+                        "They steal away the skull's golden ember, lodging "
+                        "it into a <b>Blacksmith</b>'s prototype."
+                    ),
+                ],
             },
         ],
     },

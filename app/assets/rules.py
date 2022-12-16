@@ -90,7 +90,10 @@ core = {
     'consume': {
         'name': 'Consume',
         'type': 'special_rule',
-        'desc': """A special rule. This consumable gear or resources may be ingested by survivors for a listed result. Some are archived after use.""",
+        'desc': (
+            'A special rule. This consumable gear or resources may be ingested '
+            'by survivors for a listed result. Some are archived after use.'
+        ),
         'related': ['consumable','archive'],
     },
     'consumable': {
@@ -504,6 +507,42 @@ expansion = {
         'expansion': 'badar',
         'name': 'Sealed',
         'desc': (
+            'Seal gear has a bonus effect that can only be earned by training. '
+            'A survivor can unseal the gear by declaring it as their weapon '
+            'proficiency, forsaking the normal bonuses of selecting a weapon '
+            'type. When the survivor reaches the specialization rank, they '
+            'earn the effect listed after the gear card.<br/>'
+            "A survivor can only earn a gear's <b>Sealed</b> bonus once per "
+            'lifetime.<br/>'
+            'For example, the <b>Toxicimitar</b> has "<b>Sealed - Gain the '
+            '<b>Crescent Step</b> <span class="kd deck_icon" deck="SF">'
+            'SF</span>." When a survivor with '
+            '<b>Toxicimitar</b> proficiency reaches rank 3 (specialization), '
+            'they gain the <b>Crescent Step</b> <span class="kd deck_icon" '
+            'deck="SF">SF</span>.'
         ),
     },
+
+    # doll
+    'center': {
+        'name': 'Center',
+        'type': 'special_gear_rule',
+        'expansion': 'doll',
+        'desc': (
+            'This gear must be placed in the center of your gear grid.<br/>'
+            'If you gain this and already have a gear in the center of your '
+            'grid archive it and place this in the center of your grid instead.'
+        ),
+    },
+
+    # erza of dedheim
+    'doombound': {
+        'expansion': 'erza_of_dedheim',
+        'name': 'Doombound',
+        'type': 'special_gear_rule',
+        'desc': (
+            '<b>Doombound:</b> When you become <b>doomed</b>, place a doom '
+            'token on this. You must archive a doom token to activate this. '
+        ),
+    }
 }

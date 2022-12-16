@@ -16,6 +16,9 @@
    bogus 'locations'. The 'Strange Resources' and 'Vermin' type of items belong
    to these locations.
 
+    DO NOT FORGET to also add locations to storage.py if they should appear as
+    categories in settlement storage.
+
 """
 
 
@@ -84,9 +87,29 @@ resources = {
 
 
 gear = {
-    "starting_gear": {
-        "name": "Starting Gear",
-        "color": "CCC",
+    "beta_gear": {
+        "name": "Beta Gear",
+        "color": "6DB2F5",
+        "font_color": "FFF",
+        "selectable": False,
+    },
+    "beta_gear_recipe": {
+        "name": "Beta Gear Recipe",
+        "color": "6DB2F5",
+        "font_color": "FFF",
+        "selectable": False,
+    },
+    "black_harvest": {
+        "name": "Black Harvest",
+        "expansion": "dung_beetle_knight",
+        "color": "333",
+        "font_color": "FFF",
+        "selectable": False,
+    },
+    "gear_recipe": {
+        "name": "Gear Recipe",
+        "color": "333",
+        "font_color": "FFF",
         "selectable": False,
     },
     "light_forging_gear": {
@@ -128,12 +151,6 @@ gear = {
         "color": "3BB9FF",
         "selectable": False,
     },
-    "gear_recipe": {
-        "name": "Gear Recipe",
-        "color": "333",
-        "font_color": "FFF",
-        "selectable": False,
-    },
     "ivory_carver": {
         "name": "Ivory Carver",
         "color": "FFFFF0",
@@ -151,11 +168,15 @@ gear = {
         "color": "9E999C",
         "selectable": False,
     },
-    "black_harvest": {
-        "name": "Black Harvest",
-        "expansion": "dung_beetle_knight",
-        "color": "333",
-        "font_color": "FFF",
+    "seed_pattern": {
+        "name": "Seed Pattern Gear",
+        "font_color": "F1E4D3",
+        "color": "E67022",
+        "selectable": False,
+    },
+    "starting_gear": {
+        "name": "Starting Gear",
+        "color": "CCC",
         "selectable": False,
     },
 

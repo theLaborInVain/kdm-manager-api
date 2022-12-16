@@ -223,7 +223,10 @@ ability = {
         'Accuracy': 1,
         'Strength': 2,
         'cannot_use_fighting_arts': True,
-        'desc': 'Cannot use weapon specialization, weapon mastery, or fighting arts.',
+        'desc': (
+            'Cannot use weapon specialization, weapon mastery, or fighting '
+            'arts.'
+        ),
         'name': 'Possessed',
         'type': 'ability',
     },
