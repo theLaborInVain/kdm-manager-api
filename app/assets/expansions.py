@@ -673,6 +673,9 @@ product_lines = {
         'name': 'Halloween Survivor - Flower Knight Costume',
         'released': datetime(2022,10,31,12, tzinfo=USCENTRAL),
         'ui': {'pretty_category': 'White Box'},
+        'subtitle': (
+            'Includes crafting recipes that require <b>Flower Knight</b>.'
+        ),
     },
 
 

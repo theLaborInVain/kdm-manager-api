@@ -6488,4 +6488,87 @@ erza_of_dedheim = {
             },
         ],
     },
+    'robes_of_dedheim': {
+        'name': 'Robes of Dedheim',
+        'type': 'seed_pattern',
+        'pattern_id': 33,
+        'expansion': 'erza_of_dedheim',
+        'armor': 2,
+        'location': 'chest',
+        'keywords': ['armor', 'rawhide', 'other'],
+        'affinities': {'top': 'red', 'right': 'red'},
+        'rules': ['Outfit'],
+        'desc': (
+            'When you become <b>doomed</b>, before any actions are resolved, '
+            'gain +1 evasion token.'
+        ),
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 2}},
+            'desc': '+2 speed',
+        },
+        'recipes': [
+            {
+                'resource_types': {'cloth': 1, 'hide': 1},
+                'crafting_process': [
+                    (
+                        'The blackened sweat of a <b>Traumatized survivor</b> '
+                        'permanently stains a cloth.'
+                    ),
+                    (
+                        'A visiting <b>Bone Witch</b> binds the cloth to the '
+                        'hide of a monster that died of fear.'
+                    ),
+                    (
+                        'Survivor and bestial traumas blend to form a garb '
+                        'suffused with nervous energy.'
+                    ),
+                ],
+            },
+        ],
+    },
+}
+
+halloween_survivor_flower_knight_costume = {
+    'flower_costume': {
+        'type': 'seed_pattern',
+        'pattern_id': -23,
+        'expansion': 'halloween_survivor_flower_knight_costume',
+        'name': 'Flower Costume',
+        'keywords': ['item'],
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+        ),
+        'affinities': {'left': 'green', 'right': 'green'},
+        'affinity_bonus': {
+            'requires': {'puzzle': {'green': 1, 'blue': 1}},
+            'desc': (
+                'On <b>Arrival</b>, trick or treat! Roll 1d10: 1-5 survivors '
+                'gain a -1 luck token. 6+ survivors gain a +1 luck '
+                'token.'
+            ),
+        },
+        'recipes': [
+            {
+                'resource_handles': {
+                    'lantern_bloom': 1, 'leather': 1, 'sighing_bloom': 1
+                },
+                'crafting_process': [
+                    (
+                        'A survivor with '
+                        '<span class="kd deck_icon" deck="D">D</span> '
+                        '<b>Flower Addiction</b> huffs pollen at the '
+                        'settlement edge.'
+                    ),
+                    (
+                        'You cup a Sighing Bloom to your ear. Its rustling '
+                        'petals whisper of a delightful design.'
+                    ),
+                    (
+                        'Before the haze lifts, strip and curl Lantern Bloom '
+                        'petals and sew them together into leather.'
+                    ),
+                ],
+            },
+        ],
+    },
 }
