@@ -276,6 +276,7 @@ button.toggle_settlement_event_log {float: right; }
 }
 .admin_panel_edit_release_item_body {
     box-sizing: border-box;
+    max-width: 85%;
     padding: 0.25rem;
 }
 .admin_panel_edit_release_item_body:focus,

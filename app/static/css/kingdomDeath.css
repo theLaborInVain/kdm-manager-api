@@ -131,6 +131,7 @@ hr.three_dee {
     --border-radius-sheet: 0.5rem;
     --box-shadow-default: 0 0 0.5em 0 #999;
     --box-shadow-inset: inset 0.1em 0.1em 0.2em 0 #999;
+    --border-radius-gear-card-affinity: 0.2rem;
     --border-checkbox: 0.1rem solid;
     --border-checkbox-bold: 0.2rem solid;
     --border-worksheet: 0.3rem solid;
@@ -219,7 +220,7 @@ hr.three_dee {
 /*  different types of worksheet rows */
 
 .kd.worksheet_row {
-    align-items: center; 
+    align-items: baseline; /* keeps boxes aligned to text top */ 
     box-sizing: border-box;
     display: flex;
     margin: 0 auto;
@@ -230,6 +231,7 @@ hr.three_dee {
     justify-content: space-between;
 }
 .kd.worksheet_row.lined {
+    align-items: end;   /* text needs to lay "on" the line */
     border-bottom: 0.1rem solid #CBCBCB;
     min-height: 3rem;   /* since these are typically tappable/clickable */ 
 }
@@ -454,8 +456,7 @@ hr.three_dee {
 }
 .kd.capsule.full_width,
     .capsule.full_width {
-    margin: 3% auto;
-    min-width: 90%;
+    margin: 1rem;
     width: -webkit-fill-available;
 }
 
@@ -463,9 +464,6 @@ hr.three_dee {
     color: #aaa;
 }
 
-.kd.worksheet_block .capsule {
-    margin: 1.5rem auto 1rem auto;
-}
 
 
 button.kd.capsule {
@@ -473,7 +471,7 @@ button.kd.capsule {
 }
 input.kd.capsule,
     button.kd.capsule {
-    margin: 2rem 1rem 2rem 1rem; 
+    margin: 1rem; 
 }
 input.kd.capsule {
     background: #fff;
@@ -638,10 +636,8 @@ select.kd.capsule {
 .kd.card.face.header,
     .kd.card.face.footer {
     display: flex;
+    flex-direction: row;
     width: 100%;
-}
-.kd.card.face.header {
-    flex-direction: row; 
 }
 .kd.card.face.footer {
     flex-direction: column;
@@ -662,10 +658,10 @@ select.kd.capsule {
 }
 .kd.card.title_bar div:last-child { /*  keywords go last in a title bar */
     font-size: 0.8rem;
-    margin: 0 auto;
+    margin: 0 0.75rem 0 0.75rem;
     text-align: center; 
-    width: 70%;
 }
+
 
 .kd.card.body {
     margin: 0 auto 1rem auto;
@@ -692,9 +688,8 @@ select.kd.capsule {
     height: 5rem;
     justify-content: center;
     margin-left: 1rem; 
-    position: absolute; 
     padding-bottom: 0.75rem;
-    width: 2rem;
+    width: 3rem;
 }
 
 
@@ -842,19 +837,19 @@ select.kd.capsule {
     width: 1rem;
 }
 .kd.card.gear.bleed.affinity.outer.top {
-    border-radius: 0 0 0.3rem 0.3rem;
+    border-radius: 0 0 var(--border-radius-gear-card-affinity) var(--border-radius-gear-card-affinity);
     padding: 0 0.25rem 0.25rem 0.25rem;
 }
 .kd.card.gear.bleed.affinity.outer.right {
-    border-radius: 0.3rem 0 0 0.3rem;
+    border-radius: var(--border-radius-gear-card-affinity) 0 0 var(--border-radius-gear-card-affinity);
     padding: 0.25rem 0 0.25rem 0.25rem;
 }
 .kd.card.gear.bleed.affinity.outer.bottom {
-    border-radius: 0.3rem 0.3rem 0 0;
+    border-radius: var(--border-radius-gear-card-affinity) var(--border-radius-gear-card-affinity) 0 0;
     padding: 0.25rem 0.25rem 0 0.25rem;
 }
 .kd.card.gear.bleed.affinity.outer.left {
-    border-radius: 0 0.3rem 0.3rem 0;
+    border-radius: 0 var(--border-radius-gear-card-affinity) var(--border-radius-gear-card-affinity) 0;
     padding: 0.25rem 0.25rem 0.25rem 0;
 }
 
@@ -901,20 +896,39 @@ select.kd.capsule {
 
 /* gear card face - top and bottom half */
 .kd.card.gear.title_bar { /* remove the margin from the name/title */
-    margin-top: 0;  
+    margin: 0 auto; 
 }
 .kd.card.gear.title_bar div {
     text-align: center; 
+}
+.kd.card.gear.title_bar .gear_title {
+    font-size: var(--font-large);
+}
+.kd.card.gear.title_gutter {
+    display:flex;
+    justify-content: center;
+    width: 3rem;
+}
+.gear_card_pattern_stamp::after {
+    content: 'p';
+    display: block;
+    font-family: 'kdm-manager';
+    font-size: var(--font-large);
+    margin: -0.2rem -1rem 0 0;
 }
 
 /*  gear card armor/attack stats */
 .kd.card.gear.armor_stats,
     .kd.card.gear.weapon_stats {
-    font-family: 'arial';
-    position: absolute;
+    font-family: 'Arial';
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: -0.1rem;
 }
 .kd.card.gear.armor_stats {
+    align-items: center;
     display: flex;
+    flex-direction: column;
     width: 3rem;
 }
 .kd.card.gear.shield {
@@ -926,20 +940,19 @@ select.kd.capsule {
     font-family: 'Silverado';
     font-size: 1.5rem;
     height: 1.4rem;
-    margin-left: -0.1rem;
+    margin: 0 -0.1rem 1rem 0;
     padding-top: 0.1rem;
     text-align: center;
-    width: 100%;
+    width: 1.6rem;
 }
 .kd.card.gear.shield:after {
-    border-left: 0.9rem solid transparent;
-    border-top: 0.9rem solid #222;
-    border-right: 0.9rem solid transparent;
+    border-left: 0.8rem solid transparent;
+    border-top: 0.8rem solid #222;
+    border-right: 0.8rem solid transparent;
     content: "";
+    display: block;
     height: 0;
-    left: -0.1rem;
-    position: absolute;
-    top: 1.5rem;
+    margin: -0.4rem 0.1rem 0.1rem auto;
     width: 0;
 }
 .kd.card.gear.location_glyph {
@@ -948,21 +961,104 @@ select.kd.capsule {
     font-size: 1.25rem;
     max-width: 1.3rem;
 }
-.kd.card.gear.activation_icon {
-    font-family: 'kdm-font-10';
+
+/*  gear - weapons */
+.gear_card_combat_stat_activation,
+    .gear_card_combat_stat_footnote {
+    display: flex;
+    flex-wrap: nowrap;
+    padding: 4%;
+    width: 1.5rem;
+}
+.gear_card_combat_stat_activation {
+    border-radius: 5vw;
+    flex-direction: column;
+    text-align: center;
+}
+.gear_card_combat_stat_activation.with_footnote {
+    box-shadow: 0 2rem #000;
+}
+.kd.gear.card.activation_icon {
+    display: flex;
+    justify-content: center;
+    margin: 0.3rem 0 0 0;
 }
 .kd.card.gear.activation_icon::before {
-    content: 'a';
-    font-size: 0.8em;
+    background: #fff;
+    background: linear-gradient(to right, rgba(0,0,0,0), #fff, #fff, #fff, rgba(0,0,0,0));
+    content: 'A';
+    display: block;
     border-radius:100%;
-    position: absolute;
-    margin: 0.1em;
+    font-family: 'kdm-manager';
+    font-size: 1rem;
+    line-height: 0.9rem;
+}
+.gear_card_combat_stat_activation_detail {
+    border: 0;
+    border-radius: inherit;
+    margin: 0.1rem auto 0.2rem auto;
+    overflow: visible;
+}
+.gear_card_combat_stat_activation_detail hr {
+    border: 0;
+    height: 0.1rem;
+    margin: 0 0 0.25rem 0;
+}
+.gear_card_accuracy_detail {
+    align-items: baseline;
+    display: flex;
+    justify-content: center;
+    width: 150%;
+}
+.gear_card_accuracy_detail::after {
+    content: "+";
+    text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333;
+    line-height: 1.5;
+    margin-bottom: -1rem;
 }
 
+/*  gear weapon footnote    */
+.gear_card_combat_stat_footnote { /* stat column piece */
+    border-radius: 0 0 10rem 10rem;
+    justify-content: center;
+    margin-top: 0.25rem;
+}
+
+.card.gear.footnote {               /* below the card */
+    background: #fff;
+    border: 0.2rem solid;
+    border-radius: 1rem;
+    display: flex;
+    justify-content: space-evenly;
+    margin: 1rem auto;
+    width: 85%;
+}
+.gear_card_footnote_character {
+    align-items: flex-end;
+    border-radius: 0 0 10vw 10vw;
+    display: flex;
+    font-family: 'Arial';
+    font-size: 1.25rem;
+    justify-content: center;
+    margin: -1px 0 1rem 0;
+    padding: 4%;
+    width: 1rem;
+}
+.gear_card_footnote_description {
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+    width: 65%;
+}
+
+
 /* gear card face - bottom */
+.kd.card.gear.add_affinity_container {
+    display: flex;
+}
 .kd.card.gear.face.footer .kd.card.gear.add_affinity {
     align-items: center;
-    border-radius: 0.2rem;
+    border-radius: var(--border-radius-gear-card-affinity);
     display: flex;
     margin: 1rem auto;
     height: 3rem;
@@ -1022,12 +1118,11 @@ select.kd.capsule {
 /*  resource cards  */
 .kd.card.resource.container {
     background: var(--color-kd-resource-card-gradient);
-    max-width: 85%;
+    max-width: 2.5in;
     padding-bottom: 1rem; 
 }
-.kd.card.resource.header.expansion {
-    margin-left: 2.5rem;
-    width: auto;  
+.kd.card.resource.title_bar.expansion {
+    margin: 1.25rem 0 0 0.5rem;
 }
 .kd.card.resource.title_bar.expansion div {
     text-align: left;

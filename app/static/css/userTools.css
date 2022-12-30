@@ -1,0 +1,7 @@
+.center_screen_splash {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+}

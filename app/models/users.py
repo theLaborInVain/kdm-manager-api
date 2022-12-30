@@ -655,6 +655,70 @@ class User(models.UserAsset):
         return json.dumps(output, default=json_util.default)
 
 
+    # email verification
+
+    @models.web_method
+    def set_verified_email(self, new_value=None, save=True):
+        """ Sets the verified email value. Expects a request context, but can
+        be called directly. Fails if the authenticated user is not a.) the user
+        being modified or b.) an API admin. """
+
+        if not (
+            flask.request.User.is_admin() or
+            flask.request.User.user['login'] == self.user['login']
+        ):
+            err = "Only API administrators may verify other users' email!"
+            raise utils.InvalidUsage(err)
+
+        if new_value is None:
+            self.check_request_params(['value'])
+            new_value = self.params['value']
+
+        self.user['verified_email'] = bool(new_value)
+        self.logger.info('%s Set verified email to %s' % (self, new_value))
+
+        if save:
+            self.save()
+
+
+    @models.web_method
+    def send_verification_email(self):
+        """ Sets a verification code; sends a verification email."""
+
+        self.user['email_verification_code'] = "".join(
+            random.choices(string.ascii_uppercase + string.digits, k=23)
+        )
+
+        # figure out where the API target is
+        api_destination = utils.get_application_url()
+        if not API.config['ENVIRONMENT'].get('is_production', False):
+            api_destination += ':%s' % API.config['PORT']
+
+        msg = utils.html_file_to_template('verify_email_email.html')
+        email_body = msg.safe_substitute(
+            login=self.user['login'],
+            netloc = utils.get_application_url(),
+            apiloc = api_destination,
+            verification_code = self.user['email_verification_code']
+        )
+        mail_sesh = utils.mailSession()
+        mail_sesh.send(
+            subject="KD:M API - email verification request",
+            recipients=[self.user['login']],
+            html_msg=email_body,
+        )
+        self.logger.info('Email verification request sent!')
+
+
+    def verify_email_from_code(self, code):
+        """ Non-web method; returns a bool if 'code' matches the user record's
+        'email_verification_code' attribute. """
+
+        self.logger.warn(code)
+
+        return False
+
+
     #
     #   set/update/modify methods
     #
@@ -684,30 +748,6 @@ class User(models.UserAsset):
 
         if save:
             self.save()
-
-
-    @models.web_method
-    def set_collection(self):
-        """ Expects/requires a request context. Evaluates the incoming request
-        and hands off add/rm jobs to private/non-request methods. """
-
-        self.check_request_params(['collection'])
-        collection = self.params['collection']
-
-        for collection_type in collection.keys():
-            if collection_type not in ['expansions']:
-                err = "Collection type '%s' is not implemented!"
-                raise utils.InvalidUsage(err % collection_type, 501)
-
-            add_list, rm_list = utils.list_compare(
-                self.user['collection'][collection_type],
-                collection[collection_type]
-            )
-
-            if add_list != []:
-                [self.add_expansion_to_collection(exp) for exp in add_list]
-            if rm_list != []:
-                [self.rm_expansion_from_collection(exp) for exp in add_list]
 
 
     def set_current_settlement(self):
@@ -890,29 +930,6 @@ class User(models.UserAsset):
         self.save()
 
 
-    @models.web_method
-    def set_verified_email(self, new_value=None, save=True):
-        """ Sets the verified email value. Expects a request context, but can
-        be called directly.Fails if the authenticated user is not a.) the user
-        being modified or b.) an API admin. """
-
-        if not (
-            flask.request.User.is_admin() or
-            flask.request.User.user['login'] == self.user['login']
-        ):
-            err = "Only API administrators may verify other users' email!"
-            raise utils.InvalidUsage(err)
-
-        if new_value is None:
-            self.check_request_params(['value'])
-            new_value = self.params['value']
-
-        self.user['verified_email'] = bool(new_value)
-        self.logger.info('%s Set verified email to %s' % (self, new_value))
-
-        if save:
-            self.save()
-
 
     @models.web_method
     def update_password(self, new_password=None):
@@ -951,6 +968,31 @@ class User(models.UserAsset):
     #
     #   Collection Management - manage the user's asset collection
     #
+
+    @models.web_method
+    def set_collection(self):
+        """ Expects/requires a request context. Evaluates the incoming request
+        and hands off add/rm jobs to private/non-request methods. """
+
+        self.check_request_params(['collection'])
+        collection = self.params['collection']
+
+        for collection_type in collection.keys():
+            if collection_type not in ['expansions']:
+                err = "Collection type '%s' is not implemented!"
+                raise utils.InvalidUsage(err % collection_type, 501)
+
+            add_list, rm_list = utils.list_compare(
+                self.user['collection'][collection_type],
+                collection[collection_type]
+            )
+
+            if add_list != []:
+                [self.add_expansion_to_collection(exp) for exp in add_list]
+            if rm_list != []:
+                [self.rm_expansion_from_collection(exp) for exp in add_list]
+
+
 
     @models.web_method
     def add_expansion_to_collection(self, handle=None):

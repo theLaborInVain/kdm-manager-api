@@ -570,6 +570,12 @@ product_lines = {
         ],
     },
 
+    # 2019 whiteboxes
+    'valentines_day_pinup_twilight_knight': {
+        'name': "Valentine's Day Pinup Twilight Knight",
+        'ui': {'pretty_category': 'White Box'},
+        'released': datetime(2019, 2, 14, 12, tzinfo=USCENTRAL),
+    },
     'swashbuckler': {
         'name': 'Swashbuckler',
         'ui': {'pretty_category': 'White Box'},
@@ -579,14 +585,18 @@ product_lines = {
             'includes game content.'
         ),
     },
-
+    'easter_pinup_twilight_knight': {
+        'name': "Easter Pinup Twilight Knight",
+        'ui': {'pretty_category': 'White Box'},
+        'released': datetime(2019, 4, 22, 12, tzinfo=USCENTRAL),
+        'subtitle': 'Adds <b>Gibbering Haremite</b> vermin only.',
+    },
     "sword_hunter": {
         "name": "Sword Hunter",
         "ui": {"pretty_category": "White Box"},
         "released": datetime(2019, 8, 1, 12, tzinfo=USCENTRAL),
         'basic_hunt_event': ['sword_in_the_stone'],
     },
-
     'vignettes_of_death_white_gigalion': {
         'released': datetime(2019, 8, 1, 12, tzinfo=USCENTRAL),
         'name': 'Vignettes of Death: White Gigalion',
@@ -599,6 +609,7 @@ product_lines = {
         'quarries': ['white_gigalion'],
     },
 
+    # 2020 whiteboxes
     'pinups_of_death_2': {
         'name': 'Pinups of Death II',
         'ui': {'pretty_category': 'White Box'},
@@ -760,14 +771,14 @@ miscellaneous = {
             "Detective Twilight Knight, "
             'Halloween Pinup Twilight Knight, '
             "Pinup Easter Aya, "
-            "Pinup Easter Twilight Knight, "
+#            "Pinup Easter Twilight Knight, "
             "Pinup Devil Satan (Halloween 2018), "
             'Pinup Order Knight, '
             'Pinup Sci-fi Twilight Knight, '
             "Pinup Sci-fi White Speaker, "
             'Pinup Warrior of the Sun, '
             "Pinups of Death, "
-            "Valentine's Day Pinup Twilight Knight, "
+#            "Valentine's Day Pinup Twilight Knight, "
             'White Speaker.'
 #            "White Speaker Nico, "
         ),

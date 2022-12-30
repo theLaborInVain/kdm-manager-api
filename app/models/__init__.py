@@ -1054,7 +1054,13 @@ class UserAsset(object):
         self._id = self.kwargs.get('_id', None)
         if self._id is None:
             self.new()  # sets self._id
-        self._id = ObjectId(self._id)   # duck-typing is a victimless crime
+
+        try:
+            self._id = ObjectId(self._id)   # try to force strings
+        except TypeError:                   # die if we can't duck-type it
+            bad_type = type(self._id).__name__
+            err = 'Failed to coerce settlement ID type "%s" to OID!' % bad_type
+            raise utils.InvalidUsage(err, status_code=422)
 
         if not isinstance(self._id, ObjectId):
             err = "The asset OID '%s' is not a valid OID!" % (self._id)

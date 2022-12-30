@@ -4370,8 +4370,29 @@ promo = {
 
     # valentine's day pinup twilight knight
     'scoopy_club': {
-        'expansion': 'promo',
+        'expansion': 'valentines_day_pinup_twilight_knight',
         'name': 'Scoopy Club',
+        'type': 'rare_gear',
+        'keywords': ['weapon', 'melee', 'club', 'tool', 'metal'],
+        'speed': 1,
+        'accuracy': 4,
+        'strength': 5,
+        'affinities': {'left': 'red', 'right': 'green'},
+        'desc': (
+            'When you vomit, are vomited on, or are adjacent to vomit '
+            '(or puke, bile, <b>Retch</b>, etc.), you fill the club. '
+            'For the rest of the lantern year, it <b>Dazes</b> the monster '
+            'when it wounds (see Skullcap Hammer).'
+        ),
+        'recipes': [
+            {
+                'innovations': ['scrap_smelting'],
+                'suffix_text': (
+                    'When the settlement innovates <b>Scrap Smelting</b>, '
+                    'gain the Scoopy Club rare gear.'
+                ),
+            },
+        ],
     },
 
     # before the wall
@@ -4755,7 +4776,10 @@ dbk = {
         'strength': 5,
         'keywords': ['weapon', 'melee', 'katar', 'pickaxe'],
         'rules': ['Paired', 'Sharp'],
-        'desc': """During the <b>Mineral Gathering</b> story event, you may reroll one of your d10.""",
+        'desc': (
+            'During the <b>Mineral Gathering</b> story event, you may reroll '
+            'one of your d10.'
+        ),
     },
     'calcified_greaves': {
         'expansion': 'dung_beetle_knight',
@@ -4763,7 +4787,10 @@ dbk = {
         'name': 'Calcified Greaves',
         'keywords': ['item', 'bone', 'heavy'],
         'affinities': {'left': 'green'},
-        'desc': """-1 movement. Add <font class="inline_shield">3</font> to all hit locations.""",
+        'desc': (
+            '-1 movement. Add <font class="inline_shield">3</font> to all '
+            'hit locations.'
+        ),
         'affinity_bonus': {
             'requires': {'puzzle': {'green': 1}, 'complete': {'blue': 1}},
             'desc': 'Add +2 to <b>Ripple Pattern</b> roll results.',
@@ -4809,7 +4836,10 @@ dbk = {
         'strength': 8,
         'affinities': {'top': 'red', 'right': 'green'},
         'affinity_bonus': {
-            'desc': 'Gains <b>Devastating 1:</b> Whenever you wound, inflict 1 additional wound.',
+            'desc': (
+                'Gains <b>Devastating 1:</b> Whenever you wound, inflict 1 '
+                'additional wound.'
+            ),
             'requires': {
                 'puzzle': {'red': 1},
                 'complete': {'green': 1},
@@ -4822,7 +4852,10 @@ dbk = {
         'name': 'Century Greaves',
         'keywords': ['item', 'bone', 'mineral', 'heavy'],
         'affinities': {'left': 'green'},
-        'desc': """-1 movement. Add <font class="inline_shield">1</font> to all hit locations.""",
+        'desc': (
+            '-1 movement. Add <font class="inline_shield">1</font> to all hit '
+            'locations.'
+        ),
         'affinity_bonus': {
             'requires': {'puzzle': {'green': 1}, 'complete': {'blue': 1}},
             'desc': 'Add +1 to <b>Ripple Pattern</b> roll results.',
@@ -4834,10 +4867,15 @@ dbk = {
         'name': 'Century Shoulder Pads',
         'keywords': ['item', 'bone', 'mineral', 'heavy'],
         'affinities': {'right': 'green'},
-        'desc': """Add <font class="inline_shield">1</font> to all hit locations.""",
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations.'
+        ),
         'affinity_bonus': {
             'requires': {'puzzle': {'green': 1}, 'complete': {'green': 1}},
-            'desc': '<b>Ripple Pattern:</b> When you are attacked, roll 1d10. On a 10+, ignore 1 hit.',
+            'desc': (
+                '<b>Ripple Pattern:</b> When you are attacked, roll 1d10. On a '
+                '10+, ignore 1 hit.'
+            ),
         },
     },
     'dbk_errant_badge': {
@@ -4846,19 +4884,26 @@ dbk = {
         'name': 'DBK Errant Badge',
         'keywords': ['item', 'jewelry', 'knight'],
         'rules': ['Unique'],
-        'desc': """Add <font class="inline_shield">1</font> to all hit locations. At the start of the showdown, draw 1 tactics card.""",
+        'affinities': {'right': 'red'},
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations. At '
+            'the start of the showdown, draw 1 tactics card.'
+        ),
     },
     'digging_claw': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
         'name': 'Digging Claw',
-        'affinities': {'right': 'green'},
         'speed': 1,
         'accuracy': 4,
         'strength': 5,
         'keywords': ['weapon', 'melee', 'katar', 'pickaxe', 'bone', 'mineral'],
         'rules': ['Paired'],
-        'desc': """During the <b>Mineral Gathering</b> story event, you may reroll one of your d10.""",
+        'affinities': {'right': 'green'},
+        'desc': (
+            'During the <b>Mineral Gathering</b> story event, you may reroll '
+            'one of your d10.'
+        ),
     },
     'hidden_crimson_jewel': {
         'expansion': 'dung_beetle_knight',
@@ -4866,18 +4911,23 @@ dbk = {
         'name': 'Hidden Crimson Jewel',
         'keywords': ['item', 'jewelry', 'other'],
         'rules': ['Unique', 'Irreplaceable'],
+        'affinities': {
+            'top': 'red', 'right': 'red', 'bottom': 'red', 'left': 'red',
+        },
         'desc': 'Once per game phase, you may reroll one d10.',
-        'affinities': {'top': 'red', 'right': 'red', 'left': 'red', 'bottom': 'red'},
     },
     'rainbow_wing_belt': {
         'expansion': 'dung_beetle_knight',
         'type': 'wet_resin_crafter',
         'name': 'Rainbow Wing Belt',
         'keywords': ['item', 'flammable'],
-        'affinities': {'top': 'red', 'right': 'green'},
+        'affinities': {'top': 'red', 'right': 'green', 'bottom': 'blue'},
         'affinity_bonus': {
             'requires': {'complete': {'red': 2, 'blue': 1, 'green': 1}},
-            'desc': 'When any of your attack rolls are 1, you may reroll them. Limit, once per attack.',
+            'desc': (
+                'When any of your attack rolls are 1, you may reroll them. '
+                'Limit, once per attack.'
+            ),
         },
     },
     'regenerating_blade': {
@@ -4886,7 +4936,11 @@ dbk = {
         'name': 'Regenerating Blade',
         'keywords': ['item', 'mineral', 'other'],
         'affinities': {'left': 'green', 'right': 'blue'},
-        'desc': 'During the Settlement Phase, you may archive this to remove the <b>Dismembered Arm</b> or <b>Dismembered Leg</b> permanent injury from one survivor.',
+        'desc': (
+            'During the Settlement Phase, you may archive this to remove the '
+            '<b>Dismembered Arm</b> or <b>Dismembered Leg</b> permanent injury '
+            'from one survivor.'
+        ),
     },
     'rolling_armor_set': {
         'expansion': 'dung_beetle_knight',
@@ -4898,8 +4952,13 @@ dbk = {
         'type': 'wet_resin_crafter',
         'name': 'Rubber Bone Harness',
         'keywords': ['item', 'bone', 'leather'],
-        'affinities': {'left': 'green', 'top': 'red', 'right': 'green', 'bottom': 'blue'},
-        'desc': 'Once per showdown, you may convert all of your negative attribute tokens to positive attribute tokens of the same type.',
+        'affinities': {
+            'top': 'red', 'right': 'green', 'bottom': 'blue', 'left': 'green',
+        },
+        'desc': (
+            'Once per showdown, you may convert all of your negative attribute '
+            'tokens to positive attribute tokens of the same type.'
+        ),
     },
     'scarab_circlet': {
         'expansion': 'dung_beetle_knight',
@@ -4907,7 +4966,11 @@ dbk = {
         'name': 'Scarab Circlet',
         'keywords': ['item', 'bone', 'jewelry', 'other'],
         'affinities': {'top': 'blue', 'bottom': 'blue'},
-        'desc': """Add <font class="inline_shield">1</font> to all hit locations. During the showdown, when your survival is reduced to 0, gain +1 strength token.""",
+        'desc': (
+            'Add <font class="inline_shield">1</font> to all hit locations. '
+            'During the showdown, when your survival is reduced to 0, gain '
+            '+1 strength token.'
+        ),
     },
     'seasoned_monster_meat': {
         'expansion': 'dung_beetle_knight',
@@ -4918,7 +4981,11 @@ dbk = {
         'desc': 'When you <b>depart</b>, gain +3 survival.',
         'affinity_bonus': {
             'requires': {'puzzle': {'red': 1}},
-            'desc': """<b><font class="kdm_font">a</font> Consume:</b> Gain +3 survival and +1 strength token. Limit, once per showdown.""",
+            'desc': (
+                '<b><font class="kdm_manager_font">A</font> Consume:</b> '
+                'Gain +3 survival and +1 strength token. Limit, once per '
+                'showdown.'
+            ),
         },
     },
     'the_beetle_bomb': {
@@ -4928,7 +4995,11 @@ dbk = {
         'affinities': {'top': 'blue', 'bottom': 'red'},
         'keywords': ['item', 'thrown', 'fragile'],
         'rules': ['Unique'],
-        'desc': """<font class="kdm_font">a</font><b>:</b> If adjacent to the monster, roll 1d10. On a 6+, the monster gains -1 accuracy and -1 evasion tokens. Limit, once per showdown.""",
+        'desc': (
+            '<font class="kdm_manager_font">A</font><b>:</b> If adjacent to '
+            'the monster, roll 1d10. On a 6+, the monster gains -1 accuracy '
+            'and -1 evasion tokens. Limit, once per showdown.'
+        ),
     },
     'trash_crown': {
         'expansion': 'dung_beetle_knight',
@@ -4938,7 +5009,11 @@ dbk = {
         'location': 'head',
         'keywords': ['item', 'jewelry', 'fragile', 'other'],
         'affinities': {'left': 'blue', 'bottom': 'red'},
-        'desc': """<b><font class="kdm_font">a</font>:</b> Reveal the next 4 hit location cards and discard 3 that are not <b>traps</b>. Place remaining cards on top of the deck in any order.""",
+        'desc': (
+            '<b><font class="kdm_manager_font">A</font>:</b> Reveal the next 4 '
+            'hit location cards and discard 3 that are not <b>traps</b>. Place '
+            'remaining cards on top of the deck in any order.'
+        ),
     },
 }
 

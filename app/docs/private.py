@@ -1367,6 +1367,7 @@ survivor_management = {
             '{attribute: "Movement", value: 4}',
             '{attribute: "hunt_xp", value: 6}',
             '{attribute: "bleeding_tokens", value: 2}',
+            '{attribute: "color_scheme", value: "vibrant_lantern"}',
         ],
     },
     "survivor_set_attribute_detail": {
@@ -1686,19 +1687,14 @@ survivor_management = {
     },
 
     # survivor admin
-    "survivor_set_color_scheme": {
+    "zz_survivor_set_color_scheme": {
         "name": "/survivor/set_color_scheme/&lt;survivor_id&gt;",
         "methods": ["POST", "OPTIONS"],
         "subsection": "survivor_sheet",
         "desc": (
-            "<p><b>POST</b> a <code>color_scheme</code> handle to this "
-            "endpoint to set the Survivor Sheet attribute of the same name.</p>"
-            "<p>There are couple of places where you can get a list of "
-            "available color scheme handles:</p>"
+            '<p>Please use the <code>set_attribute</code> route instead.</p>'
         ),
-        "examples": [
-            "{color_scheme: 'TK'}"
-        ],
+        'deprecated': True,
     },
     "survivor_set_email": {
         "name": "/survivor/set_email/&lt;survivor_id&gt;",

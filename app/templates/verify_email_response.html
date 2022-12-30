@@ -1,0 +1,75 @@
+{% extends '_base.html' %}
+
+{% block head %}
+    <link rel="stylesheet" href="/static/css/userTools.css?version={{VERSION}}" />
+{% endblock %}
+
+
+{% block body %}
+
+<body>
+
+    <div class="center_screen_splash">
+
+        <div class="kd worksheet_block">
+
+            {% if verification_result %}
+
+                <h3 class="kd title">
+                    Success!
+                </h3>
+                <p>
+                    Your email address has been verified by the KD:M API!
+                </p>
+                <p>
+                    You can safely close this window and return to your
+                    application. You may need to refresh/reload the app
+                    to see your current verification status.
+                </p>
+                <p>
+                    Thank you!
+                </p>
+
+            {% else %}
+
+                <h3 class="kd title">
+                    Failed
+                </h3>
+                <p>
+                    The KD:M API was unable to verify your email address.
+                </p>
+                <p>
+                    This can occur if:
+                </p>
+
+                <div
+                    class="kd worksheet_row"
+                    ng-repeat="str in [
+                        'Your email has already been verified.',
+                        'The verification code you are using has expired.',
+                        'There is a problem with the verification URL.'
+                    ]"
+                >
+                    <div class="kd checkbox"></div>
+                    <div class="kd checkbox_desc">{a str a}</div>
+                </div>
+
+            {% endif %}
+
+            <hr/>
+
+            <div class="kd worksheet_row"><b>KD:M API</b> &nbsp;
+                v{{ VERSION }} &nbsp;
+                <a href="https://thelaborinvain.com">
+                    thelaborinvain.com
+                </a>
+            </div>
+
+        </div>
+
+
+    </div>
+
+</body>
+
+{% endblock %}

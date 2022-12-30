@@ -32,9 +32,20 @@ class Assets(models.AssetCollection):
             handle = e_dict['handle']
 
             self.assets[handle]['pattern_gear'] = []
+            self.assets[handle]['beta_gear'] = []
+
             for gear in gear_list:
-                if gear.get('expansion', None) == handle and gear.get('sub_type', None) == 'pattern':
+                if (
+                    gear.get('expansion', None) == handle and
+                    gear.get('sub_type', None) in ['pattern', 'seed_pattern']
+                ):
                     self.assets[handle]['pattern_gear'].append(gear['handle'])
+
+                if (
+                    gear.get('expansion', None) == handle and
+                    gear.get('beta', False)
+                ):
+                    self.assets[handle]['beta_gear'].append(gear['handle'])
 
 
 class Expansion(models.GameAsset):

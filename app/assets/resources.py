@@ -216,7 +216,6 @@ core_resources = {
         'type': 'screaming_antelope_resources',
         'name': 'Beast Steak',
         'keywords': ['organ','consumable'],
-        'desc': '<i class="flavor-text">Shockingly appetizing.</i>',
         'copies': 2,
         'flavor_text': 'Shockingly appetizing.',
     },
@@ -224,7 +223,6 @@ core_resources = {
         'type': 'screaming_antelope_resources',
         'name': 'Bladder',
         'keywords': ['organ','consumable'],
-        'desc': '<i class="flavor-text">Smells like urine.</i>',
         'copies': 1,
         'flavor_text': 'Smells like urine.',
     },
@@ -232,16 +230,17 @@ core_resources = {
         'type': 'screaming_antelope_resources',
         'name': 'Large Flat Tooth',
         'keywords': ['bone'],
-        'desc': 'When you gain this, a survivor of your choice gains +1 insanity.<br/><i class="flavor-text">Its surface is rough and bumpy.</i>',
+        'desc': (
+            'When you gain this, a survivor of your choice gains +1 '
+            'insanity.'
+        ),
         'copies': 2,
-        'rules_text': 'When you gain this, a survivor of your choice gains +1 insanity.',
         'flavor_text': 'Its surface is rough and bumpy.',
     },
     'muscly_gums': {
         'type': 'screaming_antelope_resources',
         'name': 'Muscly Gums',
         'keywords': ['organ','consumable'],
-        'desc': '<i class="flavor-text">Difficult to pry apart.</i>',
         'copies': 2,
         'flavor_text': 'Difficult to pry apart.',
     },
@@ -249,7 +248,6 @@ core_resources = {
         'type': 'screaming_antelope_resources',
         'name': 'Pelt',
         'keywords': ['hide'],
-        'desc': '<i class="flavor-text">Coarse and warm.</i>',
         'copies': 3,
         'flavor_text': 'Coarse and warm.',
     },
@@ -257,15 +255,16 @@ core_resources = {
         'type': 'screaming_antelope_resources',
         'name': 'Screaming Brain',
         'keywords': ['organ','consumable'],
-        'desc': '<b class="special-rule">Consume:</b> Archive this and gain survival up to the current limit.',
+        'desc': (
+            '<b class="special-rule">Consume:</b> Archive this and gain '
+            'survival up to the current limit.'
+        ),
         'copies': 1,
-        'rules_text': '<b class="special-rule">Consume:</b> Archive this and gain survival up to the current limit.',
     },
     'shank_bone': {
         'type': 'screaming_antelope_resources',
         'name': 'Shank Bone',
         'keywords': ['bone'],
-        'desc': '<i class="flavor-text">Strangely jointed.</i>',
         'copies': 4,
         'flavor_text': 'Strangely jointed.',
     },
@@ -273,7 +272,6 @@ core_resources = {
         'type': 'screaming_antelope_resources',
         'name': 'Spiral Horn',
         'keywords': ['bone'],
-        'desc': '<i class="flavor-text">Moans balefully when blown.</i>',
         'copies': 1,
         'flavor_text': 'Moans balefully when blown.',
     },
@@ -517,7 +515,7 @@ vermin = {
     'gibbering_haremite': {
         'name': 'Gibbering Haremite',
         'type': 'vermin',
-        'expansion': 'promo',
+        'expansion': 'easter_pinup_twilight_knight',
         'keywords': ['vermin', 'consumable'],
         'desc': (
             'When you gain this, unless you <b>consume</b> it immediately, it '

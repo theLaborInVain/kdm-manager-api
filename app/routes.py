@@ -351,6 +351,22 @@ def reset_password(action):
     return flask.Response(response=err_msg, status=422)
 
 
+@API.route("/verify_email_address", methods=['GET'])
+def verify_email():
+    """ Routes for requesting and performing a password reset. """
+
+    user_oid = users.get_user_id_from_email(flask.request.args['login'])
+    user_object = users.User(_id=user_oid)
+    result = user_object.verify_email_from_code(
+        flask.request.args['verification_code']
+    )
+
+    return flask.render_template(
+        '/verify_email_response.html',
+        verification_result = result,
+        **API.config
+    )
+
 
 #
 #   private routes - past here, you've got to authenticate

@@ -1244,6 +1244,11 @@ class Survivor(models.UserAsset):
         ''' Web-only method that processes a request to update the survivor's
         color_scheme attribute. '''
 
+        # this is pay-walled
+        if request.User.get_subscriber_level() < 1:
+            msg = "This feature is only available to subscribers!"
+            raise utils.InvalidUsage(msg, status_code=402)
+
         # first, handle unsets
         if (
             'unset' in self.params and
@@ -2033,6 +2038,7 @@ class Survivor(models.UserAsset):
         for divert in [
             'abilities_and_impairments',
             'bleeding_tokens',
+            'color_scheme',
             'damage',
             'public',
             'retired',
