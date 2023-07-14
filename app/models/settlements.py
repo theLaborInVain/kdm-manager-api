@@ -1063,6 +1063,7 @@ class Settlement(models.UserAsset):
 
 
     @models.web_method
+    @models.paywall
     def set_custom_url(self, save=True):
         ''' Checks the MDB to make sure the incoming requested URL is not in use
         and then sets it. '''
@@ -1592,7 +1593,7 @@ class Settlement(models.UserAsset):
             )
 
 
-    models.web_method
+    @models.web_method
     def rm_settlement_note(self, n_id=None):
         """ Removes a note from MDB. Expects a dict with one key. """
 

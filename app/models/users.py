@@ -410,6 +410,9 @@ class User(models.UserAsset):
     DATA_MODEL.add('collection', dict, {"expansions": []})
     DATA_MODEL.add('notifications', dict)
     DATA_MODEL.add('subscriber', dict, {'level': 0})
+    DATA_MODEL.add('verified_email', bool)
+    DATA_MODEL.add('email_verification_code', str)
+    DATA_MODEL.add('favorite_survivors', str)
 
 
     def __repr__(self):
@@ -708,13 +711,17 @@ class User(models.UserAsset):
             html_msg=email_body,
         )
         self.logger.info('Email verification request sent!')
+        self.save()
 
 
     def verify_email_from_code(self, code):
         """ Non-web method; returns a bool if 'code' matches the user record's
         'email_verification_code' attribute. """
 
-        self.logger.warn(code)
+        if code == self.user.get('email_verification_code', None):
+            del self.user['email_verification_code']
+            self.set_verified_email(new_value=True) # saves by default
+            return True
 
         return False
 

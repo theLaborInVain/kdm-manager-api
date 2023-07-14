@@ -664,7 +664,7 @@ product_lines = {
         'ui': {'pretty_category': 'White Box'},
     },
     'summer_goth_twilight_knight': {
-        'name': 'Summer Goth - Twilight Knight',
+    'name': 'Summer Goth - Twilight Knight',
         'released': datetime(2022,9,30,12, tzinfo=USCENTRAL),
         'ui': {'pretty_category': 'White Box'},
     },
@@ -689,6 +689,26 @@ product_lines = {
         ),
     },
 
+    # novice - 2022-12-25
+
+    # elgnirk the chaos elf - 2022-12-25
+
+    # hellebore - 2023-01-31
+    'hellebore': {
+        'name': 'Hellebore - A Frozen Survivor',
+        'released': datetime(2023,1,31,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'Enhancement'},
+    },
+
+    # death crown inheritor aya - 2023-02-28
+
+    # vitanvox - 2023-03-31
+
+    # gnostin stonesmasher - 2023-05-02
+
+    # lolowen - 2023-05-02
+
+    # mist raikin armor - 2023-06-12
 
 }
 
@@ -832,6 +852,8 @@ miscellaneous = {
         'released': datetime(2022,11,25,12, tzinfo=USCENTRAL),
         'ui': {'pretty_category': 'Enhancement'},
     },
+
+
 
 
 }

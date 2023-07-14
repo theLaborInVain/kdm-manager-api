@@ -1,0 +1,117 @@
+<div
+    class="kd worksheet_block"
+    ng-controller="releasesController"
+    ng-init="init();"
+>
+
+
+    <!-- loader -->
+    <div
+        class="kd worksheet_row"
+        ng-if="!apiData.releases.all"
+        ng-init="scratch.visibleReleases = {{ ADMIN_PANEL_RELEASES_VISIBLE }}"
+    >
+        <img
+            class="tiny_loader"
+            src="/static/media/images/loading_io.gif"
+        />
+        <div class="kd checkbox_desc">Loading releases info...</div>
+    </div>
+
+    <h3 class="kd title">Releases</h3>
+    <!-- end loader -->
+
+
+    <!-- BEGIN new release launcher/creator -->
+    <div
+        class="clickable kd worksheet_row"
+        ng-click="
+            ngShowHide('createNewReleaseLauncher');
+        "
+    >
+
+        <div
+            class="kd checkbox red"
+            ng-class="{
+                'checked': ngVisible['createNewReleaseLauncher'] === true,
+            }"
+        ></div>
+        <div class="kd checkbox_desc">
+            Create new release
+        </div>
+
+    </div> 
+
+    <div
+        id="createNewReleaseLauncher"
+        class="kd worksheet_block borderless"
+        ng-if="ngVisible['createNewReleaseLauncher']"
+        ng-controller="releasesController"
+    >
+
+        <div
+            class="clickable kd worksheet_row"
+            ng-repeat="platform in apiData.releases.platforms"
+            ng-click="
+                ngHide('createNewReleaseLauncher');
+                createNewRelease(platform.app, user.login);
+                ngShow('editReleaseWorksheet')
+            "
+        >
+            <div class="kd checkbox"></div>
+            <div class="kd checkbox_desc">{a platform.app a}</div>
+        </div>
+
+    </div>
+    <!-- END new release launcher/creator -->
+
+
+    <!-- repeater for actual releases -->
+    <div
+        class="clickable kd worksheet_row"
+        ng-repeat="release in apiData.releases.all"
+        title="created: {a release.created_on.$date|date:'EEEE, yyyy-MM-dd HH:mm' a}"
+        ng-click="
+            releasesObject.editingRelease = release;
+            ngShowHide('editReleaseWorksheet')
+        "
+        ng-if="$index < scratch.visibleReleases"
+    >
+
+        <div
+            class="kd checkbox"
+            ng-class="{
+                'checked': release.published,
+            }"
+        >
+        </div>
+
+        <div
+            class="kd checkbox_desc"
+        >
+            <b>
+            {a release.published_on.$date|date:'yyyy-MM-dd' a}
+            </b>
+            {a release.platform a}:
+            {a release.version.major a}.{a release.version.minor a}.{a release.version.patch a}
+        </div>
+
+    </div>
+
+    <!-- extender for the releases repeater -->
+    <div
+        class="clickable kd worksheet_row"
+        ng-click="
+            scratch.visibleReleases = scratch.visibleReleases + {{ ADMIN_PANEL_RELEASES_VISIBLE }}
+        "
+        ng-if="
+            scratch.visibleReleases < apiData.releases.all.length
+        "
+    >
+        <div class="kd checkbox red"></div>
+        <div class="kd checkbox_desc">Show more releases...</div>
+    </div>
+
+</div><!-- worksheet block -->
+
+{% include 'admin_panel/reference/releases_editor.html' %}

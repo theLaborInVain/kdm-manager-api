@@ -26,6 +26,7 @@ from bson.objectid import ObjectId
 from collections import OrderedDict
 from copy import copy, deepcopy
 from datetime import datetime, timedelta
+import functools
 import importlib
 import inspect
 import json
@@ -80,6 +81,20 @@ def admin_only(func):
     return wrapped
 
 
+def paywall(func):
+    """ Checks the flask.request.User subscriber status; fails if they're not
+    a subscriber. """
+
+    @functools.wraps(func)
+    def decorated_function(*args, **kwargs):
+        if flask.request.User.get_subscriber_level() < 1:
+            msg = "This feature is only available to subscribers!"
+            raise utils.InvalidUsage(msg, status_code=402)
+        return func(*args, **kwargs)
+
+    return decorated_function
+
+
 def web_method(func):
     """ Decorate methods that we do not support a request context and thus
     are not meant to be called as part of web-facing API work, etc.
@@ -87,6 +102,7 @@ def web_method(func):
     If use with other decorators, this should be the FIRST decorator, e.g.
     @utils.admin_only should come second and so on.
     """
+
     func._web_method = True
     return func
 

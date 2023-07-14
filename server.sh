@@ -21,7 +21,12 @@ start_venv() {
     echo -e " * $PYTHON_PATH"
     echo -e " * Python $PYTHON_VERS"
     echo -e " * FLASK_ENV=$FLASK_ENV"
+
+#    python -m ensurepip
+
     echo -e "\nPIP:"
+    WHEEL=$(pip install wheel)
+    echo -e " * $WHEEL"
     pip install -r requirements.txt | grep -v 'already satisfied' 
     pip freeze $1 | while read x; do echo -e " * $x"; done
     echo -e

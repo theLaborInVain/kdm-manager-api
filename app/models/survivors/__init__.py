@@ -1240,14 +1240,10 @@ class Survivor(models.UserAsset):
 
 
     @models.web_method
+    @models.paywall
     def set_color_scheme(self):
         ''' Web-only method that processes a request to update the survivor's
         color_scheme attribute. '''
-
-        # this is pay-walled
-        if request.User.get_subscriber_level() < 1:
-            msg = "This feature is only available to subscribers!"
-            raise utils.InvalidUsage(msg, status_code=402)
 
         # first, handle unsets
         if (
@@ -1268,10 +1264,17 @@ class Survivor(models.UserAsset):
             self.logger.warning(msg)
             return False
 
-        self.check_request_params(['handle'])
-        handle = self.params['handle']
-        self.survivor['color_scheme'] = handle
-        scheme_dict = self.ColorSchemes.get_asset(handle=handle)
+
+        # now, try to get the color scheme handle from the request params
+        cs_handle = self.params.get('value', None)
+        if cs_handle is None:
+            cs_handle = self.params.get('handle', None)
+
+        if cs_handle is None:
+            self.check_request_params(['value'])
+
+        self.survivor['color_scheme'] = cs_handle
+        scheme_dict = self.ColorSchemes.get_asset(handle=cs_handle)
         msg = "%s set the color scheme to '%s' for %s."
         self.log_event(
             msg % (

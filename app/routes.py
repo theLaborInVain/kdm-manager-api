@@ -357,6 +357,7 @@ def verify_email():
 
     user_oid = users.get_user_id_from_email(flask.request.args['login'])
     user_object = users.User(_id=user_oid)
+    flask.request.User = user_object
     result = user_object.verify_email_from_code(
         flask.request.args['verification_code']
     )

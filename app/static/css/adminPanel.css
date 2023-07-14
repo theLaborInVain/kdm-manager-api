@@ -13,6 +13,12 @@ table {border-collapse: collapse; width: 90%; margin: 1.5% auto;}
 td {word-wrap: break-word; word-break: break-all;}
 td.int_key {width: 10%; word-break: inherit;}
 
+div[contenteditable=true]:empty:before {
+    color: #aaa;
+    content: attr(placeholder);
+    font-weight: normal;
+}
+
 .italic, .italics {
     font-style: italic;
 }
@@ -259,10 +265,17 @@ button.toggle_settlement_event_log {float: right; }
     padding-left: 1rem;
     padding-right: 1rem;
 }
+
+/* admin panel line-item edit stuff */
+.admin_panel_edit_release_item_bar,
+    .admin_panel_edit_release_item_buttons,
+    .admin_panel_edit_release_item_body {
+    padding: 0.25rem;
+}
 .admin_panel_edit_release_item_bar {
+    align-items: flex-start;
     display: flex;
     flex-wrap: wrap;
-    padding: 0.25rem;
 }
 .admin_panel_edit_release_item_buttons {
     align-items: center; 
@@ -270,20 +283,24 @@ button.toggle_settlement_event_log {float: right; }
     flex-wrap: nowrap;
     justify-content: space-between;
 }
+.admin_panel_edit_release_item_buttons button {
+    height: 2rem;
+    width: 2rem;
+}
 .admin_panel_edit_release_item_buttons * {  /* the buttons */
     height: 100%; 
     margin: 0 0.1rem 0 0.1rem;
 }
 .admin_panel_edit_release_item_body {
     box-sizing: border-box;
-    max-width: 85%;
-    padding: 0.25rem;
+    width: 85%;
 }
 .admin_panel_edit_release_item_body:focus,
     .admin_panel_edit_release_item_detail:focus {
     background-color: var(--material-design-yellow);
     outline: none;
 }
+
 .admin_panel_edit_release_item_detail_container {
     display: flex;
     flex-wrap: wrap;
