@@ -218,6 +218,9 @@ def initiate_password_reset():
         netloc = utils.get_application_url()
         application_url = utils.get_application_url()
 
+    info = "%s has requested a password reset. Incoming app URL: '%s'!"
+    LOGGER.info(info % (user_login, incoming_app_url))
+
     # finally, send the email to the user
     try:
         tmp_file = utils.html_file_to_template('password_recovery.html')
