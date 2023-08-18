@@ -22,7 +22,7 @@ import pickle
 import random
 import socket
 import string
-from urllib.parse import urlparse
+import urllib
 
 # third party imports
 from bson import json_util
@@ -212,7 +212,7 @@ def initiate_password_reset():
     incoming_app_url = incoming_json.get('app_url', None)
     if incoming_app_url is not None:
         application_url = incoming_app_url
-        parsed = urlparse.urlsplit(incoming_app_url)
+        parsed = urllib.parse.urlsplit(incoming_app_url)
         netloc = parsed.scheme + "://" + parsed.netloc
     else:
         netloc = utils.get_application_url()
