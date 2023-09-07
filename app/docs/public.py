@@ -20,6 +20,15 @@ dashboard = {
             "or as quick way to get the current version, etc.</p>"
 	),
     },
+    "stat": {
+	"name": "/check_api_key",
+        "methods": ["GET", "OPTIONS"],
+	"desc": (
+            "<p>Evaluates incoming request heders 'API-Key' value and returns "
+            "200 if the incoming API key is known by the API.</p>"
+            "<p>Otherwise, returns a 403.</p>"
+        ),
+    },
     "world": {
 	"name": "/world",
         "methods": ["GET"],

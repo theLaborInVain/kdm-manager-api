@@ -78,7 +78,7 @@ def blog_content(view, asset):
         **API.config
     )
 
-@API.route("/stat")
+@API.route("/stat", methods=["GET", "OPTIONS"])
 @crossdomain(origin=['*'])
 def stat_api():
     """ This is basically a ping. Returns the generic API meta data dict
@@ -88,6 +88,23 @@ def stat_api():
         status=200,
         mimetype="application/json"
     )
+
+
+@API.route("/check_api_key",  methods=['GET', 'OPTIONS'])
+@crossdomain(origin=['*'])
+def check_api_key():
+    """ Responds to a client app about whether it's key is good. """
+
+    utils.check_api_key()
+    key = API.config['KEYS'].get(flask.request.api_key, None)
+    if key is not None:
+        return flask.Response(
+            response=json.dumps(key, default=json_util.default),
+            status=200,
+            mimetype="application/json"
+        )
+    return utils.http_403
+
 
 @API.route("/robots.txt")
 def robots():
