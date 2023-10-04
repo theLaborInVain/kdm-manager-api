@@ -689,20 +689,39 @@ product_lines = {
         ),
     },
 
-    # novice - 2022-12-25
 
     # elgnirk the chaos elf - 2022-12-25
+    'elgnirk_the_chaos_elf': {
+        'name': 'Elgnirk, The Chaos Elf',
+        'released': datetime(2022,12,25,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+        "flair": {
+            "color": "FFF",
+            "bgcolor": "00833B",
+        },
+    },
+
+    # novice - 2022-12-25
+    'novice': {
+        'name': 'Novice',
+        'released': datetime(2022,12,25,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+    },
 
     # hellebore - 2023-01-31
     'hellebore': {
         'name': 'Hellebore - A Frozen Survivor',
         'released': datetime(2023,1,31,12, tzinfo=USCENTRAL),
-        'ui': {'pretty_category': 'Enhancement'},
+        'ui': {'pretty_category': 'White Box'},
     },
 
     # death crown inheritor aya - 2023-02-28
 
+    # lunar twilight knight - 2023-02-28
+
     # vitanvox - 2023-03-31
+
+    # skrelle - 2023-03-31
 
     # gnostin stonesmasher - 2023-05-02
 

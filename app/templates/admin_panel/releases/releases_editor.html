@@ -166,7 +166,9 @@
                 </div>
 
 
-            <!-- item repeater and controls -->
+                <!-- item repeater and controls -->
+                <div class="admin_panel_edit_release_items_container">
+
             <div
                 id='{a sectionName a}section'
                 class="admin_panel_edit_release_item_bar"
@@ -199,47 +201,52 @@
                     >
                         &#10006;
                     </button>
-                    <div
+                    <button
                         class="kd checkbox large"
                         ng-class="{'checked': item.feature}"
                         ng-click="item.feature = !item.feature"
                     >
-                    </div>
-                </div>
-                <div
-                    id="{a releasesObject.editingRelease._id.$oid + '_item_' + $index a}"
-                    contenteditable="true"
-                    placeholder="New release note here."
-                    class="admin_panel_edit_release_item_body"
-                    ng-bind-html="item.body|trustedHTML"
-                    ng-blur="
-                        item.body = exportThis($event);
-                    "
-                >
-                </div>
-                <div
-                    ng-if="item.feature === true"
-                    class="admin_panel_edit_release_item_detail_container"
-                    ng-init="initializeFeatureDetail(item)"
-                >
-                    <div
-                        id="{a 'item_' + item.sort + '_detail_' + $index a}"
-                        class="admin_panel_edit_release_item_detail"
-                        ng-repeat="detail in item.details"
-                        contenteditable
-                        ng-blur="detail.body = exportThis($event)"
-                        ng-bind-html="detail.body|trustedHTML"
-                    >
-                    </div>
-                    <div
-                        class="clickable admin_panel_edit_release_item_detail"
-                        ng-click="addDetailToItem(item)"
-                    >
-                        &ensp; <i>Create a new detail...</i>
-                    </div>
+                    </button>
                 </div>
 
-            </div><!-- item repeater -->
+                    <div class="admin_panel_edit_release_item_body_container">
+                        <div
+                            id="{a releasesObject.editingRelease._id.$oid + '_item_' + $index a}"
+                            contenteditable="true"
+                            placeholder="New release note here."
+                            class="admin_panel_edit_release_item_body"
+                            ng-bind-html="item.body|trustedHTML"
+                            ng-blur="
+                                item.body = exportThis($event);
+                            "
+                        >
+                        </div>
+                    </div>
+
+                    <div
+                        ng-if="item.feature === true"
+                        class="admin_panel_edit_release_item_detail_container"
+                        ng-init="initializeFeatureDetail(item)"
+                    >
+                        <div
+                            id="{a 'item_' + item.sort + '_detail_' + $index a}"
+                            class="admin_panel_edit_release_item_detail"
+                            ng-repeat="detail in item.details"
+                            contenteditable
+                            ng-blur="detail.body = exportThis($event)"
+                            ng-bind-html="detail.body|trustedHTML"
+                        >
+                        </div>
+                        <button
+                            class="clickable admin_panel_edit_release_item_detail"
+                            ng-click="addDetailToItem(item)"
+                        >
+                            &ensp; <i>Create a new detail...</i>
+                        </button>
+                        </div>
+
+                    </div><!-- item repeater -->
+                </div><!-- items container-->
 
             <!-- add new item -->
             <div

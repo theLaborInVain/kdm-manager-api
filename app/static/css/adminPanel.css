@@ -267,6 +267,9 @@ button.toggle_settlement_event_log {float: right; }
 }
 
 /* admin panel line-item edit stuff */
+.admin_panel_edit_release_items_container > * {
+    border-bottom: 0.1rem solid #eee;
+}
 .admin_panel_edit_release_item_bar,
     .admin_panel_edit_release_item_buttons,
     .admin_panel_edit_release_item_body {
@@ -276,6 +279,11 @@ button.toggle_settlement_event_log {float: right; }
     align-items: flex-start;
     display: flex;
     flex-wrap: wrap;
+}
+/* set these to the same height to establish a 'row' height */
+.admin_panel_edit_release_item_buttons,
+    .admin_panel_edit_release_item_body_container {
+    min-height: 2rem;
 }
 .admin_panel_edit_release_item_buttons {
     align-items: center; 
@@ -291,9 +299,13 @@ button.toggle_settlement_event_log {float: right; }
     height: 100%; 
     margin: 0 0.1rem 0 0.1rem;
 }
-.admin_panel_edit_release_item_body {
-    box-sizing: border-box;
+.admin_panel_edit_release_item_body_container {
+    align-items: center;
+    display: flex;
     width: 85%;
+}
+.admin_panel_edit_release_item_body {
+    flex: 1
 }
 .admin_panel_edit_release_item_body:focus,
     .admin_panel_edit_release_item_detail:focus {
@@ -309,8 +321,21 @@ button.toggle_settlement_event_log {float: right; }
     width: 100%;
 }
 .admin_panel_edit_release_item_detail {
-    width:100%; 
+    box-sizing: border-box;
+    margin: 0.25rem auto 0.25rem 1.5rem;
+    width: 100%;
 }
+div.admin_panel_edit_release_item_detail:before {
+    content: ' - ';
+    margin-left: -1rem;
+}
+
+button.admin_panel_edit_release_item_detail {
+    margin: 0.25rem auto 0.5rem 1.5rem; 
+    padding: 0.2rem 0.5rem 0.2rem 0.2rem; 
+    width: auto;
+}
+
 .admin_panel_edit_release_item_bottom_raft {
     display: flex;
     justify-content: center;

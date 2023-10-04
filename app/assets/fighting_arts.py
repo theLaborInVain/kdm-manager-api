@@ -9,11 +9,17 @@ fighting_art = {
         ),
     },
     'berserker': {
-        'desc': 'Once per showdown, you may spend <font class="kdm_font">a</font> to suffer <b>bash</b> and the <b>frenzy</b> brain trauma.',
+        'desc': (
+            'Once per showdown, you may spend <font class="kdm_font">a</font> '
+            'to suffer <b>bash</b> and the <b>frenzy</b> brain trauma.'
+        ),
         'name': 'Berserker'
     },
     'clutch_fighter': {
-        'desc': 'While you have 3 or more bleeding tokens, gain +1 strength and +1 accuracy.',
+        'desc': (
+            'While you have 3 or more bleeding tokens, gain +1 strength and +1 '
+            'accuracy.'
+            ),
         'name': 'Clutch Fighter'
     },
     'combo_master': {
@@ -44,7 +50,14 @@ fighting_art = {
         'name': 'Last Man Standing',
     },
     'leader': {
-        'desc': 'Whenever you <b>encourage</b> a survivor, they gain +1 speed token until the end of the round.<br/>Once per hunt phase, you may inspire another survivor. They use your understanding and courage to resolve a hunt or story event. (Example: if you have 3+ courage you can inspire another survivor to walk the path of the brave during <b>Overwhelming Darkness</b>.)',
+        'desc': (
+            'Whenever you <b>encourage</b> a survivor, they gain +1 speed '
+            'token until the end of the round.<br/>Once per hunt phase, you '
+            'may inspire another survivor. They use your understanding and '
+            'courage to resolve a hunt or story event. (Example: if you have '
+            '3+ courage you can inspire another survivor to walk the path of '
+            'the brave during <b>Overwhelming Darkness</b>.)'
+        ),
         'name': 'Leader',
     },
     'mighty_strike': {
@@ -630,6 +643,17 @@ secret_fighting_art = {
             'During your act, when your attack ends, gain '
             '<font class="kdm_font">c</font>.'
             'Limit, once per round.'
+        ),
+    },
+
+    # elgnirk
+    'joyous': {
+        'expansion': 'elgnirk_the_chaos_elf',
+        'name': 'Joyous',
+        'desc': (
+            'Whenever you would suffer brain damage, gain that much insanity '
+            'instead.</br/>'
+            'When you have 100 insanity, you die.'
         ),
     },
 

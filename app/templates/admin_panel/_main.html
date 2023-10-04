@@ -41,7 +41,14 @@
 
         {% include 'admin_panel/admin.html' %}
         {% include 'admin_panel/users.html' %}
-        {% include 'admin_panel/reference/_main.html' %}
+
+		<!-- releases and reference -->
+		<div class="flex_item_basic">
+	    	<div class="flex_item_inner">
+				{% include 'admin_panel/releases/_main.html' %}
+				{% include 'admin_panel/reference/documentation.html' %}
+    		</div><!-- flex_item_inner -->
+		</div> <!-- flex_item_basic -->
 
         <!-- main 'latest' box -->
         <div class="flex_item_basic world">

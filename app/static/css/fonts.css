@@ -4,6 +4,7 @@
         url('/static/fonts/SilveradoRR-MediumCondensed.woff') format('woff'),
         url('/static/fonts/SilveradoRR-MediumCondensed.woff2') format('woff2'),
         url('/static/fonts/SilveradoRR-MediumCondensed.ttf') format('truetype');
+    font-display: swap;
 }
 
 

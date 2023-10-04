@@ -6647,3 +6647,52 @@ halloween_survivor_flower_knight_costume = {
         ],
     },
 }
+
+novice = {
+    'novice_dagger': {
+        'name': 'Novice Dagger',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'novice',
+        'speed': 3,
+        'accuracy': 7,
+        'strength': 1,
+        'keywords': ['weapon', 'melee', 'dagger', 'bone'],
+        'affinities': {'left': 'blue', 'right': 'red'},
+        'desc': (
+            'If you are a <b>Novice</b> when you critically wound '
+            'with this, inflict 1 additional wound and gain a deflect '
+            'token. Limit once per attack.'
+        ),
+        'recipes': [
+            {
+                'endeavors': 1,
+                'resource_handles': {'perfect_bone': 1},
+            },
+        ],
+    },
+}
+
+hellebore = {
+    'cold_face_dagger': {
+        'name': 'Cold Face Dagger',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'novice',
+        'speed': 2,
+        'accuracy': 7,
+        'strength': 0,
+        'keywords': ['weapon', 'melee', 'dagger', 'ice', 'stone'],
+        'rules': ['Melting 4'],
+        'desc': (
+            'If you are <b>Insulated</b>, your warm hands can better clutch '
+            'the blade. This gains +1 speed.'
+        ),
+        'recipes': [
+            {
+                'endeavors': 1,
+                'gear_handles': {'founding_stone': 1},
+            },
+        ],
+    },
+}

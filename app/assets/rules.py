@@ -544,5 +544,35 @@ expansion = {
             '<b>Doombound:</b> When you become <b>doomed</b>, place a doom '
             'token on this. You must archive a doom token to activate this. '
         ),
-    }
+    },
+
+    # novice
+    'novice': {
+        'expansion': 'novice',
+        'name': 'Novice',
+        'type': 'special_rule',
+        'desc': 'A survivor with 1 or less Hunt XP.',
+    },
+
+    #hellebore
+    'insulated': {
+        'expansion': 'hellebore',
+        'name': 'Insulated',
+        'type': 'special_rule',
+        'desc': (
+            'A survivor is insulated if they have 6 or more gear cards '
+            'that grant them armor points.'
+        ),
+    },
+    'melting': {
+        'expansion': 'hellebore',
+        'name': 'Melting X',
+        'type': 'special_gear_rule',
+        'desc': (
+            'A gear special rule. On <b>Arrival</b>, place X +1 strength '
+            'tokens on this gear. At the end of your act, remove +1 '
+            'strength token from this gear.'
+        ),
+    },
+
 }
