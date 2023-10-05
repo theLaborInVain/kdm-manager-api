@@ -6666,7 +6666,7 @@ novice = {
         ),
         'recipes': [
             {
-                'endeavors': 1,
+                'endeavor_tokens': 1,
                 'resource_handles': {'perfect_bone': 1},
             },
         ],
@@ -6678,7 +6678,7 @@ hellebore = {
         'name': 'Cold Face Dagger',
         'beta': True,
         'type': 'beta_gear_recipe',
-        'expansion': 'novice',
+        'expansion': 'hellebore',
         'speed': 2,
         'accuracy': 7,
         'strength': 0,
@@ -6690,7 +6690,7 @@ hellebore = {
         ),
         'recipes': [
             {
-                'endeavors': 1,
+                'endeavor_tokens': 1,
                 'gear_handles': {'founding_stone': 1},
             },
         ],

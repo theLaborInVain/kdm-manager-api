@@ -162,15 +162,12 @@ class InvalidUsage(Exception):
     Do this whenever the requester's param keys/values are not up to snuff, etc.
     """
 
-    status_code = 400
-
     def __init__(self, message, status_code=400, payload=None):
         Exception.__init__(self)
         self.logger = get_logger(log_name='error')
         self.msg = message
-        if status_code is not None:
-            self.status_code = status_code
-            self.payload = payload
+        self.status_code = status_code
+        self.payload = payload
         self.logger.exception("[%s] %s" % (self.status_code, self.msg))
 
 

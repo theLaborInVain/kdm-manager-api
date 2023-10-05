@@ -15,6 +15,7 @@
 from copy import copy
 from datetime import datetime
 from hashlib import md5
+import hmac
 import io
 import os
 import json
@@ -33,7 +34,6 @@ import gridfs
 import jwt
 import pymongo
 from werkzeug.security import (
-    safe_str_cmp,
     generate_password_hash,
     check_password_hash
 )
@@ -80,13 +80,14 @@ def authenticate(username=None, password=None):
             user_object = User(_id=user["_id"])
         else:
             try:
-                if safe_str_cmp(
+#                if safe_str_cmp(
+                if hmac.compare_digest(
                     user["password"],
                     md5(password.encode()).hexdigest()
                 ):
                     user_object = User(_id=user["_id"])
-            except UnicodeEncodeError as e:
-                raise utils.InvalidUsage(e)
+            except UnicodeEncodeError as exception:
+                raise utils.InvalidUsage(exception)
 
     # timestamp this authentication
     if user_object is not None:
@@ -95,37 +96,195 @@ def authenticate(username=None, password=None):
     return user_object
 
 
-
-def check_authorization(token):
-    """ Tries to decode 'token'. Returns an HTTP 200 if it works, returns a 401
-    if it doesn't. """
-
-    try:
-        jwt.decode(token, API.config['SECRET_KEY'], verify=True)
-        return utils.http_200
-    except Exception as e:
-        decoded = json.loads(
-            jwt.decode(
-                token,
-                API.config['SECRET_KEY'],
-                verify=False
-            )["identity"]
-        )
-        LOGGER.info("[%s (%s)] authorization check failed: %s!" % (
-            decoded["login"],
-            decoded["_id"]["$oid"],
-            e)
-        )
-        return utils.http_401
-
-
 def get_user_id_from_email(email):
     """ Pulls the user from the MDB (or dies trying). Returns its email. """
 
-    u = utils.mdb.users.find_one({'login': email.lower().strip()})
-    if u is None:
+    record = utils.mdb.users.find_one({'login': email.lower().strip()})
+    if record is None:
         raise AttributeError("Could not find user data for %s" % email)
-    return u['_id']
+    return record['_id']
+
+
+
+def import_user(user_data=None):
+    """ Import a user from a pickle to the local mdb.
+
+    The 'user_data' arg can be either a pickle on the file system or a
+    string representation of a pickle.
+
+    Used primarily for legacy support and admin jobs, e.g. clone.
+    """
+
+    data = None
+
+    # coerce incoming data to dict or die trying.
+    if isinstance(user_data, bytes):
+        data = pickle.loads(user_data, encoding='bytes')
+
+    if data is None and os.path.isfile(user_data):
+        data = pickle.load(open(user_data, 'rb'))
+
+    if data is None:
+        raise ValueError("'%s' does not appear to be a pickle!" % user_data)
+
+    # clean up the raw data
+    for foreign_attr in ['current_session']:
+        if data['user'].get(foreign_attr, False):
+            del data['user'][foreign_attr]
+
+    # start the import and check to see if we're doing something stupid
+    msg = "Importing user %s [%s]" % (
+        data['user']['login'],
+        data['user']['_id']
+    )
+    LOGGER.warning(msg)
+
+    try:
+        new_user_oid = utils.mdb.users.save(data['user'])
+    except pymongo.errors.DuplicateKeyError as exception:
+        err = "User login '%s' exists under a different user ID!"
+        LOGGER.error(exception)
+        LOGGER.error(err)
+        raise pymongo.errors.DuplicateKeyError(err)
+
+    # private method to load individual assets
+    def import_user_assets(asset_name):
+        """ Helper function to import assets generically.
+
+        The 'asset_name' arg should be something like "settlement_events" or
+        "survivors" or "settlements", i.e. one of the keys in the incoming
+        'assets_dict' dictionary (called 'data' here). """
+
+        imported_assets = 0
+        LOGGER.warning("Importing %s assets...", asset_name)
+        try:
+            for asset in data[asset_name]:
+                imported_assets += 1
+                utils.mdb[asset_name].save(asset)
+        except KeyError:
+            LOGGER.error('No %s assets found in user data!', asset_name)
+        LOGGER.warning("%s %s assets imported." % (imported_assets, asset_name))
+
+    # load the important user assets to local
+    for asset_collection in [
+        'settlements',
+        'settlement_events',
+        'survivors',
+        'survivor_notes'
+    ]:
+        import_user_assets(asset_collection)
+
+    # check for orphan survivors (i.e. ones with no settlement)
+    for survivor in utils.mdb.survivors.find():
+        if utils.mdb.settlements.find_one(
+            {"_id": survivor["settlement"]}
+        ) is None:
+            err = "Survivor %s belongs to a non-existent settlement (%s)!"
+            LOGGER.error(err % (survivor['_id'], survivor['settlement']))
+            LOGGER.warning("Removing survivor %s from mdb...", survivor["_id"])
+            utils.mdb.survivors.remove({"_id": survivor["_id"]})
+
+    # next import avatars
+    imported_avatars = 0
+    for avatar in data["avatars"]:
+        if gridfs.GridFS(utils.mdb).exists(avatar["_id"]):
+            gridfs.GridFS(utils.mdb).delete(avatar["_id"])
+            LOGGER.info("Removed object %s from local GridFS." % avatar["_id"])
+            gridfs.GridFS(utils.mdb).put(
+                avatar["blob"],
+                _id=avatar["_id"],
+                content_type=avatar["content_type"],
+                created_by=avatar["created_by"],
+                created_on=avatar["created_on"]
+            )
+            imported_avatars += 1
+        LOGGER.info("Imported %s avatars!" % imported_avatars)
+
+    # legacy webapp: clean up sessions
+    culled = utils.mdb.sessions.remove({"login": data["user"]["login"]})
+    if culled['n'] > 0:
+        LOGGER.info(
+            "Removed %s session(s) belonging to incoming user!" % culled['n']
+        )
+
+    return new_user_oid
+
+
+def initiate_password_reset():
+    """ Attempts to start the mechanism for resetting a user's password.
+    Unlike a lot of methods, this one handles the whole flask.request processing
+    and is very...self-contained. """
+
+    # first, validate the post
+    incoming_json = flask.request.get_json()
+    user_login = incoming_json.get('username', None)
+    if user_login is None:
+        msg = "A valid email address is required for password reset requests!"
+        return flask.Response(response=msg, status=400)
+
+    # normalize emails issue #501
+    user_login = user_login.strip().lower()
+
+    # next, validate the user
+    user = utils.mdb.users.find_one({"login": user_login})
+    if user is None:
+        return flask.Response(
+            response = "'%s' is not a registered email address." % user_login,
+            status = 404
+        )
+
+    # if the user looks good, set the code
+    user_object = User(_id=user["_id"])
+    user_code = user_object.set_recovery_code()
+
+    # support for applications with their own URLs
+    incoming_app_url = incoming_json.get('app_url', None)
+    if incoming_app_url is not None:
+        application_url = incoming_app_url
+        parsed = urllib.parse.urlsplit(incoming_app_url)
+        netloc = parsed.scheme + "://" + parsed.netloc
+    else:
+        netloc = utils.get_application_url()
+        application_url = utils.get_application_url()
+
+    info = "%s has requested a password reset. Incoming app URL: '%s'!"
+    LOGGER.info(info % (user_login, incoming_app_url))
+
+    # finally, send the email to the user
+    try:
+        tmp_file = utils.html_file_to_template('password_recovery.html')
+        msg = tmp_file.safe_substitute(
+            login=user_login,
+            recovery_code=user_code,
+            app_url=application_url,
+            netloc=netloc
+        )
+        email_session = utils.mailSession()
+        email_session.send(
+            recipients=[user_login],
+            html_msg=msg,
+            subject='KDM-Manager password reset request!'
+        )
+    except Exception as e:
+        LOGGER.error(e)
+        raise
+
+    # exit 200
+    return utils.http_200
+
+
+def jwt_identity_handler(payload):
+    """ Bounces the authentication request payload off of the user collection.
+    Returns a user object if "identity" in the request exists. """
+
+    u_id = payload["identity"]
+    user = utils.mdb.users.find_one({"_id": ObjectId(u_id)})
+
+    if user is not None:
+        user_object = User(_id=user["_id"])
+        return user_object.serialize()
+
+    return utils.http_404
 
 
 def refresh_authorization(expired_token):
@@ -133,12 +292,13 @@ def refresh_authorization(expired_token):
     those against mdb. If they match, we return the user. This is what is
     referred to, in the field, as "meh--good enough" security.
 
-    If you find yourself getting None back from thi sone, it's because your
+    If you find yourself getting None back from this one, it's because your
     user changed his password.
     """
 
-    decoded = jwt.decode(expired_token, API.config['SECRET_KEY'], verify=False)
-    user = dict(json.loads(decoded["identity"]))
+    user = token_to_identity(expired_token)
+
+    # return MDB record
     login = user["login"]
     pw_hash = user["password"]
     return utils.mdb.users.find_one({"login": login, "password": pw_hash})
@@ -181,81 +341,61 @@ def reset_password():
     return utils.http_200
 
 
-def initiate_password_reset():
-    """ Attempts to start the mechanism for resetting a user's password.
-    Unlike a lot of methods, this one handles the whole flask.request processing
-    and is very...self-contained. """
+def token_to_identity(token, verify=False, return_type=dict):
+    ''' Takes an incoming JWT and converts it to the 'identity' compoenent
+    called "sub" in JWT 4.0.0 (previously called "identity").
 
-    # first, validate the post
-    incoming_json = flask.request.get_json()
-    user_login = incoming_json.get('username', None)
-    if user_login is None:
-        msg = "A valid email address is required for password reset requests!"
-        return flask.Response(response=msg, status=400)
+    Returns a dictionary, if possible; returns a Flask response if it fails.
+    '''
 
-    # normalize emails issue #501
-    user_login = user_login.strip().lower()
-
-    # next, validate the user
-    user = utils.mdb.users.find_one({"login": user_login})
-    if user is None:
-        return flask.Response(
-            response = "'%s' is not a registered email address." % user_login,
-            status = 404
-        )
-
-    # if the user looks good, set the code
-    U = User(_id=user["_id"])
-    user_code = U.set_recovery_code()
-
-    # support for applications with their own URLs
-    incoming_app_url = incoming_json.get('app_url', None)
-    if incoming_app_url is not None:
-        application_url = incoming_app_url
-        parsed = urllib.parse.urlsplit(incoming_app_url)
-        netloc = parsed.scheme + "://" + parsed.netloc
-    else:
-        netloc = utils.get_application_url()
-        application_url = utils.get_application_url()
-
-    info = "%s has requested a password reset. Incoming app URL: '%s'!"
-    LOGGER.info(info % (user_login, incoming_app_url))
-
-    # finally, send the email to the user
+    # first, decode it
     try:
-        tmp_file = utils.html_file_to_template('password_recovery.html')
-        msg = tmp_file.safe_substitute(
-            login=user_login,
-            recovery_code=user_code,
-            app_url=application_url,
-            netloc=netloc
+        decoded = jwt.decode(
+            token,
+            API.config['SECRET_KEY'],
+            algorithms="HS256",
+            options={
+                'verify_exp': verify,
+                'verify_signature': verify,
+            },
         )
-        e = utils.mailSession()
-        e.send(
-            recipients=[user_login],
-            html_msg=msg,
-            subject='KDM-Manager password reset request!'
+    except jwt.exceptions.ExpiredSignatureError:
+        return utils.http_401
+    except Exception as exception:
+        LOGGER.error("JWT decoding failed! Request URL: %s", flask.request.url)
+        LOGGER.error("Exception: |%s|", exception)
+        LOGGER.error("Token contents: |%s|", token)
+        err = "JWT token could not be processed! Exception: %s" % exception
+        raise utils.InvalidUsage(err, status_code=401)
+
+    # next, try to get the identity from the decoded token; fail if it's not
+    #   where we expect it to be
+    identity = {}
+    for key in ['sub', 'identity']:
+        if decoded.get(key, None) is not None:
+            identity = dict(json.loads(decoded[key]))
+            break
+
+    # sanity check it for required keys
+    for required_key in ['login', 'password', '_id']:
+        if identity.get(required_key, None) is None:
+            err = (
+                "Incoming, decoded JWT does not include %s key/value "
+                "and cannot be processed. Decoded token: %s" %
+                (required_key, decoded)
+            )
+            LOGGER.error(err)
+            raise utils.InvalidUsage(err, status_code=500)
+
+    # process special returns
+    if return_type == 'http':
+        return flask.Response(
+            response=json.dumps(identity, default=json_util.default),
+            status=200,
+            mimetype='application/json'
         )
-    except Exception as e:
-        LOGGER.error(e)
-        raise
 
-    # exit 200
-    return utils.http_200
-
-
-def jwt_identity_handler(payload):
-    """ Bounces the authentication request payload off of the user collection.
-    Returns a user object if "identity" in the request exists. """
-
-    u_id = payload["identity"]
-    user = utils.mdb.users.find_one({"_id": ObjectId(u_id)})
-
-    if user is not None:
-        U = User(_id=user["_id"])
-        return U.serialize()
-
-    return utils.http_404
+    return identity
 
 
 def token_to_object(request, strict=True):
@@ -270,133 +410,17 @@ def token_to_object(request, strict=True):
         LOGGER.error(msg)
         raise utils.InvalidUsage(msg, status_code=401)
 
-    # now, try to decode the token and get a dict
-    try:
-        if strict:
-            decoded = jwt.decode(
-                auth_token,
-                API.config['SECRET_KEY'],
-                verify=True
-            )
-            user_dict = dict(json.loads(decoded["identity"]))
-            return User(_id=user_dict["_id"]["$oid"])
-        else:
-            user_dict = refresh_authorization(auth_token)
-            return User(_id=user_dict["_id"])
-    except jwt.DecodeError:
-        LOGGER.error("Incorrectly formatted token!")
-        LOGGER.error("Token contents: |%s|" % auth_token)
-    except Exception as e:
-        LOGGER.exception(e)
+    # if strict, try to decode the token and return a user object
+    if strict:
+        user = token_to_identity(auth_token)
+        return User(_id=user["_id"]["$oid"])
 
-    err = "Incoming JWT could not be processed!"
-    raise utils.InvalidUsage(err, status_code=422)
+    # otherwise, return a user object straight from the token
+    user = refresh_authorization(auth_token)
+    return User(_id=user["_id"])
 
 
-#
-#   import_user method here! This is mostly called by admin methods, e.g. clone
-#
 
-def import_user(user_data=None):
-    """ Import a user from a pickle to the local mdb.
-
-    The 'user_data' arg can be either a pickle on the file system or a
-    string representation of a pickle.
-    """
-
-    data = None
-
-    # coerce incoming data to dict or die trying.
-    if isinstance(user_data, bytes):
-        data = pickle.loads(user_data, encoding='bytes')
-
-    if data is None and os.path.isfile(user_data):
-        data = pickle.load(open(user_data, 'rb'))
-
-    if data is None:
-        raise ValueError("'%s' does not appear to be a pickle!" % user_data)
-
-    # clean up the raw data
-    for foreign_attr in ['current_session']:
-        if data['user'].get(foreign_attr, False):
-            del data['user'][foreign_attr]
-
-    # start the import and check to see if we're doing something stupid
-    msg = "Importing user %s [%s]" % (
-        data['user']['login'],
-        data['user']['_id']
-    )
-    LOGGER.warning(msg)
-
-    try:
-        new_user_oid = utils.mdb.users.save(data['user'])
-    except pymongo.errors.DuplicateKeyError:
-        err = "User login '%s' exists under a different user ID!"
-        raise pymongo.errors.DuplicateKeyError(err)
-
-    # private method to load individual assets
-    def import_user_assets(asset_name):
-        """ Helper function to import assets generically.
-
-        The 'asset_name' arg should be something like "settlement_events" or
-        "survivors" or "settlements", i.e. one of the keys in the incoming
-        'assets_dict' dictionary (called 'data' here). """
-
-        imported_assets = 0
-        LOGGER.warning("Importing %s assets..." % asset_name)
-        try:
-            for asset in data[asset_name]:
-                imported_assets += 1
-                utils.mdb[asset_name].save(asset)
-        except KeyError:
-            LOGGER.error('No %s assets found in user data!' % asset_name)
-        LOGGER.warning("%s %s assets imported." % (imported_assets, asset_name))
-
-    # load the important user assets to local
-    for asset_collection in [
-        'settlements',
-        'settlement_events',
-        'survivors',
-        'survivor_notes'
-    ]:
-        import_user_assets(asset_collection)
-
-    # check for orphan survivors (i.e. ones with no settlement)
-    for survivor in utils.mdb.survivors.find():
-        if utils.mdb.settlements.find_one(
-            {"_id": survivor["settlement"]}
-        ) is None:
-            LOGGER.error("Survivor %s belongs to a non-existent settlement (%s)!" % (
-                survivor['_id'], survivor['settlement']
-                )
-            )
-            LOGGER.warning("Removing survivor %s from mdb..." % (survivor["_id"]))
-            utils.mdb.survivors.remove({"_id": survivor["_id"]})
-
-    # next import avatars
-    imported_avatars = 0
-    for avatar in data["avatars"]:
-        if gridfs.GridFS(utils.mdb).exists(avatar["_id"]):
-            gridfs.GridFS(utils.mdb).delete(avatar["_id"])
-            LOGGER.info("Removed object %s from local GridFS." % avatar["_id"])
-            gridfs.GridFS(utils.mdb).put(
-                avatar["blob"],
-                _id=avatar["_id"],
-                content_type=avatar["content_type"],
-                created_by=avatar["created_by"],
-                created_on=avatar["created_on"]
-            )
-            imported_avatars += 1
-        LOGGER.info("Imported %s avatars!" % imported_avatars)
-
-    # legacy webapp: clean up sessions
-    culled = utils.mdb.sessions.remove({"login": data["user"]["login"]})
-    if culled['n'] > 0:
-        LOGGER.info(
-            "Removed %s session(s) belonging to incoming user!" % culled['n']
-        )
-
-    return new_user_oid
 
 
 #
@@ -422,7 +446,8 @@ class User(models.UserAsset):
         """ Custom repr for User objects. """
         try:
             return "[%s (%s)]" % (self.user["login"], self._id)
-        except:
+        except Exception as exception:
+            self.logger.debug(exception)
             return super().__repr__()
 
 
@@ -505,7 +530,7 @@ class User(models.UserAsset):
 
         self.load() # call load to set self.login, etc.
 
-        self.logger.info("New user '%s' created!" % username)
+        self.logger.info("New user '%s' created!", username)
 
         return self.user["_id"]
 
@@ -537,16 +562,21 @@ class User(models.UserAsset):
 
         # get all survivors (including those created by other users) for the
         #   user's settlements; then get all survivors created by the user.
-        for s in assets_dict["settlements"]:
+        for settlement_rec in assets_dict["settlements"]:
             assets_dict["settlement_events"].extend(
-                utils.mdb.settlement_events.find({"settlement_id": s["_id"]})
+                utils.mdb.settlement_events.find(
+                    {"settlement_id": settlement_rec["_id"]}
+                )
             )
-            survivors = utils.mdb.survivors.find({"settlement": s["_id"]})
+            survivors = utils.mdb.survivors.find(
+                {"settlement": settlement_rec["_id"]}
+            )
             assets_dict["survivors"].extend(survivors)
+
         other_survivors = utils.mdb.survivors.find(created_by)
-        for s in other_survivors:
-            if s not in assets_dict["survivors"]:
-                assets_dict["survivors"].append(s)
+        for survivor_rec in other_survivors:
+            if survivor_rec not in assets_dict["survivors"]:
+                assets_dict["survivors"].append(survivor_rec)
 
         msg = "%s Exported %s survivors!"
 #        self.logger.debug(msg % (self, len(assets_dict["survivors"])))
@@ -566,7 +596,7 @@ class User(models.UserAsset):
                     assets_dict["avatars"].append(img_dict)
                 except gridfs.errors.NoFile:
                     err = "Could not retrieve avatar for survivor %s"
-                    self.logger.error(err % s["_id"])
+                    self.logger.error(err, s["_id"])
 
         for key in assets_dict.keys():
             msg = "%s Added %s '%s' assets to user export..."
@@ -646,14 +676,26 @@ class User(models.UserAsset):
 
         # punch the user up if we're returning to the admin panel
         if return_type in ['admin_panel']:
-            output['user']["latest_activity_age"] = self.get_latest_activity(return_type='age')
+            output['user']["latest_activity_age"] = self.get_latest_activity(
+                return_type='age'
+            )
             output["user"]["is_active"] = self.is_active()
             output['user']["friend_list"] = self.get_friends(list)
-            output['user']["current_session"] = utils.mdb.sessions.find_one({"_id": self._id})
-            output["user"]["survivors_created"] = self.get_survivors(return_type=int)
-            output["user"]["survivors_owned"] = self.get_survivors(qualifier="owner", return_type=int)
-            output["user"]["settlements_administered"] = self.get_settlements(qualifier="admin", return_type=int)
-            output["user"]["campaigns_played"] = self.get_settlements(qualifier="player", return_type=int)
+            output['user']["current_session"] = utils.mdb.sessions.find_one(
+                {"_id": self._id}
+            )
+            output["user"]["survivors_created"] = self.get_survivors(
+                return_type=int
+            )
+            output["user"]["survivors_owned"] = self.get_survivors(
+                qualifier="owner", return_type=int
+            )
+            output["user"]["settlements_administered"] = self.get_settlements(
+                qualifier="admin", return_type=int
+            )
+            output["user"]["campaigns_played"] = self.get_settlements(
+                qualifier="player", return_type=int
+            )
 
         if return_type in ['admin_panel','create_new',dict]:
             return output
@@ -774,15 +816,21 @@ class User(models.UserAsset):
         settlements = self.get_settlements()
         if len(settlements) != 0:
             self.user["current_settlement"] = settlements[0]["_id"]
-            self.logger.warning("Defaulting 'current_settlement' to %s for %s" % (settlements[0]["_id"], self))
+            msg = "Defaulting 'current_settlement' to %s for %s" % (
+                settlements[0]["_id"], self
+            )
+            self.logger.warning(msg)
         elif len(settlements) == 0:
-#            self.logger.debug("User %s does not own or administer any settlements!" % self)
             p_settlements = self.get_settlements(qualifier="player")
             if len(p_settlements) != 0:
                 self.user["current_settlement"] = p_settlements[0]["_id"]
-                self.logger.warning("Defaulting 'current_settlement' to %s for %s" % (p_settlements[0]["_id"], self))
+                msg = "Defaulting 'current_settlement' to %s for %s" % (
+                    p_settlements[0]["_id"], self
+                )
+                self.logger.warning(msg)
             elif len(p_settlements) == 0:
-                self.logger.warning("Unable to default a 'current_settlement' value for %s" % self)
+                msg = "Cannot set 'current_settlement' value for %s" % self
+                self.logger.warning(msg)
                 self.user["current_settlement"] = None
 
         self.save()
@@ -861,8 +909,8 @@ class User(models.UserAsset):
         for pref_dict in pref_list:
             handle = pref_dict.get('handle',None)
             value = pref_dict.get('value',None)
-            for p in [handle, value]:
-                if p is None:
+            for pref in [handle, value]:
+                if pref is None:
                     err = (
                         "Invalid dict: {handle: %s, value: %s} "
                         "Preference hashes/dicts should follow this syntax: "
@@ -953,7 +1001,7 @@ class User(models.UserAsset):
             raise Exception("New password cannot be None type!")
 
         self.user['password'] = generate_password_hash(new_password)
-        self.logger.info("%s Changed password!" % self)
+        self.logger.info("%s Changed password!", self)
         self.save()
 
 
@@ -1091,6 +1139,8 @@ class User(models.UserAsset):
         friend_emails   = set()
 
         campaigns = self.get_settlements(qualifier="player")
+
+        friends = None
         if len(campaigns) > 0:
             for s in campaigns:
                 friend_ids.add(s["created_by"])
@@ -1112,20 +1162,16 @@ class User(models.UserAsset):
                     {"login": {"$in": list(friend_emails)}},
                 ]
             })
-        else:
-            friends = None
 
         if return_type == int:
             if friends is not None:
                 return friends.count()
-            else:
-                return 0
+            return 0
 
         if return_type == list:
             if friends is None:
                 return []
-            else:
-                return [f["login"] for f in friends]
+            return [f["login"] for f in friends]
 
         if return_type == 'JSON':
             return json.dumps(list(friends), default=json_util.default)
@@ -1322,7 +1368,7 @@ class User(models.UserAsset):
                     sheet = json.loads(S.serialize('dashboard'))
                     output.append(sheet)
                 except Exception as e:
-                    self.logger.error("Could not serialize %s" % s)
+                    self.logger.error("Could not serialize %s", s)
                     self.logger.exception(e)
                     raise
 
@@ -1442,7 +1488,7 @@ class User(models.UserAsset):
         expires_in = subscription_max - subscription_age
 
         if expires_in < 0:
-            self.logger.warning('%s SUBSCRIPTION EXPIRED' % self)
+            self.logger.warning('%s SUBSCRIPTION EXPIRED', self)
             self.set_subscriber_level(0)
 
 
@@ -1460,14 +1506,14 @@ class User(models.UserAsset):
         if 'collection' not in self.user.keys():
             self.user['collection'] = {"expansions": [], }
             self.logger.info(
-                "%s Baselined 'collection' key into user dict." % self
+                "%s Baselined 'collection' key into user dict.", self
             )
             self.perform_save = True
 
         if 'notifications' not in self.user.keys():
             self.user['notifications'] = {}
             self.logger.info(
-                "%s Baselined 'notifications' key into user dict." % self
+                "%s Baselined 'notifications' key into user dict.", self
             )
             self.perform_save = True
 
@@ -1488,7 +1534,7 @@ class User(models.UserAsset):
         if 'preferences' not in self.user.keys():
             self.user['preferences'] = {'preserve_sessions': False}
             self.logger.warning(
-                "%s has no 'preferences' attrib! Normalizing..." % self
+                "%s has no 'preferences' attrib! Normalizing...", self
             )
             self.perform_save = True
 
@@ -1496,17 +1542,17 @@ class User(models.UserAsset):
         if 'patron' in self.user.keys():
             self.user['subscriber'] = self.user['patron']
             del self.user['patron']
-            self.logger.warning("%s Normalized 'patron' to 'subscriber'!" % self)
+            self.logger.warning("%s Normalized 'patron' to 'subscriber'!", self)
             self.perform_save = True
 
         if 'subscriber' not in self.user.keys():
             self.user['subscriber'] = {'level': 0}
-            self.logger.warning("%s Added 'subscriber' dict to user!" % self)
+            self.logger.warning("%s Added 'subscriber' dict to user!", self)
             self.perform_save = True
 
         if isinstance(self.user['subscriber']['level'], str):
             warn = "%s Subscriber 'level' is str type! Normalizing to int..."
-            self.logger.warning(warn % self)
+            self.logger.warning(warn, self)
             self.user['subscriber']['level'] = int(
                 self.user['subscriber']['level']
             )

@@ -421,13 +421,18 @@ def refresh_auth(action):
     auth = flask.request.headers["Authorization"]
 
     if action == "refresh":
+        # try to get the user by refreshing existing auth
         user = users.refresh_authorization(auth)
+        if isinstance(user, flask.Response):
+            return user
+
+        # we get a user, try to get a new token, else 401/unauth
         if user is not None:
             return get_token(check_pw=False, user_id=user["_id"])
         return utils.http_401
 
     if action == "check":
-        return users.check_authorization(auth)
+        return users.token_to_identity(auth, verify=True, return_type='http')
 
     # if we strike out, we're obviously not authorized:
     return utils.http_402
