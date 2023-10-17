@@ -6,7 +6,7 @@
 """
 
 from app.assets import expansions
-from app import models, utils
+from app import models
 
 
 class Assets(models.AssetCollection):
@@ -16,7 +16,7 @@ class Assets(models.AssetCollection):
         release date, so when we initialize an asset dict from expansions.py, we
         manually add a "meta" style key to indicate their release date. """
 
-        self.root_module = expansions
+#        self.root_module = expansions
         models.AssetCollection.__init__(self,  *args, **kwargs)
         self.set_expansion_vars()
 

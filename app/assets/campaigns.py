@@ -473,5 +473,39 @@ expansion_campaign = {
 #            {'type': 'general', 'tip': 'This is a help tip.'},
 #        ],
     },
+
+    "people_of_the_dream_keeper": {
+        "name": "People of the Dream Keeper",
+        'saviors': True,
+        "subtitle": (
+            "Includes all content from the <b>Gambler's Chest</b> expansion."
+        ),
+        "survival_actions": ["dodge","encourage","dash","surge",'endure'],
+        "always_available": {
+            "location": ["Lantern Hoard"],
+            "innovation": ["Language"],
+        },
+        "forbidden": {
+            "location": ["the_sun","throne"],
+            "innovation": ["sun_language","dragon_speech","radiating_orb"],
+        },
+        "principles": ["new_life","death","society","conviction"],
+        "milestones": _default_milestones,
+        "nemesis_monsters": ["butcher","kings_man","the_hand","watcher"],
+        "special_showdowns": ["kings_man",'the_hand'],
+        'final_boss': 'godhand',
+        "survivor_attribute_milestones": _default_survivor_attribute_milestones,
+        "quarries": [],
+        "timeline": _default_timeline,
+        "settlement_sheet_init": {
+            "quarries": ["crimson_crocodile"],
+            "nemesis_monsters": ["butcher"],
+            "nemesis_encounters": {'butcher': []},
+            "expansions": [
+                "arc_survivors",
+                "crimson_crocodile",
+            ],
+        },
+    },
 }
 

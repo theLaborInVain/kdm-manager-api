@@ -57,7 +57,8 @@ class Config():
         'monster', 'monsters'
     ]
     TIMEZONE = pytz.timezone('US/Central')
-    VERSION = "1.153.952"
+    USER_ASSET_COLLECTIONS = ['releases', 'settlements', 'survivors', 'users']
+    VERSION = "1.165.987"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 

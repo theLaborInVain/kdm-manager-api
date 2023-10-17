@@ -151,7 +151,7 @@ def panel():
 @API.basicAuth.login_required
 def admin_view(resource):
     """ Retrieves admin panel resources as JSON. """
-    return admin.get_data(resource)
+    return admin.panel.get_data(resource)
 
 
 @API.route("/admin/notifications/<method>", methods=["POST"])

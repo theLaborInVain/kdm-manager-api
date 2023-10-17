@@ -459,4 +459,13 @@ location = {
         "font_color": "000",
     },
 
+
+    # crimson croc
+    'crimson_crockery': {
+        'tyoe': 'gear',
+        'name': 'Crimson Crockery',
+        'expansion': 'crimson_crocodile',
+        'color': '894142',
+        'font_color': 'fff',
+    },
 }

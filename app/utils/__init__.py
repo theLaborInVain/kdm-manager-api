@@ -36,7 +36,7 @@ from pymongo import MongoClient
 from app import API
 from app.models import versions
 from app.utils import crossdomain as crossdomain_module
-from app.utils import settings
+from app.utils import settings, web
 
 
 USCENTRAL = pytz.timezone('US/Central')

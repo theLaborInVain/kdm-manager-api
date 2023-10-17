@@ -76,10 +76,12 @@
  .kd.deck_icon {    /* for when display requires the inline deck icon */
     background-image:
         url('https://api.kdm-manager.com/static/media/images/deck_icon.png');
-    background-size: 1em;
+    background-size: 1rem;
     background-repeat: no-repeat;
     background-position: center;
+    background-position-y: top;
     color: rgba(255,255,255,0);
+    display: inline-block;
 }
 .kd .deck_icon:after,
  .kd.deck_icon:after {
@@ -601,6 +603,17 @@ select.kd.capsule {
     background: #fafafa;
     background-color: #fafafa;
     color: #000;
+}
+
+/*  glossary / rules */
+.kd.glossary.container {
+    break-inside: avoid;
+    padding: 0.25rem 1.5rem 1rem 1.5rem;
+}
+.kd.glossary.rule_card br {
+    content: " ";
+    display:block;
+    margin-bottom: 1rem;
 }
 
 

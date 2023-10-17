@@ -1,10 +1,11 @@
 """
-    Methods for working with releases, including the releaseObject class
-    definition live here.
+
+    The public_router() and private_router() methods that handle traffic
+    for dev log and other admin requests are here as well.
+
 """
 
 # standard library imports
-from datetime import datetime, timedelta
 import json
 
 # second party imports
@@ -14,7 +15,8 @@ import flask
 import pymongo
 
 # local imports
-from app import API, models, utils
+from app import API, utils
+from app.models.admin import ChangeLog
 
 
 def public_router(action):
@@ -80,11 +82,11 @@ def public_router(action):
             mimetype="application/json"
         )
 
-    # finally, check and see if we're looking for a specific release 
+    # finally, check and see if we're looking for a specific release
     record = utils.mdb.releases.find_one({'_id': ObjectId(action)})
     if ObjectId.is_valid(action) and record is not None:
         return flask.Response('got it!', 200)
-    elif ObjectId.is_valid(action) and record is None:
+    if ObjectId.is_valid(action) and record is None:
         return flask.Response('Release not found!', 404)
 
     err = "'%s' method not allowed!" % action
@@ -101,9 +103,9 @@ def private_router(action):
         return utils.http_403
 
     if action == 'new':
-        r_obj = releaseObject()
+        change_log = ChangeLog()
         return flask.Response(
-            json.dumps(r_obj.record, default=json_util.default),
+            json.dumps(change_log.release, default=json_util.default),
             status=200,
             mimetype="application/json"
         )
@@ -120,18 +122,22 @@ def private_router(action):
     if release_oid is None:
         raise utils.InvalidUsage('_id is required!', 422)
 
-    r_obj = releaseObject(_id=release_oid['$oid'])
+    change_log = ChangeLog(_id=release_oid['$oid'])
 
     if action == 'update':
-        r_obj.update()
+        payload = utils.web.angular_to_python(flask.request.get_json())
+        change_log.update(source=payload, verbose=True)
         return flask.Response(
-            json.dumps(r_obj.record, default=json_util.default),
+            json.dumps(change_log.release, default=json_util.default),
             status=200,
             mimetype="application/json"
         )
-    elif action == 'delete':
+    if action == 'delete':
         return flask.Response(
-            json.dumps(r_obj.delete().raw_result, default=json_util.default),
+            json.dumps(
+                change_log.remove(delete=True),
+                default=json_util.default
+            ),
             status=200,
             mimetype="application/json"
         )
@@ -140,137 +146,3 @@ def private_router(action):
     #   to some oddball/unknown endpoint...
     err = "'%s' method not allowed!" % action
     return flask.Response(err, status=405)
-
-
-
-class releaseObject(models.StructuredObject):
-    """ The releaseObject class definition. Initialize one of these to work
-    with a release. Initialize with no arguments to use the values in the
-    request.json. """
-
-
-    def __init__(self, *args, **kwargs):
-        """ Initialize with no args to create a new one. """
-
-        # first, execute the init of our base class method
-        super().__init__(self, *args, **kwargs)
-
-        self.request = flask.request.get_json()
-        self.logger = utils.get_logger(log_name='admin')
-        self.mdb = utils.mdb.releases
-
-        self.data_model = {
-            'created_on': datetime,
-            'created_by': ObjectId,
-            'modified_on': datetime,
-            'platform': str,
-            'version': dict,
-            'summary': str,
-            'sections': list,
-            'items': list,
-            'details': list,
-            'published': bool,
-            'published_on': datetime,
-        }
-
-        self.load() # sets self._id if it isn't set
-
-
-    def __repr__(self):
-        """ A nice repr string that shows the platform and version. """
-
-        return "%s release (%s)" % (self.platform, self.get_version_string())
-
-
-    def load(self):
-        """ Load a release record. """
-        if getattr(self, '_id', None) is None:
-            self.new()
-
-        self.record = self.mdb.find_one({'_id': self._id})
-        if self.record is None:
-            err = "Release OID '%s' not found!" % self._id
-            raise utils.InvalidUsage(err, status_code=400)
-
-        for key, value in self.data_model.items():
-            setattr(self, key, self.record.get(key, None))
-
-
-    def new(self):
-        """ Create a new release record. """
-
-        platform = self.request.get('platform', None)
-        if platform is None:
-            raise utils.InvalidUsage(
-                'Platform must be specified when creating a new release!',
-                status_code=422
-            )
-
-        self.logger.info("Creating a new release for '%s'" % platform)
-        self._id = self.mdb.insert({})
-
-        self.created_on = datetime.now()
-        self.created_by = flask.request.User._id
-        self.platform = platform
-
-        self.set_latest_version()
-        self.save()
-
-
-    def update(self):
-        """ Updates attributes, saves. Uses the request JSON! """
-
-        published_pre_update = getattr(self, 'published', False)
-
-        # call the base class method; update attrs
-        super().update(source=flask.request.get_json(), verbose=True)
-
-        published_post_update = getattr(self, 'published', False)
-
-        # handle published_on logic
-        if not published_pre_update and published_post_update:
-            self.published_on = datetime.now()
-        elif published_pre_update and not published_post_update:
-            self.published_on = None
-
-        # sort things we want to sort
-        self.sections = sorted(self.sections)
-
-        self.modified_on = datetime.now()
-        self.save(verbose=True)
-
-
-    #
-    #   gets/sets
-    #
-
-    def get_version_string(self):
-        """ Returns the version dict as a string. """
-
-        if self.version is None:
-            self.version = {}
-
-        return "%s.%s.%s" % (
-            self.version.get('major', 0),
-            self.version.get('minor', 0),
-            self.version.get('patch', 0),
-        )
-
-
-    def set_latest_version(self):
-        """ Uses self.platform to get the latest release for that platform and
-        set the current self.version to that release's version. """
-
-        # set default
-        self.version = {'major': 0, 'minor': 0, 'patch': 0}
-
-        # try to get latest
-        latest = self.mdb.find_one(
-            {'platform': self.platform},
-            sort=[( 'created_on', pymongo.DESCENDING )]
-        )
-
-        # if latest a.) exists and b.) has a version, use it:
-        if latest is not None and latest.get('version', None) is not None:
-            for bit in ['major', 'minor', 'patch']:
-                self.version[bit] = latest['version'].get(bit, 0)

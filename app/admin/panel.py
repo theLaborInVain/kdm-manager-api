@@ -1,7 +1,6 @@
 """
-    This module contains methods for returning admin panel JSON. Try not to
-    stash anything else here: use the app/admin/__init__.py file for sysadmin
-    type stuff.
+    This module contains methods for returning admin panel JSON and processing
+    request, etc.
 
 """
 
@@ -15,6 +14,10 @@ from bson import json_util
 # local imports
 from app import API, utils
 
+
+
+
+# internal/JSON
 
 
 def get_settlement_data():
@@ -133,3 +136,23 @@ def get_user_data():
 
     # and return it as json
     return json.dumps(output, default=json_util.default)
+
+
+
+
+# web
+
+def get_data(resource=None):
+    """ Retrieves various types of admin panel data. If the requester wants
+        something we don't have, raise a 400. """
+
+    if resource == 'user_data':
+        return get_user_data()
+    elif resource == 'settlement_data':
+        return get_settlement_data()
+
+    raise utils.InvalidUsage(
+        "Resource '%s' does not exist!" % resource,
+        status_code=400
+    )
+

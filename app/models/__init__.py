@@ -161,109 +161,6 @@ def log_event_exception_manager(log_event_call):
 
     return wrapper
 
-#
-#   the StructuredObject class starts here!
-#
-
-class StructuredObject(object):
-    """ The base class for all objects with a data model. """
-
-    def __init__(self, *args, **kwargs):
-        """ Default init for structured objects. """
-
-        self.logger = utils.get_logger()
-
-        self.args = args
-        self.kwargs = kwargs
-
-        # set self._id from kwargs, if possible
-        self._id = self.kwargs.get('_id', None)
-        if self._id is not None:
-            self._id = ObjectId(self._id)
-
-
-    def delete(self):
-        """ Deletes the record from MDB. Returns True. """
-        self.logger.warn('Deleting: %s' % self)
-        return self.mdb.delete_one({'_id': self._id})
-
-
-    def update(self, source=None, verbose=False):
-        """ Use self.data_model to update self attribs. Uses self.kwargs by
-        default: pass in an alternate source to use that instead (source must
-        be a dict). """
-
-        # if source isn't given, default to self.kwargs
-        if source is None:
-            source = getattr(self, 'kwargs', None)
-
-        # first, bomb the request out if we don't have self.data_model
-        if getattr(self, 'data_model', None) is None:
-            err = 'StructuredObject type objects must define self.data_model!'
-            raise ValueError(err)
-        elif not isinstance(self.data_model, dict):
-            err = "self.data_model must be a dict type!"
-            raise TypeError(err)
-
-        # sanity check the data model
-        for key, value_type in self.data_model.items():
-            if not isinstance(value_type, type):
-                err = "StructuredObject.data_model key values must be types!"
-                self.logger.error(self.data_model)
-                raise ValueError(err)
-
-        # sanity check the source
-        if not isinstance(source, dict):
-            err = 'StructuredObject update source must be dict type, not %s!'
-            raise TypeError(err % (type(source)))
-
-        for key, value_type in self.data_model.items():
-            # 1.) set all self.record keys to their attribute equivalents
-            setattr(self, key, source.get(key, None))
-
-            # 2.) now, if they're set, check them against the model
-            if getattr(self, key, None) is not None:
-
-                # 3.) first, check for OIDs in Javascript format
-                if isinstance(getattr(self, key), dict):
-                    if source[key].get('$oid', None) is not None:
-                        setattr(self, key, ObjectId(source[key]['$oid']))
-                    elif source[key].get('$date', None) is not None:
-                        setattr(
-                            self,
-                            key,
-                            datetime.utcfromtimestamp(source[key]['$date']/1000)
-                        )
-
-                # 4.) next, check if the value is the right type and try to
-                #   cast it if it is not
-                if not isinstance(getattr(self, key), value_type):
-                    try:
-                        setattr(self, key, value_type(source[key]))
-                    except TypeError:
-                        err = "Could not cast '%s' value to %s type!"
-                        raise TypeError(err % (source[key], value_type))
-
-        if verbose:
-            self.logger.info('Updated %s' % self)
-
-
-    def save(self, verbose=False):
-        """ updates self.record with the current values of the object's
-        attributes using keys from self.data_model as its guide. """
-
-        if getattr(self, 'mdb', None) is None:
-            err = "StructuredObject instances must define self.mdb!"
-            raise ValueError(err)
-
-        self.record = {'_id': ObjectId(self._id)}
-        for key, value in self.data_model.items():
-            self.record[key] = getattr(self, key, None)
-        self.mdb.save(self.record)
-
-        if verbose:
-            self.logger.info('Saved changes to %s' % self)
-
 
 
 #
@@ -334,7 +231,6 @@ class AssetCollection(object):
         # now, check for a root module and see if we can use that to init
         if hasattr(self, "root_module"):
             self.type = os.path.splitext(self.root_module.__name__)[-1][1:]
-#            self.logger.debug('DEPRECATION WARNING! %s has root_module' % self)
             self.set_assets_from_root_module()
         elif not hasattr(self, 'assets'):
             self.type = self.__module__.split('.')[-1]
@@ -347,7 +243,10 @@ class AssetCollection(object):
 
         # type override - be careful!
         if hasattr(self, "type_override"):
-#            self.logger.debug('DEPRECATION WARNING! %s has type_override' % self)
+
+            warn = 'DEPRECATION WARNING! %s has type_override' % self
+            self.logger.warning(warn)
+
             self.type = self.type_override
             for a in self.assets.keys():
                 if type(self.assets[a]) != dict:
@@ -571,7 +470,7 @@ class AssetCollection(object):
 
             parenthetical = []
 
-            # special extre text for Secret fighting arts
+            # special extra text for Secret fighting arts
             if a_dict.get('sub_type', None) == 'secret_fighting_art':
                 parenthetical.append('Secret')
 
@@ -1042,7 +941,8 @@ class UserAsset(object):
         # 1. set basic UserAsset attributes
         #
 
-        self.logger = utils.get_logger()
+        if not getattr(self, 'logger', False):
+            self.logger = utils.get_logger()
         self.args = args
         self.kwargs = kwargs
         self.set_request_params()
@@ -1137,17 +1037,25 @@ class UserAsset(object):
         self.set_last_accessed(save=True)
 
 
-    def save(self, verbose=True):
-        """ Saves the user asset back to either the 'survivors' or 'settlements'
-        collection in mdb, depending on self.collection. """
+    def save(self, set_modified_on=False, verbose=True):
+        """ Saves the user asset back to its collection in mdb, depending on 
+        self.collection. """
 
         self.set_last_accessed(save=False)
 
-        if self.collection not in ['settlements', 'survivors', 'users']:
+        # sanity check the object
+        if self.collection not in API.config['USER_ASSET_COLLECTIONS']:
             err = "Invalid MDB collection '%s'! Record not saved..."
             raise AttributeError(err % self.collection)
 
-        utils.mdb[self.collection].save(self.get_record())
+        # load the record, set it
+        record = self.get_record(set_modified_on=set_modified_on)
+        if not record.get('_id', False):
+            err = "Cannot save a record with no '_id' attribute! %s"
+            raise utils.InvalidUsage(err % record)
+
+        #  save
+        utils.mdb[self.collection].save(record)
 
         if verbose:
             msg = "Saved %s to mdb.%s successfully!"
@@ -1167,6 +1075,26 @@ class UserAsset(object):
             output = self.synthesize()
 
         return json.dumps(output, default=json_util.default)
+
+
+    def remove(self, delete=False):
+        ''' Basic user asset removal. Probably overwrite this one in the class
+        methods.
+
+        Arming 'delete' drops the record from MDB, so exercise caution.
+        '''
+
+        if delete:
+            output = utils.mdb[self.collection].delete_one(self.get_record())
+            self.logger.critical('Deleted UserAsset from MDB! %s', self)
+            return output.raw_result
+
+        record = self.get_record(set_modified_on=True)
+        record['removed'] = datetime.now()
+        self.save()
+        self.logger.warning('%s has been removed!', self)
+
+        return self.serialize()
 
 
     def json_response(self):
@@ -1369,10 +1297,14 @@ class UserAsset(object):
         return player_list
 
 
-    def get_record(self):
+    def get_record(self, set_modified_on=False):
         ''' Uses self.collection to return self.settlement, self.user or
         self.survivor, depending. '''
         record = getattr(self, self.collection[:-1], None)
+
+        if set_modified_on:
+            record['modified_on'] = datetime.now()
+
         if record is None:
             err = "Could not get record for '%s'" % (self)
             raise ValueError(err)
@@ -1719,7 +1651,7 @@ class UserAsset(object):
 
         # finally, if we had a requester, now that we've settled on a message
         # text, update the requester's latest action with it
-        if 'created_by' is not None:
+        if created_by is not None:
             if flask.request and hasattr(flask.request, 'User'):
                 ua_string = str(ua_parse(flask.request.user_agent.string))
                 flask.request.User.set_latest_action(d['event'], ua_string)
@@ -1787,6 +1719,7 @@ class DataModel(object):
         self.add('removed', datetime, required=False)
 
 
+
     def add(self, name=None, a_type=None, default_value=None, **kwargs):
         ''' Adds an attribute to the model. '''
 
@@ -1840,11 +1773,14 @@ class DataModel(object):
         return output
 
 
-    def apply(self, record):
+    def apply(self, record, force_type=False):
         ''' Applies the data model to 'record', which should be a dict
         representing an instance of this data model.
 
         Returns a corrected version of 'record'.
+
+        Setting 'force_type' to true forces anything we can't coerce to
+        the correct type to assume its default value.
         '''
 
         record = deepcopy(record)
@@ -1859,13 +1795,27 @@ class DataModel(object):
                 record[attr['name']] = attr['default']
 
             # in this loop, check the record itself, based on its attrs
+            keys_to_delete = set()
             if attr['name'] in record.keys():
 
                 # first, check if the attribute is the right type
                 if type(record[attr['name']]) != attr['type']:
-                    warn = "Forcing '%s' attribute to %s type..."
+                    warn = "Coercing '%s' attribute to %s type..."
                     self.logger.warning(warn % (attr['name'], attr['type']))
-                    record[attr['name']] = attr['type'](record[attr['name']])
+                    try:
+                        record[attr['name']] = attr['type'](record[attr['name']])
+                    except TypeError as error:
+                        msg = "Could not coerce '%s' value '%s' to %s type!"
+                        formatted_msg = msg % (
+                            attr['name'], record[attr['name']], attr['type']
+                        )
+                        self.logger.error(formatted_msg)
+                        if force_type:
+                            record[attr['name']] = attr['default']
+                        else:
+                            raise utils.InvalidUsage(
+                                'Unexpected attribute: %s' % formatted_msg
+                            )
 
                 # next, kill HTML and strip
                 if attr['type'] == str:
@@ -1896,6 +1846,15 @@ class DataModel(object):
                         self.logger.warning(warn % (attr['name'], minmax))
                         record[attr['name']] = minmax
 
+                # add to the kill list if it unsets on None 
+                if attr.get('unset_on_none', False):
+                    if record[attr['name']] is None:
+                        keys_to_delete.add(attr['name'])
+
+
+        # process the kill list
+        for key in keys_to_delete:
+            del record[key]
 
         # lastly, delete keys that aren't part of the model
         bogus_keys = []

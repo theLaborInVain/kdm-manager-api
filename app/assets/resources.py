@@ -790,10 +790,9 @@ expansions = {
         'expansion': 'spidicules',
         'type': 'spidicules_resources',
         'name': 'Stomach',
-        'keywords': ['organ'], #KDM_ERROR: doesn't have consumable keyword on card.
-        'desc': '<b class="special-rule">Consume:</b> Archive this card to gain +1 Hunt XP.',
+        'keywords': ['organ'],
+        'desc': '<b>Consume:</b> Archive this card to gain +1 Hunt XP.',
         'copies': 1,
-        'rules_text': '<b class="special-rule">Consume:</b> Archive this card to gain +1 Hunt XP.'
     },
     'thick_web_silk': {
         'expansion': 'spidicules',
@@ -1574,6 +1573,20 @@ expansions = {
             '<b>Beast Kunai</b> pattern cards.'
         ),
         'flavor_text': 'Smells of rust and rot.',
+    },
+
+    # death crown inheritor aya
+    'undying_heart': {
+        'name': 'Undying Heart',
+        'expansion': 'death_crown_inheritor_aya',
+        'type': 'strange_resources',
+        'keywords': ['perfect', 'organ'],
+        'desc': (
+            'When you gain this, gain <span class="kd deck_icon kdm_manager_font" deck="p">XX</span> '
+            '<b>Heartbow</b> and <span class="kd deck_icon kdm_manager_font" deck="p">XX</span> '
+            '<b>Heartstop Arrows</b>.'
+        ),
+        'flavor_text': 'Slowly ticks at regular intervals.',
     },
 
 }

@@ -34,6 +34,21 @@ def get_webapp_alerts():
     )
 
 
+def get_notifications(method=None):
+    """ Creates a new admin asset. Used currently only for webapp alerts. """
+
+    A = Alert()
+    if method == "new":
+        return A.serialize()
+    elif method == "expire":
+        A.expire()
+        return A.serialize()
+    else:
+        return utils.http_501
+
+    return utils.http_501
+
+
 class Alert:
     """ The class definition for a webapp alert, which is basically a document
     in MDB that we do some minimal CRUD type operations on. """

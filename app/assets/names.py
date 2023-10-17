@@ -878,9 +878,11 @@ neuter = [
     "Anri",
     "Ariel",
     "Ash",
+    'Ban',
     "Bishop",
     "Blackthorn",
     "Blake",
+    'Bloodberry',
     "Blue",
     "Bobby",
     "Caelan",
@@ -919,10 +921,12 @@ neuter = [
     "Stark",
     "Storm",
     "Stormy",
+    'Talisman',
     "Toto",
     "Thorne",
     "Winter",
     "Wolf",
+    'Wriel',
 ]
 
 surname = [

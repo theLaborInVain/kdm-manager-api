@@ -396,6 +396,29 @@ expansions_of_death = {
 }
 
 
+gamblers_chest = {
+
+    'arc_survivors': {
+        'pillars': 3,
+        'name': 'Arc Survivors',
+        'released': datetime(2023, 7, 31, 12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': "Advanced KDM"},
+        'flair': {'bgcolor': '41A165'},
+        'always_available': {
+            'location': ['forum'],
+        },
+    },
+
+    'crimson_crocodile': {
+        'name': 'Crimson Crocodile',
+        'release': datetime(2023, 7, 31, 12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': "Quarry"},
+        'quarries': ['crimson_crocodile'],
+    },
+
+}
+
+
 product_lines = {
 
 
@@ -716,6 +739,15 @@ product_lines = {
     },
 
     # death crown inheritor aya - 2023-02-28
+    'death_crown_inheritor_aya': {
+        'name': 'Death Crown Inheritor Aya',
+        'released': datetime(2023,2,28,12, tzinfo=USCENTRAL),
+        'ui': {'pretty_category': 'White Box'},
+        'flair': {
+            'bgcolor': 'C55745',
+            'color': 'FFF'
+        },
+    },
 
     # lunar twilight knight - 2023-02-28
 

@@ -335,6 +335,11 @@ button.admin_panel_edit_release_item_detail {
     padding: 0.2rem 0.5rem 0.2rem 0.2rem; 
     width: auto;
 }
+button.admin_panel_add_feature_button {
+    font-style: italic;
+    padding: 0.3rem 1rem 0.3rem 1rem; 
+    width: auto;
+}
 
 .admin_panel_edit_release_item_bottom_raft {
     display: flex;

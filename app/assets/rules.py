@@ -105,7 +105,11 @@ core = {
     'cumbersome': {
         'name': 'Cumbersome',
         'type': 'special_rule',
-        'desc': """A gear special rule. Survivors must spend both movement and activation to activate Cumbersome gear. Ignore this if the weapon is activated indirectly (Pounce. Charge, etc).""",
+        'desc': (
+            'A gear special rule. Survivors must spend both movement and '
+            'activation to activate Cumbersome gear. Ignore this if the weapon '
+            'is activated indirectly (Pounce. Charge, etc).'
+        ),
     },
     'cursed': {
         'name': 'Cursed',
@@ -471,7 +475,7 @@ expansion = {
             'they have at least 3 courage, they can develop something new.'
             'They may select a novel weapon proficiency that matches their '
             'weapon type, instead of continuing with normal weapon '
-            'proficiency<br/>.'
+            'proficiency.<br/>'
             'When a survivor with a novel proficency reaches mastery, it '
             'becomes an innovation and all survivors gain the benefit of its '
             'specialization rules. A campaign can have both types of weapon '
@@ -572,6 +576,40 @@ expansion = {
             'A gear special rule. On <b>Arrival</b>, place X +1 strength '
             'tokens on this gear. At the end of your act, remove +1 '
             'strength token from this gear.'
+        ),
+    },
+
+    # crimson croc
+    'honed_x': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Honed X',
+        'type': 'special_gear_rule',
+        'desc': (
+            'Honed weapons gain +X strength until they strike something '
+            'hard (Super-Dense or Parry hit locations), ruining their edge. '
+            'Unless something explicitly preserves or restores the edge of a '
+            'honed weapon, it loses its additional strength until it is '
+            'restored at the settlement.'
+        ),
+    },
+    'foresight': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Foresight',
+        'type': 'special_gear_rule',
+        'desc': (
+            'New special gear rule. Survivors have Foresight if there are '
+            'any revleaed AI or HL cards.'
+        )
+    },
+
+    # death crown inheritor aya
+    'campaign_limit_x': {
+        'expansion': 'death_crown_inheritor_aya',
+        'name': 'Campaign Limit X',
+        'type': 'special_gear_rule',
+        'desc': (
+            'A special gear rule. This gear may only be activated X times '
+            'per campaign. Track this on your settlement record sheet. '
         ),
     },
 
