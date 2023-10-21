@@ -13,19 +13,20 @@
 """
 
 # standard lib imports
-from bson import json_util
 from collections import OrderedDict
 import glob
 import importlib
 import json
 import os
 
-# third party imports
+# second party imports
+from bson import json_util
 import flask
 
 # local imports
 from app import API, utils
 from app.models import settlements, survivors, users
+
 
 LOGGER = utils.get_logger()
 
@@ -55,24 +56,22 @@ def new_user_asset(asset_type=None):
     """
 
     if asset_type == "settlement":
-        S = settlements.Settlement()
-        return S.serialize()
-    elif asset_type == "survivor":
-        S = survivors.Survivor()
-        return S.serialize()
-    elif asset_type == "survivors":
+        settlement_obj = settlements.Settlement()
+        return settlement_obj.serialize()
+    if asset_type == "survivor":
+        survivor_object = survivors.Survivor()
+        return survivor_object.serialize()
+    if asset_type == "survivors":
         output = survivors.create_many_survivors(dict(flask.request.get_json()))
         return flask.Response(
             response=json.dumps(output, default=json_util.default),
             status=200,
             mimetype="application/json"
         )
-    else:
-        # unknown user asset types get a 422
-        err = "Creating '%s' type user assets is not supported!" % asset_type
-        return flask.Response(response=err, status=422, mimetype="text/plain")
 
-    return utils.http_400
+    err = "Creating '%s' type user assets is not supported!" % asset_type
+    return flask.Response(response=err, status=422, mimetype="text/plain")
+
 
 
 def get_user_asset(collection=None, asset_id=None):
@@ -85,12 +84,15 @@ def get_user_asset(collection=None, asset_id=None):
 
     if collection == "settlement":
         return settlements.Settlement(_id=asset_id)
-    elif collection == "survivor":
+    if collection == "survivor":
         return survivors.Survivor(_id=asset_id, normalize_on_init=True)
-    elif collection == "user":
+    if collection == "user":
         return users.User(_id=asset_id)
 
-    raise utils.InvalidUsage("Collection '%s' does not exist!" % collection, status_code=422)
+    raise utils.InvalidUsage(
+        "Collection '%s' does not exist!" % collection,
+        status_code=422
+    )
 
 
 
@@ -104,44 +106,54 @@ def get_game_asset(collection_name, return_type=flask.Response):
     method imports an asset type, alls its Assets() method and then returns
     its request_response() method."""
 
-    model = importlib.import_module('app.models.%s' % collection_name)
-    A = model.Assets()
+    game_asset = importlib.import_module('app.assets.%s' % collection_name)
+    asset_object = game_asset.Assets() # initialize a collection object
 
     if return_type == dict:
-        return A.assets
-    elif return_type == object:
-        return A
+        return asset_object.assets
+    if return_type == object:
+        return asset_object
 
-    return A.request_response()
+    return asset_object.request_response()
 
 
-def list_game_assets(game_assets=False):
-    """ Returns a list of all available asset dictionaries. The 'game_assets'
-    kwarg filters this to only return game assets (i.e. to filter out meta and
-    webapp only assets). """
+def list_game_assets():
+    ''' Returns a list of packages from the assets module if the package
+    is a game asset. '''
 
-    asset_dir_abs_path = os.path.join(API.root_path, 'assets')
-    py_files_in_asset_dir = glob.glob(os.path.join(asset_dir_abs_path, '*.py'))
+    # set the path to the assets directory
+    module_abs_path = os.path.join(API.root_path, 'assets/')
 
-    output = [
-        os.path.splitext(os.path.basename(f))[0]
-        for f
-        in py_files_in_asset_dir
-        if os.path.basename(f) != '__init__.py'
+    # get folders (i.e. modules); exclude anything starting with an underscore
+    dir_contents = os.listdir(module_abs_path)
+    packages = [
+        folder for folder in dir_contents if (
+            os.path.isdir(os.path.join(module_abs_path, folder)) and
+            not folder.startswith('_')
+        )
     ]
 
-    if game_assets:
-        for collection_name in output:
-            collectionObject = get_game_asset(collection_name, return_type=object)
-            if not getattr(collectionObject, 'is_game_asset', False):
-                output.remove(collection_name)
+    # initialize each package (as a Collection object) and check it
+    output = []
+    for package in packages:
+        collection_object = get_game_asset(package, return_type=object)
+
+        # ignore non-game assets
+        if getattr(collection_object, 'is_game_asset', False):
+            output.append(package)
 
     return sorted(output)
 
 
 @utils.metered
-def kingdom_death(return_type=None):
-    """ Returns a dictionary of all assets. """
+def kingdom_death():
+    ''' Returns a dictionary of all game assets by using methods in this module.
+
+    The basic workflow is:
+        1. list_game_assets(), which is basically a fancy glob of the assets mod
+        2. For each asset package in the assets module, get_game_asset()
+        3. return it all in an ordered dict.
+    '''
 
     output = OrderedDict()
 

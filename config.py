@@ -21,6 +21,7 @@ class Config():
         'Expansion content',
         'Deprecations',
         'kingdomDeath.css',
+        'Refactor',
         'Version 3',
         'Version 4',
     ]
@@ -58,7 +59,7 @@ class Config():
     ]
     TIMEZONE = pytz.timezone('US/Central')
     USER_ASSET_COLLECTIONS = ['releases', 'settlements', 'survivors', 'users']
-    VERSION = "1.165.987"
+    VERSION = "1.168.1000"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 

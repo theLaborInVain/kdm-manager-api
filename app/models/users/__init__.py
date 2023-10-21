@@ -7,7 +7,7 @@
     rummaging about in utils.
 
     Starting October 2023, the main class method 'User' lives in a different
-    file in this models.users module called '_class_methods.py'
+    file in this models.users module called '_user'
 
 """
 
@@ -40,9 +40,9 @@ from werkzeug.security import (
 
 # local imports
 from app import API, models, utils
-from app.models import user_preferences
 from app.models.settlements import Settlement
-from app.models.users._class_methods import *
+
+from ._user import User
 
 # constants
 

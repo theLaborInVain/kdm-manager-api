@@ -34,7 +34,7 @@ from pymongo import MongoClient
 
 # local imports
 from app import API
-from app.models import versions
+from app.assets import versions
 from app.utils import crossdomain as crossdomain_module
 from app.utils import settings, web
 
@@ -739,10 +739,10 @@ api_meta = {
                 'Copyright © 2016 - %s Adam Poots Games, LLC. All Rights '
                 'Reserved'
             ) % datetime.now().year,
-            'version': versions.Assets().get_asset(
-                API.config['DEFAULT_GAME_VERSION'],
-                exclude_keys=['assets']
-            ),
+            'version': versions.Version(
+                handle=API.config['DEFAULT_GAME_VERSION'],
+                no_assets=True
+            ).serialize(),
         },
         "api": {
             "version": API.config['VERSION'],

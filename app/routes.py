@@ -24,7 +24,7 @@ import jinja2
 
 #   app module imports
 from app import admin, API, assets, docs, utils, world
-from app.models import names, users
+from app.assets import names, users
 from app.utils import crossdomain
 
 

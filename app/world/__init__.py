@@ -39,13 +39,13 @@ from app.admin import notifications
 
     # models
 from app.models import killboard as killboard_model
-from app.models import campaigns as campaigns_models
-from app.models import innovations as innovations_models
-from app.models import monsters as monster_models
-from app.models import principles as principles_mod
-from app.models import expansions as expansions_models
-from app.models import settlements as settlements_models
-from app.models import survivors as survivors_models
+from app.assets import campaigns as campaigns_models
+from app.assets import innovations as innovations_models
+from app.assets import monsters as monster_models
+from app.assets import principles as principles_mod
+from app.assets import expansions as expansions_models
+from app.assets import settlements as settlements_models
+from app.assets import survivors as survivors_models
 
     # assets
 from . import assets as world_assets
