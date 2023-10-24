@@ -58,6 +58,5 @@ class Gear(Asset):
         )
 
     def __init__(self, *args, **kwargs):
-        Asset.__init__(self,  *args, **kwargs)
         self.assets = Assets()
-        self.initialize()
+        Asset.__init__(self,  *args, **kwargs)

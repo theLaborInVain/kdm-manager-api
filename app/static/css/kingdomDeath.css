@@ -175,7 +175,6 @@ hr.three_dee {
 .kd.worksheet_block {
     border: var(--border-worksheet);
     box-sizing: border-box;
-    height: fit-content;  
     margin: 1rem;
     padding: 1rem;
     padding-top: 0.5rem;
@@ -183,6 +182,14 @@ hr.three_dee {
 .kd.worksheet_block.flex {
     display: flex;
 }
+.kd.worksheet_block.flex.wrap_checkboxes {
+    flex-wrap: wrap;
+}
+.kd.worksheet_block.flex.wrap_checkboxes div.kd.worksheet_row {
+    flex-wrap: nowrap;
+    width: auto; 
+}
+
 .kd.worksheet_block.lined > div:not(.worksheet_block_title, .worksheet_block_subtitle) {
     border-bottom: 0.1rem solid #CBCBCB;
     min-height: 3rem;

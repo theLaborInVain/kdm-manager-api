@@ -9,7 +9,6 @@
 """
 
 # standard library imports
-from copy import copy
 from datetime import datetime
 from hashlib import md5
 import io
@@ -19,7 +18,7 @@ import random
 import socket
 import string
 
-# third party imports
+# second-party imports
 from bson import json_util
 from bson.objectid import ObjectId
 from dateutil.tz import tzlocal
@@ -30,15 +29,17 @@ from werkzeug.security import (
 )
 
 # local imports
-from app import API, models, utils
-from app.models.settlements import Settlement
+from app import API, utils
+
+from .._decorators import admin_only, web_method
+from .._data_model import DataModel
+from .._user_asset import UserAsset
 
 
-
-class User(models.UserAsset):
+class User(UserAsset):
     """ This is the main controller for all user objects. """
 
-    DATA_MODEL = models.DataModel('user')
+    DATA_MODEL = DataModel('user')
     DATA_MODEL.add('login', str)
     DATA_MODEL.add('password', str)
     DATA_MODEL.add('preferences', dict)
@@ -61,7 +62,7 @@ class User(models.UserAsset):
 
     def __init__(self, *args, **kwargs):
         self.collection="users"
-        models.UserAsset.__init__(self,  *args, **kwargs)
+        UserAsset.__init__(self,  *args, **kwargs)
 
         # JWT needs this
         self.id = str(self.user["_id"])
@@ -78,9 +79,6 @@ class User(models.UserAsset):
 
         # random initialization methods
         self.set_current_settlement()
-
-        # assets
-        self.Preferences = user_preferences.Assets()
 
         # finally, if it's actually them, record that the user is using the API
         if (
@@ -143,8 +141,8 @@ class User(models.UserAsset):
         return self.user["_id"]
 
 
-    @models.web_method
-    @models.admin_only
+    @web_method
+    @admin_only
     def export(self, return_type=None):
         """ This supercedes everything that happens in the legacy webapp's
         'get_user' CGI and facilitates "cloning" users from one environment
@@ -206,7 +204,7 @@ class User(models.UserAsset):
                     err = "Could not retrieve avatar for survivor %s"
                     self.logger.error(err, s["_id"])
 
-        for key in assets_dict.keys():
+        for key in assets_dict:
             msg = "%s Added %s '%s' assets to user export..."
             self.logger.debug(msg, self, len(assets_dict[key]), key)
 
@@ -268,11 +266,10 @@ class User(models.UserAsset):
 
         output['user']['subscriber'] = self.get_subscriber_attributes()
 
-        output['user']['preferences'] = self.get_preferences()
+        output['user']['preferences'] = self.user['preferences']
 
         # items common to dashboard and admin_panel
         if return_type in ['dashboard']:
-            output["preferences"] = self.get_preferences('dashboard')
             output["dashboard"] = {}
             output["dashboard"]["friends"] = self.get_friends(return_type=list)
             output["dashboard"]["campaigns"] = self.get_settlements(
@@ -313,7 +310,7 @@ class User(models.UserAsset):
 
     # email verification
 
-    @models.web_method
+    @web_method
     def set_verified_email(self, new_value=None, save=True):
         """ Sets the verified email value. Expects a request context, but can
         be called directly. Fails if the authenticated user is not a.) the user
@@ -337,7 +334,7 @@ class User(models.UserAsset):
             self.save()
 
 
-    @models.web_method
+    @web_method
     def send_verification_email(self):
         """ Sets a verification code; sends a verification email."""
 
@@ -383,7 +380,7 @@ class User(models.UserAsset):
     #   set/update/modify methods
     #
 
-    @models.web_method
+    @web_method
     def set_favorite_survivors(self, save=True):
         '''
         Requires a request context. Updates the user's favorite survivors list.
@@ -483,7 +480,7 @@ class User(models.UserAsset):
             self.save(verbose=False)
 
 
-    @models.web_method
+    @web_method
     def set_notifications(self):
         """ Sets a notification handle to datetime.now(). POST the handle value
         'RESET' to reset the list. """
@@ -503,7 +500,7 @@ class User(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_preferences(self):
         """ Expects a request context and will not work without one. Iterates
         thru a list of preference handles and sets them. """
@@ -547,8 +544,8 @@ class User(models.UserAsset):
         return self.user["recovery_code"]
 
 
-    @models.web_method
-    @models.admin_only
+    @web_method
+    @admin_only
     def set_subscriber_level(self, level=None):
         """ Supersedes set_patron_attributes() in the 1.0.0 release. Sets the
         subscriber level, i.e. self.user['subscriber']['level'] value, which, in
@@ -596,7 +593,7 @@ class User(models.UserAsset):
 
 
 
-    @models.web_method
+    @web_method
     def update_password(self, new_password=None):
         """ Changes the user's password. Saves. """
 
@@ -616,7 +613,7 @@ class User(models.UserAsset):
     #   toggle methods
     #
 
-    @models.admin_only
+    @admin_only
     def toggle_admin_status(self, save=True):
         """ Toggles the 'admin' attribute on/off. Use 'kwarg' to save (or not)
         after the toggle is done. """
@@ -634,7 +631,7 @@ class User(models.UserAsset):
     #   Collection Management - manage the user's asset collection
     #
 
-    @models.web_method
+    @web_method
     def set_collection(self):
         """ Expects/requires a request context. Evaluates the incoming request
         and hands off add/rm jobs to private/non-request methods. """
@@ -659,7 +656,7 @@ class User(models.UserAsset):
 
 
 
-    @models.web_method
+    @web_method
     def add_expansion_to_collection(self, handle=None):
         """ Adds an expansion handle to self.user['collection']['expansions']
         list. Logs it.
@@ -681,7 +678,7 @@ class User(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def rm_expansion_from_collection(self, handle=None):
         """ Adds an expansion handle to self.user['collection']['expansions']
         list. Logs it.
@@ -797,55 +794,6 @@ class User(models.UserAsset):
             return utils.get_time_elapsed_since(latest, return_type)
 
         return latest
-
-
-    def get_preference(self, p_key):
-        """ Ported from the legacy app: checks the user's MDB document for the
-        'preference' key and returns its value (which is a bool).
-
-        If the key is NOT present on the user's MDB document, return the default
-        value from utils.settings.cfg. """
-
-        default_value = utils.settings.get("users", p_key)
-
-        if "preferences" not in self.user.keys():
-            return default_value
-
-        if p_key not in self.user["preferences"].keys():
-            return default_value
-
-        return self.user["preferences"][p_key]
-
-
-    def get_preferences(self, return_type=None):
-        """ Not to be confused with self.get_preference(), which gets a bool for
-        a single preference handle, this renders a JSON-ish return meant to be
-        included in the self.serialize() call (and ultimately represented on the
-        application dashboard. """
-
-        if return_type == 'dashboard':
-            groups = set()
-            for p_dict in self.Preferences.get_dicts():
-                groups.add(p_dict['sub_type'])
-
-            output = []
-            for g_name in sorted(groups):
-                g_handle = g_name.lower().replace(" ","_")
-                g_dict = {'name': g_name, 'handle': g_handle, 'items': []}
-                for p_dict in self.Preferences.get_dicts():
-                    if p_dict['sub_type'] == g_name:
-                        election = self.get_preference(p_dict['handle'])
-                        p_dict['value'] = election
-                        g_dict['items'].append(p_dict)
-                output.append(g_dict)
-
-            return output
-
-        output = copy(self.user['preferences'])
-        for p_dict in self.Preferences.get_dicts():
-            if self.user['preferences'].get(p_dict['handle']) is None:
-                output[p_dict['handle']] = p_dict['default']
-        return output
 
 
     def get_settlements(self, qualifier=None, return_type=None):
@@ -1043,7 +991,7 @@ class User(models.UserAsset):
         return survivors
 
 
-    @models.web_method
+    @web_method
     def can_create_settlement(self, raise_on_false=False):
         """ Checks a free user's settlement count versus the limit we define
         in config.py; returns False if they're at their limit.

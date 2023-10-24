@@ -11,6 +11,7 @@
 # standard lib imports
 from copy import copy
 from datetime import datetime
+import importlib
 import json
 
 # second party imports
@@ -42,20 +43,31 @@ class Asset():
 
         # initialize basic vars
         self.handle = handle
+        self.loaded = False
         self.logger = utils.get_logger()
         self.name = name
         self.version = version
 
+        self.load()
+
 
     def __repr__(self):
         """ Custom repr for game asset objects. """
-        return "%s object '%s' (assets.%s['%s'])" % (
-            self.type.title(), self.name, self.type, self.handle
+        return "%s object '%s' (package: %s, handle: '%s')" % (
+            getattr(self, 'type', 'UNDEFINED ASSET TYPE'),
+            getattr(self, 'name', None),
+            self.__module__,
+            getattr(self, 'handle', None)
         )
 
 
-    def initialize(self):
+    def load(self):
         """ Call this method to initialize the object. """
+
+        if self.loaded:
+            warn = '%s game asset object already loaded!'
+            self.logger.info(warn, self.__module__)
+            return
 
         if self.handle is not None:
             self.initialize_from_handle()
@@ -66,40 +78,11 @@ class Asset():
                 "Asset objects must be initialized with 'handle' or 'name' "
                 "kwargs."
             )
-            raise AssetInitError(err)
+            raise AttributeError(err)
         else:
-            raise AssetInitError()
+            raise AttributeError()
 
-
-    def initialize_asset(self, asset_dict):
-        """ Pass this a valid asset dictionary to set the object's attributes
-        with a bunch of exec calls. """
-
-#        if type(asset_dict) != dict:
-        if not isinstance(dict):
-            err = "Assetss may not be initialized with a '%s' type object!"
-            raise AssetInitError(err % type(asset_dict))
-
-        # mandatory attribute sanity check!
-        for required_attr in ['handle', 'name']:
-            if not required_attr in asset_dict.keys():
-                raise AttributeError(
-                    "Asset dictionary has no '%s' attribute! %s" % (
-                        required_attr,
-                        asset_dict
-                    )
-                )
-
-        for k, v in asset_dict.items():
-            if type(v) == str:
-                exec("""self.%s = '%s' """ % (
-                    k,v.replace('"','\\"').replace("'","\\'")
-                    )
-                )
-            elif type(v) == datetime:
-                exec("""self.%s = '%s' """ % (k,v.strftime(utils.ymd)))
-            else:
-                exec("self.%s = %s" % (k,v))
+        self.loaded = True
 
 
     def initialize_from_handle(self):
@@ -115,11 +98,49 @@ class Asset():
             ) % self.handle
             self.logger.error(err, self.handle)
 
-        self.asset_dict = self.assets.get_asset(self.handle)
-        self.initialize_asset(self.asset_dict)
+        # deprecated / legacy support:
+        if hasattr(self, 'assets'):
+            self._legacy_init()
+
+        # otherwise, load from the asset's module
+        asset_package = importlib.import_module(self.__module__)
+        asset_collection_object = asset_package.Assets(
+            assets_version=self.version
+        )
+        self.asset = asset_collection_object.get_asset(self.handle)
+
+        # set some object attributes for laziness
+        self.name = self.asset['name']
+
+
+
+    def _legacy_init(self):
+        """ Pass this a valid asset dictionary to set the object's attributes
+        with a bunch of exec calls. """
+
+        warn = 'DEPRECATION WARNING: %s game asset attrib set explicitly!'
+        self.logger.warning(warn, self.__module__)
+        asset_dict = self.assets.get_asset(self.handle)
+
+        if not isinstance(asset_dict, dict):
+            err = "Assets may not be initialized with a '%s' type object!"
+            raise AssetInitError(err % type(asset_dict))
+
+        # this is hellish and badly needs refactoring/deprecation
+        for k, v in asset_dict.items():
+            if type(v) == str:
+                exec("""self.%s = '%s' """ % (
+                    k,v.replace('"','\\"').replace("'","\\'")
+                    )
+                )
+            elif type(v) == datetime:
+                exec("""self.%s = '%s' """ % (k,v.strftime(utils.ymd)))
+            else:
+#                exec("self.%s = %s" % (k,v))
+                setattr(self, k, v)
 
         if self.name is None:
-            raise AssetInitError(
+            raise AttributeError(
                 "Asset handle '%s' ('%s') could not be initialized! %s " % (
                     self.name,
                     self.handle,
@@ -131,10 +152,15 @@ class Asset():
     def initialize_from_name(self):
         """ If we've got a not-None name, we can initiailze the asset object
         by checking self.assets to see if we can find an asset whose "name"
-        value matches our self.name. """
+        value matches our self.name.
 
+        DEPRECATED: October 2023.
+        """
 
-        # sanity warning
+        warn = 'DEPRECATION WARNING: asset from %s package init from name!'
+        self.logger.warning(warn, self__module__)
+
+        # sanity check 
         if "_" in self.name:
             err = (
                 "Asset name '%s' contains underscores. Names should use "
@@ -144,7 +170,7 @@ class Asset():
 
         lookup_dict = {}
         for asset_handle in self.assets.get_handles():
-            asset_dict = self.assets.get_asset(asset_handle)
+            asset_dict = self.ass1ets.get_asset(asset_handle)
             lookup_dict[asset_dict["name"]] = asset_handle
 
         if self.name in lookup_dict.keys():
@@ -153,7 +179,7 @@ class Asset():
 
         if self.handle is None:
             err = "Asset handle '%s' could not be retrieved!"
-            raise AssetInitError(err, self.handle)
+            raise AttributeError(err, self.handle)
 
 
     def serialize(self, return_type=None):

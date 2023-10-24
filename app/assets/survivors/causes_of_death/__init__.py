@@ -7,7 +7,7 @@
 
 '''
 
-from .._collection import Collection
+from app.assets._collection import Collection
 from .definitions import *
 
 class Assets(Collection):

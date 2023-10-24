@@ -1,15 +1,14 @@
 """
 
-    Macro model management methods, mainly.
+    Milestone story events are basically a settlement sheet pseudo asset.
 
 """
 
-from .._asset import Asset
-from .._collection import Collection
+from app.assets._collection import Collection
+
 from .definitions import *
 
 class Assets(Collection):
 
     def __init__(self, *args, **kwargs):
-        self.is_game_asset = True
         Collection.__init__(self,  *args, **kwargs)

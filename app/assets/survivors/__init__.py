@@ -6,7 +6,6 @@
 
 '''
 
-from .._asset import Asset
 from .._collection import Collection
 from .definitions import *
 

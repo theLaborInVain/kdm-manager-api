@@ -4,19 +4,18 @@
 
 """
 
-from app import models
-from app.assets.survivors import color_schemes
+from app.assets._collection import Collection
+from .definitions import *
 
-class Assets(models.AssetCollection):
+class Assets(Collection):
 
     def __init__(self, *args, **kwargs):
         ''' Basic init followed by a quick loop to set the HTML 'style_string'
         attribute, which is used in the webapp. '''
 
-        self.root_module = color_schemes    # has to be set; unusual path
+        Collection.__init__(self,  *args, **kwargs)
 
-        models.AssetCollection.__init__(self,  *args, **kwargs)
-
+        # tune up the assets a bit
         for asset_dict in self.get_dicts():
             style_string = ""
             for k,v in asset_dict['style'].items():

@@ -29,7 +29,7 @@ import flask
 import werkzeug
 
 # local imports
-from app import API, models, utils
+from app import API, utils
 from app.assets.versions import definitions as versions_definitions
 
 # constants
@@ -44,9 +44,6 @@ class Collection(object):
     """ The base class for game asset objects, i.e. working with the dict assets
     in the assets/ folder.
 
-    Each model in the models/ folder should have a method that subclasses this
-    base class.
-
     Most Asset() objects that use this as their base class will define their own
     self.assets dict, e.g. in their __init__() method. But is not mandatory:
     review the __init__ method of this class carefully before writing custom
@@ -54,14 +51,12 @@ class Collection(object):
 
 
     def __init__(self, assets_version=API.config['DEFAULT_GAME_VERSION']):
-        """ All Assets() models must base-class this guy to get access to the
+        """ All Assets() objects must base-class this guy to get access to the
         full range of AssetCollection methods, i.e. all of the common/ubiquitous
         ones.
 
-        When using the self.mandatory_attributes in the models file, use the
-        self.warn_on_missing_mandatory_attribute to log a warning when the
-        method fires.
-
+        self.mandatory_attributes is deprecated and in the process of being
+        killed off.
         """
 
         self.logger = utils.get_logger()
@@ -171,7 +166,7 @@ class Collection(object):
 
     def enforce_mandatory_attributes(self, warn_on_missing_attr=False):
         """ This method checks each asset in the collection against a dictionary
-        defined in the app/models/whatever.py file for the collection.
+        defined in the app/assets/whatever/__init__.py file for the collection.
 
         These dictionaries are simple and each key has one value, which is also
         teated as the default value:
@@ -211,7 +206,7 @@ class Collection(object):
         warn = "Overriding module for '%s' to '%s'"
         self.logger.warning(warn, self.__module__, self.root_module)
         self.root_module = importlib.import_module(self.root_module.__name__)
-        self.type = os.path.splitext(self.root_module.__name__)[-1]
+        self.type = self.root_module.__name__.split('.')[-1]
         warn = "Type for '%s' assets overriden to '%s'"
         self.logger.warning(warn, self.__module__, self.type)
 
@@ -304,7 +299,7 @@ class Collection(object):
         and it creates a self.assets dictionary by iterating through the module.
 
         If you need to do custom asset initialization, that is a fine and a good
-        thing to do, but do it in the actual models/whatever.py file.
+        thing to do, but do it in the actual massets/whatever/__init__.py file.
 
         Important! Adjusting the self.assets dict before calling this method
         will overwrite any adjustments because this method starts self.assets as

@@ -48,6 +48,8 @@ def public_router(action):
                     {'platform': platform, 'published': True},
                     sort=[( 'published_on', pymongo.DESCENDING )]
                 )
+                if output is None:
+                    return utils.HTTP_404
         else:
             output = []
             for platform in platforms:
@@ -81,6 +83,11 @@ def public_router(action):
             status=200,
             mimetype="application/json"
         )
+
+    print("HERE")
+    print(output)
+    print(flask.request.get_json())
+
 
     # finally, check and see if we're looking for a specific release
     record = utils.mdb.releases.find_one({'_id': ObjectId(action)})

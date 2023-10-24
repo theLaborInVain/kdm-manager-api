@@ -66,9 +66,6 @@ class Monster(Asset):
 
     def __init__(self, *args, **kwargs):
         Asset.__init__(self,  *args, **kwargs)
-
-        self.assets = Assets()
-        self.initialize()
         self.normalize()
 
 
@@ -171,8 +168,3 @@ class Monster(Asset):
         #   throw a utils.Asseterror()
         if self.handle is None:
             raise models.AssetInitError("Asset name '%s' could not be translated to an asset handle!" % self.name)
-
-
-
-
-

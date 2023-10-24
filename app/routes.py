@@ -23,7 +23,7 @@ import jinja2
 
 
 #   app module imports
-from app import admin, API, assets, docs, utils, world
+from app import admin, API, assets, models, docs, utils, world
 from app.assets import names, users
 from app.utils import crossdomain
 
@@ -185,7 +185,7 @@ def admin_get_user(action):
         err = "User record for '%s' not found!" % user_login
         return flask.Response(response=err, status=404)
 
-    user_object = assets.get_user_asset('user', user_record['_id'])
+    user_object = models.get_user_asset('user', user_record['_id'])
 
     if isinstance(user_object, flask.Response):
         return user_object
@@ -257,7 +257,7 @@ def list_game_assets():
     webapp asset modules. """
     return flask.Response(
         response=json.dumps(
-            assets.list_game_assets(game_assets=True),
+            assets.list_game_assets(),
             default=json_util.default
         ),
         status=200,
@@ -291,7 +291,7 @@ def get_random_names(count):
     names_object = names.Assets()
     return flask.Response(
         response=json.dumps(
-            names_object.get_random_names(int(count)),
+            names.get_random_names(int(count)),
             default=json_util.default
         ),
         status=200,
@@ -305,7 +305,7 @@ def get_random_surnames(count):
     names_object = names.Assets()
     return flask.Response(
         response=json.dumps(
-            names_object.get_random_surnames(int(count)),
+            names.get_random_surnames(int(count)),
             default=json_util.default
         ),
         status=200,
@@ -506,7 +506,7 @@ def collection_action(collection, action, asset_id):
     flask.request.User = users.token_to_object(flask.request, strict=False)
 
     # get the asset
-    asset_object = assets.get_user_asset(collection, asset_id)
+    asset_object = models.get_user_asset(collection, asset_id)
 
     # now see if the user has permission to access the asset; bomb them out
     #   if they're attempting something they don't have permission to do

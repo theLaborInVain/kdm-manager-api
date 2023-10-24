@@ -1,10 +1,7 @@
 """
 
-    Weapon proficiency 'asset' definitions live here.
-
-    A weapon proficiency is added to a survivor record as the
-    'weapon_proficiency_type' attribute. Using the handle stored as that attrib
-    gets you back to these definitions.
+    These define the linkages back to mastery A&Is that the survivors get when
+    the settlement gets the innovation.
 
 """
 

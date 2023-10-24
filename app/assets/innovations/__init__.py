@@ -15,13 +15,11 @@
 
 """
 
-
-from app.assets import abilities_and_impairments
-
 from .._asset import Asset
 from .._collection import Collection
 from .definitions import *
 
+from app.assets.weapon_masteries.definitions import *
 
 class Assets(Collection):
 
@@ -29,12 +27,11 @@ class Assets(Collection):
         Collection.__init__(self,  *args, **kwargs)
 
         # manual addition of weapon masteries
-        for m in abilities_and_impairments.weapon_mastery.keys():
-            wm = abilities_and_impairments.weapon_mastery[m]
-            wm["handle"] = m
-            wm["type"] = "weapon_mastery"
-            self.assets[m] = wm
-
+#        for m in abilities_and_impairments.weapon_mastery.keys():
+#            wm = abilities_and_impairments.weapon_mastery[m]
+#            wm["handle"] = m
+#            wm["type"] = "weapon_mastery"
+#            self.assets[m] = wm
 
 
 class Innovation(Asset):
@@ -44,5 +41,3 @@ class Innovation(Asset):
         Asset.__init__(self,  *args, **kwargs)
         self.assets = Assets()
         self.initialize()
-
-

@@ -31,72 +31,6 @@ from app.models import settlements, survivors, users
 LOGGER = utils.get_logger()
 
 #
-#	Methods for creating and working with user assets, e.g. survivors,
-#		settlements, etc.
-#
-
-def new_user_asset(asset_type=None):
-    """ Hands off a new asset creation request and returns the result of the
-    request. Like all brokerage methods, this method always returns an HTTP
-    response.
-
-    The idea is to call this in request-processing workflow when you know that
-    you've got an asset creation request.
-
-    This brokerage method expects a few things:
-
-        1.) you've added a logger to the request
-        2.) you've also added a models.users.User object to the request
-        3.) you're passing in JSON params that can be processed when
-            fulfilling your request
-
-    If you are NOT doing all of that, do NOT pass off a request to this method,
-    unless you want to throw a 500 back at the user.
-
-    """
-
-    if asset_type == "settlement":
-        settlement_obj = settlements.Settlement()
-        return settlement_obj.serialize()
-    if asset_type == "survivor":
-        survivor_object = survivors.Survivor()
-        return survivor_object.serialize()
-    if asset_type == "survivors":
-        output = survivors.create_many_survivors(dict(flask.request.get_json()))
-        return flask.Response(
-            response=json.dumps(output, default=json_util.default),
-            status=200,
-            mimetype="application/json"
-        )
-
-    err = "Creating '%s' type user assets is not supported!" % asset_type
-    return flask.Response(response=err, status=422, mimetype="text/plain")
-
-
-
-def get_user_asset(collection=None, asset_id=None):
-    """ Tries to initialize a user asset from one of our three user asset
-    collections. If any of these fail, they should raise the appropriate
-    exception back up (to the user).
-
-    Raises an exception if we get a bogus/bad collection name.
-    """
-
-    if collection == "settlement":
-        return settlements.Settlement(_id=asset_id)
-    if collection == "survivor":
-        return survivors.Survivor(_id=asset_id, normalize_on_init=True)
-    if collection == "user":
-        return users.User(_id=asset_id)
-
-    raise utils.InvalidUsage(
-        "Collection '%s' does not exist!" % collection,
-        status_code=422
-    )
-
-
-
-#
 #       Methods for working with game assets, e.g. retrieving/dumping an asset
 #           collection, a specific game asset, etc.
 #
@@ -107,7 +41,10 @@ def get_game_asset(collection_name, return_type=flask.Response):
     its request_response() method."""
 
     game_asset = importlib.import_module('app.assets.%s' % collection_name)
-    asset_object = game_asset.Assets() # initialize a collection object
+    try:
+        asset_object = game_asset.Assets() # initialize a collection object
+    except AttributeError as error:
+        return None    # if it doesn't have an Assets() method, keep going
 
     if return_type == dict:
         return asset_object.assets
@@ -138,8 +75,11 @@ def list_game_assets():
     for package in packages:
         collection_object = get_game_asset(package, return_type=object)
 
-        # ignore non-game assets
-        if getattr(collection_object, 'is_game_asset', False):
+        # ignore non-game assets or ones that aren't collections
+        if (
+            collection_object is not None and
+            getattr(collection_object, 'is_game_asset', False)
+        ):
             output.append(package)
 
     return sorted(output)
@@ -160,7 +100,10 @@ def kingdom_death():
     all_assets = list_game_assets()
     for asset_collection in all_assets:
         asset_object = get_game_asset(asset_collection, return_type=object)
-        if getattr(asset_object, 'is_game_asset', False):
+        if (
+            asset_object is not None and
+            getattr(asset_object, 'is_game_asset', False)
+        ):
             output[asset_collection] = asset_object.get_sorted_assets()
 
     return json.dumps(output, default=json_util.default)

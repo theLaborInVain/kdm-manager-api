@@ -31,11 +31,9 @@ class Assets(Collection):
 class Resource(Asset):
 
     def __init__(self, *args, **kwargs):
-        Asset.__init__(self,  *args, **kwargs)
         self.assets = Assets()
-        self.initialize()
-
         self.consumable_keywords = ['fish','consumable','flower']
+        Asset.__init__(self,  *args, **kwargs)
 
     def is_consumable(self):
         """ Returns a Boolean representing whether the resource is consumable

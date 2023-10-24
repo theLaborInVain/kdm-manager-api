@@ -9,7 +9,8 @@
 
 from .._collection import Collection
 
-from .. import campaigns, expansions, macros
+from app.assets import campaigns, expansions
+from app.assets.settlements import macros
 
 class Assets(Collection):
     """ The "asset collection" that we expose at /game_asset/settlements is

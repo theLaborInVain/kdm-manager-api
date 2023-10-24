@@ -4,7 +4,7 @@
 
     The class definition for the survivor object is defined here.
 
-    It takes the models.UserAsset base class.
+    It takes the UserAsset base class (from _user_asset.py).
 
 """
 
@@ -29,19 +29,21 @@ from bson.objectid import ObjectId
 import gridfs
 
 # local imports
-from app import API, models, utils
+from app import utils
 
-# this is dodgy; needs a refactor
-#from app.models.survivors import color_schemes, special_attributes
+from .._user_asset import UserAsset
+from .._data_model import DataModel
+from .._decorators import deprecated, web_method, paywall
 
-from app.assets.survivors import special_attributes
+import app.assets.kingdom_death as KingdomDeath
 
-class Survivor(models.UserAsset):
+
+class Survivor(UserAsset):
     """ This is the class object for survivor objects. It sub-classes the
-    models.UserAsset (e.g. just like settlements) and tries to fallback and/or
+    UserAsset (e.g. just like settlements) and tries to fallback and/or
     super() back to that base class when possible. """
 
-    DATA_MODEL = models.DataModel('settlement')
+    DATA_MODEL = DataModel('settlement')
 
     # admin
     DATA_MODEL.add(
@@ -164,7 +166,7 @@ class Survivor(models.UserAsset):
         DATA_MODEL.add(flag, bool, required=False, category='flag')
 
     # special attributes
-    for sa_key in special_attributes.Assets().assets.keys():
+    for sa_key in KingdomDeath.special_attributes.Assets().assets.keys():
         DATA_MODEL.add(
             sa_key, bool, required=False, category='special_attributes'
         )
@@ -204,18 +206,20 @@ class Survivor(models.UserAsset):
 
 
         # initialize AssetCollections for later
-        self.AbilitiesAndImpairments = abilities_and_impairments.Assets()
-        self.CursedItems = cursed_items.Assets()
-        self.Disorders = disorders.Assets()
-        self.FightingArts = fighting_arts.Assets()
-        self.Names = names.Assets()
-        self.Saviors = saviors.Assets()
-        self.ColorSchemes = color_schemes.Assets()
-        self.SpecialAttributes = special_attributes.Assets()
-        self.WeaponProficiency = weapon_proficiency.Assets()
+        self.AbilitiesAndImpairments = KingdomDeath.abilities_and_impairments.Assets()
+        self.CursedItems = KingdomDeath.cursed_items.Assets()
+        self.Disorders = KingdomDeath.disorders.Assets()
+        self.FightingArts = KingdomDeath.fighting_arts.Assets()
+        self.Names = KingdomDeath.names.Assets()
+        self.Saviors = KingdomDeath.saviors.Assets()
+
+        # survivor sheet pseudo assets
+        self.ColorSchemes = KingdomDeath.color_schemes.Assets()
+        self.SpecialAttributes = KingdomDeath.special_attributes.Assets()
+        self.WeaponProficiency = KingdomDeath.weapon_proficiency.Assets()
 
         # if we're doing a new survivor, it will happen when we subclass the
-        #   models.UserAsset class; otherwise, the base class method will call
+        #   UserAsset class; otherwise, the base class method will call
         #   self.load():
         super().__init__(*args, **kwargs)
 
@@ -239,7 +243,7 @@ class Survivor(models.UserAsset):
     def new(self):
         """ Creates a new survivor.
 
-        Leverages the models.DataModel() object to create a "blank" or default
+        Leverages the DataModel() object to create a "blank" or default
         survivor sheet, and then uses the incoming 'new_asset_attribs' kwarg
         or the post params (as a fallback) to populate user-supplied values.
 
@@ -602,7 +606,7 @@ class Survivor(models.UserAsset):
         return output
 
 
-    @models.web_method
+    @web_method
     def remove(self):
         """ Marks the survivor removed."""
         self.survivor['removed'] = datetime.now()
@@ -647,7 +651,7 @@ class Survivor(models.UserAsset):
     #   update/set methods
     #
 
-    @models.web_method
+    @web_method
     def add_cursed_item(self, handle=None):
         """ Adds a cursed item to a survivor. Does a bit of biz logic, based on
         the asset dict for the item.
@@ -689,7 +693,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def rm_cursed_item(self, handle=None):
         """ Removes cursed items from the survivor, to include any A&Is that go
         along with that cursed item. Does NOT remove any A&Is that are caused by
@@ -744,7 +748,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def add_favorite(self, user_email=None):
         """Adds the value of the incoming 'user_email' kwarg to the survivor's
         'favorite' attribute (which is a list of users who have favorited the
@@ -773,7 +777,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def rm_favorite(self, user_email=None):
         """Removes the value of the incoming 'user_email' kwarg from the
         survivor's 'favorite' attribute (which is a list of users who have
@@ -802,7 +806,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def add_game_asset(self, asset_class=None, asset_handle=None,
                        apply_related=True, save=True, log_event=True):
 
@@ -970,7 +974,7 @@ class Survivor(models.UserAsset):
 
 
         #   2.) initialize/import the AssetModule and an AssetCollection object
-        AssetModule = importlib.import_module('app.models.%s' % asset_class)
+        AssetModule = importlib.import_module('app.assets.%s' % asset_class)
         A = AssetModule.Assets()
 
 
@@ -1014,7 +1018,7 @@ class Survivor(models.UserAsset):
         return asset_class, asset_dict
 
 
-    @models.web_method
+    @web_method
     def set_affinities(self):
         """ New in API release >= 1.50.n. Uses request context params to set
         the survivor's affinity values. All keys are required:
@@ -1044,7 +1048,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_avatar(self, avatar=None, log_event=True, save=True):
         """ Expects a request context. This port of a legacy app method adds an
         incoming avatar to the GridFS and sets the self.survivor['avatar'] key
@@ -1146,7 +1150,7 @@ class Survivor(models.UserAsset):
         )
 
 
-    @models.web_method
+    @web_method
     def set_fighting_art_level(self, save=True):
         ''' Web-only method for setting a Fighting Art 'levels' list.
 
@@ -1202,8 +1206,8 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-    @models.web_method
-    @models.paywall
+    @web_method
+    @paywall
     def set_color_scheme(self):
         ''' Web-only method that processes a request to update the survivor's
         color_scheme attribute. '''
@@ -1249,7 +1253,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_gear_grid(self):
         """ Updates the survivor's 'gear_grid' attribute, which is a dictionary
         of grid locations:
@@ -1287,7 +1291,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_many_game_assets(self):
         """ Much like the set_many_attributes() route/method, this one WILL ONLY
         WORK WITH A REQUEST object present.
@@ -1340,7 +1344,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_weak_spot(self):
         ''' Sets the survivor's 'weak_spot' attribute to be a string. The string
         is a location value, e.g. 'head', 'arms', etc. '''
@@ -1365,7 +1369,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def replace_game_assets(self):
         """ Much like set_many_game_assets(), this route facilitates The Watcher
         UI/UX and SHOULD ONLY BE USED WITH A REQUEST OBJECT since it pulls all
@@ -1426,7 +1430,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def rm_game_asset(self, asset_class=None, asset_handle=None, rm_related=True, save=True):
         """ The inverse of the add_game_asset() method, this one most all the
         same stuff, except it does it in reverse order:
@@ -1493,7 +1497,7 @@ class Survivor(models.UserAsset):
     #   survivor notes!
     #
 
-    @models.web_method
+    @web_method
     def add_note(self):
         """ Adds a Survivor note to the mdb."""
 
@@ -1539,7 +1543,7 @@ class Survivor(models.UserAsset):
         )
 
 
-    @models.web_method
+    @web_method
     def update_note(self):
         """ Updates a survivor note: we only allow certain attributes to be
         updated and don't use a data model. All of the business logic and rules
@@ -1564,7 +1568,7 @@ class Survivor(models.UserAsset):
         )
 
 
-    @models.web_method
+    @web_method
     def rm_note(self):
         """ Removes a Survivor note from the MDB. Expects a request context. """
 
@@ -1580,7 +1584,7 @@ class Survivor(models.UserAsset):
     #   update methods!
     #
 
-    @models.deprecated
+    @deprecated
     def update_affinities(self, aff_dict={}, operation="add"):
         """ Set the kwarg 'operation' to either 'add' or 'rm' in order to
         do that operation on self.survivor["affinities"], which looks like this:
@@ -1622,7 +1626,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def update_attribute(self, attribute=None, modifier=None, save=True):
         """ Adds 'modifier' value to self.survivor value for 'attribute'. """
 
@@ -1687,7 +1691,7 @@ class Survivor(models.UserAsset):
     #   toggles and flags!
     #
 
-    @models.web_method
+    @web_method
     def toggle_damage(self):
         """ toggles survivor damage boxes on/off. Requires a request context. """
 
@@ -1716,7 +1720,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def toggle_fighting_arts_level(self):
         """ Toggles a fighting arts level on or off, e.g. by adding it to or
         removing it from the array for a particular FA's handle.
@@ -1769,7 +1773,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def toggle_sotf_reroll(self):
         """ toggles the survivor's Survival of the Fittest once-in-a-lifetime
         reroll on or off. This is self.survivor["sotf_reroll"] and it's a bool
@@ -1802,7 +1806,7 @@ class Survivor(models.UserAsset):
     #   special game controls
     #
 
-    @models.web_method
+    @web_method
     def controls_of_death(self):
         """ Manage all aspects of the survivor's death here. This is tied to a
         a number of settlement methods/values, so be cautious with this one. """
@@ -1956,7 +1960,7 @@ class Survivor(models.UserAsset):
     #   set methods!
     #
 
-    @models.web_method
+    @web_method
     def set_abilities_and_impairments(self, save=True):
         ''' A web-only method that allows the survivor's
         'abilities_and_impairments' list to be set, automatically handling add
@@ -1991,7 +1995,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-    @models.web_method
+    @web_method
     def set_attribute(self, attrib=None, value=None, save=True):
         """ Adds 'modifier' value to self.survivor value for 'attribute'. If the
         'attrib' kwarg is None, the function assumes that this is part of a call
@@ -2051,7 +2055,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-    @models.web_method
+    @web_method
     def set_many_attributes(self):
         """ This basically reads a list of attributes to update and then updates
         them in the order they appear. """
@@ -2138,7 +2142,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_attribute_detail(self, attrib=None, detail=None, value=False, save=True):
         """ Use to update the 'attribute_detail' dictionary for the survivor.
         If this is called without an 'attrib' value, it will assume that it is
@@ -2179,7 +2183,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-    @models.web_method
+    @web_method
     def set_bleeding_tokens(self, value=None, save=True):
         """ Sets self.survivor['bleeding_tokens'] to 'value', respecting the
         survivor's max and refusing to go below zero. """
@@ -2211,7 +2215,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-    @models.web_method
+    @web_method
     def set_constellation(self, constellation=None, unset=None):
         """ Sets or unsets the survivor's self.survivor["constellation"]. """
 
@@ -2290,7 +2294,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_email(self, new_email=None):
         """ Validates an incoming email address and attempts to set it as the
         survivor's new email. It has to a.) be different, b.) look like an email
@@ -2331,7 +2335,7 @@ class Survivor(models.UserAsset):
         return utils.http_200
 
 
-    @models.web_method
+    @web_method
     def set_name(self, new_name=None, update_survival=True, save=True):
         """ Sets the survivor's name. Logs it. """
 
@@ -2379,7 +2383,7 @@ class Survivor(models.UserAsset):
             )
 
 
-    @models.web_method
+    @web_method
     def set_parent(self, role=None, oid=None):
         """ Sets the survivor's 'mother' or 'father' attribute. """
 
@@ -2421,7 +2425,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_partner(self, partner_oid=None, update_partner=True):
         """ Request context optional. Sets (or unsets) the survivor's partner. """
 
@@ -2475,7 +2479,7 @@ class Survivor(models.UserAsset):
             P.set_partner(partner_oid=self.survivor['_id'], update_partner=False)
 
 
-    @models.web_method
+    @web_method
     def set_retired(self, retired=None):
         """ Set to true or false. Backs off to request params is 'retired' kwarg
         is None. Does a little user-friendliness/sanity-checking."""
@@ -2517,7 +2521,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_savior_status(self, color=None, unset=False):
         """ Makes the survivor a savior or removes all savior A&Is. """
 
@@ -2586,7 +2590,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_sex(self, sex=None):
         """ Sets self.survivor["sex"] attribute. Can only be 'M' or 'F'.
 
@@ -2624,7 +2628,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_special_attribute(self):
         """ Sets an arbitrary attribute handle on the survivor. Saves. Expects a
         request context. """
@@ -2652,7 +2656,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_status_flag(self, flag=None, unset=False):
         """ Sets or unsets a status flag, regardless of previous status of that
         flag.
@@ -2698,7 +2702,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_survival(self, value=None, save=True):
         """ Sets survivor["survival"] to 'value'. Respects settlement rules
         about whether to enforce the Survival Limit. Will not go below zero. """
@@ -2748,7 +2752,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-    @models.web_method
+    @web_method
     def set_sword_oath(self):
         """ From the Echoes of Death 3 expansion; 'sword_oath' is a dict that we
         save on the survivor, similar to a special campaign attrib. """
@@ -2781,7 +2785,7 @@ class Survivor(models.UserAsset):
         self.save()
 
 
-    @models.web_method
+    @web_method
     def set_weapon_proficiency_type(self, handle=None, save=True):
         """ Sets the self.survivor["weapon_proficiency_type"] string to a
         handle. """
@@ -2861,7 +2865,7 @@ class Survivor(models.UserAsset):
     #   defaults and resets
     #
 
-    @models.web_method
+    @web_method
     def default_attribute(self, attrib=None, save=True):
         ''' Sets 'attrib' to its default value (as defined in the Survivor
         class data model. '''
@@ -2891,7 +2895,7 @@ class Survivor(models.UserAsset):
             self.save()
 
 
-    @models.web_method
+    @web_method
     def reset_attribute_details(self, save=True):
         """ Zero-out all attribute_detail values and will overwrite with
         extreme prejudice. """
@@ -2930,7 +2934,7 @@ class Survivor(models.UserAsset):
 
 
 
-    @models.web_method
+    @web_method
     def reset_damage(self, save=True):
         """ Remove all damage attribs/bools from the survivor. """
 

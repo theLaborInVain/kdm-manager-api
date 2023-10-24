@@ -16,20 +16,22 @@ import flask
 import pymongo
 
 # KDM API imports
-from app import models, utils
+from app import utils
 
+from .._data_model import DataModel
+from .._user_asset import UserAsset
 
-class ChangeLog(models.UserAsset):
+class ChangeLog(UserAsset):
     ''' This is the class definition for a 'ChangeLog' which is a kind of user
     object where the administrator is the user who creates the asset. '''
 
-    DATA_MODEL = models.DataModel('release')
+    DATA_MODEL = DataModel('release')
     DATA_MODEL.add('items', list, required=True)
     DATA_MODEL.add('platform', str, required=True)
     DATA_MODEL.add('published', bool, required=False, default=False)
     DATA_MODEL.add('published_on', datetime, required=False, unset_on_none=True)
     DATA_MODEL.add('sections', list, required=True)
-    DATA_MODEL.add('summary', str)
+    DATA_MODEL.add('summary', str, trusted_html=True)
     DATA_MODEL.add('version', dict)
 
     def __repr__(self):
@@ -45,7 +47,7 @@ class ChangeLog(models.UserAsset):
         # overwrite the default logger since this is an admin model
         self.logger = utils.get_logger(log_name='admin')
         self.collection='releases'
-        models.UserAsset.__init__(self, *args, **kwargs)
+        UserAsset.__init__(self, *args, **kwargs)
 
 
     def new(self, params=None):

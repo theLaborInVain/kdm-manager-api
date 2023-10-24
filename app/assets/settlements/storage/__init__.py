@@ -6,8 +6,14 @@
 
 """
 
-from .._asset import Asset
-from .._collection import Collection
+from app import API
+
+from app.assets._asset import Asset
+from app.assets._collection import Collection
+
+from app.assets import gear as KingdomDeathGear
+from app.assets import resources as KingdomDeathResources
+
 from .definitions import *
 
 class Assets(Collection):
@@ -23,12 +29,11 @@ class Storage(Asset):
 
 
     def __init__(self, *args, **kwargs):
-        Asset.__init__(self,  *args, **kwargs)
         # initialize the AssetCollection at an arbitrary version, defaulting to
-        #   whatever the current/HEAD version of the game is
+        #   whatever the current/HEAD version of the game is; theory being, 
         self.version = kwargs.get('version', API.config['DEFAULT_GAME_VERSION'])
         self.assets = Assets(self.version)
-        self.initialize()
+        Asset.__init__(self,  *args, **kwargs)
 
 
     def get_collection(self):
@@ -36,9 +41,9 @@ class Storage(Asset):
         location. """
 
         if self.sub_type == 'gear':
-            A = models.gear.Assets(self.version)
+            asset_collection = KingdomDeathGear.Assets(self.version)
         elif self.sub_type == 'resources':
-            A = models.resources.Assets(self.version)
+            asset_collection = KingdomDeathResources.Assets(self.version)
         else:
             self.logger.error(self.asset_dict)
             err_msg = "'%s' is not a valid 'sub_type' for storage asset: %s" % (
@@ -47,4 +52,4 @@ class Storage(Asset):
             )
             raise ValueError(err_msg)
 
-        return A.get_assets_by_sub_type(self.handle)
+        return asset_collection.get_assets_by_sub_type(self.handle)
