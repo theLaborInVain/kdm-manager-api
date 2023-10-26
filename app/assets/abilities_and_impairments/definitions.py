@@ -5,6 +5,7 @@
 
 '''
 
+from .gamblers_chest import *
 
 ability = {
     'ageless': {

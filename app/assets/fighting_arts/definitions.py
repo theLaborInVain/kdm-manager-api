@@ -94,13 +94,20 @@ fighting_art = {
         'name': 'Tough'
     },
     'tumble': {
-        'desc': "When something would <b>collide</b> with you, roll 1d10. On a result of 6+, you successfully tumble out of harm's way. Instead, place your survivor standing on the closest free space outside of the collision path.",
+        'desc': (
+            "When something would <b>collide</b> with you, roll 1d10. On a "
+            "result of 6+, you successfully tumble out of harm's way. Instead, "
+            "place your survivor standing on the closest free space outside of "
+            "the collision path."
+        ),
         'name': 'Tumble'
     },
     'unconscious_fighter': {
         'desc': 'It takes 7 bleeding tokens to kill you.',
         'name': 'Unconscious Fighter',
-        'max_bleeding_tokens': 7,
+        '_set_attributes': {
+            'max_bleeding_tokens': 7,
+        },
     },
 
 

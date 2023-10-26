@@ -16,9 +16,6 @@
    bogus 'locations'. The 'Strange Resources' and 'Vermin' type of items belong
    to these locations.
 
-    DO NOT FORGET to also add locations to storage.py if they should appear as
-    categories in settlement storage.
-
 """
 
 
@@ -81,6 +78,14 @@ resources = {
         "name": "Dragon King Resources",
         "expansion": "dragon_king",
         "color": "DCD900",
+        "selectable": False,
+    },
+
+    # gambler's chest
+    "crimson_crocodile_resources":{
+        "name": "Crimson Crocodile Resources",
+        "expansion": "crimson_crocodile",
+        "color": "F90E1D",
         "selectable": False,
     },
 }
@@ -460,7 +465,7 @@ location = {
     },
 
 
-    # crimson croc
+    # gambler's chest
     'crimson_crockery': {
         'tyoe': 'gear',
         'name': 'Crimson Crockery',

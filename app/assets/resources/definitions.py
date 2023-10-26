@@ -10,6 +10,8 @@
 
 """
 
+from .crimson_crocodile import *
+
 core_resources = {
 
     # basic resources

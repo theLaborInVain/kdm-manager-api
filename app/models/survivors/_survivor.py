@@ -98,7 +98,7 @@ class Survivor(UserAsset):
     DATA_MODEL.add('born_in_ly', int)
     DATA_MODEL.add("bleeding_tokens", int)
     DATA_MODEL.add('color_scheme', str, required=False)
-    DATA_MODEL.add("max_bleeding_tokens", int, 5, absolute=True)
+    DATA_MODEL.add("max_bleeding_tokens", int, 5)
 
     # flags
     DATA_MODEL.add('departing', bool)
@@ -494,6 +494,7 @@ class Survivor(UserAsset):
         logic and/or game rules on a survivor BEFORE saving it back to mdb.'''
 
         # only call validation methods here!
+        self.__validate_max_bleeding_tokens()
         self.__validate_weapon_proficiency_type()
 
         super().save()
@@ -833,6 +834,8 @@ class Survivor(UserAsset):
                 self.survivor dict get a call to self.update_attribute, i.e. to
                 add them to whatever the survivor's existing attribute happens
                 to be.
+            3.5.) if the '_set_attributes' key comes over, we iterate it and do
+                whatever it says.
             4.) if the asset dict has an 'epithet' key, the value of that key
                 (which should always be an epithet handle) will be added to the
                 survivor.
@@ -887,6 +890,16 @@ class Survivor(UserAsset):
                     self.set_attribute(asset_k, asset_v, save=False)
                 else:
                     self.update_attribute(asset_k, asset_v, save=False)
+
+        # 3.5 ATTRIBS - custom flags
+        if asset_dict.get('_set_attributes', False):
+            for attribute in asset_dict['_set_attributes']:
+                self.set_attribute(
+                    attribute,
+                    asset_dict['_set_attributes'][attribute],
+                    save = False
+                )
+
 
         # RETIRED mostly this is for the 'Fear of the Dark' disorder, TBH
         if 'retire' in asset_dict.keys():
@@ -1107,7 +1120,7 @@ class Survivor(UserAsset):
         resize_tuple = tuple(
             [int(n) for n in API.config['AVATAR_DIMENSIONS']]
         )
-        im.thumbnail(resize_tuple, Image.ANTIALIAS)
+        im.thumbnail(resize_tuple, Image.LANCZOS)
         im.save(processed_image, format="PNG")
 
         # now that we're sure we've got a valid avatar to work with, spin up
@@ -1448,7 +1461,11 @@ class Survivor(UserAsset):
 
         # 1.) fail gracefully if this is a bogus request
         if asset_dict["handle"] not in self.survivor[asset_class]:
-            self.logger.warning("%s Attempt to remove non-existent key '%s' from '%s'. Ignoring..." % (self, asset_dict["handle"], asset_class))
+            warn = (
+                "%s Ignoring attempt to remove non-existent key '%s' from "
+                "'self.survivor.%s' "
+            )
+            self.logger.warning(warn, self, asset_dict["handle"], asset_class)
             return False
 
         # 2.) STATUS - unset status flags if they're in the dict
@@ -1468,6 +1485,11 @@ class Survivor(UserAsset):
                     self.default_attribute(asset_k, save=False)
                 else:
                     self.update_attribute(asset_k, asset_v, save=False)
+
+        # 3.5 ATTRIBS - custom
+        if asset_dict.get('_set_attributes', False):
+            for attribute in asset_dict['_set_attributes']:
+                self.default_attribute(attrib=attribute, save=False)
 
         # RETIRED mostly this is for the 'Fear of the Dark' disorder, TBH
         if 'retire' in asset_dict.keys():
@@ -2847,6 +2869,12 @@ class Survivor(UserAsset):
     #   validation methods, i.e. business- and game-logic enforcement
     #       IMPORTANT! These never save(), because they get called during save()
     #
+
+    def __validate_max_bleeding_tokens(self):
+        ''' Makes sure we never go below one. '''
+        if self.survivor.get('max_bleeding_tokens', 1) < 1:
+            self.set_attribute(attrib='max_bleeding_tokens', value=1)
+
 
     def __validate_weapon_proficiency_type(self):
         ''' Makes sure that if our survivor qualifies for a specialization or

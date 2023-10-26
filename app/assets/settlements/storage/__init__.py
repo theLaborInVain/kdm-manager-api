@@ -1,8 +1,10 @@
 """
 
-    Methods for working with individual Storage objects inclue the private one
-    defined here, i.e. get_collection(), which allows you to use an initialized
-    Storage "location" to get a list of all items that live at that location.
+    Storage is a pseudo asset that basically allows us to build settlement
+    storage views programmatically without junking up the locations package.
+
+    There is no definitions.py in this package because it takes its definitions
+    from the assets.locations package.
 
 """
 
@@ -14,7 +16,7 @@ from app.assets._collection import Collection
 from app.assets import gear as KingdomDeathGear
 from app.assets import resources as KingdomDeathResources
 
-from .definitions import *
+from app.assets.locations import gear, resources
 
 class Assets(Collection):
 
