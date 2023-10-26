@@ -9,38 +9,23 @@
 """
 
 # standard lib imports
-from bson import json_util
-from bson.objectid import ObjectId
 from collections import OrderedDict
-from copy import copy, deepcopy
-from datetime import datetime, timedelta
-import functools
+from copy import copy
+from datetime import datetime
 import importlib
 import inspect
 import json
-import os
-from user_agents import parse as ua_parse
-import random
-import types
-import sys
 
-# third party imports
+# second-party imports
+from bson import json_util
 import flask
-import werkzeug
 
-# local imports
+# KDM API imports
 from app import API, utils
 from app.assets.versions import definitions as versions_definitions
 
-# constants
-ATTRIBUTE_DEFAULTS = {
-    bool: True,
-    datetime: datetime.now(),
-    str: 'UNDEFINED',
-}
 
-
-class Collection(object):
+class Collection():
     """ The base class for game asset objects, i.e. working with the dict assets
     in the assets/ folder.
 
@@ -50,7 +35,8 @@ class Collection(object):
     __init__ code in in an individual Asset() object module. """
 
 
-    def __init__(self, assets_version=API.config['DEFAULT_GAME_VERSION']):
+    def __init__(self, assets_version=API.config['DEFAULT_GAME_VERSION'],
+                asset_logger=False):
         """ All Assets() objects must base-class this guy to get access to the
         full range of AssetCollection methods, i.e. all of the common/ubiquitous
         ones.
@@ -59,8 +45,14 @@ class Collection(object):
         killed off.
         """
 
+        # init both loggers
         self.logger = utils.get_logger()
-
+        self.asset_logger = asset_logger
+        if self.asset_logger:
+            self.asset_logger = utils.get_logger(
+                log_level='DEBUG', log_name='asset_collection'
+            )
+            self.asset_logger.debug('Asset logger initialized!')
 
         # set self.version, which MUST be a version handle. Die if it's not
         self.version = assets_version
@@ -68,10 +60,17 @@ class Collection(object):
             err = "'asset_version' must be a version handle, 'not %s' / %s"
             raise AttributeError(err % (self.version, type(self)))
 
-        self.logger.debug(
-            'Initializing %s.%s() at KD:M version %s.',
-            self.__module__, self.__class__.__name__, self.version,
-        )
+        # asset debugger 
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        caller_func = calframe[2][1]
+        if self.asset_logger:
+            self.asset_logger.debug(
+                'Initializing %s.%s() at KD:M version %s. Caller: %s',
+                self.__module__, self.__class__.__name__,
+                self.version,
+                caller_func
+            )
 
         # set the game_asset attrib first (default to True)
         if not hasattr(self, 'is_game_asset'):
@@ -94,19 +93,7 @@ class Collection(object):
 
         # type override - be careful!
         if hasattr(self, "type_override"):
-
-            warn = 'DEPRECATION WARNING! %s has type_override' % self
-            self.logger.warning(warn)
-
-            self.type = self.type_override
-            for a in self.assets.keys():
-                if type(self.assets[a]) != dict:
-                    self.logger.error(self.assets)
-                    err_msg = "AssetCollection object self.assets() dict\
-                    should be a dictionary of dictionaries, not %s.\
-                    " % type(self.assets[a])
-                    raise TypeError(" ".join(err_msg.split()))
-                self.assets[a]["type"] = self.type_override
+            self._set_override_type()
 
         # set the default 'type_pretty' value, selector text, etc. DO NOT
         # call this method before you have a sub_type
@@ -151,11 +138,21 @@ class Collection(object):
     def enforce_data_model(self):
         """ If the collection is initialized with a self.data_model dict, we
         check all assets in self.assets to make sure they have a value for each
-        key in the dict (and that it is the right type). """
+        key in the dict (and that it is the right type).
+
+        DEPRECATED. Should be replaced with something like how we do models.
+        """
+
+        # defaults
+        attr_defaults = {
+            bool: True,
+            datetime: datetime.now(),
+            str: 'UNDEFINED',
+        }
 
         # iterate thru the data model
         for attr_name, attr_type in getattr(self, 'data_model', {}).items():
-            attr_default = ATTRIBUTE_DEFAULTS[attr_type]
+            attr_default = attr_defaults[attr_type]
 
             # iterate through all asset dicts
             for asset_dict in self.get_dicts():
@@ -184,8 +181,8 @@ class Collection(object):
                     # warn if we're warning
                     if warn_on_missing_attr:
                         err = "Asset '%s' missing mandatory attr: '%s'!"
-                        self.logger.warn(
-                            err % (a_dict['handle'], mandatory_attribute)
+                        self.logger.warning(
+                            err, a_dict['handle'], mandatory_attribute
                         )
 
                     self.assets[
@@ -203,12 +200,39 @@ class Collection(object):
         Allows overriding the default module, for purposes of importing assets.
         Really hate this. '''
 
-        warn = "Overriding module for '%s' to '%s'"
+        warn = "DEPRECATION WARNING! Overriding module for '%s' to '%s'"
         self.logger.warning(warn, self.__module__, self.root_module)
         self.root_module = importlib.import_module(self.root_module.__name__)
         self.type = self.root_module.__name__.split('.')[-1]
         warn = "Type for '%s' assets overriden to '%s'"
         self.logger.warning(warn, self.__module__, self.type)
+
+
+    def _set_override_type(self):
+        ''' A private, depracted method for overriding the default 'type' attr
+        for the collection. This should never be necessary and the goal will be
+        to kill this off in 2023. '''
+
+        warn = "DEPRECATION WARNING! %s has 'self.type_override' attribute. "
+        warn += "%s assets will have type '%s' instead of default value: '%s'"
+        self.logger.warning(
+            warn, self, self.__module__, self.type_override, self.type
+        )
+
+        if self.type == self.type_override:
+            err = 'Attempting to override an identical default. Please fix.'
+            raise AttributeError(err)
+
+        self.type = self.type_override
+        for a in self.assets.keys():
+            if not isinstance(self.assets[a], dict):
+                self.logger.error(self.assets)
+                err = (
+                    "AssetCollection object self.assets() dict should be a "
+                    "dictionary of dictionaries, not %s."
+                )
+                raise TypeError(err % type(self.assets[a]))
+            self.assets[a]["type"] = self.type_override
 
 
     def _validate_root_module(self):
@@ -225,7 +249,8 @@ class Collection(object):
         package_path = package.__name__
         package_name = package.__name__.split('.')[-1]
 
-        self.logger.debug(' - Validating %s package...', package_path)
+        if self.asset_logger:
+            self.asset_logger.debug(' - Validating %s package...', package_path)
 
         # ban private packages / remind not to __init__() twice
         if package_name.startswith('_'):
@@ -244,9 +269,10 @@ class Collection(object):
                 not dict_handle.startswith('_') # avoid built-in/private dicts
             )
         ]
-        self.logger.debug(
-            ' - Package contains %s definitions', len(asset_definitions)
-        )
+        if self.asset_logger:
+            self.asset_logger.debug(
+                ' - Package contains %s definitions', len(asset_definitions)
+            )
 
         output = {}
         asset_count = 0
@@ -279,7 +305,8 @@ class Collection(object):
                     err += "Asset definitions may not define 'sub_type': %s \n"
                     err += 'Original definition is: %s'
                     raise AttributeError(
-                        err % (package_path, asset_handle, asset, asset_definition)
+                        err % (package_path, asset_handle, asset,
+                        asset_definition)
                     )
 
                 if 'name' not in asset.keys():
@@ -288,7 +315,8 @@ class Collection(object):
 
             output[asset_definition_name] = asset_definition
 
-        self.logger.debug(' - Package defines %s assets', asset_count)
+        if self.asset_logger:
+            self.asset_logger.debug(' - Package defines %s assets', asset_count)
         return output
 
 
@@ -327,7 +355,7 @@ class Collection(object):
 
         # sort on name, allowing for the possibility of duplicate names
         self.assets = OrderedDict()
-        list_of_dicts = [all_assets[handle] for handle in all_assets.keys()]
+        list_of_dicts = [all_assets[handle] for handle in all_assets]
         for asset in sorted(list_of_dicts, key = lambda i: i['name']):
             self.assets[asset['handle']] = asset
 
@@ -337,7 +365,13 @@ class Collection(object):
         # set the laziness attribute self.handles
         self.handles = sorted(self.assets.keys())
 
-        self.logger.debug(' - %s assets loaded!', self.type)
+        if self.asset_logger:
+            self.asset_logger.debug(' - %s assets loaded!', self.type)
+            for asset in all_assets:
+                self.asset_logger.debug(' - %s', asset)
+                for key, value in all_assets[asset].items():
+                    self.asset_logger.debug('   `- %s: %s', key, value)
+
 
 
     def patch_assets_to_current(self):
@@ -348,8 +382,8 @@ class Collection(object):
         try:
             target_vers_dict = versions_definitions.VERSIONS[self.version]
         except KeyError as error:
-            msg = "Version handle '%s' not found in %s" % (
-                self.version, versions_definitions.VERSIONS.keys()
+            msg = "Version handle '%s' not found in %s -> %s" % (
+                self.version, versions_definitions.VERSIONS.keys(), error
             )
             self.logger.error(msg)
             raise
@@ -480,16 +514,63 @@ class Collection(object):
         return asset
 
 
-    def get_assets_by_sub_type(self, sub_type=None):
-        """ Returns a list of asset handles whose 'sub_type' attribute matches
-        the 'sub_type' kwarg value."""
+    def get_asset_from_name(self, name, case_sensitive=False,
+            raise_exception_if_not_found=True):
+        """ Tries to return an asset dict by looking up "name" attributes within
+        the self.assets. dict. Returns None if it fails.
 
-        handles = []
-        for a_dict in self.get_dicts():
-            sub = a_dict.get('sub_type', None)
-            if sub == sub_type:
-                handles.append(a_dict['handle'])
-        return handles
+        By default, the mactching here is NOT case-sensitive: everything is
+        forced to upper() to allow for more permissive matching/laziness.
+
+        DEPRECATED in October 2023.
+        """
+
+        # fail if we don't get a str
+        if not isinstance(name, str):
+            err = "get_asset_from_name() 'name' kwarg must be 'str'! Not: %s"
+            if raise_exception_if_not_found:
+                raise TypeError(err % (type(name)))
+            return None
+
+        name = name.strip()
+
+        # special backoff for this dumbass pseudo-expansion
+        if name == 'White Box':
+            name = 'White Box & Promo'
+
+        if not case_sensitive:
+            name = name.upper()
+
+        name_lookup = {}
+        for a in self.assets.keys():
+            if "name" in self.assets[a]:
+                if case_sensitive:
+                    name_lookup[self.assets[a]["name"]] = a
+                elif not case_sensitive:
+                    asset_name_upper = self.assets[a]["name"].upper()
+                    name_lookup[asset_name_upper] = a
+
+        if name in name_lookup.keys():
+            return self.get_asset(name_lookup[name])
+        return None
+
+
+    def get_dicts(self):
+        """ Dumps a list of dicts where each dict is an asset dict. """
+        output = []
+        for h in sorted(self.get_handles()):
+            output.append(self.get_asset(h))
+        return output
+
+
+    def get_sorted_assets(self):
+        """ Returns the asset collections 'assets' dict as an OrderedDict. """
+
+        output = OrderedDict()
+        for n in self.get_names():
+            asset_dict = self.get_asset_from_name(n)
+            output[asset_dict['handle']] = asset_dict
+        return output
 
 
     def get_assets_by_type(self, asset_type=None):
@@ -504,12 +585,29 @@ class Collection(object):
         return handles
 
 
+    def get_assets_by_sub_type(self, sub_type=None):
+        """ Returns a list of asset handles whose 'sub_type' attribute matches
+        the 'sub_type' kwarg value."""
+
+        handles = []
+        for a_dict in self.get_dicts():
+            sub = a_dict.get('sub_type', None)
+            if sub == sub_type:
+                handles.append(a_dict['handle'])
+        return handles
+
+
+    #
+    #   get lists of things
+    #
+
     def get_handles(self):
         """ Dumps all asset handles, i.e. the list of self.assets keys. """
 
         try:
             return sorted(self.assets, key=lambda x: self.assets[x]['name'])
-        except:
+        except Exception as err:
+            self.logger.warning('get_handles() error: %s', err)
             return sorted(self.assets.keys())
 
 
@@ -520,7 +618,7 @@ class Collection(object):
                 if isinstance(self.assets[h], list):
                     err = '%s Asset (%s) is a list! %s'
                     raise TypeError(err % (self, h, self.assets[h]))
-            return [self.assets[h]["name"] for h in self.get_handles()]
+            return [copy(self.assets[h]["name"]) for h in self.get_handles()]
         except KeyError as e:
             self.logger.error("Asset does not have 'name' key!")
             self.logger.error("Assets without 'name' keys follow...")
@@ -528,26 +626,6 @@ class Collection(object):
                 if self.assets[handle].get('name', None) is None:
                     self.logger.error(self.assets[handle])
             raise e
-
-
-    def get_sorted_assets(self):
-        """ Returns the asset collections 'assets' dict as an OrderedDict. """
-
-        output = OrderedDict()
-        for n in self.get_names():
-            asset_dict = self.get_asset_from_name(n)
-            output[asset_dict['handle']] = asset_dict
-        return output
-
-
-    def get_sub_types(self):
-        """ Dumps a list of all asset 'sub_type' attributes. """
-
-        subtypes = set()
-        for a in self.get_handles():
-            a_dict = self.get_asset(a)
-            subtypes.add(a_dict.get('sub_type', None))
-        return sorted(subtypes)
 
 
     def get_types(self):
@@ -560,13 +638,14 @@ class Collection(object):
         return subtypes
 
 
-    def get_dicts(self):
-        """ Dumps a list of dicts where each dict is an asset dict. """
+    def get_sub_types(self):
+        """ Dumps a list of all asset 'sub_type' attributes. """
 
-        output = []
-        for h in sorted(self.get_handles()):
-            output.append(self.get_asset(h))
-        return output
+        subtypes = set()
+        for a in self.get_handles():
+            a_dict = self.get_asset(a)
+            subtypes.add(a_dict.get('sub_type', None))
+        return sorted(subtypes)
 
 
     def get_keywords(self):
@@ -591,73 +670,16 @@ class Collection(object):
         return sorted(list(rules))
 
 
-    def get_asset_from_name(self, name, case_sensitive=False, raise_exception_if_not_found=True):
-        """ Tries to return an asset dict by looking up "name" attributes within
-        the self.assets. dict. Returns None if it fails.
 
-        By default, the mactching here is NOT case-sensitive: everything is
-        forced to upper() to allow for more permissive matching/laziness. """
+    def filter(self, filter_attrib=None, filtered_attrib_values=[],
+                reverse=False):
+        """ Starting in October 2023, this is cancelled.
 
-        if type(name) not in [str]:
-            self.logger.error(
-                (
-                    "get_asset_from_name() cannot proceed!"
-                    "'%s' is not a str or unicode object!" % name
-                )
-            )
-            if raise_exception_if_not_found:
-                err = "The get_asset_from_name() 'name' kwarg must be 'str'!"
-                raise AssetInitError(err_msg)
-            else:
-                return None
-
-        name = name.strip()
-
-        # special backoff for this dumbass pseudo-expansion
-        if name == 'White Box':
-            name = 'White Box & Promo'
-
-        if not case_sensitive:
-            name = name.upper()
-
-        name_lookup = {}
-        for a in self.assets.keys():
-            if "name" in self.assets[a]:
-                if case_sensitive:
-                    name_lookup[self.assets[a]["name"]] = a
-                elif not case_sensitive:
-                    asset_name_upper = self.assets[a]["name"].upper()
-                    name_lookup[asset_name_upper] = a
-
-        if name in name_lookup.keys():
-            return self.get_asset(name_lookup[name])
-        else:
-            return None
-
-
-    def filter(self, filter_attrib=None, filtered_attrib_values=[], reverse=False):
-        """ Drops assets from the collection if their 'filter_attrib' value is
-        in the 'attrib_values' list.
-
-        Set 'reverse' kwarg to True to have the filter work in reverse, i.e. to
-        drop all assets that DO NOT have 'filter_attrib' values in the
-        'filtered_attrib_values' list.
+        Usually you can use get_assets_by_type or get_assets_by_sub_type.
         """
 
-        if filter_attrib is None or filtered_attrib_values == []:
-            self.logger.error("AssetCollection.filter() method does not accept None or empty list values!")
-            return False
-
-        for asset_key in list(self.assets.keys()):
-            if self.get_asset(asset_key).get(filter_attrib, None) is None:
-                pass
-            elif reverse:
-                if self.get_asset(asset_key)[filter_attrib] not in filtered_attrib_values:
-                    del self.assets[asset_key]
-            else:
-                if self.get_asset(asset_key)[filter_attrib] in filtered_attrib_values:
-                    del self.assets[asset_key]
-
+        err = "%s.filter() is no longer supported!"
+        raise AttributeError(err % self.__module__)
 
 
     #
@@ -674,7 +696,6 @@ class Collection(object):
         module).
 
         """
-
 
         # first, if the request is a GET, just dump everything and bail
         if flask.request and flask.request.method == "GET":
@@ -716,15 +737,15 @@ class Collection(object):
         self.logger.warning(warn)
 
         if a_handle is not None:
-            A = self.get_asset(a_handle)
+            asset_dict = self.get_asset(a_handle)
         elif a_name is not None:
-            A = self.get_asset_from_name(a_name)
+            asset_dict = self.get_asset_from_name(a_name)
 
-        if A is None:
+        if asset_dict is None:
             return utils.http_404
 
         return flask.Response(
-            response=json.dumps(A, default=json_util.default),
+            response=json.dumps(asset_dict, default=json_util.default),
             status=200,
             mimetype="application/json"
         )

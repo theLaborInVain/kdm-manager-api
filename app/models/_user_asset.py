@@ -8,9 +8,8 @@
 """
 
 # standard lib imports
-from copy import deepcopy
+from copy import copy, deepcopy
 from datetime import datetime
-import importlib
 import inspect
 import json
 
@@ -24,7 +23,6 @@ import werkzeug
 # local imports
 from app import API, utils
 
-from app.assets import campaigns
 from ._decorators import log_event_exception_manager
 
 class UserAsset():
@@ -43,7 +41,9 @@ class UserAsset():
 
         record = getattr(self, self.collection[:-1], {})
         name = record.get('name', 'UNKNOWN')
-        return "%s object '%s' [%s]" % (self.collection, name, self._id)
+        return "%s UserAsset object '%s' [%s]" % (
+            self.collection, name, getattr(self, '_id', None),
+        )
 
 
     def __init__(self, *args, **kwargs):
@@ -95,8 +95,8 @@ class UserAsset():
             self._id = ObjectId(self._id)   # try to force strings
         except TypeError:                   # die if we can't duck-type it
             bad_type = type(self._id).__name__
-            err = 'Failed to coerce settlement ID type "%s" to OID!' % bad_type
-            raise utils.InvalidUsage(err, status_code=422)
+            err = 'Failed to coerce UserAsset ID type "%s" to OID!' % bad_type
+            raise utils.InvalidUsage(err, status_code=422) from err
 
         if not isinstance(self._id, ObjectId):
             err = "The asset OID '%s' is not a valid OID!" % (self._id)
@@ -109,10 +109,10 @@ class UserAsset():
         try:
             self.load()
             self.loaded = True
-        except Exception as e:
-            err = "Could not load '%s' from '%s'!" % (self._id, self.collection)
-            self.logger.error(err)
-            self.logger.exception(e)
+        except Exception as error:
+            msg = "Could not load '%s' from '%s'!" % (self._id, self.collection)
+            self.logger.error(msg)
+            self.logger.exception(error)
             raise
 
 
@@ -127,9 +127,9 @@ class UserAsset():
         ''' Raise a TypeError; require sub-classes to define their own new().'''
         error = (
             'Objects that inherit from UserAsset must define their own new() '
-            'method for creating a new instance of themselves.'
+            'method (e.g. in %s) for creating a new instance of themselves.'
         )
-        raise TypeError(error)
+        raise TypeError(error % self.__module__)
 
 
     def load(self):
@@ -143,17 +143,17 @@ class UserAsset():
         #   to load() a UserAsset object, regardless of collection.
         for attr in ['_id', 'collection']:
             if not hasattr(self, attr):
-                raise AssetLoadError('load() requires self.%s attr!' % attr)
+                raise AttributeError('load() requires self.%s attr!' % attr)
 
         if not isinstance(self.collection, str):
             err = "self.collection must be 'str' type (not %s)"
-            raise AssetLoadError(err % type(self.collection))
+            raise TypeError(err % type(self.collection))
 
 
         # use self.collection to set the mdb_doc
         mdb_doc = utils.mdb[self.collection].find_one({"_id": self._id})
         if mdb_doc is None:
-            raise AssetLoadError("Asset _id '%s' not be found in '%s'!" % (
+            raise AttributeError("Asset _id '%s' not be found in '%s'!" % (
                 self._id, self.collection
                 )
             )
@@ -299,61 +299,17 @@ class UserAsset():
             if flask.request.method != 'GET':
                 warn =  "%s type request did not contain JSON data!"
                 self.logger.warning(warn, flask.request.method)
-                self.logger.warn("Request URL: %s", flask.request.url)
+                self.logger.warning("Request URL: %s", flask.request.url)
 
 
     #
     #   universal 'get' methods for User Assets
     #
 
-    def get_campaign(self, return_type=None):
-        """ Returns the campaign handle of the settlement as a string, if
-        nothing is specified for kwarg 'return_type'.
-
-        Use 'name' to return the campaign's name (from its definition).
-
-        'return_type' can also be dict. Specifying dict gets the
-        serialized game asset. """
-
-        # first, bomb if we're not a settlement or survivor object
-        method_supported_for = ['survivors', 'settlements']
-        if getattr(self, 'collection', None) not in method_supported_for:
-            msg = ("Objects whose collection is '%s' may not call the "
-            "get_campaign() method!" % getattr(self, 'collection', None))
-            raise TypeError(msg)
-
-        # second, get the campaign handle
-        if self.collection == "survivors":
-            c_handle = self.Settlement.settlement["campaign"]
-        elif self.collection == "settlements":
-            # 2017-11-13 - bug fix - missing campaign attrib
-            if not "campaign" in self.settlement.keys():
-                self.settlement["campaign"] = 'people_of_the_lantern'
-                warn_msg = "%s is a legacy settlement! Adding missing\
-                'campaign' attribute!" % self
-                self.logger.warn(warn_msg)
-                self.save()
-            c_handle = self.settlement["campaign"]
-
-        # October 2023: this needs version support!!
-        if return_type is not None:
-            campaign_asset = campaigns.Campaign(handle=c_handle)
-
-            # handle return_type requests
-            if return_type == 'name':
-                return campaign_asset.asset["name"]
-            if return_type == dict:
-                return campaign_asset.asset
-            if return_type == object:
-                return campaign_asset
-
-            # DEPRECATED
-            if return_type == 'initialize':
-                raise TypeError('Cannot initialize campaigns this way!')
-#                self.campaign = campaigns.Campaign(c_dict['handle'])
-#                return True
-
-        return c_handle
+    def get_campaign(self):
+        ''' DEPRECATED October 2023. Doesn't work anymore. '''
+        err =  'get_campaign() method is not supported for this object: %s.'
+        raise TypeError(err % self)
 
 
     def get_current_ly(self):
@@ -370,8 +326,7 @@ class UserAsset():
 
         if self.collection == "survivors":
             ly = self.Settlement.settlement['timeline'][-1]['year']
-        else:
-            ly = self.settlement['timeline'][-1]['year']
+        ly = self.settlement[:-1]['timeline'][-1]['year']
 
         return int(ly)
 
@@ -521,51 +476,107 @@ class UserAsset():
 
 
 
-    def list_assets(self, attrib=None, log_failures=True):
+    def list_assets(self, attrib=None):
+        """ DEPRECATED but removing it will require massive refactoring.
+
+        For the UserAsset object, e.g. Survivor or Settlement, this laziness
+        method loops through the object's 'attrib' attribute and expands the
+        handles in that list to assets.
+
+        The 'expands' part involves using the Settlement object's collection
+        objects.
+
+        This should really be renamed to 'expand_attribute_list_to_assets' or
+        something like that. Maybe 'iterate_attrib_as_asset_list' or like
+        'attrib_list_to_asset_list' or something.
+
+        That list gets returned.
+
         """
-        WARNING! THIS IGNORES SETTLEMENT VERSION! YHBW!!!
 
-        Laziness method that returns a list of dictionaries where dictionary
-        in the list is an asset in the object's list of those assets.
 
-        Basically, if your object is a survivor, and you set 'attrib' to
-        'abilities_and_impairments', you get back a list of dictionaries where
-        dictionary is an A&I asset dictionary.
-
-        Same goes for settlements: if you set 'attrib' to 'locations', you get
-        a list where each item is a location asset dict.
-
-        Important! This ignores unregistered/unknown/bogus items! Anything that
-        cannot be looked up by its handle or name is ignored!
-        """
-
+        # sanity checks:d
         if attrib is None:
             msg = "The list_assets() method cannot process 'None' type values!"
-            self.logger.error(msg)
-            raise Exception(msg)
+            raise AttributeError(msg)
 
-        output = []
-        if attrib == "principles":
-            A = assets.innovations.Assets()
-        else:
-            A = importlib.import_module('app.assets.%s' % attrib).Assets()
-
-        asset_list = getattr(self, self.collection[:-1])[attrib]
-
-        for a in asset_list:
-            a_dict = A.get_asset(
-                a,
-                backoff_to_name=True,
-                raise_exception_if_not_found=False
+        if self.collection not in ['settlements', 'survivors']:
+            err = (
+                "The list_assets() method cannot be called by UserAssets whose "
+                "self.collection value is '%s'"
             )
+            raise TypeError(err)
 
-            if a_dict is not None:
-                output.append(a_dict)
-            elif a_dict is None and log_failures:
-                err = "%s Unknown '%s' asset '%s' cannot be listed!"
-                self.logger.error(err, self, attrib, a)
-            else:
-                pass # just ignore failures and silently fail
+
+        #  part one: get the UserAsset's attribute or die trying
+
+        # get a copy of the attribute; make sure it's a list
+        try:
+            attribute_asset_list = copy(
+                getattr(self, self.collection[:-1])[attrib]
+            )
+        except KeyError as err:
+            msg = "Attribute '%s' key not found in self.%s: %s"
+            raise AttributeError(
+                msg % (
+                    attrib,
+                    self.collection[:-1],
+                    getattr(self, self.collection[:-1])
+                )
+            ) from err
+        if not isinstance(attribute_asset_list, list):
+            err = "%s attribute self.%s['%s'] is not a list!"
+            raise AttributeError(err % (self, self.collection[:-1], attrib))
+
+
+        # part two: get the Settlement object
+
+        # the settlement object is either self.Settlement or just self)
+        settlement_object = getattr(self, 'Settlement', None)
+        if settlement_object is None:
+            settlement_object = self
+
+
+        # part three: get the collection object corresponding to 'attrib'
+
+        # convert the incoming 'attrib' to snake case, because that's how it's
+        #   going to appear as a Settlement attribute
+        collection = utils.str_to_snake(attrib)
+
+        # special handling for 'principles', which are innovations
+        if attrib == "principles":
+            collection = "Innovations"
+
+        # get the colleciton object or die
+        collection_object = getattr(settlement_object, collection, None)
+        if collection_object is None:
+            err = "%s object has no '%s' attribute!"
+            raise AttributeError(err % (settlement_object, collection))
+
+        # wrapup/summarize for debug purposes
+#        msg = "self -> %s; attrib is '%s'; collection is '%s', i.e. %s"
+#        self.logger.debug(msg, self, attrib, collection, collection_object)
+
+
+        # finally, iterate and create the output
+        output = []
+
+        for a_handle in attribute_asset_list:
+            a_dict = collection_object.get_asset(a_handle)
+
+            # log a detailed failure if we can't find it
+            if a_dict is None:
+                err = "self.%s['%s'] asset handle '%s' not found in %s"
+                raise(
+                    err % (
+                        self.collection[:-1],
+                        attrib,
+                        a_handle,
+                        collection_object
+                    )
+                )
+
+            output.append(a_dict)
 
         return output
 

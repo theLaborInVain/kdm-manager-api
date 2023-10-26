@@ -29,7 +29,7 @@ from bson.objectid import ObjectId
 import gridfs
 
 # local imports
-from app import utils
+from app import API, utils
 
 from .._user_asset import UserAsset
 from .._data_model import DataModel
@@ -165,11 +165,6 @@ class Survivor(UserAsset):
     ]:
         DATA_MODEL.add(flag, bool, required=False, category='flag')
 
-    # special attributes
-    for sa_key in KingdomDeath.special_attributes.Assets().assets.keys():
-        DATA_MODEL.add(
-            sa_key, bool, required=False, category='special_attributes'
-        )
 
     # silly stuff / after-thoughts / one-offs, etc.
     DATA_MODEL.add('constellation', str, required=False)
@@ -198,41 +193,28 @@ class Survivor(UserAsset):
 
         self.collection="survivors"
 
-        # require an intitialized settlement object
+        # require an intitialized settlement object; we need it for game assets
         self.Settlement = kwargs.get('Settlement', None)
-        if self.Settlement is None:
-            err = '%s.__init__() requires initialized Settlement object! %s'
-            raise utilsInvalidUsage(err % (self.__class__.__name__, self))
+        if self.Settlement is None or not hasattr(self.Settlement, 'settlement'):
+            err = '%s.__init__() requires initialized Settlement object! %s\n%s'
+            raise TypeError(
+                err % (
+                    self.__class__.__name__,
+                    self.Settlement,
+                    dir(self.Settlement),
+                )
+            )
 
-
-        # initialize AssetCollections for later
-        self.AbilitiesAndImpairments = KingdomDeath.abilities_and_impairments.Assets()
-        self.CursedItems = KingdomDeath.cursed_items.Assets()
-        self.Disorders = KingdomDeath.disorders.Assets()
-        self.FightingArts = KingdomDeath.fighting_arts.Assets()
-        self.Names = KingdomDeath.names.Assets()
-        self.Saviors = KingdomDeath.saviors.Assets()
-
-        # survivor sheet pseudo assets
-        self.ColorSchemes = KingdomDeath.color_schemes.Assets()
-        self.SpecialAttributes = KingdomDeath.special_attributes.Assets()
-        self.WeaponProficiency = KingdomDeath.weapon_proficiency.Assets()
+        # update the self.DATA_MODEL to include special attributes:
+        for sa_key in self.Settlement.SpecialAttributes.assets:
+            self.DATA_MODEL.add(
+                sa_key, bool, required=False, category='special_attributes'
+            )
 
         # if we're doing a new survivor, it will happen when we subclass the
         #   UserAsset class; otherwise, the base class method will call
         #   self.load():
         super().__init__(*args, **kwargs)
-
-        # this makes the baby jesus cry
-#        if self.Settlement is None:
-#            if request and request.collection != 'survivor':
-#                self.logger.warning(
-#                    "%s Initializing Settlement object! THIS IS BAD FIX IT", self
-#                )
-#            self.Settlement = settlements.Settlement(
-#                _id=self.survivor["settlement"],
-#                normalize_on_init=False
-#            )
 
         # asset normalization!
         self.perform_save = False
@@ -254,8 +236,8 @@ class Survivor(UserAsset):
         if attribs == {}:
             attribs = self.params
 
-        # initialize a settlement
-        self.Settlement = settlements.Settlement(_id=attribs["settlement"])
+        # initialize a settlement | no longer required October 2023
+#        self.Settlement = settlements.Settlement(_id=attribs["settlement"])
 
         # 0. create a record that we're going to save to MDB and use to
         #   initialize the new survivor
@@ -290,9 +272,11 @@ class Survivor(UserAsset):
         s_name = self.survivor['name']
         if (
             s_name == "Anonymous" and
-            request.User.get_preference("random_names_for_unnamed_assets")
+            attribs.get('random_name', False)
         ):
-            s_name = self.Names.get_random_survivor_name(self.survivor["sex"])
+            s_name = self.Settlement.Names.get_random_survivor_name(
+                self.survivor["sex"]
+            )
         self.set_name(s_name, save=False, update_survival=False)
 
         # log the creation HERE
@@ -311,10 +295,10 @@ class Survivor(UserAsset):
             self.survivor["survival"] += 1
 
         # 5. settlement buffs - move this to a separate function
-        if request.User.get_preference("apply_new_survivor_buffs"):
+        if attribs.get('apply_new_survivor_buffs', False):
 
             # grab the campaign: we'll need it in a second
-            c_dict = self.get_campaign(dict)
+            #c_dict = self.get_campaign(dict)
 
             def apply_buff_list(l):
                 """ Private helper to apply a dictionary of bonuses. """
@@ -323,7 +307,6 @@ class Survivor(UserAsset):
                         if k == "affinities":
                             self.update_affinities(d[k])
                         elif k == "abilities_and_impairments":
-#                            if type(d[k]) != list:
                             if not isinstance(d[k], list):
                                 msg = (
                                     "The 'abilities_and_impairments' bonus must"
@@ -342,8 +325,8 @@ class Survivor(UserAsset):
             buff_sources = set()
             buff_list = []
 
-            # bonuses come from principles, innovations...
-            for attrib in ["principles","innovations"]:
+            # look for bonuses from 
+            for attrib in ["principles", "innovations"]:
                 for d in self.Settlement.list_assets(attrib):
                     if d.get("new_survivor", None) is not None:
                         buff_list.append(d["new_survivor"])
@@ -354,13 +337,14 @@ class Survivor(UserAsset):
                             buff_sources.add(d["name"])
 
             # ...and also from the campaign definition for now
-            if c_dict.get('new_survivor', None) is not None:
-                buff_list.append(c_dict['new_survivor'])
-                buff_sources.add("'%s' campaign" % c_dict["name"])
+            # self.Settlement.campaign.asset is the campaign definition
+            if self.Settlement.campaign.asset.get('new_survivor', None) is not None:
+                buff_list.append(self.Settlement.campaign.asset['new_survivor'])
+                buff_sources.add("'%s' campaign" % self.Settlement.campaign.asset["name"])
             if self.newborn:
-                if c_dict.get('newborn_survivor', None) is not None:
-                    buff_list.append(c_dict['newborn_survivor'])
-                    buff_sources.add("'%s' campaign" % c_dict["name"])
+                if self.Settlement.campaign.asset.get('newborn_survivor', None) is not None:
+                    buff_list.append(self.Settlement.campaign.asset['newborn_survivor'])
+                    buff_sources.add("'%s' campaign" % self.Settlement.campaign.asset["name"])
 
             if buff_list != []:
                 buff_string = utils.list_to_pretty_string(buff_sources)
@@ -371,11 +355,17 @@ class Survivor(UserAsset):
                 )
                 apply_buff_list(buff_list)
         else:
-            self.log_event("Settlement bonuses where not applied to %s due to user preference." % self.pretty_name())
+            msg = (
+                "Settlement bonuses where not applied to %s due to user "
+                "preference."
+            )
+            self.log_event(msg % self.pretty_name())
 
         # Add our campaign's founder epithet if the survivor is a founder
         if self.is_founder():
-            founder_epithet = self.get_campaign(dict).get("founder_epithet", "founder")
+            founder_epithet = self.Settlement.campaign.asset.get(
+                "founder_epithet", "founder"
+            )
             self.add_game_asset("tags", founder_epithet)
 
         # log and save
@@ -499,6 +489,16 @@ class Survivor(UserAsset):
         return True
 
 
+    def save(self, set_modified_on=False, verbose=True):
+        ''' Formerly __post_process, this is our last chance to inflict business
+        logic and/or game rules on a survivor BEFORE saving it back to mdb.'''
+
+        # only call validation methods here!
+        self.__validate_weapon_proficiency_type()
+
+        super().save()
+
+
     def normalize(self):
         """ In which we force the survivor's mdb document to adhere to the biz
         logic of the game and our own data model. """
@@ -592,7 +592,7 @@ class Survivor(UserAsset):
         output['sheet'].update({'parents': self.get_parents(dict)})
 
         # survivors whose campaigns use dragon traits get a top-level element
-        if self.get_campaign(dict).get("dragon_traits", False):
+        if self.Settlement.campaign.asset.get("dragon_traits", False):
             output["dragon_traits"] = {}
             output["dragon_traits"].update({"trait_list": self.get_dragon_traits()})
             output["dragon_traits"].update({"active_cells": self.get_dragon_traits("active_cells")})
@@ -664,7 +664,7 @@ class Survivor(UserAsset):
         if handle is None:
             self.check_request_params(['handle'])
             handle = self.params["handle"]
-        ci_dict = self.CursedItems.get_asset(handle)
+        ci_dict = self.Settlement.CursedItems.get_asset(handle)
 
         # check for the handle (gracefully fail if it's a dupe)
         if ci_dict["handle"] in self.survivor["cursed_items"]:
@@ -704,7 +704,7 @@ class Survivor(UserAsset):
         if handle is None:
             self.check_request_params(['handle'])
             handle = self.params['handle']
-        ci_dict = self.CursedItems.get_asset(handle)
+        ci_dict = self.Settlement.CursedItems.get_asset(handle)
 
         # check for the handle (gracefully fail if it's no thtere)
         if ci_dict["handle"] not in self.survivor["cursed_items"]:
@@ -728,7 +728,7 @@ class Survivor(UserAsset):
                 if ci_handle == ci_dict["handle"]:     # ignore the one we're processing currently
                     pass
                 else:
-                    remaining_ci_dict = self.CursedItems.get_asset(ci_handle)
+                    remaining_ci_dict = self.Settlement.CursedItems.get_asset(ci_handle)
                     if remaining_ci_dict.get("abilities_and_impairments", None) is not None:
                         remaining_curse_ai.update(remaining_ci_dict["abilities_and_impairments"])
 
@@ -944,15 +944,15 @@ class Survivor(UserAsset):
             self.save()
 
 
-    def asset_operation_preprocess(self, asset_class=None, asset_handle=None):
+    def asset_operation_preprocess(self, collection=None, asset_handle=None):
         """ As its name suggests, the purpose of this method is to 'stage up' or
         prepare to do the add_game_asset() method (above). The idea is that you
         call this method at the beginning of add_game_asset() to sanity check it
         and do any other preprocessing tasks.
 
-        Set 'asset_class' kwarg to the string of an asset collection and
+        Set 'collection' kwarg to the string of an asset collection and
         'asset_handle' to any handle within that asset collection and this
-        func will return the value of 'asset_class' and an asset dict for the
+        func will return the value of 'collection' and an asset dict for the
         'asset_handle' value.
 
         This method will back off to the incoming request if 'asset_type' is
@@ -964,58 +964,58 @@ class Survivor(UserAsset):
         #   request params if incoming kwargs are None
         #
 
-        if asset_class is None:
+        if collection is None:
             self.check_request_params(["type", "handle"])
-            asset_class = self.params["type"]
+            collection = self.params["type"]
             asset_handle = self.params["handle"]
-        elif asset_class is not None and asset_handle is None:
+        elif collection is not None and asset_handle is None:
             self.check_request_params(["handle"])
             asset_handle = self.params["handle"]
 
 
         #   2.) initialize/import the AssetModule and an AssetCollection object
-        AssetModule = importlib.import_module('app.assets.%s' % asset_class)
-        A = AssetModule.Assets()
+        collection_obj = getattr(
+            self.Settlement, utils.str_to_snake(collection)
+        )
 
 
-        #   3.) handle the _random pseudo/bogus/magic handle
+        #   3.) handle the _random pseudo/bogus/magic handle; start with
+        #   asset_handle: '_random'; end with asset_handle: 'real_handle'
         if asset_handle == "_random":
-            self.logger.info("%s selecting random '%s' asset..." % (self, asset_class))
-            available = copy(self.Settlement.get_available_assets(AssetModule)[asset_class])
+            msg = "%s selecting random '%s' asset from %s"
+            self.logger.info(msg % (self, collection, collection_obj))
+            available = copy(
+                self.Settlement.get_available_assets(
+                    asset_collection = collection_obj,
+                    exclude_sub_types = ['secret_fighting_art']
+                )[collection]  # e.g. 'disorders'
+            )
 
             # filter out assets that the survivor already has
-            for h in self.survivor[asset_class]:
-                if available.get(h, None) is not None:
-                    del available[h]
+            for a_handle in self.survivor[collection]:
+                if available.get(a_handle, None) is not None:
+                    del available[a_handle]
 
-            # filter out 'secret' assets
-            for k in list(available.keys()):
-                if A.get_asset(k).get('sub_type', None) == 'secret_fighting_art':
-                    del available[k]
-
-            # filter out 'strain' fighting arts that we haven't unlocked
-            for k in list(available.keys()):
-                if A.get_asset(k).get('strain_milestone', None) is not None:
-                    if A.get_asset(k)['strain_milestone'] not in self.Settlement.settlement['strain_milestones']:
-                        del available[k]
+            # filter out 'strain' fighting arts that we haven't unlocked; don't
+            #   iterate the dict directly, since we're gonna modify it (probably)
+            for a_handle in list(available.keys()):
+                a_dict = available[a_handle]
+                strain_milestone = a_dict.get('strain_milestone', None)
+                if strain_milestone is not None:
+                    if strain_milestone not in \
+                    self.Settlement.settlement['strain_milestones']:
+                        del available[a_handle]
 
             asset_handle = random.choice(list(available.keys()))
-            info = "%s selected '%s' asset handle at random."
-            self.logger.info(info % (self, asset_handle))
+            msg = "%s selected '%s' asset handle at random."
+            self.logger.info(msg, self, asset_handle)
 
 
-        #   4.) try to get the asset; bomb out if we can't
-        asset_dict = A.get_asset(
-            asset_handle, raise_exception_if_not_found=False
-        )
-        if asset_dict is None:
-            err = "%s.Assets() class does not include handle '%s'!"
-            err = err % (asset_class, asset_handle)
-            raise utils.InvalidUsage(err, status_code=400)
-
+        #   4.) try to get the asset
+        asset_dict = collection_obj.get_asset(asset_handle)
 
         # exit preprocessing with a valid class name and asset dictionary
-        return asset_class, asset_dict
+        return collection, asset_dict
 
 
     @web_method
@@ -1172,7 +1172,9 @@ class Survivor(UserAsset):
 
         # set the FA for logging purposes
         fighting_art_handle = self.params['handle']
-        fighting_art = self.FightingArts.get_asset(fighting_art_handle)
+        fighting_art = self.Settlement.FightingArts.get_asset(
+            fighting_art_handle
+        )
 
         # idiot-proof the levels list
         new_levels = sorted(
@@ -1241,7 +1243,7 @@ class Survivor(UserAsset):
             self.check_request_params(['value'])
 
         self.survivor['color_scheme'] = cs_handle
-        scheme_dict = self.ColorSchemes.get_asset(handle=cs_handle)
+        scheme_dict = self.Settlement.ColorSchemes.get_asset(handle=cs_handle)
         msg = "%s set the color scheme to '%s' for %s."
         self.log_event(
             msg % (
@@ -1723,7 +1725,7 @@ class Survivor(UserAsset):
     @web_method
     def toggle_fighting_arts_level(self):
         """ Toggles a fighting arts level on or off, e.g. by adding it to or
-        removing it from the array for a particular FA's handle.
+        removing it from the array for a particular Fighting Art's handle.
 
         Assumes that this is an API request and does not process any args that
         do not come in the request object.
@@ -1742,8 +1744,7 @@ class Survivor(UserAsset):
         fa_handle = self.params["handle"]
         fa_level = int(self.params["level"])
 
-        FA = fighting_arts.Assets()
-        fa_dict = FA.get_asset(fa_handle)
+        fa_dict = self.Settlement.FightingArts.get_asset(fa_handle)
 
         if fa_handle not in self.survivor['fighting_arts_levels'].keys():
             self.survivor["fighting_arts_levels"][fa_handle] = []
@@ -1945,12 +1946,11 @@ class Survivor(UserAsset):
 
         # 8.) process disorders with 'on_return' attribs
         for d in self.survivor['disorders']:
-            d_dict = self.Disorders.get_asset(d)
+            d_dict = self.Settlement.Disorders.get_asset(d)
             if d_dict.get('on_return', None) is not None:
                 for k, v in d_dict['on_return'].items():
                     self.survivor[k] = v
 
-        # OK, we out!
         finish()
 
 
@@ -2029,7 +2029,6 @@ class Survivor(UserAsset):
         if attrib in self.DATA_MODEL.category('damage_location'):
             return self.__set_damage()
 
-
         # duck type
         value = self.DATA_MODEL.duck_type(attrib, value)
 
@@ -2049,6 +2048,8 @@ class Survivor(UserAsset):
                 request.User.login, self.pretty_name(), attrib, value
             )
         )
+
+
 
         # optional save
         if save:
@@ -2530,7 +2531,9 @@ class Survivor(UserAsset):
 
         # handle 'unset' operations first
         if unset and self.is_savior():
-            s_dict = self.Saviors.get_asset_by_color(self.is_savior())
+            s_dict = self.Settlement.Saviors.get_asset_by_color(
+                self.is_savior()
+            )
 
             for ai_handle in s_dict["abilities_and_impairments"]:
                 self.rm_game_asset(
@@ -2565,7 +2568,9 @@ class Survivor(UserAsset):
         if self.is_savior() and color != self.is_savior():
             msg = "%s changing savior color from %s to %s..."
             self.logger.warning(msg, self, self.is_savior(), color)
-            s_dict = self.Saviors.get_asset_by_color(self.is_savior())
+            s_dict = self.Settlement.Saviors.get_asset_by_color(
+                self.is_savior()
+            )
             for ai_handle in s_dict["abilities_and_impairments"]:
                 self.rm_game_asset(
                     "abilities_and_impairments", ai_handle, rm_related=False
@@ -2573,7 +2578,7 @@ class Survivor(UserAsset):
 
         # finally, if we're still here, set it
         self.survivor["savior"] = color
-        s_dict = self.Saviors.get_asset_by_color(color)
+        s_dict = self.Settlement.Saviors.get_asset_by_color(color)
         for ai_handle in s_dict["abilities_and_impairments"]:
             self.add_game_asset(
                 "abilities_and_impairments", ai_handle, apply_related=False
@@ -2767,8 +2772,9 @@ class Survivor(UserAsset):
         self.survivor['sword_oath']['wounds'] = int(self.params['wounds'])
 
         # look up the gear handle
-        gear_module = gear.Assets()
-        sword = gear_module.get_asset(self.survivor['sword_oath']['sword'])
+        sword = self.Settlement.Gear.get_asset(
+            self.survivor['sword_oath']['sword']
+        )
 
         msg = (
             "%s updated Sword Oath values for %s. Sword is '%s' and wounds "
@@ -2818,13 +2824,14 @@ class Survivor(UserAsset):
             )
             return True
 
-        # now, validate, update and log
+        # now, validate and UPDATE THE ATTRIB
         if self.DATA_MODEL.is_valid(
             'weapon_proficiency_type', handle, raise_on_failure=True
         ):
             self.survivor["weapon_proficiency_type"] = handle
 
-        w_dict = self.WeaponProficiency.get_asset(handle)
+        # log it
+        w_dict = self.Settlement.WeaponProficiency.get_asset(handle)
         msg = "%s set weapon proficiency type to '%s' for %s" % (
             request.User.login,
             w_dict["name"],
@@ -2832,33 +2839,46 @@ class Survivor(UserAsset):
         )
         self.log_event(msg)
 
-        #
-        # formerly included in __post_process(); could stand to be DRYer
-        #
-
-        #   specialist
-        if self.survivor.get('Weapon Proficiency', 0) >= 3:
-            if w_dict['specialist_ai'] not in self.survivor['abilities_and_impairments']:
-                info = "%s Weapon specialization reached, but A&I not present!"
-                self.logger.info(info % self)
-                self.add_game_asset(
-                    "abilities_and_impairments",
-                    w_dict['specialist_ai'],
-                    save=False
-                )
-        #   master
-        if self.survivor.get('Weapon Proficiency', 0) == 8:
-            if w_dict['master_ai'] not in self.survivor['abilities_and_impairments']:
-                info = "%s Weapon mastery reached, but A&I not present!"
-                self.logger.info(info % self)
-                self.add_game_asset(
-                    "abilities_and_impairments",
-                    w_dict['master_ai'],
-                    save=False
-                )
-
         if save:
-            self.save()
+            self.save() # <-- calls __validate_weapon_proficiency_type()
+
+
+    #
+    #   validation methods, i.e. business- and game-logic enforcement
+    #       IMPORTANT! These never save(), because they get called during save()
+    #
+
+    def __validate_weapon_proficiency_type(self):
+        ''' Makes sure that if our survivor qualifies for a specialization or
+        mastery A&I that it gets auto-applied. DOES NOT SAVE. '''
+
+        wp_handle = self.survivor.get('weapon_proficiency_type', None)
+
+        # return True if we don't actually have one set.
+        if wp_handle is None or wp_handle == '':
+            return True
+
+        wp_dict = self.Settlement.WeaponProficiency.get_asset(wp_handle)
+
+        thresholds = [
+            {'value': 3, 'ai': 'specialist_ai', 'desc': 'specialization'},
+            {'value': 8, 'ai': 'mastery_ai', 'desc': 'mastery'},
+        ]
+
+        for threshold in thresholds:
+            if self.survivor.get('Weapon Proficiency', 0) >= threshold['value']:
+                if (
+                    wp_dict.get(threshold['ai'], None) not in
+                    self.survivor['abilities_and_impairments']
+                ):
+                    msg = "%s Weapon %s reached, but A&I not present!"
+                    self.logger.info(msg, self, threshold['desc'])
+                    self.add_game_asset(
+                        "abilities_and_impairments",
+                        wp_dict['specialist_ai'],
+                        save=False,
+                        log_event=True
+                    )
 
 
     #
@@ -2972,13 +2992,12 @@ class Survivor(UserAsset):
         handles.
         """
 
-        E = endeavors.Assets()
-
+        endeavors_obj = self.Settlement.Endeavors
 
         def check_availability(e_handle):
             """ Private method that checks whether an endeavor is currently
             available to the survivor. """
-            e_dict = E.get_asset(e_handle)
+            e_dict = endeavors_obj.get_asset(e_handle)
             available = True
             if e_dict.get('requires_returning_survivor', False):
                 r_years = self.survivor.get('returning_survivor', [])
@@ -3003,7 +3022,7 @@ class Survivor(UserAsset):
         if return_type == dict:
             output = {}
             for e_handle in e_handles:
-                output[e_handle] = E.get_asset(e_handle)
+                output[e_handle] = endeavors_obj.get_asset(e_handle)
             return output
 
         return e_handles
@@ -3018,39 +3037,51 @@ class Survivor(UserAsset):
         if int(self.survivor["Understanding"]) >= 9:
             traits.append("9 Understanding (max)")
 
-        # check self.survivor["expansion_attribs"] for "Reincarnated surname","Scar","Noble surname"
-        for attrib in ["potstars_reincarnated_surname", "potstars_scar", "potstars_noble_surname"]:
+        # check self.survivor["expansion_attribs"] for "Reincarnated surname",
+        #   "Scar","Noble surname"
+        for attrib in [
+            "potstars_reincarnated_surname",
+            "potstars_scar",
+            "potstars_noble_surname"
+        ]:
             if self.survivor.get(attrib, False):
                 a_dict = self.SpecialAttributes.get_asset(attrib)
                 traits.append(a_dict['name'])
 
-        # check the actual survivor name too, you know, for the real role players
+        # check the survivor name too
         split_name = self.survivor["name"].split(" ")
         for surname in ["Noble","Reincarnated"]:
             if surname in split_name and "%s surname" % surname not in traits:
                 traits.append(surname + " surname")
 
-        # check abilities_and_impairments for Oracle's Eye, Iridescent Hide, Pristine,
-        AI = abilities_and_impairments.Assets()
-        for a in [AI.get_asset('oracles_eye'), AI.get_asset('pristine'), AI.get_asset('iridescent_hide')]:
-            if a["handle"] in self.survivor["abilities_and_impairments"]:
-                traits.append("%s ability" % a["name"])
+        # check A&Is for Oracle's Eye, Iridescent Hide, Pristine,
+        for a_dict in [
+            self.Settlement.AbilitiesAndImpairments.get_asset('oracles_eye'),
+            self.Settlement.AbilitiesAndImpairments.get_asset('pristine'),
+            self.Settlement.AbilitiesAndImpairments.get_asset('iridescent_hide')
+        ]:
+            if a_dict["handle"] in self.survivor["abilities_and_impairments"]:
+                traits.append("%s ability" % a_dict["name"])
 
         # check for any weapon mastery
-        AI.filter("sub_type", ["weapon_mastery"], reverse=True)
-        for wm in AI.get_dicts():
-            if wm["handle"] in self.survivor["abilities_and_impairments"]:
+        for wm_asset in \
+        self.Settlement.AbilitiesAndImpairments.get_assets_by_sub_type(
+            sub_type = 'mastery'
+        ):
+            if wm_asset["handle"] in self.survivor["abilities_and_impairments"]:
                 traits.append("Weapon Mastery")
 
         # check disorders for "Destined"
         if "destined" in self.survivor["disorders"]:
             traits.append("Destined disorder")
 
-        # check fighting arts for "Fated Blow", "Frozen Star", "Unbreakable", "Champion's Rite"
-        FA = fighting_arts.Assets()
-        for fa in ['champions_rite', 'fated_blow', 'frozen_star', 'unbreakable']:
-            if fa in self.survivor["fighting_arts"]:
-                fa_dict = FA.get_asset(fa)
+        # check fighting arts for "Fated Blow", "Frozen Star",
+        #   "Unbreakable", "Champion's Rite"
+        for fa_handle in [
+            'champions_rite', 'fated_blow', 'frozen_star', 'unbreakable'
+        ]:
+            if fa_handle in self.survivor["fighting_arts"]:
+                fa_dict = self.Settlement.FightingArts.get_asset(fa)
                 fa_name = copy(fa_dict["name"])
                 if fa_name == "Frozen Star":
                     fa_name = "Frozen Star secret"
@@ -3152,13 +3183,13 @@ class Survivor(UserAsset):
         # retrieve children from mdb; process oid lists into dictionaries
         output['children'] = {}
         for parent in output['intimacy_partners']:
-            output['children'][str(parennt)] = []
+            output['children'][str(parent)] = []
         for child in children:
-            c_dict = utils.mdb.survivors.find_one({'_id': child})
-            if c_dict['father'] == self.survivor['_id']:
-                output['children'][str(c_dict['mother'])].append(c_dict)
-            elif c_dict['mother'] == self.survivor['_id']:
-                output['children'][str(c_dict['father'])].append(c_dict)
+            child_dict = utils.mdb.survivors.find_one({'_id': child})
+            if child_dict['father'] == self.survivor['_id']:
+                output['children'][str(child_dict['mother'])].append(child_dict)
+            elif child_dict['mother'] == self.survivor['_id']:
+                output['children'][str(child_dict['father'])].append(child_dict)
 
         # sort the children on their born in LY
         for p_id in output['children']:
@@ -3427,7 +3458,8 @@ class Survivor(UserAsset):
         it, right?). """
 
         # automatically return false if the campaign doesn't have saviors
-        if self.get_campaign(dict).get("saviors", None) is None:
+#        if self.get_campaign(dict).get("saviors", None) is None:
+        if self.Settlement.campaign.asset.get('saviors', None) is None:
             return False
 
         # automatically return the survivor's 'savior' attrib if the survivor
@@ -3436,7 +3468,7 @@ class Survivor(UserAsset):
             return self.survivor["savior"]
 
         # now do the legacy check
-        for s_dict in self.Saviors.get_dicts():
+        for s_dict in self.Settlement.Saviors.get_dicts():
             for s_ai in s_dict["abilities_and_impairments"]:
                 if s_ai in self.survivor["abilities_and_impairments"]:
                     return s_dict["color"]

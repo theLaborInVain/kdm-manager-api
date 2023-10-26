@@ -2,6 +2,13 @@
     Principles are a tricky asset, since they're essentially optional rules
     to which conditional rules apply.
 
+    To be clear: the asset we're talking abou there is NOT an innovation.
+    Rather, assets in this package are the opportinity to set a principle.
+
+    So, rather than 'Survival of the Fittest', for example, a principle is
+    'New Life', i.e. the milestory story event that allows a principle to be
+    selected, etc.
+
 """
 
 from .._asset import Asset

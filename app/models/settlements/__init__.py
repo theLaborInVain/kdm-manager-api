@@ -36,8 +36,6 @@ from .._user_asset import UserAsset
 from .._decorators import deprecated, web_method, paywall
 
 
-
-
 class Settlement(UserAsset):
     """ This is the base class for all expansions. Private methods exist for
     enabling and disabling expansions (within a campaign/settlement). """
@@ -45,19 +43,32 @@ class Settlement(UserAsset):
     @utils.metered
     def __init__(self, *args, **kwargs):
         ''' The Settlement object is the main thing we do here. Init is minimal,
-        since we fall back to the base class UserAsset for a lot of work. '''
+        since we fall back to the base class UserAsset for a lot of work.
+
+        DO NOT load any survivors here or in load(). Doing either will create a
+        circular import scenario where each asset requires the other to load.
+        '''
 
         # now initialize a generic settlement objec
         self.collection="settlements"
-        UserAsset.__init__(self, *args, **kwargs) # calls load()
-        self.init_asset_collections()
 
-        # now normalize
+        # finally, call the base class __init__() method and set self.settlement
+        UserAsset.__init__(self, *args, **kwargs) # calls load() as well
+
+        # hang a bunch of other asset collections on the settlement object
+        self.init_asset_collections()   # inits self.Campaigns, among others
+
+        # set self.campaign to be a campaigns.Campaign() asset
+        self.campaign = KingdomDeath.campaigns.Campaign(
+            handle = self.settlement['campaign'],
+            collection_obj=self.Campaigns
+        )
+
+        # initialize the survivors after we've got assets loaded
+        self.get_survivors('initialize')    # sets a list of objects
+
+        # finally, normalize
         self.normalize()
-
-        # set the self.campaign, which is a game asset object
-        self.logger.debug('%s initializing campaign object...', self)
-        self.campaign = self.get_campaign(object)
 
 
     def load(self):
@@ -69,9 +80,7 @@ class Settlement(UserAsset):
         """
 
         super().load()
-
-        self.settlement_id = self._id
-        self.get_survivors('initialize')    # sets a list of objects
+        self.settlement_id = self._id   # probably need to deprecate this
 
 
     def init_asset_collections(self):
@@ -85,6 +94,13 @@ class Settlement(UserAsset):
         #   that gets called to get assets at the settlement's version
         self.Versions = KingdomDeath.versions.Assets()
 
+        self.AbilitiesAndImpairments = \
+            KingdomDeath.abilities_and_impairments.Assets(self.get_version(str))
+        self.Campaigns = KingdomDeath.campaigns.Assets(self.get_version(str))
+        self.CursedItems = KingdomDeath.cursed_items.Assets(
+            self.get_version(str)
+        )
+        self.Disorders = KingdomDeath.disorders.Assets(self.get_version(str))
         self.Endeavors = KingdomDeath.endeavors.Assets(self.get_version(str))
         self.Events = KingdomDeath.events.Assets()
         self.Expansions = KingdomDeath.expansions.Assets()
@@ -97,18 +113,22 @@ class Settlement(UserAsset):
         self.Names = KingdomDeath.names.Assets()
         self.Principles = KingdomDeath.principles.Assets()
         self.Resources = KingdomDeath.resources.Assets(self.get_version(str))
+        self.Saviors = KingdomDeath.saviors.Assets()
         self.SurvivalActions = KingdomDeath.survival_actions.Assets()
         self.StrainMilestones = KingdomDeath.strain_milestones.Assets()
+        self.Tags = KingdomDeath.tags.Assets()
 
-        # settlement sheet pseudo assets
+        # settlement sheet assets
         self.Macros = KingdomDeath.macros.Assets()
+        self.Storage = KingdomDeath.storage.Assets(self.get_version(str))
 
         # survivor sheet assets
+        self.CausesOfDeath = KingdomDeath.causes_of_death.Assets()
+        self.ColorSchemes = KingdomDeath.special_attributes.Assets()
         self.SpecialAttributes = KingdomDeath.special_attributes.Assets()
         self.SurvivorColorSchemes = KingdomDeath.color_schemes.Assets()
         self.Survivors = KingdomDeath.survivors.Assets()
         self.SurvivorStatusFlags = KingdomDeath.status_flags.Assets()
-#        self.WeaponMasteries = KingdomDeath.weapon_mastery.Assets()  # replace with special call to Innovations
         self.WeaponProficiency = KingdomDeath.weapon_proficiency.Assets()
 
 
@@ -205,7 +225,6 @@ class Settlement(UserAsset):
 
 
         # initialize methods
-#        self.campaign['assets'] = self.get_campaign(dict)
         self.initialize_sheet()
         self.initialize_timeline(save=False)
 
@@ -508,40 +527,37 @@ class Settlement(UserAsset):
             start = datetime.now()
             output.update({"game_assets": {}})
             for asset_package in [
-                KingdomDeath.abilities_and_impairments,
-                KingdomDeath.cursed_items,
-                KingdomDeath.disorders,
-                KingdomDeath.endeavors,
-                KingdomDeath.events,
-                KingdomDeath.fighting_arts,
-                KingdomDeath.gear,
-                KingdomDeath.innovations,
-                KingdomDeath.monsters,
-                KingdomDeath.resources,
-                KingdomDeath.strain_milestones,
-                KingdomDeath.survival_actions,
-                KingdomDeath.tags,
-                KingdomDeath.versions,
+                self.AbilitiesAndImpairments,
+                self.CursedItems,
+                self.Disorders,
+                self.Endeavors,
+                self.Events,
+                self.FightingArts,
+                self.Gear,
+                self.Innovations,
+                self.Monsters,
+                self.Resources,
+                self.StrainMilestones,
+                self.SurvivalActions,
+                self.Tags,
+                self.Versions
             ]:
                 output['game_assets'].update(
                     self.get_available_assets(asset_package)
                 )
             output["game_assets"].update(
                 self.get_available_assets(
-                    KingdomDeath.locations,
+                    self.Locations,
                     only_include_selectable=True
                 )
             )
             output["game_assets"].update(
-                self.get_available_assets(
-                KingdomDeath.causes_of_death,
-                handles=False
-                )
+                self.get_available_assets(self.CausesOfDeath, handles=False)
             )
 
             output["game_assets"]['weapon_proficiency_types'] = \
             self.get_available_assets(
-                KingdomDeath.weapon_proficiency
+                self.WeaponProficiency
             )['weapon_proficiency']
 
             # options (i.e. decks)
@@ -615,7 +631,14 @@ class Settlement(UserAsset):
                 duration = stop - flask.request.start_time
                 self.logger.debug("serialize(%s) [%s] %s" % (return_type, duration, self))
 
-        return json.dumps(output, default=json_util.default)
+        # finally, try to dump it to JSON. If we get a TypeError, dump it to logs
+        try:
+            return json.dumps(output, default=json_util.default)
+        except TypeError as err:
+            self.logger.error(err)
+            self.logger.error('The following could not be converted to JSON:')
+            self.logger.error(output)
+            raise AttributeError('JSON serialization failed!') from err
 
 
     #
@@ -986,8 +1009,9 @@ class Settlement(UserAsset):
                 self.logger.warn("Expansion handle '%s' is not in %s" % (e_handle, self))
 
             # check if the campaign requires it
-            campaign = self.get_campaign(dict)
-            if e_handle in campaign['settlement_sheet_init'].get('expansions',[]):
+            if e_handle in self.campaign.asset['settlement_sheet_init'].get(
+                'expansions',[]
+            ):
                 e_list.remove(e_handle)
                 err = "Expansion handle '%s' is required and cannot be removed!"
                 self.logger.warn(err % e_handle)
@@ -2365,7 +2389,9 @@ class Settlement(UserAsset):
             checks out, do the needful and log about it. """
 
             # initialize the gear
-            gear_object = gear.Gear(handle)
+            gear_object = KingdomDeath.gear.Gear(
+                handle = handle, collection_obj=self.Gear
+            )
 
             # sanity check the gear
             gear_sub_type = getattr(gear_object, 'sub_type')
@@ -2489,54 +2515,61 @@ class Settlement(UserAsset):
     #   get methods
     #
 
-
-    def get_available_assets(
-            self, asset_module=None, handles=True, exclude_types=[],
-            only_include_selectable=False
-        ):
+    def get_available_assets(self, asset_collection=None, handles=True,
+            only_include_selectable=False, exclude_sub_types=None):
 
         """ Generic function to return a dict of available game assets based on
-        their family. The 'asset_module' should be something such as,
-        'cursed_items' or 'weapon_proficiencies', etc. that has an Assets()
-        method.
+        their family.
 
-        Use the 'handles' kwarg (boolean) to determine whether to return a list
-        of asset dictionaries, or a dictionary of dictionaries (where asset
-        handles are the keys.
+        'asset_collection' kwarg MUST be one of the Collection objects that gets
+        added to the settlement as an attribute, e.g. self.FightingArts or
+        self.Disorders or something.
 
-        Use the 'ignore_types' kwarg (list) to filter/exclude assets whose
-        'type' should NOT be returned.
+        Use the 'handles' kwarg (boolean) to determine whether to return a
+        dictionary of dictionaries (where asset handles are the keys) or a flat
+        list of asset dictionaries (set 'handles' False to get a list back).
+
+        'only_include_selectable' removes ALL assets from the output if they do
+        not have the 'selectable' key as part of their definition.
         """
 
+        # initialize the output container, 'available'
         if handles:
             available = collections.OrderedDict()   # NOT A REGULAR DICT!!!
         else:
             available = []
 
-        A = copy(asset_module.Assets(self.settlement['version']))
+        # create the output; get_sorted_assets sorts on 'name' attributes
+        for a_handle, a_dict in asset_collection.get_sorted_assets().items():
+            asset_available = False
 
-        # remove excluded type/sub_types
-        if exclude_types != []:
-            A.filter("type", exclude_types)
-            A.filter("sub_type", exclude_types)
+            # first, check compatibiltiy
+            if self.is_compatible(a_dict):
+                asset_available = True
 
-        if only_include_selectable:
-            A.filter('selectable', [False])
+            # apply the selectability criterion
+            if only_include_selectable and not a_dict.get('selectable', False):
+                asset_available = False
 
-        # update available
-        for n in A.get_handles():
-            asset_dict = A.get_asset(n)
-            if self.is_compatible(asset_dict):
-                if handles: # return a dict
-                    available.update({asset_dict["handle"]: asset_dict})
-                else:       # return a list of dicts
-                    available.append(asset_dict)
+            # apply the sub_types filter
+            if exclude_sub_types is not None:
+                for s_type in exclude_sub_types:
+                    if a_dict.get('sub_type', None) == s_type:
+                        asset_available = False
 
-        # REMOVE THIS
-        if type(available) == list: #list of dicts; needs sorting
-            available = sorted(available, key=lambda k: k['name'])
+            # finally, add it to the output container
+            if asset_available:
+                if handles:
+                    available.update({a_handle: a_dict})
+                else:
+                    available.append(a_dict)
 
-        return {"%s" % (asset_module.__name__.split(".")[-1]): available}
+        # REMOVE THIS the next time you see it
+#        if type(available) == list: #list of dicts; needs sorting
+#            available = sorted(available, key=lambda k: k['name'])
+
+        asset_collection_name = asset_collection.__module__.split('.')[-1]
+        return {asset_collection_name: available}
 
 
     def get_available_endeavors(self, return_total=True):
@@ -2968,11 +3001,11 @@ class Settlement(UserAsset):
 
         if handle in self.Gear.handles:
             return KingdomDeath.gear.Gear(
-                handle, version=self.settlement['version']
+                handle, collection_obj=self.Gear
             )
         elif handle in self.Resources.handles:
             return KingdomDeath.resources.Resource(
-                handle, version=self.settlement['version']
+                handle, collection_obj=self.Resources
             )
 
         raise LookupError('Unknown game asset handle: %s' % handle)
@@ -3425,7 +3458,7 @@ class Settlement(UserAsset):
         """
 
         # get available storage locations into a dictionary of dicts
-        storage_repr = self.get_available_assets(KingdomDeath.storage)['storage']
+        storage_repr = self.get_available_assets(self.Storage)['storage']
 
         # now update the dictionaries in the big dict to have a new key
         # called 'inventory' where we will park asset handles
@@ -3435,7 +3468,7 @@ class Settlement(UserAsset):
             storage_repr[k]['collection'] = []
 
             # add COMPATIBLE item dicts to the 'collection' list
-            S = KingdomDeath.storage.Storage(k, version=self.settlement['version'])  # storage object!
+            S = KingdomDeath.storage.Storage(k, collection_obj=self.Storage)
             for handle in S.get_collection():
 
                 # initialize a GameAsset object or die
@@ -3919,8 +3952,8 @@ class Settlement(UserAsset):
         options = []
 
         # first check our campaign and expansion assets, and get all options
-        if monster_type in self.get_campaign(dict):
-            c_monsters = self.get_campaign(dict)[monster_type]
+        if monster_type in self.campaign.asset:
+            c_monsters = self.campaign.asset[monster_type]
             options.extend(c_monsters)
 
         for exp in self.get_expansions(dict):
@@ -3938,10 +3971,13 @@ class Settlement(UserAsset):
         # check the remaining to see if they're selectable:
         option_set = list(option_set)
         final_set = []
-        for m in option_set:
-            M = KingdomDeath.monsters.Monster(m)
-            if M.is_selectable():
-                final_set.append(m)
+        for m_handle in option_set:
+            monster_object = KingdomDeath.monsters.Monster(
+                handle = m_handle,
+                collection_obj = self.Monsters
+            )
+            if monster_object.is_selectable():
+                final_set.append(m_handle)
 
         # remove any monsters that the campaign forbids
         forbidden_assets = self.campaign.asset.get('forbidden', {})
@@ -3952,11 +3988,14 @@ class Settlement(UserAsset):
 
         # now turn our set
         output = []
-        for m in sorted(list(final_set)):
-            M = KingdomDeath.monsters.Monster(m)
+        for m_handle in sorted(list(final_set)):
+            monster_object = KingdomDeath.monsters.Monster(
+                handle = m_handle,
+                collection_obj = self.Monsters
+            )
             output.append({
-                "handle": M.handle,
-                "name": M.name,
+                "handle": monster_object.handle,
+                "name": monster_object.name,
             })
 
         return output
@@ -4032,8 +4071,8 @@ class Settlement(UserAsset):
 
         output = []
 
-        if "special_showdowns" in self.get_campaign(dict).keys():
-            output.extend(self.get_campaign(dict)["special_showdowns"])
+        if "special_showdowns" in self.campaign.asset:
+            output.extend(self.campaign.asset["special_showdowns"])
 
         for exp in self.get_expansions(dict).keys():
             e_dict = self.get_expansions(dict)[exp]
@@ -4096,24 +4135,27 @@ class Settlement(UserAsset):
         # uniquify candidate handles just in case
         candidate_handles = list(set(candidate_handles))
 
-        for m in candidate_handles:
-            M = KingdomDeath.monsters.Monster(m)
+        for m_handle in candidate_handles:
+            monster_object = KingdomDeath.monsters.Monster(
+                handle = m_handle,
+                collection_obj=self.Monsters
+            )
 
             # hack the prologue White Lion in
-            if M.handle == "white_lion":
+            if monster_object.handle == "white_lion":
                 output.append("White Lion (First Story)")
 
-            if M.is_unique():
-                output.append(M.name)
+            if monster_object.is_unique():
+                output.append(monster_object.name)
             else:
                 blank_string = '%s lvl %s'
-                if isinstance(M.asset['levels'], int):
-                    for l in range(M.asset['levels']):
+                if isinstance(monster_object.asset['levels'], int):
+                    for l in range(monster_object.asset['levels']):
                         lvl = l+1
-                        output.append(blank_string % (M.name, lvl))
-                elif isinstance(M.asset['levels'], list):
-                    for lvl in M.asset['levels']:
-                        output.append(blank_string % (M.name, lvl))
+                        output.append(blank_string % (monster_object.name, lvl))
+                elif isinstance(monster_object.asset['levels'], list):
+                    for lvl in monster_object.asset['levels']:
+                        output.append(blank_string % (monster_object.name, lvl))
                 else:
                     err_msg = 'Monster levels must be integer or list types!'
                     raise utils.InvalidUsage(err_msg)
@@ -4897,9 +4939,13 @@ class Settlement(UserAsset):
             raise utils.InvalidUsage(err % handle)
 
         if asset_dict['type'] == 'gear':
-            return KingdomDeath.gear.Gear(handle)
+            return KingdomDeath.gear.Gear(
+                handle = handle, collection_obj = self.Gear
+            )
 
-        return KingdomDeath.resources.Resource(handle)
+        return KingdomDeath.resources.Resource(
+            handle = handle, collection_obj = self.Resources
+        )
 
 
 

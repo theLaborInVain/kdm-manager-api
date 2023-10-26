@@ -1,24 +1,45 @@
+'''
+
+    Dictionary names here ultimately cannot be sub_type values because of
+    expansion content.
+
+'''
+
+
 ability = {
     'ageless': {
-        'desc': 'You may hunt if you are retired. When you gain Hunt XP, you may decide not to gain it.',
+        'desc': (
+            'You may hunt if you are retired. When you gain Hunt XP, you may '
+            'decide not to gain it.'
+        ),
         'name': 'Ageless',
         'type': 'ability'
     },
     'analyze': {
-        'desc': "At the start of the Survivors' turn, if you are adjacent to the monster, reveal the top AI card, then place back on top of the deck.",
-        'summary': "Look at the top AI card and return it to the top of the deck.",
+        'desc': (
+            "At the start of the Survivors' turn, if you are adjacent to the "
+            "monster, reveal the top AI card, then place back on top of the "
+            "deck."
+        ),
         'name': 'Analyze',
         'type': 'ability',
         'base_attribute': 'Understanding',
         'excluded': ['explore','tinker'],
     },
     'bitter_frenzy': {
-        'desc': 'Each showdown, the first time you suffer the frenzy brain trauma, gain d10 survival. You may spend survival while <b>Frenzied</b>.',
+        'desc': (
+            'Each showdown, the first time you suffer the frenzy brain trauma, '
+            'gain d10 survival. You may spend survival while <b>Frenzied</b>.'
+        ),
         'name': 'Bitter Frenzy',
         'type': 'ability'
     },
     'blue_life_exchange': {
-        'desc': 'In the <b>Aftermath</b>, gain 3 additional Hunt XP. You may not place <b>other</b> gear in your grid. Gain +1 permanent luck with each <b>Age</b> milestone. When you retire, you cease to exist.',
+        'desc': (
+            'In the <b>Aftermath</b>, gain 3 additional Hunt XP. You may not '
+            'place <b>other</b> gear in your grid. Gain +1 permanent luck with '
+            'each <b>Age</b> milestone. When you retire, you cease to exist.'
+        ),
         'selectable': False,
         'name': 'Blue Life Exchange',
         'related': ['dream_of_the_lantern', 'lucernae'],
@@ -34,7 +55,10 @@ ability = {
     'bone_witch_wounds': {
         'Accuracy': -1,
         'Strength': -1,
-        'desc': 'Suffer -1 permanent strength, -1 permanent accuracy and skip the next hunt.',
+        'desc': (
+            'Suffer -1 permanent strength, -1 permanent accuracy and skip the '
+            'next hunt.'
+        ),
         'name': 'Bone Witch - Wounds',
         'skip_next_hunt': True,
         'type': 'impairment'
@@ -50,7 +74,13 @@ ability = {
         'cannot_gain_survival': True,
     },
     'caratosis': {
-        'desc': 'Before making an attack roll, you may declare "Caratosis X" in a loud, booming voice. If you do, that attack gains X automatic hits. X cannot be more than your total red affinities. When the attack ends, gain +X hunt Xp.<br/>When you trigger Age 2, gain the <b>Beast of Caratosis</b> secret fighting art.',
+        'desc': (
+            'Before making an attack roll, you may declare "Caratosis X" in a '
+            'loud, booming voice. If you do, that attack gains X automatic '
+            'hits. X cannot be more than your total red affinities. When the '
+            'attack ends, gain +X hunt Xp.<br/>When you trigger Age 2, gain '
+            'the <b>Beast of Caratosis</b> secret fighting art.'
+        ),
         'selectable': False,
         'name': 'Caratosis',
         'epithet': 'caratosis',
@@ -185,7 +215,11 @@ ability = {
         'type': 'ability'
     },
     'mad_oracle': {
-        'desc': 'Once per showdown, as a monster draws an AI, name a card out loud. If the AI card drawn is the card you named, gain +1 evasion token.',
+        'desc': (
+            'Once per showdown, as a monster draws an AI, name a card out '
+            'loud. If the AI card drawn is the card you named, gain +1 evasion '
+            'token.'
+        ),
         'name': 'Mad Oracle',
         'type': 'ability',
     },
@@ -205,7 +239,7 @@ ability = {
         'excluded': ['stalwart','prepared'],
     },
     'metal_maw': {
-        'desc': 'Your Fist & Tooth gains <b>Sharp</b>. (Add 1d10 strength to each wound attempt using this gear. This d10 is not a wound roll, and cannot cause critical wounds.)',
+        '4desc': 'Your Fist & Tooth gains <b>Sharp</b>. (Add 1d10 strength to each wound attempt using this gear. This d10 is not a wound roll, and cannot cause critical wounds.)',
         'name': 'Metal Maw',
         'type': 'ability'
     },
@@ -614,7 +648,10 @@ expansion_ai = {
         'type': 'ability'
     },
     'super_hair': {
-        'desc': 'You may spend <font class="kdm_font">a</font> to freely exchange any tokens with adjacent survivors who have <b>Super Hair</b>.',
+        'desc': (
+            'You may spend <font class="kdm_font">a</font> to freely exchange '
+            'any tokens with adjacent survivors who have <b>Super Hair</b>.'
+        ),
         'expansion': 'lonely_tree',
         'max': 1,
         'name': 'Super Hair',
@@ -625,14 +662,20 @@ expansion_ai = {
     "hideous_disguise": {
         "name": "Hideous Disguise",
         "expansion": "lion_knight",
-        "desc": "At the start of the showdown, if you are fighting the Lion Knight, choose your Role card.",
+        "desc": (
+            "At the start of the showdown, if you are fighting the Lion "
+            "Knight, choose your Role card."
+        ),
         "epithet": "hideous",
         "max": 1,
     },
 
     # lion god
     'death_mehndi': {
-        'desc': 'On a <b>Perfect hit</b>, gain 1d10 insanity. -4 to all brain trauma rolls.',
+        'desc': (
+            'On a <b>Perfect hit</b>, gain 1d10 insanity. -4 to all brain '
+            'trauma rolls.'
+        ),
         'expansion': 'lion_god',
         'max': 1,
         'name': 'Death Mehndi',
@@ -645,7 +688,10 @@ expansion_ai = {
         "type": "ability",
         "max": 1,
         "expansion": "slenderman",
-        "desc": "Gain +2 permanent evasion. Forgettable survivors cannot be encouraged.",
+        "desc": (
+            "Gain +2 permanent evasion. Forgettable survivors cannot be "
+            "encouraged."
+        ),
         "Evasion": 2,
     },
 
@@ -663,7 +709,14 @@ expansion_ai = {
 
     # sunstalker
     'reflection': {
-        'desc': '<ul><li>Your complete affinities and incomplete affinity halves count as all colors.</li><li>You may dodge at any time and as many times as you like each round.</li><li>When you attack from a blind spot, add +1d10 to all wound attempts for that attack.</li></ul>',
+        'desc': (
+            '<ul><li>Your complete affinities and incomplete affinity halves '
+            'count as all colors.</li>'
+            '<li>You may dodge at any time and as many times as you like '
+            'each round.</li>'
+            '<li>When you attack from a blind spot, add +1d10 to all wound '
+            'attempts for that attack.</li></ul>'
+        ),
         'expansion': 'sunstalker',
         'max': 1,
         'name': 'Reflection',
@@ -721,14 +774,22 @@ expansion_ai = {
     },
     'iridescent_hide': {
         'constellation': {'horizontal': 'Absolute', 'vertical': 'Storm'},
-        'desc': 'Gain +<font class="inline_shield">1</font> to all hit locations for each different-colored affinity in your gear grid.',
+        'desc': (
+            'Gain +<font class="inline_shield">1</font> to all hit locations '
+            'for each different-colored affinity in your gear grid.'
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': 'Iridescent Hide',
         'type': 'ability'
     },
     'limb_maker': {
-        'desc': 'Once per settlement phase, spend 2 <font class="kdm_font">d</font> to carve a prosthetic limb. Remove a survivor\'s <b>dismembered</b> injury and add 1 bone to the settlement\'s storage.',
+        'desc': (
+            'Once per settlement phase, spend 2 '
+            '<font class="kdm_font">d</font> to carve a prosthetic limb. '
+            "Remove a survivor's <b>dismembered</b> injury and add 1 bone to "
+            "the settlement's storage."
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': 'Limb-maker',
@@ -737,7 +798,10 @@ expansion_ai = {
     },
     "oracles_eye": {
         'constellation': {'horizontal': 'Goblin','vertical': 'Witch'},
-        'desc': 'At the start of the showdown, look through the AI deck then shuffle.',
+        'desc': (
+            'At the start of the showdown, look through the AI deck then '
+            'shuffle.'
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': "Oracle's Eye",
@@ -757,7 +821,10 @@ expansion_ai = {
     },
     'pristine': {
         'constellation': {'horizontal': 'Gambler', 'vertical': 'Reaper'},
-        'desc': 'When you suffer a <b>dismembered</b> severe injury, ignore it and gain 1 bleeding token instead.',
+        'desc': (
+            'When you suffer a <b>dismembered</b> severe injury, ignore it '
+            'and gain 1 bleeding token instead.'
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': 'Pristine',
@@ -776,14 +843,23 @@ expansion_ai = {
         'type': 'ability'
     },
     'rooted_to_all': {
-        'desc': 'If you are standing at the start of your act, reveal the top 2 cards of the AI deck and put them back in any order.',
+        'desc': (
+            'If you are standing at the start of your act, reveal the top 2 '
+            'cards of the AI deck and put them back in any order.'
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': 'Rooted to All',
         'type': 'ability'
     },
     'twelve_fingers': {
-        'desc': 'You cannot carry two-handed gear. On a Perfect hit, your right hand pulses. Gain +5 insanity and +1 luck for the attack. However, for each natural 1 rolled when attempting to hit, your left hand shakes. Suffer 5 brain damage and -1 luck for the attack.',
+        'desc': (
+            'You cannot carry two-handed gear. On a Perfect hit, your right '
+            'hand pulses. Gain +5 insanity and +1 luck for the attack. '
+            'However, for each natural 1 rolled when attempting to hit, your '
+            'left hand shakes. Suffer 5 brain damage and -1 luck for the '
+            'attack.'
+        ),
         'expansion': 'dragon_king',
         'max': 1,
         'name': 'Twelve Fingers',

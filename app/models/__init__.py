@@ -62,7 +62,12 @@ def new_user_asset(asset_type=None):
         settlement_obj = settlements.Settlement()
         return settlement_obj.serialize()
     if asset_type == "survivor":
-        survivor_object = survivors.Survivor()
+        settlement_record = utils.mdb.settlements.find_one(
+            {'_id': ObjectId(flask.request.get_json()['settlement'])}
+        )
+        survivor_object = survivors.Survivor(
+            Settlement = settlements.Settlement(_id=settlement_record['_id'])
+        )
         return survivor_object.serialize()
     if asset_type == "survivors":
         output = survivors.create_many_survivors(dict(flask.request.get_json()))
@@ -87,7 +92,16 @@ def get_user_asset(collection=None, asset_id=None):
     if collection == "settlement":
         return settlements.Settlement(_id=asset_id)
     if collection == "survivor":
-        return survivors.Survivor(_id=asset_id, normalize_on_init=True)
+        survivor_record = utils.mdb.survivors.find_one(
+            {'_id': ObjectId(asset_id)}
+        )
+        return survivors.Survivor(
+            _id=asset_id,
+            normalize_on_init=True,
+            Settlement = settlements.Settlement(
+                _id=survivor_record['settlement']
+            )
+        )
     if collection == "user":
         return users.User(_id=asset_id)
 

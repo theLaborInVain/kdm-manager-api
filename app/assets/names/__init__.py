@@ -57,32 +57,20 @@ def get_random_surnames(count=50):
     return list(random_surnames)
 
 
-class Assets(Collection):
-    """ This asset collection is unlike the others.
+class Assets():
+    """ This asset collection DOES NOT take Collection as its base class.
 
-    For starts, its the only AssetCollection that is initialized from lists,
-    rather than dicts.
+    Rather, it is initialized from lists rather than dicts using custom code
+    in the __init__() method below.
 
-    Another major weirdness is how we make list items into dictionaries, which
-    involes an odd name-to-handle conversion method and some un-DRY iteration
-    for creating dicts out of names.
-
-    On account of that, it sets attribs for all of the assets in its 'assets'
-    dict during initialization and, though it supports normal AssetCollection
-    methods, it's not recommended to call most of them (given the general non-
-    standardness of the 'assets' dict).
-
-    Proceed with caution.
     """
 
     def __init__(self, *args, **kwargs):
 
         # set some baseline attribs
         self.is_game_asset = False
-        self.type_override = "names"
 
-        # now use private methods to create a self.assets dict
-
+        # private methods to create a self.assets dict
         def name_to_handle(prefix, name):
             """ Turns a name & prefix and turns them into a unique handle."""
             output = name.replace(" ", "").lower()
@@ -96,13 +84,12 @@ class Assets(Collection):
                     "sub_type": asset_type
                 }
 
+        # create assets
         self.assets = {}
 
         for asset_type, asset_list in names.__dict__.items():
             if isinstance(asset_list, list) and not asset_type.startswith('_'):
                 load(asset_type, asset_list)
-
-        Collection.__init__(self, *args, **kwargs)
 
 
 
@@ -121,6 +108,10 @@ class Assets(Collection):
         for asset in self.assets.keys():
             if self.assets[asset]['sub_type'] == name_type:
                 output.append(self.assets[asset]["name"])
+
+        if len(output) == 0:
+            raise AttributeError("No names found for type '%s'" % name_type)
+
         return output
 
 
@@ -135,9 +126,9 @@ class Assets(Collection):
         """ Returns a random survivor name. Use the 'include_neuter' bool to
         include/exclude neuter names. """
 
-        if sex.lower() == 'm':
+        if sex[0].lower() == 'm':
             sex = 'male'
-        elif sex.lower() == 'f':
+        elif sex[0].lower() == 'f':
             sex = 'female'
         else:
             raise Exception("Unhandled sex!")

@@ -17,9 +17,9 @@
 
 from .._asset import Asset
 from .._collection import Collection
-from .definitions import *
 
-from app.assets.weapon_masteries.definitions import *
+from .definitions import *
+from .weapon_masteries import *
 
 class Assets(Collection):
 

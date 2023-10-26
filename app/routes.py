@@ -271,13 +271,14 @@ def lookup_asset(asset_type):
     """ Looks up game asset collection assets. Or, if you GET it, dumps the
     initialized asset module's assets dictionary. """
 
-    if asset_type not in assets.list_game_assets():
+    try:
+        return assets.get_game_asset(asset_type)
+    except ModuleNotFoundError:
         return flask.Response(
             response="/game_asset/%s is not a supported endpoint!" % asset_type,
             status=404,
         )
 
-    return assets.get_game_asset(asset_type)
 
 
 #
@@ -471,7 +472,7 @@ def new_asset(asset_type):
     flask.request.collection = asset_type
     flask.request.User = users.token_to_object(flask.request, strict=False)
 
-    return assets.new_user_asset(asset_type)
+    return models.new_user_asset(asset_type)
 
 
 @API.route(

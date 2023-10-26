@@ -15,8 +15,6 @@ class Assets(Collection):
     scenarios or the vignettes expansions. '''
 
     def __init__(self, *args, **kwargs):
-        ''' This needs a refactor. '''
-
+        ''' Pre-fabs and vignette survivors are game assets like any other. '''
         self.is_game_asset = True
-        self.type_override = "survivors"
         Collection.__init__(self, *args, **kwargs)

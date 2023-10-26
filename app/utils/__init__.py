@@ -452,6 +452,12 @@ class GridfsImage(object):
 #   misc. helper methods
 #
 
+def str_to_snake(string):
+    ''' Converts 'string' to a snake-case string. '''
+    string = string.split('_')
+    return "".join([part.capitalize() for part in string])
+
+
 def decompose_name_string(name):
     """ Accepts a name string and returns a list of possible versions of it. """
 

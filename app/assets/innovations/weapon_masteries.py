@@ -287,7 +287,7 @@ specialization = {
         'expansion': 'pascha',
         'desc': (
             'After resolving a monsters action, if you ignored a hit from it '
-            'with <b>block</b> or <b>delfect</b>, you may activate a sword and '
+            'with <b>block</b> or <b>deflect</b>, you may activate a sword and '
             'attack.'
         ),
     },

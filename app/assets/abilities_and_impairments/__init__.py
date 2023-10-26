@@ -6,13 +6,15 @@
 """
 
 # asset module imports
+from app.assets.innovations.weapon_masteries import *
+
 from .._asset import Asset
 from .._collection import Collection
 from .definitions import *
 
-from app.assets.weapon_masteries.definitions import *
 
 class Assets(Collection):
+    ''' Collection class method for Abilities and Impairments. '''
 
     def __init__(self, *args, **kwargs):
         """ The init method for the A&I asset collection calls the

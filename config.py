@@ -61,7 +61,7 @@ class Config():
     ]
     TIMEZONE = pytz.timezone('US/Central')
     USER_ASSET_COLLECTIONS = ['releases', 'settlements', 'survivors', 'users']
-    VERSION = "1.170.1019"
+    VERSION = "1.172.1041"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 
