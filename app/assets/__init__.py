@@ -15,7 +15,6 @@
 # standard lib imports
 from collections import OrderedDict
 import glob
-import importlib
 import json
 import os
 
@@ -25,22 +24,25 @@ import flask
 
 # local imports
 from app import API, utils
+from app.assets import kingdom_death as KingdomDeath
 from app.models import settlements, survivors, users
 
-
-LOGGER = utils.get_logger()
 
 #
 #       Methods for working with game assets, e.g. retrieving/dumping an asset
 #           collection, a specific game asset, etc.
 #
 
+@utils.metered
 def get_game_asset(collection_name, return_type=flask.Response):
     """ Formerly a part of the (deprecated) request_broker.py module, this
     method imports an asset type, alls its Assets() method and then returns
-    its request_response() method."""
+    its request_response() method.
 
-    game_asset = importlib.import_module('app.assets.%s' % collection_name)
+    This could honestly go back into routes.py at this point.
+    """
+
+    game_asset = getattr(KingdomDeath, collection_name)
     try:
         asset_object = game_asset.Assets() # initialize a collection object
     except AttributeError as error:

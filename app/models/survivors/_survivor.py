@@ -93,6 +93,7 @@ class Survivor(UserAsset):
     DATA_MODEL.add('returning_survivor', list)
     DATA_MODEL.add("Weapon Proficiency", int)
     DATA_MODEL.add("weapon_proficiency_type", str)
+    DATA_MODEL.add('weapon_proficiency_sealed', bool, required=False)
 
     # other
     DATA_MODEL.add('born_in_ly', int)
@@ -494,8 +495,8 @@ class Survivor(UserAsset):
         logic and/or game rules on a survivor BEFORE saving it back to mdb.'''
 
         # only call validation methods here!
-        self.__validate_max_bleeding_tokens()
-        self.__validate_weapon_proficiency_type()
+        self._validate_max_bleeding_tokens()
+        self._validate_weapon_proficiency_type()
 
         super().save()
 
@@ -2862,7 +2863,7 @@ class Survivor(UserAsset):
         self.log_event(msg)
 
         if save:
-            self.save() # <-- calls __validate_weapon_proficiency_type()
+            self.save() # <-- calls _validate_weapon_proficiency_type()
 
 
     #
@@ -2870,23 +2871,32 @@ class Survivor(UserAsset):
     #       IMPORTANT! These never save(), because they get called during save()
     #
 
-    def __validate_max_bleeding_tokens(self):
+    def _validate_max_bleeding_tokens(self):
         ''' Makes sure we never go below one. '''
         if self.survivor.get('max_bleeding_tokens', 1) < 1:
             self.set_attribute(attrib='max_bleeding_tokens', value=1)
 
 
-    def __validate_weapon_proficiency_type(self):
+    def _validate_weapon_proficiency_type(self):
         ''' Makes sure that if our survivor qualifies for a specialization or
         mastery A&I that it gets auto-applied. DOES NOT SAVE. '''
 
         wp_handle = self.survivor.get('weapon_proficiency_type', None)
 
-        # return True if we don't actually have one set.
-        if wp_handle is None or wp_handle == '':
+        # return True if we don't actually have one set or don't care
+        if (
+            wp_handle is None or
+            wp_handle == '' or
+            self.survivor['weapon_proficiency_sealed']
+        ):
             return True
 
-        wp_dict = self.Settlement.WeaponProficiency.get_asset(wp_handle)
+        try:
+            wp_dict = self.Settlement.WeaponProficiency.get_asset(wp_handle)
+        except utils.InvalidUsage:
+            msg = "%s Unknown Weapon Proficiency '%s' cannot be validated!"
+            self.logger.warning(msg, self, wp_handle)
+            return True
 
         thresholds = [
             {'value': 3, 'ai': 'specialist_ai', 'desc': 'specialization'},
@@ -3094,7 +3104,8 @@ class Survivor(UserAsset):
         # check for any weapon mastery
         for wm_asset in \
         self.Settlement.AbilitiesAndImpairments.get_assets_by_sub_type(
-            sub_type = 'mastery'
+            sub_type = 'mastery',
+            return_type = dict
         ):
             if wm_asset["handle"] in self.survivor["abilities_and_impairments"]:
                 traits.append("Weapon Mastery")
@@ -3130,8 +3141,8 @@ class Survivor(UserAsset):
         # support multiple return_type vars
         if return_type == "active_cells":
             cells = set()
-            C = the_constellations.Assets()
-            c_map = C.get_asset('lookups')["map"]
+            the_constellations = self.Settlement.TheConstellations
+            c_map = the_constellations.get_asset('lookups')["map"]
             for t in traits:
                 if t in c_map.keys():
                     cells.add(c_map[t])
@@ -3140,8 +3151,8 @@ class Survivor(UserAsset):
         if return_type == 'available_constellations':
             constellations = set()
             active_cells = self.get_dragon_traits('active_cells')
-            C = the_constellations.Assets()
-            c_formulae = C.get_asset('lookups')["formulae"]
+            the_constellations = self.Settlement.TheConstellations
+            c_formulae = the_constellations.get_asset('lookups')["formulae"]
             for k, v in c_formulae.items():      # k = "Witch", v = set(["A1","A2","A3","A4"])
                 if v.issubset(active_cells):
                     constellations.add(k)

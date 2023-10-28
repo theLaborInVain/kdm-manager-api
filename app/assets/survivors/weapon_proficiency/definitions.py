@@ -47,14 +47,6 @@ weapon_proficiency = {
         "specialist_ai": "katar_specialization",
         "master_ai": "mastery_katar",
     },
-
-    # sealed gear
-    'sealed_gear': {
-        'name': 'Sealed gear',
-        'expansion': 'badar',
-    },
-
-
     "scythe": {
         "name": "Scythe",
         "expansion": "dragon_king",

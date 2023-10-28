@@ -56,13 +56,11 @@ class Settlement(UserAsset):
         UserAsset.__init__(self, *args, **kwargs) # calls load() as well
 
         # hang a bunch of other asset collections on the settlement object
-        self.init_asset_collections()   # inits self.Campaigns, among others
+        self._initialize_asset_collections()   # inits self.Campaigns
 
-        # set self.campaign to be a campaigns.Campaign() asset
-        self.campaign = KingdomDeath.campaigns.Campaign(
-            handle = self.settlement['campaign'],
-            collection_obj=self.Campaigns
-        )
+        # set self.campaign to be a campaigns.Campaign() asset if it hasn't been
+        #   set already, e.g. by new() which sets it, etc.
+        self._initialize_self_campaign()
 
         # initialize the survivors after we've got assets loaded
         self.get_survivors('initialize')    # sets a list of objects
@@ -83,7 +81,42 @@ class Settlement(UserAsset):
         self.settlement_id = self._id   # probably need to deprecate this
 
 
-    def init_asset_collections(self):
+    def _initialize_self_campaign(self, force=False):
+        ''' Initializes self.campaign. Has some idiot-proofing so we don't do
+        this more than once. Set 'force' to True if you want to do it anyway.'''
+
+        # re-init with 'force' kwarg
+        if hasattr(self, 'campaign') and not force:
+            msg = '%s already has self.campaign (%s). '
+            msg += "Use 'force' kwarg to re-initialize."
+            self.logger.warning(msg, self, self.campaign)
+            return True
+
+
+        # check if self.Campaigns (i.e. the collection exists. If not, make
+        #   sure we're only doing this in the context of self.new()
+        if not hasattr(self, 'Campaigns'):
+            curframe = inspect.currentframe()
+            calframe = inspect.getouterframes(curframe, 2)
+            caller_func = calframe[1][3]
+            if caller_func != 'new':
+                err = '%s self.campaign initialized outside of new()'
+                raise utils.InvalidUsage(err % self)
+
+            self.Campaigns = KingdomDeath.campaigns.Assets()
+
+        # if we're doing it, do it:
+        if not hasattr(self, 'campaign') or force:
+            self.campaign = KingdomDeath.campaigns.Campaign(
+                handle = self.settlement['campaign'],
+                collection_obj=self.Campaigns
+            )
+
+        msg = "%s self.campaign (%s) initialized! ('force'=%s)"
+        self.logger.info(msg, self, self.campaign, force)
+
+
+    def _initialize_asset_collections(self):
         """ Called during __init__(); these are used by numerous methods. """
 
         if not hasattr(self, 'settlement'):
@@ -131,6 +164,10 @@ class Settlement(UserAsset):
         self.SurvivorStatusFlags = KingdomDeath.status_flags.Assets()
         self.WeaponProficiency = KingdomDeath.weapon_proficiency.Assets()
 
+        # add the constellations
+        if 'dragon_king' in self.settlement['expansions']:
+            self.TheConstellations = KingdomDeath.the_constellations.Assets()
+
 
     def new(self):
         """ Creates a new settlement. Expects a fully-loaded request, i.e. with
@@ -145,6 +182,8 @@ class Settlement(UserAsset):
         to create what ammounts to the settlement 'sheet' and then save it to
         the MDB.
 
+        IMPORTANT: this method initializes asset collections!
+
         Once it's saved, we call the base class load() method to initialize the
         object.
 
@@ -157,7 +196,7 @@ class Settlement(UserAsset):
         #   bomb this out if they're at their limit.
         flask.request.User.can_create_settlement(raise_on_false=True)
 
-        self.logger.info("%s is creating a new settlement..." % flask.request.User)
+        self.logger.info('%s is creating a new settlement!', flask.request.User)
 
         settlement = {
             # meta / admin
@@ -195,7 +234,7 @@ class Settlement(UserAsset):
             "principles":               [],
             "storage":                  [],
             "strain_milestones":        [],
-            "version":                  'core_1_6',
+            "version":                  API.config['DEFAULT_GAME_VERSION'],
         }
 
 
@@ -210,19 +249,19 @@ class Settlement(UserAsset):
 
         # set the settlement name before we save to MDB
         s_name = settlement['name']
-        if s_name is None and flask.request.User.get_preference(
-            "random_names_for_unnamed_assets"
-        ):
-            # can't use self.Names because we haven't initialized assets
-            s_name = names.Assets().get_random_settlement_name()
-        elif s_name is None and not flask.request.User.get_preference(
-            "random_names_for_unnamed_assets"
-        ):
+        if s_name is None:
             s_name = "Unknown"
+            if flask.request.json.get('random_name', False):
+                # can't use self.Names because we haven't initialized assets yet
+                s_name = \
+                KingdomDeath.names.Assets().get_random_settlement_name()
 
         self.settlement['name'] = None
         self.set_name(s_name)
 
+
+        # from here, we'll need self.campaign, so initialize it!
+        self._initialize_self_campaign()
 
         # initialize methods
         self.initialize_sheet()
@@ -264,8 +303,15 @@ class Settlement(UserAsset):
         arbitrarily and at will. """
 
         # in case we've haven't initialized yet, e.g. new settlement creation
+        #   REFACTOR AND DEPRECATE THIS PLEASE
+        if not hasattr(self, 'AbilitiesAndImpairments'):
+            self.AbilitiesAndImpairments = KingdomDeath.abilities_and_impairments.Assets()
         if not hasattr(self, 'Macros'):
-            self.Macros = macros.Assets()
+            self.Macros = KingdomDeath.macros.Assets()
+        if not hasattr(self, 'SpecialAttributes'):
+            self.SpecialAttributes = KingdomDeath.special_attributes.Assets()
+        if not hasattr(self, 'Tags'):
+            self.Tags = KingdomDeath.tags.Assets()
 
         if handle is None:
             self.check_request_params(['handle'])
@@ -285,7 +331,7 @@ class Settlement(UserAsset):
             for s in macro["random_survivors"]:
                 n = copy(s)
                 n.update({"settlement": self._id})
-                N = survivors.Survivor(new_asset_attribs=n, Settlement=self)
+                N = Survivor(new_asset_attribs=n, Settlement=self)
 
         # then storage
         if macro.get("storage", None) is not None:
@@ -447,7 +493,7 @@ class Settlement(UserAsset):
             self.logger.debug("Unremoving survivors...")
             for s in utils.mdb.survivors.find({'settlement': self.settlement['_id']}):
                 if s.get('removed',False):
-                    S = survivors.Survivor(_id=s['_id'])
+                    S = Survivor(_id=s['_id'])
                     S.unremove()
         self.save()
 
@@ -517,6 +563,11 @@ class Settlement(UserAsset):
             output['sheet']['monster_volumes'] = self.get_monster_volumes()
             output['sheet']['lantern_research_level'] = self.get_lantern_research_level()
 
+            # add AKDM survivor sheet requirements
+            output['sheet']['_additional_survivor_sheet_requirements'] =\
+            self._get_additional_survivor_sheet_requirements()
+
+            # log response time if we're doing that
             if flask.request.log_response_time:
                 stop = datetime.now()
                 duration = stop - flask.request.start_time
@@ -890,11 +941,11 @@ class Settlement(UserAsset):
         LY that the content wants to be added.
         """
 
-        # in case we're creating new
+        # in case we're creating new; REFACTOR AND DEPRECATE THIS
         if not hasattr(self, 'Expansions'):
-            self.Expansions = expansions.Assets()
+            self.Expansions = KingdomDeath.expansions.Assets()
         if not hasattr(self, 'Events'):
-            self.Events = events.Assets()
+            self.Events = KingdomDeath.events.Assets()
 
 
         # create a list of expansions to add
@@ -1634,7 +1685,7 @@ class Settlement(UserAsset):
         )
 
         # initialize the survivor using the Survivor object class
-        survivors.Survivor(new_asset_attribs=attribs, Settlement=self)
+        Survivor(new_asset_attribs=attribs, Settlement=self)
 
         # finally, if the incoming survivor is from an expansion, add that
         # expansion to the settlement expansions 
@@ -1852,7 +1903,7 @@ class Settlement(UserAsset):
         if showdown_type == 'normal':
             for s in self.get_survivors(list, excluded=[s._id for s in returned], exclude_dead=True):
                 if 'skip_next_hunt' in s.keys():
-                    S = survivors.Survivor(_id=s['_id'], Settlement=self)
+                    S = Survivor(_id=s['_id'], Settlement=self)
                     S.toggle_boolean('skip_next_hunt')
 
         # 5.) log the return
@@ -2570,6 +2621,27 @@ class Settlement(UserAsset):
 
         asset_collection_name = asset_collection.__module__.split('.')[-1]
         return {asset_collection_name: available}
+
+
+    def _get_additional_survivor_sheet_requirements(self):
+        ''' New in October 2023; supports Advanced KDM (and some expansion
+        content that came out before) by using settlement expansion content to
+        create a dictionary that defines additional Survivor Sheet requirements.
+
+        Requirements might be a boolean or a flag or something.
+        '''
+
+        output = {}
+
+        for e_handle in self.settlement['expansions']:
+            e_dict = self.Expansions.get_asset(e_handle)
+
+            # sealed gear (Badar / 2023-05)
+            self.logger.warning(e_dict)
+            if e_dict.get('sealed_gear', False):
+                output['sealed_gear'] = e_dict['sealed_gear']
+
+        return output
 
 
     def get_available_endeavors(self, return_total=True):
@@ -4364,7 +4436,7 @@ class Settlement(UserAsset):
 
         # now initialize survivors and update them with update_attribute()
         for s in target_group:
-            S = survivors.Survivor(_id=s['_id'], Settlement=self)
+            S = Survivor(_id=s['_id'], Settlement=self)
             S.update_attribute(attribute, modifier)
 
 

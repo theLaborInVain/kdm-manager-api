@@ -1010,10 +1010,8 @@ class User(UserAsset):
 
         if user_created >= free_user_max:
             if raise_on_false:
-                raise utils.InvalidUsage(
-                    'Free users may only create %s settlements!',
-                    status_code=405
-                )
+                msg = 'Non-subscribers may only create %s settlements!'
+                raise utils.InvalidUsage(msg % free_user_max, status_code=405)
 
         return False
 

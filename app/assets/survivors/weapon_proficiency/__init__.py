@@ -17,3 +17,18 @@ class Assets(Collection):
     def __init__(self, *args, **kwargs):
         self.is_game_asset = False
         Collection.__init__(self,  *args, **kwargs)
+
+        self._validate_assets()
+
+
+    def _validate_assets(self):
+        ''' Cheaper than a data model. Kinda kludgey. Iterates assets in the
+        collection, throws an error if they're missing something. '''
+
+        for a_dict in self.get_dicts():
+            for required in ['specialist_ai', 'master_ai']:
+                if a_dict.get(required, None) is None:
+                    err = 'Weapon proficiency asset %s/%s does not have %s!'
+                    raise AttributeError(
+                        err % (a_dict['handle'], a_dict['name'], required)
+                    )

@@ -423,7 +423,10 @@ campaigns = {
     'bloom_people_forest_run': {
         'name': 'Forest Run',
         'cost': 1,
-        'desc': "You may exchange any number of monster resources for that number of random Flower resources.",
+        'desc': (
+            "You may exchange any number of monster resources for that number "
+            "of random Flower resources."
+        ),
     },
 }
 

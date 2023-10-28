@@ -202,6 +202,7 @@ product_lines = {
         'name': 'Badar',
         'released': datetime(2022,5,31,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'sealed_gear': True,
     },
     'doll': {
         'name': 'Doll',

@@ -585,16 +585,24 @@ class Collection():
         return handles
 
 
-    def get_assets_by_sub_type(self, sub_type=None):
+    def get_assets_by_sub_type(self, sub_type=None, return_type=None):
         """ Returns a list of asset handles whose 'sub_type' attribute matches
-        the 'sub_type' kwarg value."""
+        the 'sub_type' kwarg value.
 
-        handles = []
+        Set 'return_type' to assets to get a list of assets. """
+
+        # handle multiple return types
+        output = []
+
         for a_dict in self.get_dicts():
             sub = a_dict.get('sub_type', None)
             if sub == sub_type:
-                handles.append(a_dict['handle'])
-        return handles
+                if return_type == dict:
+                    output.append(a_dict)
+                else:
+                    output.append(a_dict['handle'])
+
+        return output
 
 
     #
