@@ -337,6 +337,23 @@ def metered(method):
     return not_timed
 
 
+def record_collection_use():
+    ''' Logs a blurb about collection use during the request.'''
+
+    logger = get_logger()
+    for module in flask.request.kd_collections_initialized:
+        if flask.request.kd_collections_initialized[module] > 1:
+            msg = (
+                'The %s collection was initialized %s times while processing '
+                'this request!'
+            )
+            logger.warning(
+                msg,
+                module,
+                flask.request.kd_collections_initialized[module]
+            )
+
+
 def record_response_time(response):
     """ Accepts a request object, uses it to log the request and its response
     time to mdb. Prunes old lines. """

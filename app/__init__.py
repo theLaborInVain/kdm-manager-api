@@ -76,6 +76,7 @@ def before_request():
     performance monitoring. """
     flask.request.start_time = datetime.now()
     flask.request.log_response_time = False
+    flask.request.kd_collections_initialized = {}
 
     # get the API key from the incoming request
     flask.request.api_key = flask.request.headers.get('API-Key', None)
@@ -94,6 +95,7 @@ def after_request(response):
     """ Logs the response times of all requests for metering purposes. """
     flask.request.stop_time = datetime.now()
     utils.record_response_time(response)
+    utils.record_collection_use()
     if response.status == 500:
         API.logger.error("fail")
     return response

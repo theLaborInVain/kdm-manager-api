@@ -16,11 +16,16 @@ from app.assets._collection import Collection
 from app.assets import gear as KingdomDeathGear
 from app.assets import resources as KingdomDeathResources
 
-from app.assets.locations import gear, resources
+from app.assets.locations import gear, resources, location
 
 class Assets(Collection):
+    ''' Assets here (see imports above) come from the assets.locations package.
+    '''
 
     def __init__(self, *args, **kwargs):
+        ''' Technically, the locations themselves are the game assets. The items
+        in this collection are...not the same.'''
+
         self.is_game_asset = False
         Collection.__init__(self,  *args, **kwargs)
 
@@ -39,19 +44,28 @@ class Storage(Asset):
 
 
     def get_collection(self):
-        """ Creates a dictionary of the gear/resource assets that live in this
-        location. """
+        """ Uses self.handle to return a dictionary of the gear/resource asset
+        handles that are organized under this location in settlement storage.
+
+        self.handle is something like 'basic_resources' or 'sacred_pool'
+
+        We use asset collections here to get the assets whose 'sub_type' attrib
+        matches to self.handle.
+
+        Output is list of 
+        """
 
         if self.sub_type == 'gear':
             asset_collection = KingdomDeathGear.Assets(self.version)
-        elif self.sub_type == 'resources':
+            return asset_collection.get_assets_by_sub_type(self.handle)
+        if self.sub_type == 'resources':
             asset_collection = KingdomDeathResources.Assets(self.version)
-        else:
-            self.logger.error(self.asset_dict)
-            err_msg = "'%s' is not a valid 'sub_type' for storage asset: %s" % (
-                self.sub_type,
-                self
-            )
-            raise ValueError(err_msg)
+            return asset_collection.get_assets_by_sub_type(self.handle)
 
-        return asset_collection.get_assets_by_sub_type(self.handle)
+        self.logger.error(self.asset_dict)
+        err_msg = "'%s' is not a valid 'sub_type' for storage asset: %s" % (
+            self.sub_type,
+            self
+        )
+        raise ValueError(err_msg)
+

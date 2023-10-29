@@ -113,6 +113,12 @@ class Collection():
         # finally, enforce the self.data_model, if it exists
         self.enforce_data_model()
 
+        # record use for analysis
+        if self.__module__ not in flask.request.kd_collections_initialized.keys():
+            flask.request.kd_collections_initialized[self.__module__] = 0
+        flask.request.kd_collections_initialized[self.__module__] += 1
+
+        # finish
         self._initialized = True
 
 

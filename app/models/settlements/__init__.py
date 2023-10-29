@@ -35,6 +35,8 @@ from ..survivors import Survivor
 from .._user_asset import UserAsset
 from .._decorators import deprecated, web_method, paywall
 
+from ._storage import Storage
+
 
 class Settlement(UserAsset):
     """ This is the base class for all expansions. Private methods exist for
@@ -57,6 +59,7 @@ class Settlement(UserAsset):
 
         # hang a bunch of other asset collections on the settlement object
         self._initialize_asset_collections()   # inits self.Campaigns
+        self._initialize_settlement_storage()
 
         # set self.campaign to be a campaigns.Campaign() asset if it hasn't been
         #   set already, e.g. by new() which sets it, etc.
@@ -167,6 +170,17 @@ class Settlement(UserAsset):
         # add the constellations
         if 'dragon_king' in self.settlement['expansions']:
             self.TheConstellations = KingdomDeath.the_constellations.Assets()
+
+
+    def _initialize_settlement_storage(self):
+        ''' Uses attributes to initialize a settlement storage object that is
+        used to support storage methods of the Settlement object. '''
+
+        self.settlement_storage = Storage(
+            gear = self.Gear,
+            expansions = self.Expansions,
+            resources = self.Resources,
+        )
 
 
     def new(self):
@@ -3534,28 +3548,21 @@ class Settlement(UserAsset):
 
         # now update the dictionaries in the big dict to have a new key
         # called 'inventory' where we will park asset handles
-        for k in storage_repr.keys():
-            storage_repr[k]['inventory'] = []
-            storage_repr[k]['digest'] = collections.OrderedDict()
-            storage_repr[k]['collection'] = []
+        for loc_key, loc_asset in storage_repr.items():
 
-            # add COMPATIBLE item dicts to the 'collection' list
-            S = KingdomDeath.storage.Storage(k, collection_obj=self.Storage)
-            for handle in S.get_collection():
-
-                # initialize a GameAsset object or die
-                item_obj = self.get_game_asset_from_handle(handle)
-
+            # add COMPATIBLE item dicts to the locations 'assets' list
+            self.settlement_storage.add_location(location=loc_asset)
+            for item_obj in self.settlement_storage.locations[loc_key]['assets']:
                 if self.is_compatible(item_obj):
-                    item_dict = item_obj.serialize(dict)
-                    item_dict['quantity'] = self.settlement['storage'].count(handle)
-                    storage_repr[k]['collection'].append(item_dict)
+                    self.settlement_storage.add_item_to_storage(
+                        handle = item_obj.handle,
+                        quantity = self.settlement['storage'].count(
+                            item_obj.handle
+                        )
+                    )
+            del self.settlement_storage.locations[loc_key]['assets'] # can't serialize
+            storage_repr[loc_key] = self.settlement_storage.locations[loc_key]
 
-            # use expansion flair colors for gear locations from expansions
-            if storage_repr[k]['sub_type'] == 'gear' and 'expansion' in storage_repr[k].keys():
-                exp_dict = self.Expansions.get_asset(storage_repr[k]['expansion'])
-                storage_repr[k]['bgcolor'] = exp_dict['flair']['bgcolor']
-                storage_repr[k]['color'] = exp_dict['flair']['color']
 
         # first thing we do is sort all handles from settlement storage into our
         # 'inventory' lists
@@ -3620,11 +3627,11 @@ class Settlement(UserAsset):
         # look through all dictionaries in strorage_repr(esentation) and make
         # each into a member of the 'locations' list for the appropriate
         # outbound dict
-        for k in storage_repr.keys():
-            if storage_repr[k]['sub_type'] == 'gear':
-                gear_dict['locations'].append(storage_repr[k])
-            elif storage_repr[k]['sub_type'] == 'resources':
-                reso_dict['locations'].append(storage_repr[k])
+        for loc_key in storage_repr:
+            if storage_repr[loc_key]['sub_type'] == 'gear':
+                gear_dict['locations'].append(storage_repr[loc_key])
+            if storage_repr[loc_key]['sub_type'] == 'resources':
+                reso_dict['locations'].append(storage_repr[loc_key])
 
         return json.dumps([reso_dict, gear_dict])
 

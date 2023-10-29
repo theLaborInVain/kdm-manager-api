@@ -5272,7 +5272,7 @@ green_knight = {
 flower_knight = {
     'flower_knight_badge': {
         'expansion': 'flower_knight',
-        'type': 'sense_memory',
+        'type': 'sense_memory_gear',
         'name': 'Flower Knight Badge',
         'keywords': ['item', 'jewelry', 'badge'],
         'rules': ['Unique'],
@@ -5323,7 +5323,7 @@ flower_knight = {
     },
     'satchel': {
         'expansion': 'flower_knight',
-        'type': 'sense_memory',
+        'type': 'sense_memory_gear',
         'name': 'Satchel',
         'keywords': ['item', 'heavy', 'stinky'],
         'affinities': {'top': 'green', 'left': 'green', 'bottom': 'green'},
@@ -5349,7 +5349,7 @@ flower_knight = {
     },
     'vespertine_arrow': {
         'expansion': 'flower_knight',
-        'type': 'sense_memory',
+        'type': 'sense_memory_gear',
         'name': 'Vespertine Arrow',
         'keywords': ['item','ammunition','arrow'],
         'speed': 2,
@@ -5363,7 +5363,7 @@ flower_knight = {
     },
     'vespertine_bow': {
         'expansion': 'flower_knight',
-        'type': 'sense_memory',
+        'type': 'sense_memory_gear',
         'name': 'Vespertine Bow',
         'keywords': ['weapon', 'ranged', 'bow', 'two-handed', 'other'],
         'speed': 3,
@@ -5378,7 +5378,7 @@ flower_knight = {
     },
     'vespertine_cello': {
         'expansion': 'flower_knight',
-        'type': 'sense_memory',
+        'type': 'sense_memory_gear',
         'name': 'Vespertine Cello',
         'keywords': ['item', 'instrument', 'noisy', 'other'],
         'rules': ['Unique'],
@@ -5390,7 +5390,7 @@ flower_knight = {
     },
     'vespertine_foil': {
         'expansion': 'flower_knight',
-        'type': 'sense_memory',
+        'type': 'sense_memory_gear',
         'name': 'Vespertine Foil',
         'keywords': ['weapon', 'melee', 'sword', 'fragile'],
         'speed': 4,
