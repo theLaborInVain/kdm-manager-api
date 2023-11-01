@@ -7,7 +7,12 @@
 
 from .._asset import Asset
 from .._collection import Collection
+
+# multiple gear definition imports
 from .definitions import *
+from .expansions_of_death_1 import *
+from .gamblers_chest import *
+
 
 class Assets(Collection):
 

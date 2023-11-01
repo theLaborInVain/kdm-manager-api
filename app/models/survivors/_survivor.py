@@ -93,7 +93,9 @@ class Survivor(UserAsset):
     DATA_MODEL.add('returning_survivor', list)
     DATA_MODEL.add("Weapon Proficiency", int)
     DATA_MODEL.add("weapon_proficiency_type", str)
-    DATA_MODEL.add('weapon_proficiency_sealed', bool, required=False)
+    DATA_MODEL.add(
+        'weapon_proficiency_sealed', str, required=False, unset_on_none=True
+    )
 
     # other
     DATA_MODEL.add('born_in_ly', int)
@@ -166,13 +168,20 @@ class Survivor(UserAsset):
     ]:
         DATA_MODEL.add(flag, bool, required=False, category='flag')
 
+    # Gambler's Chest arc survivors
+    DATA_MODEL.add('body_count', int, required=False)
 
+    #
     # silly stuff / after-thoughts / one-offs, etc.
+    #
+
     DATA_MODEL.add('constellation', str, required=False)
     DATA_MODEL.add(
         'sword_oath', dict, {'sword': None, 'wounds': 0}, required=False
     )
     DATA_MODEL.add('weak_spot', str, required=False)
+
+
 
 
     def __repr__(self):
@@ -292,7 +301,10 @@ class Survivor(UserAsset):
             self.survivor["survival"] == 0
         ):
             msg = "Automatically added 1 survival to %s"
-            self.log_event(msg, self.pretty_name(), event_type='sysadmin')
+            self.log_event(
+                msg = msg % self.pretty_name(),
+                event_type='sysadmin'
+            )
             self.survivor["survival"] += 1
 
         # 5. settlement buffs - move this to a separate function
@@ -485,7 +497,10 @@ class Survivor(UserAsset):
         if self.newborn:
             self.log_event("%s born to %s!" % (self.pretty_name(), parent_string), action="born", agent="automation")
         else:
-            self.log_event('%s joined the settlement!' % (self.pretty_name()), event_type="survivor_join")
+            self.log_event(
+                msg = '%s joined the settlement!' % self.pretty_name(),
+                event_type="survivor_join"
+            )
 
         return True
 
@@ -2072,7 +2087,8 @@ class Survivor(UserAsset):
             )
         )
 
-
+        # enforce
+        self.survivor = self.DATA_MODEL.apply(self.survivor)
 
         # optional save
         if save:

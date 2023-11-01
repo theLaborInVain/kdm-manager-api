@@ -276,4 +276,16 @@ secret_fighting_art = {
         ),
     },
 
+    # crimson crocodile
+    'aerial_transfusion': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Aerial Transfusion',
+        'desc': (
+            'It requires an additional two bleeding tokens to kill you.<br/>'
+            'During your act, you may spend <font class="kdm_manager_font">'
+            "a</font> to freely rearrange all survivors' bleeding tokens."
+        ),
+        'max_bleeding_tokens': 2,
+    },
+
 }

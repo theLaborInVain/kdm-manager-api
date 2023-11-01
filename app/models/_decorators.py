@@ -68,7 +68,7 @@ def deprecated(method):
     return wrapped
 
 
-def log_event_exception_manager(log_event_call):
+def log_event_exception_manager(le_func):
     """ This is a decorator for model lookups. Do not use this decorator to
     decorate other methods: it will fail.
 
@@ -76,11 +76,12 @@ def log_event_exception_manager(log_event_call):
     interrupt the request. This is really the only method where we ever want to
     handle exceptions this way. """
 
-    def wrapper(self, *args, **kwargs):
-        """ Wraps the incoming call. """
+
+    @functools.wraps(le_func)
+    def decorated_function(self, *args, **kwargs):
         try:
-            return log_event_call(self, *args, **kwargs)
-        except Exception as log_event_call_exception:
+            return le_func(self, *args, **kwargs)
+        except Exception as le_func_exception:
             # first, figure out what called log_event()
             curframe = inspect.currentframe()
             calframe = inspect.getouterframes(curframe, 2)
@@ -94,9 +95,9 @@ def log_event_exception_manager(log_event_call):
 
             self.logger.exception(err_msg)
 
-            utils.email_exception(log_event_call_exception)
+            utils.email_exception(le_func_exception)
+    return decorated_function
 
-    return wrapper
 
 
 def paywall(func):

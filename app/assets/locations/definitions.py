@@ -68,7 +68,7 @@ resources = {
         "color": "DCD900",
         "selectable": False,
     },
-    "dbk_resources": {
+    "dung_beetle_knight_resources": {
         "name": "Dung Beetle Knight Resources",
         "expansion": "dung_beetle_knight",
         "color": "DCD900",
@@ -467,7 +467,7 @@ location = {
 
     # gambler's chest
     'crimson_crockery': {
-        'tyoe': 'gear',
+        'type': 'gear',
         'name': 'Crimson Crockery',
         'expansion': 'crimson_crocodile',
         'color': '894142',

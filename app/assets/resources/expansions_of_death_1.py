@@ -138,9 +138,111 @@ dragon_king = {
     },
 }
 
-dung_beetle_knight = {
 
-    # dbk DBK dung_beetle_knight strange resources
+#
+#   Dung Beetle Knight
+#
+
+dung_beetle_knight_resources = {
+
+    'beetle_horn': {
+        'expansion': 'dung_beetle_knight',
+        'name': 'Beetle Horn',
+        'keywords': ['bone'],
+        'endeavors': ['dbk_horn_ceremony'],
+        'desc': (
+            'Requires <b class="innovation">Scarification</b> <br/>'
+            '<font class="kdm_font">d</font> <b>Horn Ceremony</b> - Archive '
+            'and roll 1d10 <table class="roll-table"> <tr class="zebra"> '
+            '<td class="roll">1-4</td><td class="result">Your brain is '
+            'punctured and you die.</td></tr><tr> <td class="roll">5+</td>'
+            '<td class="result">Brain Stimulation. Gain the benefits of '
+            '<b class="story-event">Age 1</b> and <b class="story-event">'
+            'Age 2</b> without gaining Hunt XP. Brain stimulation ignores '
+            'the "once a lifetime" rule on the <b class="story-event">Age</b> '
+            'story event.</td></tr></table>',
+        ),
+        'copies': 1,
+    },
+    'century_fingernails': {
+        'expansion': 'dung_beetle_knight',
+        'name': 'Century Fingernails',
+        'keywords': ['bone'],
+        'desc': (
+            'These nails are never clipped. Instead, they are folded and '
+            'hammered hundreds of times into an impossibly fine edge.'
+        ),
+        'copies': 2,
+    },
+    'century_shell': {
+        'expansion': 'dung_beetle_knight',
+        'name': 'Century Shell',
+        'keywords': ['hide', 'iron'],
+        'desc': (
+            'This ancient and mineral-rich armor plate is covered with razor '
+            'wind scratches.<br/>You may spend this as if it were a '
+            '<b class="resource">Scarab Shell</b> resource.'
+        ),
+        'copies': 1,
+    },
+    'compound_eye': {
+        'expansion': 'dung_beetle_knight',
+        'name': 'Compound Eye',
+        'keywords': ['organ','consumable'],
+        'desc': (
+            'A cluster of differently colored eyes, each filled with a creamy, '
+            'tangy syrup.<br/>If you have 3+ courage, you may '
+            '<b class="special-rule">consume</b> and archive this to gain '
+            '+3d10 insanity.'
+        ),
+        'copies': 1,
+    },
+    'elytra': {
+        'expansion': 'dung_beetle_knight',
+        'name': 'Elytra',
+        'keywords': ['bone', 'hide', 'organ'],
+        'desc': (
+            'The ribbed underside of these large shells makes an ideal surface '
+            'to grind weapons.</i> <br />A survivor may archive this to give '
+            'all of their attacks in the next showdown <b class="">Sharp</b>.'
+        ),
+        'copies': 1,
+    },
+    'scarab_shell': {
+        'expansion': 'dung_beetle_knight',
+        'name': 'Scarab Shell',
+        'keywords': ['hide'],
+        'copies': 3,
+        'desc': (
+            'Cool and oily to the touch. Lantern light reveals a brilliant '
+            'band of color dancing on its surface.'
+        ),
+    },
+    'scarab_wing': {
+        'expansion': 'dung_beetle_knight',
+        'name': 'Scarab Wing',
+        'keywords': ['organ'],
+        'desc': (
+            'When soaked in water, these vein-filled wings gain some '
+            'elasticity.'
+        ),
+        'copies': 1,
+    },
+    'underplate_fungus': {
+        'expansion': 'dung_beetle_knight',
+        'name': 'Underplate Fungus',
+        'keywords': ['herb', 'hide', 'consumable'],
+        'copies': 1,
+        'desc': (
+            'A corkscrew-shaped fungus that grows in the empty channels '
+            "between the Dung Beetle Knight's armor plating."
+        ),
+    },
+}
+
+
+dung_beetle_knight_strange_resources = {
+
     'preserved_caustic_dung': {
         'expansion': 'dung_beetle_knight',
         'type': 'strange_resources',
@@ -167,121 +269,17 @@ dung_beetle_knight = {
         ),
         'copies': 1,
     },
-
-    # dung_beetle_knight resources 
-    'beetle_horn': {
-        'expansion': 'dung_beetle_knight',
-        'type': 'dung_beetle_knight_resources',
-        'name': 'Beetle Horn',
-        'keywords': ['bone'],
-        'endeavors': ['dbk_horn_ceremony'],
-        'desc': (
-            'Requires <b class="innovation">Scarification</b> <br/>'
-            '<font class="kdm_font">d</font> <b>Horn Ceremony</b> - Archive '
-            'and roll 1d10 <table class="roll-table"> <tr class="zebra"> '
-            '<td class="roll">1-4</td><td class="result">Your brain is '
-            'punctured and you die.</td></tr><tr> <td class="roll">5+</td>'
-            '<td class="result">Brain Stimulation. Gain the benefits of '
-            '<b class="story-event">Age 1</b> and <b class="story-event">'
-            'Age 2</b> without gaining Hunt XP. Brain stimulation ignores '
-            'the "once a lifetime" rule on the <b class="story-event">Age</b> '
-            'story event.</td></tr></table>',
-        ),
-        'copies': 1,
-    },
-    'century_fingernails': {
-        'expansion': 'dung_beetle_knight',
-        'type': 'dung_beetle_knight_resources',
-        'name': 'Century Fingernails',
-        'keywords': ['bone'],
-        'desc': (
-            'These nails are never clipped. Instead, they are folded and '
-            'hammered hundreds of times into an impossibly fine edge.'
-        ),
-        'copies': 2,
-    },
-    'century_shell': {
-        'expansion': 'dung_beetle_knight',
-        'type': 'dung_beetle_knight_resources',
-        'name': 'Century Shell',
-        'keywords': ['hide', 'iron'],
-        'desc': (
-            'This ancient and mineral-rich armor plate is covered with razor '
-            'wind scratches.<br/>You may spend this as if it were a '
-            '<b class="resource">Scarab Shell</b> resource.'
-        ),
-        'copies': 1,
-    },
-    'compound_eye': {
-        'expansion': 'dung_beetle_knight',
-        'type': 'dung_beetle_knight_resources',
-        'name': 'Compound Eye',
-        'keywords': ['organ','consumable'],
-        'desc': (
-            'A cluster of differently colored eyes, each filled with a creamy, '
-            'tangy syrup.<br/>If you have 3+ courage, you may '
-            '<b class="special-rule">consume</b> and archive this to gain '
-            '+3d10 insanity.'
-        ),
-        'copies': 1,
-    },
-    'elytra': {
-        'expansion': 'dung_beetle_knight',
-        'type': 'dung_beetle_knight_resources',
-        'name': 'Elytra',
-        'keywords': ['bone', 'hide', 'organ'],
-        'desc': (
-            'The ribbed underside of these large shells makes an ideal surface '
-            'to grind weapons.</i> <br />A survivor may archive this to give '
-            'all of their attacks in the next showdown <b class="">Sharp</b>.'
-        ),
-        'copies': 1,
-    },
-    'scarab_shell': {
-        'expansion': 'dung_beetle_knight',
-        'type': 'dung_beetle_knight_resources',
-        'name': 'Scarab Shell',
-        'keywords': ['hide'],
-        'copies': 3,
-        'desc': (
-            'Cool and oily to the touch. Lantern light reveals a brilliant '
-            'band of color dancing on its surface.'
-        ),
-    },
-    'scarab_wing': {
-        'expansion': 'dung_beetle_knight',
-        'type': 'dung_beetle_knight_resources',
-        'name': 'Scarab Wing',
-        'keywords': ['organ'],
-        'desc': (
-            'When soaked in water, these vein-filled wings gain some '
-            'elasticity.'
-        ),
-        'copies': 1,
-    },
-    'underplate_fungus': {
-        'expansion': 'dung_beetle_knight',
-        'type': 'dung_beetle_knight_resources',
-        'name': 'Underplate Fungus',
-        'keywords': ['herb', 'hide', 'consumable'],
-        'copies': 1,
-        'desc': (
-            'A corkscrew-shaped fungus that grows in the empty channels '
-            "between the Dung Beetle Knight's armor plating."
-        ),
-    },
 }
 
 
-flower_knight = {
+#
+#   Flower Knight 
+#
 
-    #
-    # flower knight resources 
-    #
+flower_knight_resources = {
 
     'lantern_bloom': {
         'expansion': 'flower_knight',
-        'type': 'flower_knight_resources',
         'name': 'Lantern Bloom',
         'keywords': ['flower','hide'],
         'rules': ['Perishable'],
@@ -294,7 +292,6 @@ flower_knight = {
     },
     'lantern_bud': {
         'expansion': 'flower_knight',
-        'type': 'flower_knight_resources',
         'name': 'Lantern Bud',
         'keywords': ['flower','scrap',],
         'rules': ['Perishable'],
@@ -308,7 +305,6 @@ flower_knight = {
     },
     'osseous_bloom': {
         'expansion': 'flower_knight',
-        'type': 'flower_knight_resources',
         'name': 'Osseous Bloom',
         'keywords': ['flower','bone'],
         'rules': ['Perishable'],
@@ -323,7 +319,6 @@ flower_knight = {
     },
     'sighing_bloom': {
         'expansion': 'flower_knight',
-        'type': 'flower_knight_resources',
         'name': 'Sighing Bloom',
         'keywords': ['flower','organ',],
         'rules': ['Perishable'],
@@ -337,7 +332,6 @@ flower_knight = {
     },
     'warbling_bloom': {
         'expansion': 'flower_knight',
-        'type': 'flower_knight_resources',
         'name': 'Warbling Bloom',
         'keywords': ['flower','hide'],
         'rules': ['Perishable'],

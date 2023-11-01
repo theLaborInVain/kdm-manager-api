@@ -261,15 +261,15 @@ class Settlement(UserAsset):
         self._id = utils.mdb.settlements.insert(settlement)
         self.load() # uses self._id
 
+        # can't use self.Names because we haven't initialized assets yet
+        self.Names = KingdomDeath.names.Assets()
+
         # set the settlement name before we save to MDB
         s_name = settlement['name']
         if s_name is None:
             s_name = "Unknown"
             if flask.request.json.get('random_name', False):
-                # can't use self.Names because we haven't initialized assets yet
-                s_name = \
-                KingdomDeath.names.Assets().get_random_settlement_name()
-
+                s_name = self.Names.get_random_settlement_name()
         self.settlement['name'] = None
         self.set_name(s_name)
 
@@ -342,10 +342,16 @@ class Settlement(UserAsset):
 
         # do random survivors
         if macro.get("random_survivors", None) is not None:
-            for s in macro["random_survivors"]:
-                n = copy(s)
-                n.update({"settlement": self._id})
-                N = Survivor(new_asset_attribs=n, Settlement=self)
+            for survivor_template in macro["random_survivors"]:
+                new_survivor_attribs = copy(survivor_template)
+                new_survivor_attribs.update({
+                    "settlement": self._id,
+                    'random_name': flask.request.json.get('random_name', False),
+                })
+                Survivor(
+                    new_asset_attribs = new_survivor_attribs,
+                    Settlement = self
+                )
 
         # then storage
         if macro.get("storage", None) is not None:
@@ -1719,8 +1725,7 @@ class Settlement(UserAsset):
         #
 
         if not hasattr(self, 'Events'):
-            self.Events = events.Assets()
-
+            self.Macros = KingdomDeath.events.Assets()
 
         # ensure that the incoming event specifies the target LY
         t_index = e.get('ly', None)
@@ -2651,7 +2656,6 @@ class Settlement(UserAsset):
             e_dict = self.Expansions.get_asset(e_handle)
 
             # sealed gear (Badar / 2023-05)
-            self.logger.warning(e_dict)
             if e_dict.get('sealed_gear', False):
                 output['sealed_gear'] = e_dict['sealed_gear']
 

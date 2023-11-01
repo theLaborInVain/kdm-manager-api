@@ -295,7 +295,12 @@ fighting_art = {
         'name': 'Burning Ambition'
     },
     'defender': {
-        'desc': 'When a survivor adjacent to you is knocked down, you may spend 1 survival. If you do, they stand and gain +1 survival from your words of encouragement.<br/>You cannot use this if you have a <b>broken jaw</b>.',
+        'desc': (
+            'When a survivor adjacent to you is knocked down, you may spend 1 '
+            'survival. If you do, they stand and gain +1 survival from your '
+            'words of encouragement.<br/>You cannot use this if you have a '
+            '<b>broken jaw</b>.'
+        ),
         'expansion': 'sunstalker',
         'name': 'Defender',
         'survival_actions': {
@@ -313,9 +318,47 @@ fighting_art = {
         'name': 'Sneak Attack'
     },
     'trick_attack': {
-        'desc': 'Once per showdown, when you wound a monster from its blind spot, a survivor adjacent to you may gain the <b>priority target</b> token.',
+        'name': 'Trick Attack',
         'expansion': 'sunstalker',
-        'name': 'Trick Attack'
+        'desc': (
+            'Once per showdown, when you wound a monster from its blind spot, '
+            'a survivor adjacent to you may gain the <b>priority target</b> '
+            'token.'
+        ),
+    },
+
+
+    #
+    #   Gambler's Chest below!
+    #
+
+
+    # crimson crocodile
+
+    'bloodzerker': {
+        'name': 'Bloodzerker',
+        'expansion': 'crimson_crocodile',
+        'desc': (
+            'Gain +1 strength for each of your bleeding tokens.</br>'
+            'When you have 3+ bleeding tokens, you lose yourself to the blood '
+            'and are <b>guardless</b>!'
+        ),
+        'related_rules': ['guardless'],
+    },
+    'glass_mask': {
+        'name': 'Glass Mask',
+        'expansion': 'crimson_crocodile',
+        'desc': (
+            'When you <b>depart</b>, you lightly cut your ears, rub blood all '
+            'over your face, and wait for it to dry. Gain +3 insanity. <br/>'
+            'If you have <b>Face Painting</b>, you create a seal between your '
+            'glass mask and your armor. Gain an additional +3 insanity.'
+        ),
+    },
+    'invigorator': {
+        'name': 'Invigorator',
+        'expansion': 'crimson_crocodile',
+        'desc': 'Gain +1 accuracy and +1 speed while you have no insanity.'
     },
 
 }

@@ -112,6 +112,7 @@ class DataModel():
         record = deepcopy(record)
 
         # first part: normalize all extant attrs and add missing required attrs
+        keys_to_delete = set()
         for attr in self.serialize():
 
             # check for missing required attributes
@@ -121,10 +122,17 @@ class DataModel():
                 record[attr['name']] = attr['default']
 
             # in this loop, check the record itself, based on its attrs
-            keys_to_delete = set()
             if attr['name'] in record.keys():
 
-                # first, check if the attribute is the right type
+                # first, before we normalize or duck-type anything, add the attr
+                #   to the kill list if need to
+                if (
+                    record[attr['name']] is None and
+                    attr.get('unset_on_none', False)
+                ):
+                    keys_to_delete.add(attr['name'])
+
+                # next, coerce if we need to
                 if type(record[attr['name']]) != attr['type']:
                     warn = "Coercing '%s' attribute to %s type..."
                     self.logger.warning(warn % (attr['name'], attr['type']))
@@ -172,14 +180,10 @@ class DataModel():
                         self.logger.warning(warn % (attr['name'], minmax))
                         record[attr['name']] = minmax
 
-                # add to the kill list if it unsets on None 
-                if attr.get('unset_on_none', False):
-                    if record[attr['name']] is None:
-                        keys_to_delete.add(attr['name'])
-
 
         # process the kill list
         for key in keys_to_delete:
+            self.logger.warning("Deleting '%s' key...", key)
             del record[key]
 
         # lastly, delete keys that aren't part of the model
@@ -204,7 +208,11 @@ class DataModel():
 
 
     def duck_type(self, attrib, value):
-        ''' Retruns 'value' as the correct type for 'attrib'. '''
+        ''' Retruns 'value' as the correct type for 'attrib'. Special handling
+        for None. '''
+
+        if value == 'None' or value is None:
+            return None
 
         attribute = getattr(self, attrib)
         return attribute['type'](value)
@@ -226,8 +234,9 @@ class DataModel():
         elif attribute.get('immutable', False):
             failure = "'%s' value cannot be changed!" % key
         elif not isinstance(value, attribute['type']):
-            err = "'%s' value '%s' must be %s type (not %s)!"
-            failure = err % (key, value, attribute['type'], type(value))
+            if not attribute.get('unset_on_none', False):
+                err = "'%s' value '%s' must be %s type (not %s)!"
+                failure = err % (key, value, attribute['type'], type(value))
         elif attribute.get('options', None) is not None:
             if value not in attribute['options']:
                 err = "'%s' is not a valid option for '%s'. Options: %s"

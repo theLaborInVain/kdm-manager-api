@@ -324,9 +324,14 @@ expansion_disorders = {
     # lion knight
     'primma_donna': {
         'expansion': 'lion_knight',
-        'flavor_text': 'The double-edged sword of fame is the only weapon you require.',
         'name': 'Prima Donna',
-        'survivor_effect': 'Each survivor turn, you must take your act first (roll off each turn if multiple survivors have this disorder).'
+        'flavor_text': (
+            'The double-edged sword of fame is the only weapon you require.'
+        ),
+        'survivor_effect': (
+            'Each survivor turn, you must take your act first (roll off each '
+            'turn if multiple survivors have this disorder).'
+        ),
     },
     'shallow_lungs': {
         'expansion': 'lion_knight',

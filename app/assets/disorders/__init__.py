@@ -4,9 +4,11 @@
 
 """
 
-from .._asset import Asset
 from .._collection import Collection
+
+# definition imports
 from .definitions import *
+from .gamblers_chest import *
 
 class Assets(Collection):
 

@@ -87,6 +87,11 @@ core = {
             'craft this gear.'
         ),
     },
+    'collision': {
+        'name': 'Collision',
+        'type': 'special_rule',
+        'desc': 'When a survivor suffers collision, they are knocked down.',
+    },
     'consume': {
         'name': 'Consume',
         'type': 'special_rule',
@@ -130,12 +135,28 @@ core = {
     'devastating': {
         'name': 'Devastating X',
         'type': 'special_rule',
-        'desc': """A gear special rule. When a devastating weapon wounds a monster, it will inflict X additional wounds.""",
+        'desc': (
+            'A gear special rule. When a devastating weapon wounds a monster, '
+            'it will inflict X additional wounds.'
+        ),
+    },
+    'doomed': {
+        'name': 'Doomed',
+        'type': 'special_rule',
+        'desc': (
+            'While a survivor is doomed, they cannot perform any actions or '
+            "spend survival. If a survivor is doomed by a monster's AI or "
+            'Hit Location card, they are doomed until all actions on the card '
+            'are performed and the card is resolved.'
+        ),
     },
     'early_iron': {
         'name': 'Early Iron',
         'type': 'special_rule',
-        'desc': """A gear special rule. When any of your attack roll results are a l, cancel your attack.""",
+        'desc': (
+            'A gear special rule. When any of your attack roll results are a '
+            '1, cancel your attack.'
+        ),
     },
     'ethereal': {
         'name': 'Ethereal',
@@ -262,17 +283,32 @@ core = {
     'outfit': {
         'name': 'Outfit',
         'type': 'special_rule',
-        'desc': """This completes an armor set if you're wearing the rest of the set and it shares a material keyword with the missing armor gear. For example, if you're wearing an Oxidized Lantern Helm and Phoenix Armor on every other hit location, you would gain the Phoenix Armor Set bonus because the Phoenix Helm also has the metal keyword.""",
+        'desc': (
+            "This completes an armor set if you're wearing the rest of the set "
+            "and it shares a material keyword with the missing armor gear. "
+            "For example, if you're wearing an Oxidized Lantern Helm and "
+            "Phoenix Armor on every other hit location, you would gain the "
+            "Phoenix Armor Set bonus because the Phoenix Helm also has the "
+            "metal keyword."
+        ),
     },
     'paired': {
         'name': 'Paired',
         'type': 'special_rule',
-        'desc': """A gear special rule. Paired weapons are two Identical weapons that can be used as one. Add the speed of the second weapon when attacking with the first. These weapons must have the same name, and both must be In your gear grid.""",
+        'desc': (
+            'A gear special rule. Paired weapons are two identical weapons '
+            'that can be used as one. Add the speed of the second weapon when '
+            'attacking with the first. These weapons must have the same name, '
+            'and both must be In your gear grid.'
+        ),
     },
     'pickaxe': {
         'name': 'Pickaxe',
         'type': 'keyword',
-        'desc': """A gear keyword, in certain situations, this can be used to mine minerals.""",
+        'desc': (
+            'A gear keyword, in certain situations, this can be used to mine '
+            'minerals.'
+        ),
     },
     'prismatic': {
         'name': 'Prismatic',
@@ -371,6 +407,16 @@ core = {
         'type': 'keyword',
         'desc': 'A gear keyword. This item has a strong odor.',
     },
+    'super_dense': {
+        'name': 'Super-dense',
+        'type': 'hit_location',
+        'desc' (
+            'A type of hit location. This hit location is unusually hard. '
+            'If a survivor attempts to wound one of these locations with a '
+            'frail weapon, it is destroyed and archived at the end of the '
+            'attack.'
+        ),
+    },
     'tool': {
         'name': 'Tool',
         'type': 'keyword',
@@ -423,6 +469,19 @@ expansion = {
         'expansion': 'promo',
         'name': 'Female Only',
         'desc': None,
+    },
+
+    # flower knight
+    'parry': {
+        'expansion': 'flower_knight',
+        'type': 'hit_location',
+        'name': 'Parry',
+        'desc': (
+            'A parry hit location represents the monster skillfully deflecting '
+            'an attack. <br/> When attempting to would Parry hit locations, '
+            'all wound attempts fail unless the wound roll result is critical. '
+            'This failure triggers any any Failure reactions as normal.'
+        ),
     },
 
     # sunstalker
@@ -600,6 +659,16 @@ expansion = {
             'New special gear rule. Survivors have Foresight if there are '
             'any revleaed AI or HL cards.'
         )
+    },
+    'guardless': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Guardless',
+        'type': 'special_rule',
+        'desc': (
+            'A special rule. A guardless survivor may not dodge, block, '
+            'deflect, or ignore hits. Attack rolls can still miss guardless '
+            'survivors, as they still factor their evasion in.'
+        ),
     },
 
     # death crown inheritor aya
