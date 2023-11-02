@@ -70,7 +70,9 @@ def new_user_asset(asset_type=None):
         )
         return survivor_object.serialize()
     if asset_type == "survivors":
-        output = survivors.create_many_survivors(dict(flask.request.get_json()))
+        output = settlements.create_many_survivors(
+            dict(flask.request.get_json())
+        )
         return flask.Response(
             response=json.dumps(output, default=json_util.default),
             status=200,

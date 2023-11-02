@@ -319,7 +319,7 @@ core = {
             'all colors.'
         ),
     },
-    'range': {
+    'range_x': {
         'name': 'Range: N',
         'type': 'special_rule',
         'desc': (
@@ -339,26 +339,38 @@ core = {
     'rawhide': {
         'name': 'Rawhide',
         'type': 'keyword',
-        'desc': """A gear keyword. This gear is crafted of uncured hides.""",
+        'desc': 'A gear keyword. This gear is crafted of uncured hides.',
     },
-    'reach': {
+    'reach_x': {
         'name': 'Reach',
-        'type': 'special_rule',
-        'desc': """A gear special rule. Reach weapons are long enough to attack monsters when the survivor Is not adjacent. Reach specifies the maximum number of spaces away that a survivor can attack with this weapon."""
+        'type': 'gear_special_rule',
+        'desc': (
+            'A gear special rule. Reach weapons are long enough to attack '
+            'monsters when the survivor is not adjacent. Reach specifies the '
+            'maximum number of spaces away that a survivor can attack with '
+            'this weapon.'
+        ),
     },
     'savage': {
         'name': 'Savage',
-        'type': 'special_rule',
-        'desc': """A gear special rule. After the first critical wound in an attack, savage weapons cause 1 additional wound. This rule does not trigger on Impervious hit locations.""",
+        'type': 'gear_special_rule',
+        'desc': (
+            'A gear special rule. After the first critical wound in an attack, '
+            'savage weapons cause 1 additional wound. This rule does not '
+            'trigger on Impervious hit locations.'
+        ),
     },
     'selfish': {
         'name': 'Selfish',
-        'type': 'special_rule',
-        'desc': """A gear special rule. A gear with this rule may not be in a same gear grid with any gear with the "other" keyword.""",
+        'type': 'gear_special_rule',
+        'desc': (
+            'A gear special rule. A gear with this rule may not be in a same '
+            'gear grid with any gear with the "other" keyword.'
+        ),
     },
     'sentient': {
         'name': 'Sentient',
-        'type': 'special_rule',
+        'type': 'gear_special_rule',
         'desc': (
             'A gear special rule. A survivor must be insane to activate '
             'this gear.'

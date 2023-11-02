@@ -170,7 +170,7 @@ crimson_crocodile_resources = {
             "When you gain this, gain "
             '<span class="kd deck_icon kdm_manager_font" deck="p">XX</span> '
             "<b>Immortal Arm</b>. <br/>"
-            'You may spend <font class="kdm_manager_font">e</font> to archive '
+            'You may spend <font class="kdm_manager_font">E</font> to archive '
             'this and suck an artery. Gain'
             '<span class="kd deck_icon deck="FA">FA</span> <b>Bloodzerker</b>.'
         ),

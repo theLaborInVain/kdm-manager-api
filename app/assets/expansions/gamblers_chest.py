@@ -27,6 +27,13 @@ gamblers_chest = {
         'release': datetime(2023, 7, 31, 12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': "Quarry"},
         'quarries': ['crimson_crocodile'],
+        'timeline_add': [
+            {'ly': 0, 'handle': 'gc_devour_the_white_lion'},
+            {'ly': 1, 'handle': 'first_crimson_day'},
+        ],
+        'timeline_rm': [
+            {'ly': 1, 'handle': 'core_first_day'},
+        ],
     },
 
 }

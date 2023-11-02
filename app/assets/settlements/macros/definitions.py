@@ -32,6 +32,7 @@ add_survivors = {
             'Timeline is updated.',
         ],
         "current_quarry": "White Lion (First Story)",
+        'monsters': ['white_lion'],
         'showdown_type': 'normal',
         "random_survivors": [
             {"sex": "M", "Waist": 1, "departing": True},
@@ -48,6 +49,54 @@ add_survivors = {
                 "ly": 0,
                 "sub_type": "showdown_event",
                 "name": "White Lion (First Story)"
+            },
+        ],
+        'warning': (
+            'This macro was intended to be applied to new settlements at '
+            'creation time! Apply this macro to existing settlements at '
+            'your own risk...'
+        ),
+    },
+
+    "create_devour_the_white_lion_survivors": {
+        "name": "Devour the White Lion",
+        'new_settlement': True,
+        "desc": (
+            'Adds the <b>Crimson Crocodile</b> expansion, '
+            'sets the quarry to be the <i>Prologue Crimson Crocodile</i>, '
+            'creates four new survivors and adds them to the '
+            '<i>Departing Survivors</i> group.'
+        ),
+        'expansions': ['crimson_crocodile'],
+        "summary": [
+            'Two male and two female survivors are randomly generated.',
+            'Survivor <i>Waist</i> hit locations are set to 1.',
+            (
+                'Starting gear is added to settlement storage: 4x Cloth and '
+                '4x Founding Stone.'
+            ),
+            'Survivors are added to the Departing Survivors group.',
+            'Quarry is set to <i>Prologue Crimson Crocodile</i>.',
+            'Timeline is updated.',
+        ],
+        "current_quarry": "prologue_crimson_crocodile",
+        'monsters': ['crimson_crocodile'],
+        'showdown_type': 'normal',
+        "random_survivors": [
+            {"sex": "M", "Waist": 1, "departing": True},
+            {"sex": "M", "Waist": 1, "departing": True},
+            {"sex": "F", "Waist": 1, "departing": True},
+            {"sex": "F", "Waist": 1, "departing": True},
+        ],
+        "storage": [
+            {"name": "founding_stone", "quantity": 4},
+            {"name": "cloth", "quantity": 4},
+        ],
+        "timeline_events": [
+            {
+                "ly": 0,
+                "sub_type": "showdown_event",
+                "name": "Prologue Crimson Crocodile"
             },
         ],
         'warning': (

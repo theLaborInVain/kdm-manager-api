@@ -35,9 +35,9 @@ barber_surgeon = {
         'keywords': ['item', 'consumable'],
         'affinities': {'left': 'blue', 'top': 'green'},
         'desc': (
-            '<font class="kdm_font">a</font> <b>Consume:</b> Remove all your '
-            'tokens and stand up. You may use this while knocked down. Use '
-            'once per showdown.',
+            '<font class="kdm_manager_font">A</font> <b>Consume:</b> Remove '
+            'all your tokens and stand up. You may use this while knocked '
+            'down. Use once per showdown.',
         ),
         'recipes': [
             {
@@ -712,10 +712,10 @@ core = {
         'type': 'catarium',
         'name': 'White Lion Coat',
         'desc': (
-            '<b>Pounce:</b> Spend <font class="kdm_font">c</font> and <font '
-            'class="kdm_font">a</font> to move 3 spaces in a straight line. '
-            'Then, if you moved 3 spaces, activate a melee weapon with +1 '
-            'strength.'
+            '<b>Pounce:</b> Spend <font class="kdm_manager_font">M</font> and '
+            '<font class="kdm_manager_font">A</font> to move 3 spaces in a '
+            'straight line. Then, if you moved 3 spaces, activate a melee '
+            'weapon with +1 strength.'
         ),
         'armor': 2,
         'location': 'body',
@@ -1731,35 +1731,15 @@ core = {
         'type': 'skinnery',
         'name': 'Rawhide Whip',
         'keywords': ['weapon','melee','whip','rawhide'],
-        'desc': '<b>Provoke:</b> When you wound with this weapon, gain the <b>priority target</b> token.',
+        'desc': (
+            '<b>Provoke:</b> When you wound with this weapon, gain the '
+            '<b>priority target</b> token.'
+        ),
         'speed': 3,
         'accuracy': 7,
         'strength': 1,
     },
 
-    # starting gear
-    'cloth': {
-        'type': 'starting_gear',
-        'name': 'Cloth',
-        'keywords': ['armor'],
-        'desc': 'The Cloth protects your waist. Gain 1 armor point at the waist hit location.',
-        'armor': 1,
-        'location': 'waist',
-    },
-    'founding_stone': {
-        'type': 'starting_gear',
-        'name': 'Founding Stone',
-        'keywords': ['weapon','melee','stone'],
-        'desc': (
-            'Spend <font class="kdm_font">a</font> to sling the stone from '
-            'anywhere on the board! Archive this card for 1 automatic hit '
-            'that inflicts a critical wound.<br/><b>Archive:</b> Return this '
-            'card to the game box.'
-        ),
-        'speed': 2,
-        'accuracy': 7,
-        'strength': 1,
-    },
 
     # stone circle
     'beast_knuckle': {
@@ -2002,13 +1982,14 @@ core = {
             },
         ],
     },
+}
 
-    # weapon crafter
+weapon_crafter = {
     'blood_sheath': {
-        'type': 'weapon_crafter',
         'name': 'Blood Sheath',
         'keywords': ['item', 'bone', 'other'],
         'rules': ['Block 1'],
+        'related_rules': ['frail','sharp'],
         'desc': (
             'When Rainbow Katana is left of Blood Sheath, it loses '
             '<b>Frail</b> and gains <b>Sharp</b> (add 1d10 strength to '
@@ -2027,7 +2008,6 @@ core = {
         ],
     },
     'counterweighted_axe': {
-        'type': 'weapon_crafter',
         'name': 'Counterweighted Axe',
         'keywords': ['weapon','melee','axe','two-handed'],
         'rules': ['Reach 2'],
@@ -2053,7 +2033,6 @@ core = {
         ],
     },
     'finger_of_god': {
-        'type': 'weapon_crafter',
         'name': 'Finger of God',
         'keywords': ['weapon','melee','spear','two-handed'],
         'rules': ['Reach 2'],
@@ -2079,7 +2058,6 @@ core = {
         ],
     },
     'rainbow_katana': {
-        'type': 'weapon_crafter',
         'name': 'Rainbow Katana',
         'keywords': ['weapon','melee','katana','finesse','two-handed'],
         'rules': ['Frail',],
@@ -2108,7 +2086,6 @@ core = {
     'scrap_bone_spear': {
         'name': 'Scrap Bone Spear',
         'min_version': 'core_1_6',
-        'type': 'weapon_crafter',
         'keywords': ['weapon', 'melee', 'spear', 'bone', 'metal'],
         'speed': 2,
         'accuracy': 6,
@@ -2124,7 +2101,6 @@ core = {
         },
     },
     'scrap_dagger': {
-        'type': 'weapon_crafter',
         'name': 'Scrap Dagger',
         'keywords': ['weapon','melee','dagger','metal'],
         'desc': (
@@ -2146,7 +2122,6 @@ core = {
     'scrap_lantern': {
         'name': 'Scrap Lantern',
         'min_version': 'core_1_6',
-        'type': 'weapon_crafter',
         'keywords': ['item', 'metal', 'lantern'],
         'desc': 'When you <b>depart</b>, gain +1 survival.',
         'affinities': {'right': 'blue'},
@@ -2160,7 +2135,6 @@ core = {
     'scrap_rebar': {
         'name': 'Scrap Rebar',
         'min_version': 'core_1_6',
-        'type': 'weapon_crafter',
         'keywords': ['item', 'metal', 'heavy'],
         'affinities': {'left': 'paired'},
         'desc': (
@@ -2170,7 +2144,6 @@ core = {
         ),
     },
     'scrap_sword': {
-        'type': 'weapon_crafter',
         'name': 'Scrap Sword',
         'keywords': ['weapon','melee','sword','metal'],
         'desc': (
@@ -2188,11 +2161,14 @@ core = {
             },
         },
         'recipes': [
-            {'locations': ['weapon_crafter'], 'resource_types': {'scrap': 1, 'bone': 2}, 'suffix_text': '<b>Heat</b> Required.'},
+            {
+                'locations': ['weapon_crafter'],
+                'resource_types': {'scrap': 1, 'bone': 2},
+                'suffix_text': '<b>Heat</b> Required.'
+            },
         ],
     },
     'skullcap_hammer': {
-        'type': 'weapon_crafter',
         'name': 'Skullcap Hammer',
         'desc': (
             'On a <b>Perfect Hit</b>, the monster is dazed, and gains -1 '
@@ -2212,7 +2188,6 @@ core = {
         ],
     },
     'whistling_mace': {
-        'type': 'weapon_crafter',
         'name': 'Whistling Mace',
         'keywords': ['weapon','melee','club','bone'],
         'desc': (
@@ -2226,11 +2201,13 @@ core = {
         'strength': 3,
         'affinities': {'bottom': 'green'},
         'recipes': [
-            {'locations': ['weapon_crafter'], 'resource_types': {'organ': 1, 'bone': 2}, },
+            {
+                'locations': ['weapon_crafter'],
+                'resource_types': {'organ': 1, 'bone': 2},
+            },
         ],
     },
     'zanbato': {
-        'type': 'weapon_crafter',
         'name': 'Zanbato',
         'keywords': ['weapon','melee','grand weapon','two-handed','bone'],
         'rules': ['Slow','Frail','Deadly'],
@@ -2256,8 +2233,9 @@ core = {
             },
         ],
     },
+}
 
-    # other/misc./random in the core
+misc_random_other = {
     'portcullis_key': {
         'type': 'other',
         'name': 'Portcullis Key',
@@ -2266,8 +2244,35 @@ core = {
             'get through.</i>'
         ),
     },
-
 }
+
+
+starting_gear = {
+    'cloth': {
+        'name': 'Cloth',
+        'keywords': ['armor'],
+        'desc': (
+            'The Cloth protects your waist. Gain 1 armor point at the waist '
+            'hit location.'
+        ),
+        'armor': 1,
+        'location': 'waist',
+    },
+    'founding_stone': {
+        'name': 'Founding Stone',
+        'keywords': ['weapon','melee','stone'],
+        'desc': (
+            'Spend <font class="kdm_font">a</font> to sling the stone from '
+            'anywhere on the board! Archive this card for 1 automatic hit '
+            'that inflicts a critical wound.<br/><b>Archive:</b> Return this '
+            'card to the game box.'
+        ),
+        'speed': 2,
+        'accuracy': 7,
+        'strength': 1,
+    },
+}
+
 
 tenth_anniversary_survivors = {
     'teleric_eye_tac': {

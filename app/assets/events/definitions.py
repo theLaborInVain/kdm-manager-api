@@ -96,6 +96,11 @@ settlement_event = {
         'name': 'Dark Seamstress', 'expansion': 'pinups_of_death_2',
     },
 
+    # crimson crocodile
+    'first_crimson_day': {
+        'name': 'First Crimson Day', 'expansion': 'crimson_crocodile',
+    },
+
 }
 
 story_event = {
@@ -218,4 +223,21 @@ story_event = {
     "slender_dark_place": {"name": "Dark Place", "page": 11, "expansion": "slenderman",},
     "slender_light_forging": {"name": "Light-Forging", "page": 13, "expansion": "slenderman",},
     "slender_forgotten_fear": {"name": "Forgotten Fear", "page": 15, "expansion": "slenderman",},
+
+    # gambler's chest
+    'gc_recurrent_story': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Prologue - Recurrent Story',
+        'page': 30,
+    },
+    'gc_beating_backwards': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Beating Backwards',
+        'page': 111,
+    },
+    'gc_devour_the_white_lion': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Devour the White Lion',
+        'page': 119,
+    },
 }

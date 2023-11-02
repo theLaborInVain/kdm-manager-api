@@ -1,0 +1,33 @@
+
+                                 KD:M Typography
+                                    of Death
+
+Use the following cheatsheet to implement KD:M icons using the API's unique 
+'kdm_manager_font' attribute:
+
+ - Activation (lightning)
+    <font class="kdm_manager_font">A</font>
+ - Endeavor (asterisk)
+    <font class="kdm_manager_font">E</font>
+ - Movement (chess knight)
+    <font class="kdm_manager_font">M</font>
+ - Shield (for rules text; not gear cards)
+    <font class="inline_shield">1</font>
+ - Story Event (book)
+    <font class="kdm_manager_font">S</font>
+
+
+Deck icons:
+
+ - Fighting Art
+    <span class="kd deck_icon deck="FA">FA</span>
+ - Pattern
+    <span class="kd deck_icon kdm_manager_font" deck="p">XX</span>
+ - Secret Fighting Art
+    <span class="kd deck_icon deck="SF">SF</span>
+
+
+HTML entities:
+
+ - Star (as in monster level)
+    &#9733;

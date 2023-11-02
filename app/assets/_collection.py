@@ -140,7 +140,6 @@ class Collection():
         )
 
 
-
     def enforce_data_model(self):
         """ If the collection is initialized with a self.data_model dict, we
         check all assets in self.assets to make sure they have a value for each
@@ -682,7 +681,6 @@ class Collection():
             if 'rules' in A.keys():
                 rules |= set(A['rules'])
         return sorted(list(rules))
-
 
 
     def filter(self, filter_attrib=None, filtered_attrib_values=[],
