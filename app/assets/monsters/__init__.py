@@ -43,21 +43,44 @@ class Assets(Collection):
     def get_asset_from_name(self, name=None, decompose=True):
         """ Overwrites the base class method of the same name. """
 
-        base_class_result = super(Assets, self).get_asset_from_name(name)
+        # fail if we don't get a str
+        if not isinstance(name, str):
+            err = "'name' kwarg must be 'str'! Got %s (%s)"
+            raise utils.InvalidUsage(err % (type(name), name))
 
+        name_upper = name.strip().upper()
+
+        # now create a NON-CASE-SENSITIVE look-up dict to search
+        name_lookup = {}
+        for m_dict in self.get_dicts():
+            name_lookup[m_dict['name'].upper()] = m_dict
+
+        # now check it against the incoming string
+        base_class_result = None
+        if name_upper in name_lookup.keys():
+            base_class_result = self.get_asset(
+                name_lookup[name_upper]['handle']
+            )
+
+        # if that worked, return it
+        if base_class_result is not None:
+            return base_class_result
+
+        # if it didn't and we're not decomposing, return None
         if base_class_result is None and not decompose:
             return base_class_result # i.e. None
-        elif base_class_result is not None:
-            return base_class_result
-        else:
-            variations = utils.decompose_name_string(name)
-            for v in variations:
-                asset_dict = super(Assets, self).get_asset_from_name(
-                    v,
-                    raise_exception_if_not_found=False
-                )
-                if asset_dict is not None:
-                    return asset_dict
+
+        # now try decomposition
+        variations = []
+        name_list = name.split(" ")
+        for i in range(len(name_list) + 1) :
+            variations.append(" ".join(name_list[:i]))
+            variations.append(" ".join(name_list[i:]))
+
+        for variation in variations:
+            asset_dict = self.get_asset_from_name(variation, decompose=False)
+            if asset_dict is not None:
+                return asset_dict
 
 
 class Monster(Asset):
@@ -65,47 +88,48 @@ class Monster(Asset):
     it with quarry/nemesis type child classes, but that design may change. """
 
     def __init__(self, *args, **kwargs):
+        ''' Normal init followed by special attrib fuckery. '''
+
         Asset.__init__(self,  *args, **kwargs)
-        self.normalize()
 
-
-    #
-    #   monster-specific initialization methods
-    #
-
-
-    def normalize(self):
-        """ Enforce our data model after initialization. """
-
-        # unique monsters can't have levels, so strip them
-        if hasattr(self, "unique"):
-            try:
+        # strip level for uniques
+        if self.asset.get('unique', False):
+            if self.asset.get('level', False):
+                del self.asset['level']
+            if hasattr(self, 'level'):
                 del self.level
-            except:
-                pass
+
+        # set attribs (yikes)
+        for attr in ['comment', 'level', 'type']:
+            if self.asset.get(attr, None) is not None:
+                setattr(self, attr, self.asset[attr])
+
 
 
     def is_final_boss(self):
         """ Returns a bool representing whether the monst is a final boss.
         Monsters are not final bosses by default. """
-        if hasattr(self, "final_boss"):
-            return self.final_boss
+#        if hasattr(self, "final_boss"):
+        if self.asset.get('final_boss', False):
+            return self.asset['final_boss']
         return False
 
 
     def is_unique(self):
         """ Returns a bool representing whether the monst is unique. Monsters
         are non-unique by default. """
-        if hasattr(self, "unique"):
-            return self.unique
+#        if hasattr(self, "unique"):
+        if self.asset.get('unique', False):
+            return self.asset['unique']
         return False
 
 
     def is_selectable(self):
         """ Returns a bool representing whether the monst is unique. Monsters
         are selectable by default. """
-        if hasattr(self, "selectable"):
-            return self.selectable
+#        if hasattr(self, "selectable"):
+        if self.asset.get('selectable', False):
+            return self.asset['selectable']
         return True
 
 

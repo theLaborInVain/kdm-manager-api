@@ -13,7 +13,6 @@ import base64
 from copy import copy
 from io import BytesIO
 from datetime import datetime
-import importlib
 import json
 import math
 import random
@@ -35,7 +34,6 @@ from .._user_asset import UserAsset
 from .._data_model import DataModel
 from .._decorators import deprecated, web_method, paywall
 
-import app.assets.kingdom_death as KingdomDeath
 
 
 class Survivor(UserAsset):
@@ -102,6 +100,7 @@ class Survivor(UserAsset):
     DATA_MODEL.add("bleeding_tokens", int)
     DATA_MODEL.add('color_scheme', str, required=False)
     DATA_MODEL.add("max_bleeding_tokens", int, 5)
+    DATA_MODEL.add('partner_id', ObjectId, required=False)
 
     # flags
     DATA_MODEL.add('departing', bool)
@@ -511,6 +510,7 @@ class Survivor(UserAsset):
 
         # only call validation methods here!
         self._validate_max_bleeding_tokens()
+        self._validate_partnership()
         self._validate_weapon_proficiency_type()
 
         super().save()
@@ -1272,7 +1272,9 @@ class Survivor(UserAsset):
             self.check_request_params(['value'])
 
         self.survivor['color_scheme'] = cs_handle
-        scheme_dict = self.Settlement.ColorSchemes.get_asset(handle=cs_handle)
+        scheme_dict = self.Settlement.SurvivorColorSchemes.get_asset(
+            handle=cs_handle
+        )
         msg = "%s set the color scheme to '%s' for %s."
         self.log_event(
             msg % (
@@ -2073,7 +2075,7 @@ class Survivor(UserAsset):
         # necessity check - issue 434
         if self.survivor.get(attrib, 'VALUENOTDEFINED') == value:
             err = "%s No change to '%s' attrib (%s -> %s). Ignoring..."
-            self.logger.info(err % (self, attrib, self.survivor[attrib], value))
+            self.logger.info(err, self, attrib, self.survivor[attrib], value)
             return True
 
         # validate
@@ -2226,7 +2228,10 @@ class Survivor(UserAsset):
     @web_method
     def set_bleeding_tokens(self, value=None, save=True):
         """ Sets self.survivor['bleeding_tokens'] to 'value', respecting the
-        survivor's max and refusing to go below zero. """
+        survivor's max and refusing to go below zero.
+
+        REFACTOR THIS TO USE self.DATA_MODEL
+        """
 
         if value is None:
             self.check_request_params(['value'])
@@ -2277,7 +2282,7 @@ class Survivor(UserAsset):
 
         if unset and not current_constellation:
             self.logger.warning(
-                "%s has no Constellation! Ignoring unset request..." % (self)
+                "%s has no Constellation! Ignoring unset request...", self
             )
             return False
 
@@ -2289,7 +2294,7 @@ class Survivor(UserAsset):
         # check if this is redundant, if not, do the update
         if current_constellation == constellation:
             err = "%s Constellation is already %s. Ignoring request..."
-            self.logger.warning(err % (self.pretty_name(), constellation))
+            self.logger.warning(err, self.pretty_name(), constellation)
             return False
 
 
@@ -2397,7 +2402,7 @@ class Survivor(UserAsset):
         # bail if we don't have a change.
         if new_name == self.survivor["name"]:
             warn = "%s Survivor name unchanged! Ignoring set_name() call..."
-            self.logger.warning(warn % self)
+            self.logger.warning(warn, self)
             return True
 
         # now do it!
@@ -2449,7 +2454,7 @@ class Survivor(UserAsset):
 
         if oid == self.survivor.get(role, None):
             err = "%s %s is already %s. Ignoring request..."
-            self.logger.warning(err % (self, role, new_parent["name"]))
+            self.logger.warning(err, self, role, new_parent["name"])
             return True
 
         self.survivor[role] = ObjectId(oid)
@@ -2467,56 +2472,87 @@ class Survivor(UserAsset):
 
     @web_method
     def set_partner(self, partner_oid=None, update_partner=True):
-        """ Request context optional. Sets (or unsets) the survivor's partner. """
+        """ Request context optional. Sets (or unsets) the survivor's partner
+        if 'partner_oid' is set to 'UNSET' (all caps).
 
+        Also has the ability to update their previous/outgoing/incoming partner
+        via the 'update_partner' (boolean) kwarg.
+        """
+
+        # back off to the request to get params or die trying
         if partner_oid is None:
             self.check_request_params(['partner_id'])
             partner_oid = self.params['partner_id']
 
-        # handle unset requests first
-        if partner_oid == 'UNSET' and 'partner_id' in self.survivor.keys():
-            # unset the partner, if we're doing that
+        # bail if the request is bogus
+        if (
+            partner_oid == 'UNSET' and not
+            self.survivor.get('partner_id', False)
+        ):
+            self.logger.warning('%s has no partner!', self)
+            warn = '%s Ignoring bogus request to unset partner...' % self
+            self.logger.warning(warn)
+            return True
+
+
+        #
+        #   do actual work
+        #
+
+        # process unset requests first
+        if partner_oid == 'UNSET' and self.survivor.get('partner_id', False):
+
+            # unset the partner, if 'updater_partner' kwarg == True
             if update_partner:
-                P = Survivor(_id=self.survivor['partner_id'])
-                P.set_partner(partner_oid='UNSET', update_partner=False)
+                p_obj = Survivor(
+                    _id=self.survivor['partner_id'],
+                    Settlement=self.Settlement
+                )
+                p_obj.set_partner(partner_oid='UNSET', update_partner=False)
+
             # unset the survivor
             del self.survivor['partner_id']
             self.log_event("%s no longer has a partner." % self.pretty_name())
             self.save()
             return True
 
-        if partner_oid == 'UNSET' and 'partner_id' not in self.survivor.keys():
-            self.logger.warning('%s Ignoring bogus request to unset partner...' % self)
+
+        # if we're still here, make sure we've got a valid oid for the incoming
+        #   partner and then initialize them
+        partner_obj = Survivor(_id=partner_oid, Settlement=self.Settlement)
+
+        # bail if partner_obj is already our survivor's partner
+        if partner_obj._id == self.survivor.get('partner_id', None):
+            msg = "%s Ignoring bogus request to set partner (is already %s)."
+            self.logger.warning(msg, self, partner_obj)
             return True
 
-
-        # now sanity check the incoming OID
-        if not ObjectId.is_valid(partner_oid):
-            raise utils.InvalidUsage("Partner OID '%s' does not appear to be a valid OID!" % partner_oid)
-        partner = utils.mdb.survivors.find_one({"_id": ObjectId(partner_oid)})
-        if partner is None:
-            raise utils.InvalidUsage("Partner OID '%s' does not match the OID of any known survivor!" % partner_oid)
-
-        # ok, we've got a good OID for the new partner, let's check a.) whether
-        # this is the current partner or b.) whether this is an update
-        if partner['_id'] == self.survivor.get('partner_id', None):
-            self.logger.warning("%s Ignoring bogus request to set partner (already set)." % self)
-            return True
-
-        if self.survivor.get('partner_id', None) is not None and partner['_id'] != self.survivor['partner_id']:
+        # if our survivor HAS a partner but it is NOT the incoming one, unset
+        #   the old/outgoing partner's partner (i.e. our survivor)
+        if (
+            self.survivor.get('partner_id', None) is not None and
+            partner_obj._id != self.survivor['partner_id']
+        ):
             if update_partner:
-                P = Survivor(_id=self.survivor['partner_id'])
-                P.set_partner(partner_oid='UNSET', update_partner=False)
+                partner_obj.set_partner(
+                    partner_oid='UNSET',
+                    update_partner=False
+                )
 
-        # set the new partner on the current survivor
+        # set the NEW/incoming partner on our current survivor
         self.survivor['partner_id'] = ObjectId(partner_oid)
-        self.log_event('%s is partners with %s!' % (self.pretty_name(), partner['name']))
+        msg = '%s is partners with %s!'
+        self.log_event(msg % (self.pretty_name(), partner_obj.survivor['name']))
         self.save()
 
-        # finally, if we're updating the partner, do that
+        # finally, if we're updating the partner to have our survivor as their
+        #   partner, do that and return True
         if update_partner:
-            P = Survivor(_id=partner['_id'])
-            P.set_partner(partner_oid=self.survivor['_id'], update_partner=False)
+            partner_obj.set_partner(
+                partner_oid=self.survivor['_id'], update_partner=False
+            )
+
+        return True
 
 
     @web_method
@@ -2536,7 +2572,7 @@ class Survivor(UserAsset):
 
         if self.survivor.get('retired', 'UNDEFINED') == retired:
             err = "%s Already has 'retired' = '%s'. Ignoring bogus request..."
-            self.logger.warning(err % (self, retired))
+            self.logger.warning(err, self, retired)
             return True
 
         self.survivor["retired"] = retired
@@ -2552,7 +2588,7 @@ class Survivor(UserAsset):
             try:
                 del self.survivor['retired_in']
             except Exception as error:
-                pass
+                self.logger.debug(error)
             self.log_event("%s has taken %s out of retirement." % (
                     request.User.login,
                     self.pretty_name()
@@ -2657,8 +2693,8 @@ class Survivor(UserAsset):
         sex = sex.upper()
 
         if sex not in ["M", "F"]:
-            msg = "'sex' must be 'M' or 'F'. Survivor sex cannot be '%s'."
-            self.logger.exception(msg % sex)
+            msg = "'sex' must be 'M' or 'F'. Survivor sex cannot be '%s'." % sex
+            self.logger.exception(msg)
             raise utils.InvalidUsage(msg, status_code=400)
 
         self.survivor["sex"] = sex
@@ -2682,7 +2718,7 @@ class Survivor(UserAsset):
         handle = self.params['handle']
         value = self.params['value']
 
-        sa_dict = self.SpecialAttributes.get_asset(handle)
+        sa_dict = self.Settlement.SpecialAttributes.get_asset(handle)
 
         self.survivor[handle] = value
 
@@ -2692,9 +2728,13 @@ class Survivor(UserAsset):
             self.rm_game_asset('tags', sa_dict['epithet'])
 
         if value:
-            msg = "%s added '%s' to %s." % (request.User.login, sa_dict['name'], self.pretty_name())
+            msg = "%s added '%s' to %s." % (
+                request.User.login, sa_dict['name'], self.pretty_name()
+            )
         else:
-            msg = "%s removed '%s' from %s." % (request.User.login, sa_dict['name'], self.pretty_name())
+            msg = "%s removed '%s' from %s." % (
+                request.User.login, sa_dict['name'], self.pretty_name()
+            )
         self.log_event(msg)
 
         self.save()
@@ -2859,7 +2899,7 @@ class Survivor(UserAsset):
         # bail if this is unnecessary
         if self.survivor['weapon_proficiency_type'] == handle:
             self.logger.debug(
-                "%s No change to Weapon Proficiency type. Ignoring..." % self
+                "%s No change to Weapon Proficiency type. Ignoring...", self
             )
             return True
 
@@ -2887,10 +2927,27 @@ class Survivor(UserAsset):
     #       IMPORTANT! These never save(), because they get called during save()
     #
 
+
     def _validate_max_bleeding_tokens(self):
         ''' Makes sure we never go below one. '''
         if self.survivor.get('max_bleeding_tokens', 1) < 1:
             self.set_attribute(attrib='max_bleeding_tokens', value=1)
+
+
+    def _validate_partnership(self):
+        ''' Make sure if the survivor has a partner, they have the partnership
+        AI added to their record. '''
+
+        if (
+            self.survivor.get('partner_id', None) is not None and not
+            'partner' in self.survivor['abilities_and_impairments']
+        ):
+            msg = "%s has the 'partner_id' attribute and is missing the AI!"
+            self.logger.warning(msg, self)
+            self.add_game_asset(
+                asset_class='abilities_and_impairments',
+                asset_handle='partner'
+            )
 
 
     def _validate_weapon_proficiency_type(self):
@@ -2903,7 +2960,7 @@ class Survivor(UserAsset):
         if (
             wp_handle is None or
             wp_handle == '' or
-            self.survivor['weapon_proficiency_sealed']
+            self.survivor.get('weapon_proficiency_sealed', None)
         ):
             return True
 
@@ -3012,9 +3069,9 @@ class Survivor(UserAsset):
     def reset_damage(self, save=True):
         """ Remove all damage attribs/bools from the survivor. """
 
-        for d in self.DATA_MODEL.category('damage_location'):
-            if d in self.survivor.keys():
-                del self.survivor[d]
+        for dmg_loc in self.DATA_MODEL.category('damage_location'):
+            if dmg_loc in self.survivor.keys():
+                del self.survivor[dmg_loc]
 
         if save:
             self.save()
@@ -3099,7 +3156,7 @@ class Survivor(UserAsset):
             "potstars_noble_surname"
         ]:
             if self.survivor.get(attrib, False):
-                a_dict = self.SpecialAttributes.get_asset(attrib)
+                a_dict = self.Settlement.SpecialAttributes.get_asset(attrib)
                 traits.append(a_dict['name'])
 
         # check the survivor name too
@@ -3136,7 +3193,7 @@ class Survivor(UserAsset):
             'champions_rite', 'fated_blow', 'frozen_star', 'unbreakable'
         ]:
             if fa_handle in self.survivor["fighting_arts"]:
-                fa_dict = self.Settlement.FightingArts.get_asset(fa)
+                fa_dict = self.Settlement.FightingArts.get_asset(fa_handle)
                 fa_name = copy(fa_dict["name"])
                 if fa_name == "Frozen Star":
                     fa_name = "Frozen Star secret"
@@ -3159,9 +3216,9 @@ class Survivor(UserAsset):
             cells = set()
             the_constellations = self.Settlement.TheConstellations
             c_map = the_constellations.get_asset('lookups')["map"]
-            for t in traits:
-                if t in c_map.keys():
-                    cells.add(c_map[t])
+            for trait in traits:
+                if trait in c_map.keys():
+                    cells.add(c_map[trait])
             return list(cells)
 
         if return_type == 'available_constellations':
@@ -3169,9 +3226,11 @@ class Survivor(UserAsset):
             active_cells = self.get_dragon_traits('active_cells')
             the_constellations = self.Settlement.TheConstellations
             c_formulae = the_constellations.get_asset('lookups')["formulae"]
-            for k, v in c_formulae.items():      # k = "Witch", v = set(["A1","A2","A3","A4"])
-                if v.issubset(active_cells):
-                    constellations.add(k)
+
+            # k = "Witch", v = set(["A1","A2","A3","A4"])
+            for key, value in c_formulae.items():
+                if value.issubset(active_cells):
+                    constellations.add(key)
             return list(constellations)
 
         # if no return_type, just return the trait list
@@ -3229,11 +3288,13 @@ class Survivor(UserAsset):
 
         # process sibling oids and make lists of dictionaries
         for k in siblings: # i.e. 'half' or 'full'
-            for s in siblings[k]:
-                if s == self.survivor["_id"]:
+            for sib in siblings[k]:
+                if sib == self.survivor["_id"]:
                     pass # can't be your own sib
                 else:
-                    output['siblings'][k].append(utils.mdb.survivors.find_one({'_id': s}))
+                    output['siblings'][k].append(
+                        utils.mdb.survivors.find_one({'_id': sib})
+                    )
 
         # retrieve children from mdb; process oid lists into dictionaries
         output['children'] = {}
@@ -3293,7 +3354,7 @@ class Survivor(UserAsset):
                 if p_record is not None:
                     if p_record["sex"] == 'M':
                         output['father'] = p_record
-                    elif p['sex'] == 'F':
+                    elif p_record['sex'] == 'F':
                         output['mother'] = p_record
                     else:
                         raise ValueError('Invalid sex: %s' % p_record['sex'])
@@ -3338,7 +3399,7 @@ class Survivor(UserAsset):
         ''' Returns survivor tags as a list. '''
 
         if return_type == "pretty":
-            tags_obj = tags.Assets()
+            tags_obj = self.Settlement.Tags
             output = ""
             for t_handle in self.survivor['tags']:
                 t_asset = tags_obj.get_asset(t_handle)
@@ -3566,7 +3627,7 @@ class Survivor(UserAsset):
                         available_actions[sa_key]["available"] = False
                         available_actions[sa_key]["title_tip"] = title_tip
                 elif available:
-                    s_action = survival_actions.Assets().get_asset(sa_key)
+                    s_action = self.Settlement.SurvivalActions.get_asset(sa_key)
                     s_action["available"] = True
                     s_action["title_tip"] = title_tip
                     available_actions[sa_key] = s_action
@@ -3867,7 +3928,7 @@ class Survivor(UserAsset):
 
         if self.survivor["weapon_proficiency_type"] is not None:
             w_name = self.survivor["weapon_proficiency_type"]
-            w_assets = self.weapon_proficiency.Assets()
+            w_assets = self.Settlement.WeaponProficiency
             w_dict = w_assets.get_asset_from_name(w_name)
             if w_dict is None:
                 msg = "%s Weapon proficiency type '%s' could not be migrated!"

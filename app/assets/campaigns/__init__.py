@@ -20,7 +20,7 @@ class Assets(Collection):
     def __init__(self, *args, **kwargs):
         ''' Vanilla init with a type_override that needs deprecated. '''
 
-        self.type_override = "campaign"
+#        self.type_override = "campaign"
         Collection.__init__(self, *args, **kwargs)
 
 

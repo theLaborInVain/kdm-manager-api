@@ -148,7 +148,10 @@ class Storage():
             location['assets'].append(item_object)
 
         # final sanity check
-        if len(location['assets']) < 1:
+        if (
+            len(location['assets']) < 1 and not
+            location.get('has_no_gear', False)
+        ):
             warn = "No %s assets for storage handle '%s' in collection: %s"
             self.logger.warning(
                 warn, location_sub_type, location_handle, collection_obj

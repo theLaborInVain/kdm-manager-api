@@ -114,9 +114,14 @@ class Collection():
         self.enforce_data_model()
 
         # record use for analysis
-        if self.__module__ not in flask.request.kd_collections_initialized.keys():
-            flask.request.kd_collections_initialized[self.__module__] = 0
-        flask.request.kd_collections_initialized[self.__module__] += 1
+        if (
+            flask.request and
+            hasattr(flask.request, 'kd_collections_initialized')
+        ):
+            if self.__module__ not in \
+            flask.request.kd_collections_initialized.keys():
+                flask.request.kd_collections_initialized[self.__module__] = 0
+            flask.request.kd_collections_initialized[self.__module__] += 1
 
         # finish
         self._initialized = True
@@ -519,47 +524,6 @@ class Collection():
         return asset
 
 
-    def get_asset_from_name(self, name, case_sensitive=False,
-            raise_exception_if_not_found=True):
-        """ Tries to return an asset dict by looking up "name" attributes within
-        the self.assets. dict. Returns None if it fails.
-
-        By default, the mactching here is NOT case-sensitive: everything is
-        forced to upper() to allow for more permissive matching/laziness.
-
-        DEPRECATED in October 2023.
-        """
-
-        # fail if we don't get a str
-        if not isinstance(name, str):
-            err = "get_asset_from_name() 'name' kwarg must be 'str'! Not: %s"
-            if raise_exception_if_not_found:
-                raise TypeError(err % (type(name)))
-            return None
-
-        name = name.strip()
-
-        # special backoff for this dumbass pseudo-expansion
-        if name == 'White Box':
-            name = 'White Box & Promo'
-
-        if not case_sensitive:
-            name = name.upper()
-
-        name_lookup = {}
-        for a in self.assets.keys():
-            if "name" in self.assets[a]:
-                if case_sensitive:
-                    name_lookup[self.assets[a]["name"]] = a
-                elif not case_sensitive:
-                    asset_name_upper = self.assets[a]["name"].upper()
-                    name_lookup[asset_name_upper] = a
-
-        if name in name_lookup.keys():
-            return self.get_asset(name_lookup[name])
-        return None
-
-
     def get_dicts(self):
         """ Dumps a list of dicts where each dict is an asset dict. """
         output = []
@@ -572,9 +536,13 @@ class Collection():
         """ Returns the asset collections 'assets' dict as an OrderedDict. """
 
         output = OrderedDict()
-        for n in self.get_names():
-            asset_dict = self.get_asset_from_name(n)
+#        for n in self.get_names():
+#            asset_dict = self.get_asset_from_name(n)
+#            output[asset_dict['handle']] = asset_dict
+        list_of_dicts = sorted(self.get_dicts(), key=lambda x: x['name'])
+        for asset_dict in list_of_dicts:
             output[asset_dict['handle']] = asset_dict
+
         return output
 
 

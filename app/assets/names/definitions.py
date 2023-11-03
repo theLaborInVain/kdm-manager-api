@@ -86,6 +86,7 @@ settlement = [
     "Melmond",
     "Mido",
     "Mist",
+    'Moonspell',
     "Mysidia",
     "Narshe",
     "New Londo",
@@ -932,6 +933,7 @@ neuter = [
 surname = [
     "Aphra",
     "Atreides",
+    'Belpaese',
     "Black",
     "Blackfist",
     "Blackheart",
@@ -976,6 +978,7 @@ surname = [
     "Lionheart",
     "Lionslayer",
     "Malfoy",
+    'Moonspell',
     "Mourneblade",
     "Ochoa",
     "O'Connell",

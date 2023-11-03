@@ -14,11 +14,6 @@ quarry = {
         "sort_order": 0,
         "node": 1,
     },
-    "first_story_white_lion": {
-        "name": "First Story White Lion",
-        "sort_order": 0,
-        "node": 1,
-    },
     "gorm": {
         "name": "Gorm",
         "expansion": "gorm",
@@ -27,12 +22,6 @@ quarry = {
     },
     'crimson_crocodile': {
         'name': 'Crimson Crocodile',
-        'expansion': 'crimson_crocodile',
-        'sort_order': 2,
-        'node': 1,
-    },
-    'prologue_crimson_crocodile': {
-        'name': 'Prolofue Crimson Crocodile',
         'expansion': 'crimson_crocodile',
         'sort_order': 2,
         'node': 1,

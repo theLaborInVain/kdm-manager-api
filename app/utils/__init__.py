@@ -475,18 +475,6 @@ def str_to_snake(string):
     return "".join([part.capitalize() for part in string])
 
 
-def decompose_name_string(name):
-    """ Accepts a name string and returns a list of possible versions of it. """
-
-    output = []
-
-    name_list = name.split(" ")
-    for i in range(len(name_list) + 1) :
-        output.append(" ".join(name_list[:i]))
-
-    return output
-
-
 def deserialize_json(d):
     """ accepts a dict 'd' that we think might be JSON. Turns it into a normal
     python dict with python types, etc. """

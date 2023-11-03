@@ -302,6 +302,16 @@ class UserAsset():
                 self.logger.warning("Request URL: %s", flask.request.url)
 
 
+    def _dump_to_log(self):
+        ''' Dumps the asset to the log in a readable way. '''
+
+        self.logger.debug('<!-- DUMPING USER ASSET TO LOG -->')
+        self.logger.debug(self)
+        for key, value in self.get_record().items():
+            self.logger.debug('%s\t%s', key, value)
+        self.logger.debug('<!-- END OF USER ASSET DUMP -->')
+
+
     #
     #   universal 'get' methods for User Assets
     #

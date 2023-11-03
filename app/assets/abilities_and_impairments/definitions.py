@@ -245,7 +245,13 @@ ability = {
         'type': 'ability'
     },
     'partner': {
-        'desc': 'When you both <b>Arrive</b>, gain survival up to the survival limit. Partners may only nominate each other for <b><font class="kdm_font">g</font> Intimacy</b>. When a partner dies, the remaining partner gains a random disorder and loses this ability.',
+        'desc': (
+            'When you both <b>Arrive</b>, gain survival up to the survival '
+            'limit. Partners may only nominate each other for '
+            '<font class="kdm_manager_font">S</font> Intimacy</b>. When '
+            'a partner dies, the remaining partner gains a random disorder '
+            'and loses this ability.'
+        ),
         'name': 'Partner',
         'type': 'ability'
     },

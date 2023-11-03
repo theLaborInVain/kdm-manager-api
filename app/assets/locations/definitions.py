@@ -195,6 +195,7 @@ location = {
 
     "lantern_hoard": {
         "type": "gear",
+        'has_no_gear': True,
         "name": "Lantern Hoard",
         "consequences": [
             "bone_smith",

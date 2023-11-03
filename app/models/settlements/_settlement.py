@@ -160,7 +160,6 @@ class Settlement(UserAsset):
 
         # survivor sheet assets
         self.CausesOfDeath = KingdomDeath.causes_of_death.Assets()
-        self.ColorSchemes = KingdomDeath.special_attributes.Assets()
         self.SpecialAttributes = KingdomDeath.special_attributes.Assets()
         self.SurvivorColorSchemes = KingdomDeath.color_schemes.Assets()
         self.Survivors = KingdomDeath.survivors.Assets()
@@ -839,7 +838,11 @@ class Settlement(UserAsset):
             self.check_request_params(['monster'])
             monster_string = self.params["monster"]
 
-        M = KingdomDeath.monsters.Monster(name=monster_string)
+        monst_asset = self.Monsters.get_asset_from_name(monster_string)
+        monst_obj = KingdomDeath.monsters.Monster(
+            handle=monst_asset['handle'],
+            collection_obj = self.Monsters
+        )
 
         # do the killboard update
         killboard_dict = {
@@ -848,14 +851,14 @@ class Settlement(UserAsset):
             'kill_ly': self.get_current_ly(),
             'created_by': flask.request.User._id,
             'created_on': datetime.now(),
-            'handle': M.handle,
-            'name': M.name,
-            'type': M.type,
+            'handle': monst_obj.handle,
+            'name': monst_obj.name,
+            'type': monst_obj.type,
             'raw_name': monster_string,
         }
         for a in ['comment', 'level']:
-            if hasattr(M, a):
-                killboard_dict[a] = getattr(M, a)
+            if hasattr(monst_obj, a):
+                killboard_dict[a] = getattr(monst_obj, a)
 
         utils.mdb.killboard.insert(killboard_dict)
         msg = (
@@ -866,7 +869,7 @@ class Settlement(UserAsset):
             msg % (
                 flask.request.User,
                 monster_string,
-                M.type,
+                monst_obj.type,
                 self.get_current_ly()
             )
         )
@@ -2857,10 +2860,15 @@ class Settlement(UserAsset):
 
         options = set()
 
-        for m in self.settlement['defeated_monsters']:
-            M = KingdomDeath.monsters.Monster(name=m)
-            if hasattr(M, 'level'):
-                options.add('%s Vol. %s' % (M.name, M.level))
+        for m_name in self.settlement['defeated_monsters']:
+            m_asset = self.Monsters.get_asset_from_name(m_name)
+            monster_obj = KingdomDeath.monsters.Monster(
+                handle  = m_asset['handle'],
+                collection_obj = self.Monsters
+            )
+            if hasattr(monster_obj, 'level'):
+                line = '%s Vol. %s' % (monster_obj.name, monster_obj.level)
+                options.add(line)
 
         for vol_string in self.get_monster_volumes():
             if vol_string in options:
@@ -3210,10 +3218,14 @@ class Settlement(UserAsset):
         #   1.) baseline 'available' innovations
         #
 
-        available = dict(self.get_available_assets(innovations)["innovations"])
+        available = dict(
+            self.get_available_assets(self.Innovations)["innovations"]
+        )
 
         if debug:
-            self.logger.debug("%s available innovations: %s" % (self, available.keys()))
+            self.logger.debug(
+                "%s available innovations: %s" % (self, available.keys())
+            )
 
         # remove principles and ones we've already got
         for a in list(available.keys()):
