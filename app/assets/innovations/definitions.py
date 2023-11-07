@@ -432,7 +432,9 @@ expansion = {
         "expansion": "dragon_king",
         "survival_limit": 1,
         "survival_action": "encourage",
-        "consequences": ["hovel", "inner_lantern","drums","paint","symposium","ammonia"],
+        "consequences": [
+            "hovel", "inner_lantern","drums","paint","symposium","ammonia"
+        ],
     },
     "sun_language": {
         "name": "Sun Language",
@@ -440,7 +442,9 @@ expansion = {
         "innovation_type": "starting innovation",
         "survival_limit": 1,
         "survival_action": "embolden",
-        "consequences": ["ammonia","drums","hovel","paint","symposium","hands_of_the_sun"],
+        "consequences": [
+            "ammonia","drums","hovel","paint","symposium","hands_of_the_sun"
+        ],
     },
     "hands_of_the_sun": {
         "name": "Hands of the Sun",

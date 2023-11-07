@@ -34,7 +34,15 @@ gamblers_chest = {
         'timeline_rm': [
             {'ly': 1, 'handle': 'core_first_day'},
         ],
+        'help': [
+            {
+                'type': 'game_assets',
+                'tip': (
+                    'References to the <b>Groomed Nail</b> and the '
+                    '<b>Groomed Nails</b> resource are believed to be '
+                    'synonymous.'
+                ),
+            },
+        ],
     },
-
 }
-

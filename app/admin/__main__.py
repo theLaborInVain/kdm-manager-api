@@ -24,7 +24,8 @@ from pymongo import MongoClient
 # local imports
 from app import API
 from app import models, utils
-from app.admin import clone, patch, pickle_login, purge
+from app.admin import clone, patch, purge
+from app.admin.cli import pickle_login
 
 #
 #   misc. helper methods for CLI admin tasks

@@ -336,7 +336,7 @@ class UserAsset():
 
         if self.collection == "survivors":
             ly = self.Settlement.settlement['timeline'][-1]['year']
-        ly = self.settlement[:-1]['timeline'][-1]['year']
+        ly = self.settlement['timeline'][-1]['year']
 
         return int(ly)
 

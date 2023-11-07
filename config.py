@@ -38,6 +38,7 @@ class Config():
     DEV_SSL_CERT = 'deploy/dev_cert.pem'
     DEV_SSL_KEY = 'deploy/dev_key.pem'
     ENVIRONMENT = {'is_production': False}
+    FREE_USER_SETTLEMENT_AGE_MAX = 180
     TESTING = True
     MDB = "kdm-manager"
     NONSUBSCRIBER_SETTLEMENT_LIMIT = 3
@@ -61,7 +62,7 @@ class Config():
     ]
     TIMEZONE = pytz.timezone('US/Central')
     USER_ASSET_COLLECTIONS = ['releases', 'settlements', 'survivors', 'users']
-    VERSION = "1.177.1096"
+    VERSION = "1.179.1102"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 

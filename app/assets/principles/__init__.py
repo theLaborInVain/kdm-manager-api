@@ -11,9 +11,14 @@
 
 """
 
+from app.assets import innovations
+
 from .._asset import Asset
 from .._collection import Collection
 from .definitions import *
+
+
+INNOVATIONS = innovations.Assets()
 
 
 class Assets(Collection):
@@ -44,14 +49,13 @@ class Assets(Collection):
         This is ONLY USED BY world.py. DO NOT use this elsewhere.
         """
 
-        innovations_mod = models.innovations.Assets()
 
         output = {}
         for p_dict in self.get_dicts():
             alternatives = []
             for option in p_dict["option_handles"]: # 'romantic,'graves', etc.
                 alternatives_list = [
-                    innovations_mod.get_asset(option)["name"],
+                    INNOVATIONS.get_asset(option)["name"],
                     option
                 ]
                 alternatives.append(alternatives_list)

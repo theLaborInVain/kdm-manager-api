@@ -382,6 +382,7 @@ dragon_king = {
         'expansion': 'dragon_king',
         'type': 'dragon_armory',
         'name': 'Dragon Gloves',
+        'keywords': ['armor', 'set', 'metal'],
         'affinities': {'top': 'blue', 'right': 'green'},
         'armor': 4,
         'location': 'arms',

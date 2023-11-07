@@ -80,6 +80,12 @@ resources = {
         "color": "DCD900",
         "selectable": False,
     },
+    "sunstalker_resources":{
+        "name": "Sunstalker Resources",
+        "expansion": "sunstalker",
+        "color": "666",
+        "selectable": False,
+    },
 
     # gambler's chest
     "crimson_crocodile_resources":{
@@ -381,6 +387,7 @@ location = {
     "the_sun": {
         "type": "gear",
         "name": "The Sun",
+        'has_no_gear': True,
         "expansion": "sunstalker",
         "consequences": [
             "bone_smith",
@@ -448,10 +455,24 @@ location = {
     },
     "throne": {
         "type": "gear",
+        'has_no_gear': True,
         "name": "Throne",
         "expansion": "dragon_king",
-        "consequences": ["Bone Smith", "Skinnery", "Organ Grinder", "Catarium", "Plumery", "Mask Maker"],
-        "endeavors": ['innovate', 'build_bonesmith', 'build_organ_grinder', 'build_skinnery', 'fear_and_trembling'],
+        "consequences": [
+            "Bone Smith",
+            "Skinnery",
+            "Organ Grinder",
+            "Catarium",
+            "Plumery",
+            "Mask Maker"
+        ],
+        "endeavors": [
+            'innovate',
+            'build_bonesmith',
+            'build_organ_grinder',
+            'build_skinnery',
+            'fear_and_trembling'
+        ],
     },
 
 

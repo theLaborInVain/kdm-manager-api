@@ -165,6 +165,12 @@ def return_exception(exception):
     """ This is how we fail user error (i.e. back) to the requester. """
     return flask.Response(response=exception.msg, status=exception.status_code)
 
+@API.errorhandler(utils.ConversionException)
+@crossdomain(origin=['*'])
+def conversion_exception(exception):
+    """ This is how we fail user error (i.e. back) to the requester. """
+    return flask.Response(response=exception.msg, status=exception.status_code)
+
 
 
 # Finally, import the routes and start the riot!

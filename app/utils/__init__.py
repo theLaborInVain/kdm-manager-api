@@ -152,6 +152,22 @@ def get_api_client():
 #
 #   special exception class definitions
 #
+class ConversionException(Exception):
+    ''' Takes no arguments. Returns a 410 ("Gone.") and a standard blurb of text
+    that we want to return to let users know their data is  too old. '''
+
+    def __init__(self):
+        Exception.__init__(self)
+        self.logger = get_logger(log_name='error')
+        self.msg = (
+            'User data created prior to January 2019 that has was not '
+            'ported to the KD:M API prior to October 2023 can no longer be '
+            'converted. This data is stored in the API, but can no longer be '
+            'accessed by external consumers. '
+        )
+        self.status_code = 410
+        self.logger.exception("[%s] %s" % (self.status_code, self.msg))
+
 
 class InvalidUsage(Exception):
     """ Raise this type of exception at any point to return an HTTP response to

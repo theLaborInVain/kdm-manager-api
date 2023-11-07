@@ -488,17 +488,13 @@ class Collection():
     #   common get and lookup methods
     #
 
-    def get_asset(self, handle=None, backoff_to_name=False,
-        raise_exception_if_not_found=True, exclude_keys=[]):
+    def get_asset(self, handle=None, raise_exception_if_not_found=True,
+                exclude_keys=[]):
 
         """ Return an asset dict based on a handle. Return None if the handle
         cannot be retrieved. """
 
         asset = copy(self.assets.get(handle, None))     # return a copy
-
-        # implement backoff logic
-        if asset is None and backoff_to_name:
-            asset = copy(self.get_asset_from_name(handle))
 
         # if the asset is still None, we want to raise an expception
         if asset is None and raise_exception_if_not_found:
@@ -536,9 +532,6 @@ class Collection():
         """ Returns the asset collections 'assets' dict as an OrderedDict. """
 
         output = OrderedDict()
-#        for n in self.get_names():
-#            asset_dict = self.get_asset_from_name(n)
-#            output[asset_dict['handle']] = asset_dict
         list_of_dicts = sorted(self.get_dicts(), key=lambda x: x['name'])
         for asset_dict in list_of_dicts:
             output[asset_dict['handle']] = asset_dict
@@ -666,7 +659,7 @@ class Collection():
     #   no set/get/filter methods below this point!
     #
 
-    def request_response(self, a_name=None, a_handle=None):
+    def request_response(self, a_handle=None):
         """ Processes a JSON request for a specific asset collection,
         initializes the collection (if it can) and then dumps the self.assets
         dict as a Flask response.
@@ -693,11 +686,10 @@ class Collection():
 
         # next, if the request has JSON, check for params
         if flask.request and hasattr(flask.request, 'json'):
-            a_name = flask.request.json.get("name", None)
             a_handle = flask.request.json.get("handle", None)
 
         # if there are no lookups requested, dump everything and bail
-        if a_name is None and a_handle is None:
+        if a_handle is None:
             return flask.Response(
                 response=json.dumps(
                     self.assets,
@@ -716,10 +708,9 @@ class Collection():
         )
         self.logger.warning(warn)
 
+        asset_dict = None
         if a_handle is not None:
             asset_dict = self.get_asset(a_handle)
-        elif a_name is not None:
-            asset_dict = self.get_asset_from_name(a_name)
 
         if asset_dict is None:
             return utils.http_404

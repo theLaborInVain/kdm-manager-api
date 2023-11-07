@@ -116,7 +116,7 @@ class Settlement(UserAsset):
             )
 
         msg = "%s self.campaign (%s) initialized! ('force'=%s)"
-        self.logger.info(msg, self, self.campaign, force)
+        self.logger.debug(msg, self, self.campaign.asset['name'], force)
 
 
     def _initialize_asset_collections(self):
@@ -405,8 +405,7 @@ class Settlement(UserAsset):
         #       timeline migrations
         #
         if self.settlement["meta"].get("timeline_version", None) is None:
-            self.convert_timeline_to_JSON()
-            self.perform_save = True
+            self._convert_timeline_to_JSON()
 
         if self.settlement["meta"]["timeline_version"] == 1.0:
             self.convert_timeline_quarry_events()
@@ -838,11 +837,7 @@ class Settlement(UserAsset):
             self.check_request_params(['monster'])
             monster_string = self.params["monster"]
 
-        monst_asset = self.Monsters.get_asset_from_name(monster_string)
-        monst_obj = KingdomDeath.monsters.Monster(
-            handle=monst_asset['handle'],
-            collection_obj = self.Monsters
-        )
+        monst_obj = self.Monsters.init_asset_from_name(monster_string)
 
         # do the killboard update
         killboard_dict = {
@@ -2828,7 +2823,6 @@ class Settlement(UserAsset):
         for fa_handle in fa_handles:
             fa_dict = self.FightingArts.get_asset(
                 fa_handle,
-                backoff_to_name=True,
                 raise_exception_if_not_found=False
             )
             if fa_dict is not None and fa_dict.get('sub_type', None) == 'secret_fighting_art':
@@ -2842,7 +2836,6 @@ class Settlement(UserAsset):
             for fa_handle in sorted(fa_handles):
                 fa_dict = self.FightingArts.get_asset(
                     fa_handle,
-                    backoff_to_name=True,
                     raise_exception_if_not_found=False
                 )
                 if fa_handle in dead_survivors and fa_handle not in live_survivors:
@@ -2861,11 +2854,7 @@ class Settlement(UserAsset):
         options = set()
 
         for m_name in self.settlement['defeated_monsters']:
-            m_asset = self.Monsters.get_asset_from_name(m_name)
-            monster_obj = KingdomDeath.monsters.Monster(
-                handle  = m_asset['handle'],
-                collection_obj = self.Monsters
-            )
+            monster_obj = self.Monsters.init_asset_from_name(m_name)
             if hasattr(monster_obj, 'level'):
                 line = '%s Vol. %s' % (monster_obj.name, monster_obj.level)
                 options.add(line)
@@ -2997,7 +2986,7 @@ class Settlement(UserAsset):
             output = []
             for e in s_expansions:
                 output.append(
-                    self.Expansions.get_asset(e, backoff_to_name=True)["name"]
+                    self.Expansions.get_asset(e)["name"]
                 )
             return utils.list_to_pretty_string(output)
 
@@ -3154,7 +3143,7 @@ class Settlement(UserAsset):
         if return_type == dict:
             output = {}
             for i_handle in s_innovations:
-                i_dict = self.Innovations.get_asset(i_handle, backoff_to_name=True)
+                i_dict = self.Innovations.get_asset(i_handle)
                 if i_dict is not None:
                     output[i_handle] = i_dict
                 else:
@@ -3802,9 +3791,13 @@ class Settlement(UserAsset):
 
             # loop through, initializing survivor objects and appending to
             #   self.survivors
-            for s in all_survivors:
+            for survivor in all_survivors:
                 # init the survivor
-                survivor_object = Survivor(_id=s["_id"], Settlement=self)
+                survivor_object = Survivor(
+                    _id = survivor["_id"],
+                    Settlement = self,
+                    normalize_on_init = False
+                )
                 self.survivors.append(survivor_object)
             return True
 
@@ -3967,7 +3960,7 @@ class Settlement(UserAsset):
 
             # process principles (separately)
             for p in self.settlement["principles"]:
-                p_dict = self.Innovations.get_asset(p, backoff_to_name=True)
+                p_dict = self.Innovations.get_asset(p)
                 minimum += p_dict.get("survival_limit", 0)
 
             return minimum
@@ -4614,27 +4607,11 @@ class Settlement(UserAsset):
             self.settlement["expansions"] = []
             self.perform_save = True
 
-        # 2016-02-02 - Weapon Masteries bug
-        for i in self.settlement["innovations"]:
-            if len(i.split(" ")) > 1 and "-" in i.split(" "):
-                self.logger.warn("Removing name '%s' from innovations for %s" % (i, self))
-                self.settlement["innovations"].remove(i)
-                replacement = self.Innovations.get_asset_from_name(i)
-                if replacement is not None:
-                    self.settlement["innovations"].append(replacement["handle"])
-                    self.logger.warn("Replaced '%s' with '%s'" % (i, replacement["handle"]))
-                else:
-                    self.logger.error("Could not find an asset with the name '%s' for %s. Failing..." % (i, self))
-                self.perform_save = True
-
 
     def _convert_campaign_to_handle(self):
         ''' Formerly used to convert v1 settlements where campaign handles were
         names. Now raises an exception. '''
-        error = (
-            'kdm-manager V1 settlements can no longer be ported to the KDM API!'
-        )
-        raise utils.InvalidUsage(error)
+        raise utils.ConversionException()
 
 
     def convert_expansions_to_handles(self):
@@ -4811,99 +4788,9 @@ class Settlement(UserAsset):
         self.logger.debug("Migrated %s storage list from legacy data model to 1.0." % self)
 
 
-    def convert_timeline_to_JSON(self):
-        """ Converts our old, pseudo-JSON timeline to the standard JSON one.
-
-        The original/oldest legacy data model LY dictionaries look like this:
-
-            {
-                u'custom': [],
-                u'story_event': u'Returning Survivors',
-                u'year': 1
-            }
-
-        So, as we read individual LY dictionaries, bear in mind that each key
-        within the dict might have a string as a value, rather than a list.
-
-        Slightly less-fucked-up-looking LY dictionaries look like this:
-
-            {
-                u'quarry_event': [u'White Lion (First Story)'],
-                u'settlement_event': [u'First Day'],
-                u'year': 0
-            }
-
-        These are closer to what we want to have in the v1.0 timeline data
-        model, i.e. the LY dict keys have lists as their values. The lists
-        themselves aren't optimal, but they're closer to what we want.
-
-        """
-
-        old_timeline = self.settlement["timeline"]
-        new_timeline = []
-
-        for old_ly in old_timeline:         # this is an ly dict
-            new_ly = {}
-            for k in old_ly.keys():
-                # k here is an event type key, such as 'quarry_event' or
-                # 'settlement_event' or whatever. In the JSON timeline model,
-                # each of these wants to be a key that points to a list, so
-                # we initialize an empty list to hold the key's events
-
-                event_type_list = []
-                if type(old_ly[k]) == int:
-                    new_ly[k] = old_ly[k]
-
-                # handling for newer legacy timeline events
-                elif type(old_ly[k]) == list:
-                    for event in old_ly[k]:
-                        if type(event) == dict:
-                            event_type_list.append(event)
-                        else:
-                            event_dict = {"name": event}
-                            if event in self.Events.get_names():
-                                event_dict.update(self.Events.get_asset_from_name(event))
-                            event_type_list.append(event_dict)
-                    new_ly[k] = event_type_list
-
-                # this is original data model (see doc string note)
-                else:
-
-                    err_msg = "Error converting legacy timeline! '%s' is an unknown event type!" % k
-
-                    if k in ["settlement_event","story_event"]:
-                        e = self.Events.get_asset_from_name(old_ly[k])
-                        if e is not None:
-                            event_type_list.append(e)
-                        else:
-                            try:
-                                event_root, event_parens = old_ly[k].split("(")
-                                e = self.Events.get_asset_from_name(event_root)
-                                if e is not None:
-                                    event_type_list.append(e)
-                            except:
-                                self.logger.error("Could not convert all '%s' events! for %s" % (k,self))
-                                self.logger.error("Event value '%s' could not be converted!" % (old_ly[k]))
-                                raise Exception("Fatal legacy timeline event conversion error!")
-
-                    elif k in ["nemesis_encounter","quarry_event"]:
-                        event_dict = {"name": old_ly[k]}
-                        event_type_list.append(event_dict)
-
-                    else:
-                        self.logger.error(err_msg)
-                        raise Exception(err_msg)
-
-                    new_ly[k] = event_type_list
-
-            new_timeline.append(new_ly)
-
-        # finally, make sure that LYs are sorted: order is significant here
-        new_timeline = utils.sort_timeline(new_timeline)
-
-        self.settlement["timeline"] = new_timeline
-        self.settlement["meta"]["timeline_version"] = 1.0
-        self.logger.warn("Migrated %s timeline from legacy data model to version 1.0" % self)
+    def _convert_timeline_to_JSON(self):
+        ''' No longer supported as of October 2023. '''
+        raise utils.ConversionException()
 
 
     def convert_timeline_quarry_events(self):

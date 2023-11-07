@@ -74,7 +74,10 @@ class User(UserAsset):
         self.normalize()
 
         # check temporary users for expiration
-        if int(self.user['subscriber']['level']) >= 3:
+        if (
+            int(self.user['subscriber']['level']) > 2 and
+            int(self.user['subscriber']['level']) < 6
+        ):
             self.check_subscriber_expiration()
 
         # random initialization methods
@@ -852,27 +855,19 @@ class User(UserAsset):
 	# settlement age support/freemium wall
         # first, see if we even need to be here
         # MOVE ALL OF THIS OUT OF THIS METHOD ASAP
-        sub_level = self.get_subscriber_level()
-        if sub_level >= 1:
-            pass
-        else:
+        if self.get_subscriber_level() < 1:
             for s in settlements:
 
                 # get asset age
                 created_on = API.config['TIMEZONE'].localize(s['created_on'])
                 asset_age = datetime.now(tzlocal()) - created_on
 
-                older_than_cutoff = asset_age.days > utils.settings.get(
-                    'users','free_user_settlement_age_max'
-                )
+                max_age = API.config['FREE_USER_SETTLEMENT_AGE_MAX']
+
+                older_than_cutoff = (asset_age.days > max_age)
                 if older_than_cutoff and self.user['_id'] == s['created_by']:
-                    warn_msg = "%s settlement '%s' is more than %s days old!"
-                    self.logger.warning(
-                        warn_msg, self, s['name'], utils.settings.get(
-                           'users',
-                           'free_user_settlement_age_max'
-                            )
-                        )
+                    warn = "%s settlement '%s' is more than %s days old!"
+                    self.logger.warning(warn, self, s['name'], max_age)
                     msg = utils.html_file_to_template(
                         'auto_remove_settlement.html'
                     )

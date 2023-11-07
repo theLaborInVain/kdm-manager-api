@@ -21,6 +21,7 @@ import requests
 
 # local imports
 from app import API, admin, utils
+from app.admin.cli import pickle_login
 from app.models import users
 
 logger = utils.get_logger()
@@ -55,7 +56,7 @@ def one_user_from_legacy_webapp(url, key, uid):
 
 
 @utils.metered
-@admin.pickle_login
+@pickle_login
 def get_one_user_from_api(prod_api, pickle_auth=False, **kwargs):
     """ Dials 'prod_api' and hits the /admin/user_asset/export endpoint with
     a POST containing a user's login ('u_login'). """
@@ -78,7 +79,6 @@ def get_one_user_from_api(prod_api, pickle_auth=False, **kwargs):
 
     if response.status_code != 200:
         raise requests.RequestException(response.reason)
-    logger.warn(response.content)
 
     pickle_string = response.content
     try:

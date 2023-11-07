@@ -345,9 +345,224 @@ crimson_crockery = {
     },
 
     # misc
-    # crimson_pearls
-    # crocodileyes
+    'crimson_pearls': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Crimson Pearls',
+        'keywords': ['item', 'jewelry', 'oterh'],
+        'affinities': {'top': 'red', 'bottom': 'red'},
+        'desc': (
+            'On <b>Arrival</b>, gain 3 bleeding tokens. Your <b>Fist & '
+            'Tooth</b> attacks gain +1 strength for each of your bleeding '
+            'tokens.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'blood_stool': 1, 'crimson_bone': 1},
+            },
+        ],
+    },
 
+    'crocodileyes': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Crocodileyes',
+        'armor': 2,
+        'location': 'legs',
+        'keywords': ['item', 'soluble'],
+        'affinities': {'left': 'red'},
+        'related_rules': ['foresight'],
+        'desc': (
+            'Gain +&#9733; strength if you have no <b>Foresight</b>.<br/>'
+            '<b>Foresight:</b> When there are revealed '
+            '<span class="kd deck_icon deck="AI">AI</span> or '
+            '<span class="kd deck_icon deck="HL">HL</span> cards on top of '
+            'decks.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'eye_of_immortal': 1},
+                'resource_types': {'organ': 1},
+            },
+        ],
+    },
+}
+
+crimson_crocodile_pattern_gear = {
+
+    'blood_drinker': {
+        'expansion': 'crimson_crocodile',
+        'type': 'pattern',
+        'name': 'Blood Drinker',
+        'keywords': ['weapon', 'melee', 'bone', 'axe', 'other'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 6,
+        'affinities': {'right': 'blue', 'bottom': 'red'},
+        'desc': (
+            'When you wound the monster, remove one of your bleeding tokens.'
+        ),
+        'affinity_bonus': {
+            'desc': (
+                'This weapon gains +3 strength for each of your bleeding '
+                'tokens.'
+            ),
+            'requires': {'puzzle': {'red': 1}, 'complete': {'blue': 1}},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'vampire_fang': 1},
+                'resource_types': {'organ': 1, 'bone': 1}
+            },
+        ],
+    },
+
+    'diamond_scab_katar': {
+        'expansion': 'crimson_crocodile',
+        'type': 'pattern',
+        'name': 'Diamond Scab Katar',
+        'keywords': ['weapon', 'melee', 'bone', 'katar'],
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 4,
+        'affinities': {'right': 'red', 'bottom': 'green'},
+        'rules': ['Paired', 'Sharp', 'Clobber: 4'],
+        'related_rules': ['paired', 'sharp', 'clobber_x'],
+        'affinity_bonus': {
+            'desc': (
+                'On a <b>Perfect Hit</b>, the monster gains -1 toughness '
+                'until end of the attack.'
+            ),
+            'requires': {'puzzle': {'red': 1}, 'complete': {'green': 1}},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'diamond_scabs': 1},
+                'resource_types': {'organ': 2, 'perfect_resource': 1}
+            },
+        ],
+    },
+
+    'dome_buster': {
+        'expansion': 'crimson_crocodile',
+        'type': 'pattern',
+        'name': 'Dome Buster',
+        'keywords': ['weapon', 'melee', 'grand', 'club', 'heavy'],
+        'speed': 1,
+        'accuracy': 5,
+        'strength': 12,
+        'affinities': {'bottom': 'blue'},
+        'related_rules': ['surpass_x'],
+        'desc': (
+            '<b>Surpass 5:</b> When your successful wound attempt total '
+            "surpasses the monster's toughness by 5 or more, the monster "
+            'suffers an additional wound.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'secret_stone': 1},
+                'resource_types': {'bone': 4}
+            },
+        ],
+    },
+
+    'immortal_arm': {
+        'expansion': 'crimson_crocodile',
+        'type': 'pattern',
+        'name': 'Immortal Arm',
+        'keywords': ['weapon', 'melee', 'bone', 'shield'],
+        'speed': 2,
+        'accuracy': 7,
+        'strength': 7,
+        'affinities': {'top': 'red', 'left': 'red'},
+        'related_rules': ['locked', 'deflect_x', 'disarm'],
+        'desc': (
+            'On arrival, add <font class="inline_shield">2</font> to the arms '
+            'hit location. <b>Locked:</b> This cannot be disarmed.'
+        ),
+        'affinity_bonus': {
+            'desc': (
+                'This gains the fist & tooth keyword. When you attack with '
+                'fist & tooth, <b>Deflect 1</b>.'
+            ),
+            'requires': {'puzzle': {'red': 2}},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'diffuser_heart': 1},
+                'resource_types': {'organ': 1, 'bone': 2}
+            },
+        ],
+    },
+
+    'fear_spear': {
+        'expansion': 'crimson_crocodile',
+        'type': 'pattern',
+        'name': 'Fear Spear',
+        'keywords': ['weapon', 'melee', 'bone', 'spear'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 5,
+        'affinities': {'left': 'green', 'right': 'red'},
+        'rules': ['Reach 2', 'Sharp'],
+        'related_rules': ['reach_x', 'sharp'],
+        'affinity_bonus': {
+            'desc': (
+                'When you gain insanity during the showdown, you may gain '
+                '0 or +3 instead.'
+            ),
+            'requires': {'puzzle': {'red': 1}, 'complete': {'blue': 1}}
+        },
+        'recipes': [
+            {
+                'resource_handles': {'crimson_gland': 1},
+                'resource_types': {'bone': 2, 'hide': 1}
+            },
+        ],
+    },
+
+
+    # seed pattern
+    'fingernail_whip': {
+        'expansion': 'crimson_crocodile',
+        'type': 'seed_pattern',
+        'name': 'Fingernail Whip',
+        'pattern_id': 9,
+        'keywords': ['seed', 'weapon', 'melee', 'whip', 'bone', 'other'],
+        'affinities': {'right': 'blue', 'left': 'red'},
+        'speed': 2,
+        'accuracy': 5,
+        'strength': 4,
+        'rules': ['Heroic'],
+        'related_rules': ['heroic', 'super_dense', 'razor_sharp'],
+        'affinity_bonus': {
+            'desc': (
+                'This weapon gains <b>Razor Sharp</b> against '
+                '<b>Super-dense</b> hit locations.'
+            ),
+            'requires': {'puzzle': {'red': 1}, 'complete': {'blue': 1}},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'groomed_nails': 1, 'veined_glass': 1, },
+                'resource_types': {'hide': 1, },
+                'locations': ['crimson_crockery'],
+                'innovations': ['paint'],
+                'crafting_process': [
+                    (
+                        'A <b>survivor who fought the Crimson Crocodile</b> '
+                        'stress-dreams fractals of blood.'
+                    ),
+                    (
+                        'Forgo sleep to shave nails down with a stone file '
+                        'and mix with <b>Paint</b> until dark red.'
+                    ),
+                    (
+                        'Pick an imagined fractal to birth at the '
+                        '<b>Crimson Crockery</b>.'
+                    ),
+                ],
+            },
+        ],
+    },
 }
 
 crimson_crocodile_misc_gear = {

@@ -79,7 +79,7 @@ add_survivors = {
             'Quarry is set to <i>Prologue Crimson Crocodile</i>.',
             'Timeline is updated.',
         ],
-        "current_quarry": "prologue_crimson_crocodile",
+        "current_quarry": "Prologue Crimson Crocodile",
         'monsters': ['crimson_crocodile'],
         'showdown_type': 'normal',
         "random_survivors": [

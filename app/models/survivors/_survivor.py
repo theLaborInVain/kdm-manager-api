@@ -2960,7 +2960,7 @@ class Survivor(UserAsset):
         if (
             wp_handle is None or
             wp_handle == '' or
-            self.survivor.get('weapon_proficiency_sealed', None)
+            self.survivor.get('weapon_proficiency_sealed', False)
         ):
             return True
 
@@ -3920,31 +3920,9 @@ class Survivor(UserAsset):
 
 
     def __convert_weapon_proficiency_type(self):
-        """ Swaps out names for handles. """
+        """ No longer supported, as of October 2023. """
 
-        # first normalize an empty string to None type
-        if self.survivor["weapon_proficiency_type"] == "":
-            self.survivor["weapon_proficiency_type"] = None
-
-        if self.survivor["weapon_proficiency_type"] is not None:
-            w_name = self.survivor["weapon_proficiency_type"]
-            w_assets = self.Settlement.WeaponProficiency
-            w_dict = w_assets.get_asset_from_name(w_name)
-            if w_dict is None:
-                msg = "%s Weapon proficiency type '%s' could not be migrated!"
-                self.logger.error(msg, self, w_name)
-            else:
-                self.survivor["weapon_proficiency_type"] = w_dict["handle"]
-                msg = "%s Migrated weapon proficiency type '%s' to '%s'"
-                self.logger.info(msg, self, w_name, w_dict["handle"])
-
-        self.survivor["meta"]["weapon_proficiency_type_version"] = 1.0
-
-        # log it to the admin log
-        msg = "Converted weapon proficiency type name (legacy) to handle for %s"
-        self.logger.info(msg, self)
-
-
+        raise utils.ConversionException()
 
 
     def __deprecate_epithets(self):

@@ -10,7 +10,10 @@ import math
 
 from .._asset import Asset
 from .._collection import Collection
+
 from .definitions import *
+from .gamblers_chest import *
+from .expansions_of_death_1 import *
 
 # constants
 _CONSUMABLE_KEYWORDS = ['fish', 'consumable', 'flower']

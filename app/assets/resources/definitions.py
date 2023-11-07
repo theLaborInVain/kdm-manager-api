@@ -10,10 +10,6 @@
 
 """
 
-from .crimson_crocodile import *
-from .expansions_of_death_1 import *
-
-
 core_resources = {
 
     # basic resources
@@ -77,7 +73,7 @@ core_resources = {
         'name': 'Perfect Bone',
         'min_version': 'core_1_6',
         'keywords': ['perfect', 'bone'],
-        'desc': '<i class="flavor-text">A mind numbingly perfect bone.</i>',
+        'flavor_text': 'A mind numbingly perfect bone.',
     },
     'perfect_hide': {
         'type': 'basic_resources',

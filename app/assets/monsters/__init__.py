@@ -5,6 +5,8 @@
 
 """
 
+from app import utils
+
 from .._asset import Asset
 from .._collection import Collection
 from .definitions import *
@@ -83,24 +85,45 @@ class Assets(Collection):
                 return asset_dict
 
 
+    def init_asset_from_name(self, name=None):
+        ''' Returns an initialized monster object from 'name'. '''
+
+        monster_asset = self.get_asset_from_name(name)
+
+        # try to get level
+        monster_level = None
+        split_name = name.split(' ')
+        for piece in split_name:
+            if piece.isdigit():
+                monster_level = int(piece)
+
+        return Monster(
+            handle = monster_asset['handle'],
+            collection_obj=self,
+            level = monster_level,
+        )
+
+
 class Monster(Asset):
     """ This is the base class for all monsters. We should NOT have to sub-class
     it with quarry/nemesis type child classes, but that design may change. """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, level=None, **kwargs):
         ''' Normal init followed by special attrib fuckery. '''
 
-        Asset.__init__(self,  *args, **kwargs)
+        Asset.__init__(self, *args, **kwargs)
+
+        self.level = level
+        if self.level is None:
+            del self.level
 
         # strip level for uniques
         if self.asset.get('unique', False):
-            if self.asset.get('level', False):
-                del self.asset['level']
             if hasattr(self, 'level'):
                 del self.level
 
         # set attribs (yikes)
-        for attr in ['comment', 'level', 'type']:
+        for attr in ['comment', 'type']:
             if self.asset.get(attr, None) is not None:
                 setattr(self, attr, self.asset[attr])
 

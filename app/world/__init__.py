@@ -37,21 +37,21 @@ import pymongo
 from app import API, utils
 from app.admin import notifications
 
-    # models
-from app.models import killboard as killboard_model
-from app.assets import campaigns as campaigns_models
-from app.assets import innovations as innovations_models
-from app.assets import monsters as monster_models
-from app.assets import principles as principles_mod
-from app.assets import expansions as expansions_models
-from app.assets import settlements as settlements_models
-from app.assets import survivors as survivors_models
-
     # assets
+from app.assets.kingdom_death import campaigns, innovations, principles
+#from app.assets import campaigns as campaigns_models
+from app.assets import monsters as monster_models
+from app.assets import expansions as expansions_models
 from . import assets as world_assets
 
+    # models
+from app.models.settlements import Settlement
+from app.models.survivors import Survivor
+from app.models.killboard import Killboard
 
-
+CAMPAIGNS = campaigns.Assets()
+INNOVATIONS = innovations.Assets()
+PRINCIPLES = principles.Assets()
 
 def cli_dump(key, spacer, value, suppress_print=False):
     """ Returns a command line interface pretty string for use in admin scripts
@@ -401,23 +401,29 @@ class World(object):
     # refresh method helpers and shortcuts
     #
 
-    def pretty_survivor(self, survivor):
+    def pretty_survivor(self, survivor_record):
         """ Clean a survivor up and make it 'shippable' as part of the world
         JSON. This initializes the survivor and will normalize it. """
 
         # init
-        S = survivors_models.Survivor(_id=survivor["_id"], normalize_on_init=False)
-        survivor["tags"] = S.get_tags("pretty")
-        survivor["age"] = utils.get_time_elapsed_since(survivor["created_on"], "age")
+        output = copy(survivor_record)
+        settlement_obj = Settlement(_id = survivor_record['settlement'])
+        survivor_obj = Survivor(
+            _id = survivor_record["_id"],
+            Settlement = settlement_obj,
+            normalize_on_init = False
+        )
+        output["tags"] = survivor_obj.get_tags("pretty")
+        output["age"] = utils.get_time_elapsed_since(
+            survivor_record["created_on"], "age"
+        )
+        output["settlement_name"] = settlement_obj.settlement["name"]
 
         # redact/remove
-        survivor["attribute_detail"] = 'REDACTED'
+        output["attribute_detail"] = 'REDACTED'
 
-        # add settlement info
-        settlement = utils.mdb.settlements.find_one({"_id": survivor["settlement"]})
-        survivor["settlement_name"] = settlement["name"]
+        return output
 
-        return survivor
 
     @utils.metered
     def get_eligible_documents(self, collection=None, required_attribs=None,
@@ -972,11 +978,11 @@ class World(object):
         except IndexError:
             return None
 
-        S = settlements_models.Settlement(_id=s["_id"])
+        settlement_obj = Settlement(_id=s["_id"])
 
-        s["campaign"] = S.get_campaign("name")
-        s["expansions"] = S.get_expansions("pretty")
-        s["player_count"] = S.get_players("count")
+        s["campaign"] = settlement_obj.campaign.asset["name"]
+        s["expansions"] = settlement_obj.get_expansions("pretty")
+        s["player_count"] = settlement_obj.get_players("count")
         s["age"] = utils.get_time_elapsed_since(s["created_on"], 'age')
 
         for k in ['timeline',]:
@@ -1006,11 +1012,11 @@ class World(object):
         if 'monsters' in known_types:
             bad_type = utils.mdb.killboard.find({'type': 'monsters'})
             err = "%s killboard monsters with invalid type 'monsters' found!"
-            self.logger.error(err % bad_type.count())
+            self.logger.error(err, bad_type.count())
 
             # initialize the bogus entries, which will normalize/fix them
             for killed in bad_type:
-                kbObject = killboard_model.Killboard(_id = killed['_id'])
+                Killboard(_id = killed['_id'])
 
             # finally, remove 'monsters' from known types:
             known_types.remove('monsters')
@@ -1073,11 +1079,9 @@ class World(object):
         """ Does an innovations popularity contest, accounting for both names
         and handles (for legacy support). """
 
-        I = innovations_models.Assets()
-        I.filter("type", ["principle"])
-
         all_results = []
-        for i_dict in I.get_dicts():
+        for i_handle in INNOVATIONS.get_assets_by_sub_type('principle'):
+            i_dict = INNOVATIONS.get_asset(i_handle)
             aliases = [i_dict["name"], i_dict["handle"]]
             results = utils.mdb.settlements.find(
                 {"innovations": {"$in": aliases}}
@@ -1102,8 +1106,7 @@ class World(object):
         refactored this in any meaningful way.
         """
 
-        p_assets = principles_mod.Assets()
-        mep_dict = p_assets.get_mutually_exclusive_principles()
+        mep_dict = PRINCIPLES.get_mutually_exclusive_principles()
 
         if self.query_debug:
             mep_meth = "models.principles.get_mutually_exclusive_principles()"
@@ -1190,22 +1193,25 @@ class World(object):
             ).count(),
         }
 
-        campaigns = utils.mdb.settlements.find(
+        distinct_campaign_handles = utils.mdb.settlements.find(
             {"campaign": {"$exists": True}}
         ).distinct("campaign")
 
-        C = campaigns_models.Assets()
+        for c_handle in distinct_campaign_handles:
+            total = utils.mdb.settlements.find({"campaign": c_handle}).count()
 
-        for c in campaigns:
-            total = utils.mdb.settlements.find({"campaign": c}).count()
+            c_dict = CAMPAIGNS.get_asset(
+                c_handle,
+                raise_exception_if_not_found=False
+            )
 
-            if C.get_asset_from_name(c) is None:
-                c = C.get_asset(c)["name"]
+            if c_dict is not None:
+                c_name = c_dict['name']
 
-            if c in list(popularity_contest.keys()):
-                popularity_contest[c] += total
+            if c_name in list(popularity_contest.keys()):
+                popularity_contest[c_name] += total
             else:
-                popularity_contest[c] = total
+                popularity_contest[c_name] = total
 
         return popularity_contest
 

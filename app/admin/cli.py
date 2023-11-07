@@ -12,6 +12,8 @@ import pickle
 # second party imports
 import requests
 
+# first part import
+from app import admin
 
 def pickle_login(func):
     """ This is a wrapper that does two things:

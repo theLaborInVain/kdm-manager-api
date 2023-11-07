@@ -14,9 +14,8 @@
     <div class="fixed_nav">
         <a href="#" ng-click="toggleNav()" class="burger">&#9776;</a>
         <h1>KD:M API v{{ VERSION }}</h1>
-        <a href="#" ng-click="toggleAboutBlock()">About</span>
+        <a href="#" ng-click="ngShowHide('aboutModal')">About</span>
         <a href="https://github.com/theLaborInVain/kdm-manager-api" target="top">GitHub</a> 
-        <a href="https://twitter.com/kdmManager" target="top">Twitter</a> 
         <a href="https://blog.kdm-manager.com/" target="top">Development blog</a>
     </div>
 
@@ -76,15 +75,19 @@
       </ul>
     </div>
 
-    <div id="container">
-
-        <div id="aboutBlock" class="about_block closed">
-            <br/><br/>
-            <a href="https://thelaborinvain.com" target="top">
-                <img src="/static/media/images/the_labor_in_vain_logo-01.png" class="title_logo" />
-            </a>
-            <h3>KD:M API - A RESTful API for <i>Monster</i>, by Kingdom Death</h3>
-            <p>The KDM API at <a href="https://api.kdm-manager.com">https://api.kdm-manager.com</a>
+    <div
+        id="aboutModal"
+        class="modal_outer hidden"
+        ng-if="ngVisible['aboutModal']"
+        ng-click="ngShowHide('aboutModal')"
+    >
+        <div
+            class="modal_inner slender_modal about_modal"
+        >
+            <h2>- Kingdom Death: Monster API v{{VERSION}} - </h2>
+            <h3>A RESTful API for <i>Monster</i>, by Kingdom Death</h3>
+            <h4>Operated by <i>The Labor in Vain</i></h4>
+            <p>The KD:M API at <a href="https://api.kdm-manager.com">https://api.kdm-manager.com</a>
             is a RESTful API for campaign/settlement management in "Monster" by
             <a href="http://kingdomdeath.com" target="top">Kingdom Death</a>.</p>
             <p>The API is maintained by <a href="https://thelaborinvain.com">
@@ -93,12 +96,31 @@
             <p>Some parts of the API are free to use. Others require an API key.
             Endpoints that require an API key to access are indicated below by the key
             (&#x1f511;) icon.</p>
-        </div>
 
+            <a href="https://thelaborinvain.com" target="top">
+                <img src="/static/media/images/the_labor_in_vain_logo-01.png" class="title_logo" />
+            </a>
+
+            <p>
+                Kingdom Death, Monster: {a apiData.stat.monster.copyright a}
+            </p>
+
+            <p>
+                KD:M API, KDM-Manager {a apiData.stat.info.copyright  a}
+            </p>
+
+            <p>
+                <a href="{a apiData.stat.info.about a}">Code repository</a> &ensp;
+                <a href="{a apiData.stat.info.license.url a}">License</a>
+            </p>
+
+
+        </div>
+    </div>
+
+    <div id="container">
 
         <!-- the left-side push nav -->
-
-
 
         <div class="block" ng-repeat="type in ['public', 'private']" id="{a type a}_routes">
 

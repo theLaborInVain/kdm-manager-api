@@ -346,85 +346,16 @@ button.admin_panel_add_feature_button {
     justify-content: center;
 }
 
-/*  modal!  */
-.modal_outer {
-    background: rgba(0,0,0,0.9);
-    bottom: 0;
-    height: auto;
-    left: 0;
-    overflow: auto;
-    position: fixed;
-    right: 0;
-    top: 0;
-    z-index: 1000;
-}
-.modal_inner {
-    background: #fff;
-    border-radius: 0.3rem;
-    margin: 0.3rem;
-    padding: 1rem;
-    z-index: 1001;
-}
-.modal_button_raft {
-    display: flex;
-    justify-content: space-evenly;
-    margin: 3%;
-    width: auto;
-}
-.modal_button_raft button,
-    .modal_button {
-    border: var(--border-default);
-    border-radius: 5vw;
-    box-shadow: var(--boxshadow-default);
-    font-family: 'Silverado';
-    font-weight: bold;
-    justify-content: center;
-    letter-spacing: 1px;
-    min-width: 20%;
-    padding: 1rem;
-    width: auto;
-}
-.modal_button.circle {
-    align-items: center;
-    border-radius: 100%;
-    display: flex;
-    font-size: 3.5rem;
-    height: 3rem;
-    justify-content: center;
-    min-width: auto;
-    padding: 0;
-    width: 3rem;
-}
-.modal_button.circle div {
-    margin: 0.4rem 0 1rem 0.1rem;
-}
-.modal_button_raft button:focus,
-    .modal_button:focus {
-    border: 0;
-}
-
-.modal_close_button {
-}
 
 /* wide resolution */
 @media only screen and (min-width: 1050px) and (orientation: landscape) {
 
-    /* CSS reset */
-    h1 {font-size: 5vw; }
-
     .flex_item_basic {flex-grow: 1; width: 25%; }
     .flex_item_double_wide {width: 100%; }
 
-    .modal_inner {
-        margin: 1rem auto;
-    }
     .modal_inner.edit_release_worksheet_container,
         .modal_inner.api_documentation_editor_container
         {
         max-width: 80rem; 
     }
-    .modal_inner.slender_modal {
-        max-width: 50rem;
-    }
-
 }

@@ -7,25 +7,27 @@ a {text-decoration: none; color: #ccc; }
 .fixed_nav {background: #000; position: fixed; left: 0; right: 0; top: 0; color: #ccc; display: flex; flex-direction: row; flex-wrap: wrap; padding: 0; justify-content: space-evenly; z-index: 10; }
 .fixed_nav * {font-size: 1.2em; margin: 0.4em; }
 
-.about_block {
-	z-index: 1;
-	background: #000;
-	color: #fff;
-	margin: 0 auto;  
-	position: fixed;
-	top: 0;
- 	left: 0;
-	right: 0; 
-	overflow-y: hidden;
-	max-height: 15em;
-	transition-property: all;
-	transition-duration: .5s;
-	transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
-	padding: 1em;
+.about_modal {
+    display: flex;
+    flex-direction: column; 
 }
-.about_block.closed {max-height: 0; }
-
-.title_logo {height: 20vh; float: right; }
+.about_modal h2 {
+    margin: 1rem auto 0 auto;
+}
+.about_modal h3 {
+    margin: 1rem auto 0 auto;
+}
+.about_modal h4 {
+    margin: 1rem auto 1rem auto;
+}
+.about_modal p {
+    margin: 1rem 3rem 1rem 3rem;
+}
+.title_logo {
+    display:flex;
+    height: 20vh;
+    margin: 3rem auto 3rem auto;
+}
 
 .block {padding: 0.5em; margin-bottom: 1em; }
 .type_header {margin: 1em; background: #F9AA33; padding: 1em; }

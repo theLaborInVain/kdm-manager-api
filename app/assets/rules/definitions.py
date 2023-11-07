@@ -127,10 +127,15 @@ core = {
         'type': 'special_rule',
         'desc': """A gear special rule. Gain +l luck while attacking with this weapon. This increases the odds of inflicting critical wounds.""",
     },
-    'deflect': {
+    'deflect_x': {
         'name': 'Deflect X',
-        'type': 'special_rule',
-        'desc': """A gear special rule, when you Deflect X, gain (or lose) deflect tokens until you have X of them. When you are hit, if you have any deflect tokens, you ignore that hit and lose a deflect token. When you Deflect X, you lose the benefits of Block.""",
+        'type': 'gear_special_rule',
+        'desc': (
+            'A gear special rule, when you Deflect X, gain (or lose) deflect '
+            'tokens until you have X of them. When you are hit, if you have '
+            'any deflect tokens, you ignore that hit and lose a deflect token. '
+            'When you Deflect X, you lose the benefits of Block.'
+        ),
     },
     'devastating': {
         'name': 'Devastating X',
@@ -495,6 +500,15 @@ expansion = {
             'This failure triggers any any Failure reactions as normal.'
         ),
     },
+    'perishable': {
+        'expansion': 'flower_knight',
+        'type': 'special_rule',
+        'name': 'Perishable',
+        'desc': (
+            'This cannot be added to settlement storage. At the end of the '
+            'settlement phase, it is lost. Archive it.'
+        ),
+    },
 
     # sunstalker
     'prismatic': {
@@ -651,10 +665,52 @@ expansion = {
     },
 
     # crimson croc
+    'clobber_x': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Clobber X',
+        'type': 'special_gear_rule',
+        'related_rules': ['super_dense'],
+        'desc': (
+            'Gain +X strength while attempting to wound a <b>Super-dense</b> '
+            'hit location.'
+        ),
+    },
+    'disarm': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Disarm',
+        'type': 'special_rule',
+        'desc':(
+            'When a survivor suffers disarm or is disarmed, end their attack. '
+            'Place a disarm tile on the attack weapon and a matching tile 5 '
+            'spaces away from that survivor. That survivor may not activate '
+            'that weapon until they remove the tile on it or the show down '
+            'ends. When a survivor moves over their associated tile, archive '
+            'it and remove the tile on your gear grid.'
+        ),
+    },
+    'guardless': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Guardless',
+        'type': 'special_rule',
+        'desc': (
+            'A special rule. A guardless survivor may not dodge, block, '
+            'deflect, or ignore hits. Attack rolls can still miss guardless '
+            'survivors, as they still factor their evasion in.'
+        ),
+    },
+    'heroic': {
+        'expansion': 'crimson_crocodile',
+        'type': 'weapon_ability',
+        'name': 'Heroic',
+        'desc': (
+            'A weapon ability. During your attack with this weapon, reroll '
+            'any natural 1s. You must keep the new results.'
+        ),
+    },
     'honed_x': {
         'expansion': 'crimson_crocodile',
         'name': 'Honed X',
-        'type': 'special_gear_rule',
+        'type': 'gear_special_rule',
         'desc': (
             'Honed weapons gain +X strength until they strike something '
             'hard (Super-Dense or Parry hit locations), ruining their edge. '
@@ -662,6 +718,12 @@ expansion = {
             'honed weapon, it loses its additional strength until it is '
             'restored at the settlement.'
         ),
+    },
+    'locked': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Locked',
+        'type': 'gear_special_rule',
+        'desc': 'This cannot be disarmed.',
     },
     'foresight': {
         'expansion': 'crimson_crocodile',
@@ -672,14 +734,14 @@ expansion = {
             'any revleaed AI or HL cards.'
         )
     },
-    'guardless': {
+    'surpass_x': {
         'expansion': 'crimson_crocodile',
-        'name': 'Guardless',
+        'name': 'Surpass X',
         'type': 'special_rule',
         'desc': (
-            'A special rule. A guardless survivor may not dodge, block, '
-            'deflect, or ignore hits. Attack rolls can still miss guardless '
-            'survivors, as they still factor their evasion in.'
+            'When your successful wound attempt total '
+            "surpasses the monster's toughness by X or more, the monster "
+            'suffers an additional wound.'
         ),
     },
 
