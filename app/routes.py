@@ -158,7 +158,7 @@ def admin_view(resource):
 @API.basicAuth.login_required
 def admin_notifications(method):
     """ Creates a new admin type asset. Requires basicAuth."""
-    return admin.get_notifications(method)
+    return admin.notifications.get_notifications(method)
 
 
 @API.route("/admin/user_asset/<action>", methods=['POST'])

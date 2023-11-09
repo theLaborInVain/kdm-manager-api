@@ -427,7 +427,7 @@ core = {
     'super_dense': {
         'name': 'Super-dense',
         'type': 'hit_location',
-        'desc' (
+        'desc': (
             'A type of hit location. This hit location is unusually hard. '
             'If a survivor attempts to wound one of these locations with a '
             'frail weapon, it is destroyed and archived at the end of the '

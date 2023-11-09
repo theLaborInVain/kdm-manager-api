@@ -23,6 +23,7 @@ from . import (
     names,
     principles,
     resources,
+    rules,
     saviors,
     settlements,
     strain_milestones,

@@ -38,7 +38,7 @@ class DataModel():
         ]
 
         self.add('_id', ObjectId, required=False, immutable=True)
-        self.add('created_on', datetime, required=False, immutable=True)
+        self.add('created_on', datetime, required=True, immutable=True)
         self.add('created_by', ObjectId, required=False, immutable=True)
         self.add('modified_on', datetime, required=False)
         self.add('last_accessed', datetime, required=False)
@@ -60,8 +60,6 @@ class DataModel():
         # set default, if not provided
         if default_value is None and a_type != datetime:
             default_value = a_type()
-        if default_value is None and a_type == datetime:
-            default_value = datetime.now()
 
         # create the dict and set it as an attr
         attribute_dict = {
@@ -120,6 +118,17 @@ class DataModel():
                 warn = "Adding required attr '%s' to record (default: '%s')..."
                 self.logger.warning(warn, attr['name'], attr['default'])
                 record[attr['name']] = attr['default']
+
+            # for required datetime attributes, do not allow None
+            if (
+                attr['required'] and attr['type'] == datetime and
+                record.get(attr['name'], False) is None
+            ):
+                record[attr['name']] = datetime.now()
+                warn = "Required %s attribute '%s' cannot be None! Set to %s"
+                self.logger.warning(
+                    warn, attr['type'], attr['name'], record[attr['name']]
+                )
 
             # in this loop, check the record itself, based on its attrs
             if attr['name'] in record.keys():

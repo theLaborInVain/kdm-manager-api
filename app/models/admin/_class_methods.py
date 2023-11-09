@@ -76,8 +76,11 @@ class ChangeLog(UserAsset):
         })
         self.set_latest_version()   # needs self.release['platform']
 
+        # apply data model
+        record_to_insert = self.DATA_MODEL.apply(self.release)
+
         # finally, insert the record and use the _id to set self_id
-        self._id = utils.mdb[self.collection].insert(self.release)
+        self._id = utils.mdb[self.collection].insert(record_to_insert)
 
 
 
