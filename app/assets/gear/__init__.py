@@ -52,16 +52,8 @@ class Assets(Collection):
 
 
 class Gear(Asset):
-    ''' Refactor this. This asset doesn't need its own repr. '''
-
-    def __repr__(self):
-        return "%s object '%s' (assets.%s['%s'])" % (
-            self.type.title(),
-            self.name,
-            self.type,
-            self.handle
-        )
+    ''' A vanilla asset.'''
 
     def __init__(self, *args, **kwargs):
-        self.assets = Assets()
+        ''' Nothing special here. '''
         Asset.__init__(self,  *args, **kwargs)

@@ -46,6 +46,7 @@ class Asset():
         self.collection_obj = collection_obj
         self.force = force
         self.handle = handle
+        self.legacy_init = False
         self.loaded = False
         self.logger = utils.get_logger()
         self.name = None
@@ -84,14 +85,21 @@ class Asset():
         ):
             self._initialize_asset_collection_obj()
 
+
+        #
+        #   For now, we'll support legacy and modern init style, and track which
+        #   one we did, and serialize differently  depending
+        #
+
         # deprecated / legacy support:
         if hasattr(self, 'assets'):
+            self.legacy_init = True
             self._legacy_init()
 
-        # otherwise, load from the asset's module
+        # modern init: load from the initialized collection object
         self.asset = self.collection_obj.get_asset(self.handle)
 
-        # set some object attributes for laziness
+        # set the name for laziness (we've already got self.handle)
         self.name = self.asset['name']
 
         self.loaded = True
@@ -141,8 +149,8 @@ class Asset():
         Since that is never the case anymore, this method's days are numbered.
         '''
 
-#        warn = 'DEPRECATION WARNING: %s game asset attrib set explicitly!'
-#        self.logger.warning(warn, self.__module__)
+        warn = 'DEPRECATION WARNING: %s game asset attrib set explicitly!'
+        self.logger.warning(warn, self.__module__)
 
         asset_dict = self.assets.get_asset(self.handle)
 
@@ -150,7 +158,7 @@ class Asset():
             err = "Assets may not be initialized with a '%s' type object!"
             raise TypeError(err % type(asset_dict))
 
-        # this is hellish and badly needs refactoring/deprecation
+        # this is hellish and can't die soon enough
         for key, value in asset_dict.items():
             if isinstance(value, str):
                 exec("""self.%s = '%s' """ % (
@@ -176,13 +184,19 @@ class Asset():
         """ Allows the object to represent itself as JSON by transforming itself
         into a JSON-safe dict. """
 
-        shadow_self = copy(self)
 
-        for banned_attrib in ["logger", "assets", 'collection_obj']:
-            if hasattr(shadow_self, banned_attrib):
-                delattr(shadow_self, banned_attrib)
+        # legacy init
+        if self.legacy_init:
+            shadow_self = copy(self)
 
-        if return_type == dict:
-            return shadow_self.__dict__
+            for banned_attrib in ["logger", "assets", 'collection_obj']:
+                if hasattr(shadow_self, banned_attrib):
+                    delattr(shadow_self, banned_attrib)
 
-        return json.dumps(shadow_self.__dict__, default=json_util.default)
+            if return_type == dict:
+                return shadow_self.__dict__
+
+            return json.dumps(shadow_self.__dict__, default=json_util.default)
+
+        # regular init
+        return json.dumps(self.asset, default=json_util.default)

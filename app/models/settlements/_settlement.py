@@ -35,7 +35,7 @@ from ..survivors import Survivor
 from .._user_asset import UserAsset
 from .._decorators import deprecated, web_method, paywall
 
-from ._storage import Storage
+from ._storage import Storage as StorageObject
 
 
 class Settlement(UserAsset):
@@ -63,10 +63,12 @@ class Settlement(UserAsset):
 
         # set self.campaign to be a campaigns.Campaign() asset if it hasn't been
         #   set already, e.g. by new() which sets it, etc.
+        self.campaign = None
         self._initialize_self_campaign()
 
         # initialize the survivors after we've got assets loaded
-        self.get_survivors('initialize')    # sets a list of objects
+        self.survivors_initialized = False
+        self._initialize_survivors()    # sets a list of objects
 
         # finally, normalize
         self.normalize()
@@ -84,41 +86,7 @@ class Settlement(UserAsset):
         self.settlement_id = self._id   # probably need to deprecate this
 
 
-    def _initialize_self_campaign(self, force=False):
-        ''' Initializes self.campaign. Has some idiot-proofing so we don't do
-        this more than once. Set 'force' to True if you want to do it anyway.'''
-
-        # re-init with 'force' kwarg
-        if hasattr(self, 'campaign') and not force:
-            msg = '%s already has self.campaign (%s). '
-            msg += "Use 'force' kwarg to re-initialize."
-            self.logger.warning(msg, self, self.campaign)
-            return True
-
-
-        # check if self.Campaigns (i.e. the collection exists. If not, make
-        #   sure we're only doing this in the context of self.new()
-        if not hasattr(self, 'Campaigns'):
-            curframe = inspect.currentframe()
-            calframe = inspect.getouterframes(curframe, 2)
-            caller_func = calframe[1][3]
-            if caller_func != 'new':
-                err = '%s self.campaign initialized outside of new()'
-                raise utils.InvalidUsage(err % self)
-
-            self.Campaigns = KingdomDeath.campaigns.Assets()
-
-        # if we're doing it, do it:
-        if not hasattr(self, 'campaign') or force:
-            self.campaign = KingdomDeath.campaigns.Campaign(
-                handle = self.settlement['campaign'],
-                collection_obj=self.Campaigns
-            )
-
-        msg = "%s self.campaign (%s) initialized! ('force'=%s)"
-        self.logger.debug(msg, self, self.campaign.asset['name'], force)
-
-
+    @utils.metered
     def _initialize_asset_collections(self):
         """ Called during __init__(); these are used by numerous methods. """
 
@@ -175,11 +143,76 @@ class Settlement(UserAsset):
         ''' Uses attributes to initialize a settlement storage object that is
         used to support storage methods of the Settlement object. '''
 
-        self.settlement_storage = Storage(
+        self.settlement_storage = StorageObject(
             gear = self.Gear,
             expansions = self.Expansions,
             resources = self.Resources,
         )
+
+
+    def _initialize_self_campaign(self, force=False):
+        ''' Initializes self.campaign. Has some idiot-proofing so we don't do
+        this more than once. Set 'force' to True if you want to do it anyway.'''
+
+        # re-init with 'force' kwarg
+        if getattr(self, 'campaign', None) is not None and not force:
+            msg = '%s already has self.campaign (%s). '
+            msg += "Use 'force' kwarg to re-initialize."
+            self.logger.warning(msg, self, self.campaign)
+            return True
+
+
+        # check if self.Campaigns (i.e. the collection exists. If not, make
+        #   sure we're only doing this in the context of self.new()
+        if not hasattr(self, 'Campaigns'):
+            curframe = inspect.currentframe()
+            calframe = inspect.getouterframes(curframe, 2)
+            caller_func = calframe[1][3]
+            if caller_func != 'new':
+                err = '%s self.campaign initialized outside of new()'
+                raise utils.InvalidUsage(err % self)
+
+            self.Campaigns = KingdomDeath.campaigns.Assets()
+
+        # if we're doing it, do it:
+        if getattr(self, 'campaign', None) is None or force:
+            self.campaign = KingdomDeath.campaigns.Campaign(
+                handle = self.settlement['campaign'],
+                collection_obj=self.Campaigns
+            )
+
+        msg = "%s self.campaign (%s) initialized! ('force'=%s)"
+        self.logger.debug(msg, self, self.campaign.asset['name'], force)
+
+
+    @utils.metered
+    def _initialize_survivors(self):
+        ''' Formerly, this is what you got by calling the
+        get_survivors('initialize') method. For purposes of clarity and
+        efficiency, it is now its own method that can be run exactly once. '''
+
+        if self.survivors_initialized:
+            err = 'Settlement %s has already initialized survivors!'
+            raise AttributeError(err)
+
+        self.survivors = []
+        query = {
+            "settlement": self.settlement["_id"],
+            "removed": {"$exists": False}
+        }
+
+        all_survivors = utils.mdb.survivors.find(query).sort('name')
+
+        for survivor in all_survivors:
+            survivor_object = Survivor(
+                _id = survivor["_id"],
+                Settlement = self,
+                normalize_on_init = False
+            )
+            self.survivors.append(survivor_object)
+
+        self.survivors_initialized = True
+
 
 
     def new(self):
@@ -303,7 +336,7 @@ class Settlement(UserAsset):
                 'DEPRECATION WARNING: survivors cannot be added during new '
                 'settlement creation!'
             )
-            self.logger.warn(warn)
+            self.logger.warning(warn)
 
 
         # log settlement creation and save/exit
@@ -511,7 +544,7 @@ class Settlement(UserAsset):
 
         if not self.settlement.get('removed', False):
             err = '%s Ignoring bogus request to unremove settlement...'
-            self.logger.warn(err % self)
+            self.logger.warning(err % self)
             return False
 
         del self.settlement['removed']
@@ -572,6 +605,9 @@ class Settlement(UserAsset):
             output.update({"user_assets": {}})
             output["user_assets"].update({"players": self.get_players()})
             output["user_assets"].update({"survivors": self.get_survivors()})
+            output['user_assets'].update(
+                {'survivor_oids_list': self.get_survivors('oid_strings')}
+            )
 
 
         # create the sheet
@@ -1421,13 +1457,22 @@ class Settlement(UserAsset):
             self.check_request_params(['handle'])
             handle = self.params['handle']
 
-        M = milestone_story_events.Milestone(handle)
-        if M.handle not in self.settlement['milestone_story_events']:
-            self.logger.info("%s Attempting to remove Milestone that is not present. Ignoring bogus request..." % self)
+        milestone_asset = self.Milestones.get_asset(handle=handle)
+        if milestone_asset['handle'] not in self.settlement['milestone_story_events']:
+            warn = (
+                "%s Attempting to remove Milestone that is not present. "
+                "Ignoring bogus request..."
+            )
+            self.logger.info(warn, self)
             return True
 
-        self.settlement['milestone_story_events'].remove(M.handle)
-        self.log_event(action="rm", key="Milestone Story Events", value=M.name, event_type="rm_milestone_story_event")
+        self.settlement['milestone_story_events'].remove(milestone_asset['handle'])
+        self.log_event(
+            action="rm",
+            key="Milestone Story Events",
+            value=milestone_asset['name'],
+            event_type="rm_milestone_story_event"
+        )
         self.save()
 
 
@@ -1538,7 +1583,7 @@ class Settlement(UserAsset):
 
         if vol_string in self.get_monster_volumes():
             err = "%s Monster volume '%s' already exists! Ignoring request..."
-            self.logger.warn(err % (self, vol_string))
+            self.logger.warning(err % (self, vol_string))
             return True
 
         # add the list if it's not present
@@ -1611,7 +1656,7 @@ class Settlement(UserAsset):
 
         if user_login in self.settlement['admins']:
             err = "%s User '%s' is already a settlement admin! Ignoring..."
-            self.logger.warn(err % (self, user_login))
+            self.logger.warning(err % (self, user_login))
             return True
 
         if utils.mdb.users.find_one({'login': user_login}) is None:
@@ -1635,7 +1680,7 @@ class Settlement(UserAsset):
 
         if user_login not in self.settlement['admins']:
             err = "%s User '%s' is not a settlement admin! Ignoring..."
-            self.logger.warn(err % (self, user_login))
+            self.logger.warning(err % (self, user_login))
             return True
 
         if utils.mdb.users.find_one({'login': user_login}) is None:
@@ -1693,6 +1738,7 @@ class Settlement(UserAsset):
 
 
     @web_method
+    @paywall
     def add_survivor(self):
         """ Uses the request context to add a pre-fab survivor. Requires a valid
         'handle' value in the POST. """
@@ -2224,7 +2270,7 @@ class Settlement(UserAsset):
 
         for d in dict_list:
             handle = d['handle']
-            a_obj = self._storage_handle_to_object(d['handle'])
+            a_obj = self.settlement_storage.item_handle_to_item_object(d['handle'])
             value = int(d['value'])
 
             # remove all occurrences of handle from storage
@@ -2253,8 +2299,9 @@ class Settlement(UserAsset):
         new_version = self.params["version"]
 
         try:
-            v_object = versions.Version(handle=new_version)
-        except:
+            v_object = KingdomDeath.versions.Version(handle=new_version)
+        except Exception as err:
+            self.logger.error(err)
             err = "Version '%s' is not a known version handle!"
             raise utils.InvalidUsage(err % new_version)
 
@@ -2262,7 +2309,7 @@ class Settlement(UserAsset):
         self.log_event(
             action="set",
             key="Version",
-            value=v_object.version,
+            value=v_object.get_float(),
             event_type='sysadmin'
         )
 
@@ -2741,7 +2788,7 @@ class Settlement(UserAsset):
 
         # storage
         for i_handle in self.settlement['storage']:
-            i_obj = self._storage_handle_to_object(i_handle)
+            i_obj = self.settlement_storage.item_handle_to_item_object(i_handle)
             if hasattr(i_obj, 'endeavors'):
                 eligible_endeavor_handles = get_eligible_endeavors(i_obj.endeavors)
                 if len(eligible_endeavor_handles) >= 1:
@@ -3567,7 +3614,7 @@ class Settlement(UserAsset):
             # add COMPATIBLE item dicts to the locations 'assets' list
             self.settlement_storage.add_location(location=loc_asset)
             for item_obj in self.settlement_storage.locations[loc_key]['assets']:
-                if self.is_compatible(item_obj):
+                if self.is_compatible(item_obj.asset):
                     self.settlement_storage.add_item_to_storage(
                         handle = item_obj.handle,
                         quantity = self.settlement['storage'].count(
@@ -3581,8 +3628,14 @@ class Settlement(UserAsset):
         # first thing we do is sort all handles from settlement storage into our
         # 'inventory' lists
         for item_handle in sorted(self.settlement['storage']):
-            item_obj = self._storage_handle_to_object(item_handle)
-            item_type = item_obj.sub_type # this will be a key in storage_repr
+
+            # first, get  an object and make sure it's a modern on (not legacy)
+            item_obj = self.settlement_storage.item_handle_to_item_object(item_handle)
+            item_type = item_obj.asset.get('sub_type', None)
+            if item_type is None or not hasattr(item_obj, 'asset'):
+                err = '%s item has no sub_type. Was legacy init used?'
+                raise AttributeError(err % (item_obj))
+
             if item_type in storage_repr.keys():
                 storage_repr[item_type]['inventory'].append(item_handle)
                 if item_handle in storage_repr[item_type]['digest'].keys():
@@ -3591,10 +3644,10 @@ class Settlement(UserAsset):
                     storage_repr[item_type]['digest'][item_handle] = {
                         'count': 1,
                         'name': item_obj.name,
-                        'handle': item_handle,
-                        'desc': item_obj.desc,
-                        'keywords': item_obj.keywords,
-                        'rules': getattr(item_obj, 'rules', []),
+                        'handle': item_obj.handle,
+                        'desc': item_obj.asset['desc'],
+                        'keywords': item_obj.asset['keywords'],
+                        'rules': item_obj.asset.get('rules', []),
                     }
 
 
@@ -3680,12 +3733,12 @@ class Settlement(UserAsset):
             item_count = self.settlement['storage'].count(handle)
             item_obj = self.get_game_asset_from_handle(handle)
 
-            if item_obj.type == 'gear':
+            if item_obj.asset['type'] == 'gear':
                 gear_count += item_count
-                gear_kw_list.extend(item_obj.keywords)
-            elif item_obj.type == 'resources':
+                gear_kw_list.extend(item_obj.asset['keywords'])
+            elif item_obj.asset['type'] == 'resources':
                 resources_count += item_count
-                resources_kw_list.extend(item_obj.keywords)
+                resources_kw_list.extend(item_obj.asset['keywords'])
 
 
         def list_to_rollup(input_list):
@@ -3754,8 +3807,6 @@ class Settlement(UserAsset):
 
         Use the following 'return_type' kwargs to control output:
 
-            - 'initialize' -> sets self.survivors to be a list of initialized
-                survivor objects and then RETURNS A BOOL
             - 'departing' -> returns a list of survivor dictionaries where all
                 the survivors have self.is_departing==True
             - 'groups' -> this should only be used by Campaign Summary type
@@ -3768,56 +3819,33 @@ class Settlement(UserAsset):
         Use the 'excluded' and 'exclude_dead' kwargs to control default output.
         """
 
-        #
-        #   This is the only place this entire class should ever initialize a 
-        #   survivor. I'm not fucking joking.
-        #
-
         if return_type == 'initialize':
-            self.survivors = []
-            query = {
-                "settlement": self.settlement["_id"],
-                "removed": {"$exists": False}
-            }
-
-            # query mods
-            if excluded != []:
-                query.update({'_id': {"$nin": excluded}})
-            if exclude_dead:
-                query.update({'dead': {'$exists': False}})
-
-            # run the query
-            all_survivors = utils.mdb.survivors.find(query).sort('name')
-
-            # loop through, initializing survivor objects and appending to
-            #   self.survivors
-            for survivor in all_survivors:
-                # init the survivor
-                survivor_object = Survivor(
-                    _id = survivor["_id"],
-                    Settlement = self,
-                    normalize_on_init = False
-                )
-                self.survivors.append(survivor_object)
-            return True
+            err = "This method no longer supports the 'initialize' return type!"
+            raise utils.InvalidUsage(err)
 
         # now make a copy of self.survivors and work it to fulfill the request
         output_list = copy(self.survivors)
 
         # do filters
-        for s in output_list:
-            if exclude_dead and s.is_dead() and s in output_list:
-                output_list.remove(s)
-            if excluded != [] and s._id in excluded and s in output_list:
-                output_list.remove(s)
+        for survivor in output_list:
+            if exclude_dead and survivor.is_dead() and survivor in output_list:
+                output_list.remove(survivor)
+            if (
+                excluded != [] and survivor._id in excluded and
+                survivor in output_list
+            ):
+                output_list.remove(survivor)
 
-        # early returns
+
+        #
+        #   returns
+        #
+
+        if return_type == 'oid_strings':
+            return [str(survivor._id) for survivor in output_list]
+
         if return_type == 'departing':
             return [s.synthesize() for s in output_list if s.is_departing()]
-
-        #
-        # late/fancy returns start here
-        #
 
         if return_type == 'groups':
             # This is where we do the whole dance of organizing survivors for
@@ -3966,25 +3994,6 @@ class Settlement(UserAsset):
             return minimum
 
         return int(self.settlement["survival_limit"])
-
-
-    def get_survivor_weapon_masteries(self):
-        """ Returns a list of weapon mastery handles representing the weapon
-        masteries that have been acquired by the settlement's survivors. """
-
-        survivor_weapon_masteries = set()
-
-#        for S in self.survivors:
-#            for ai in S.list_assets("abilities_and_impairments"):
-#                if ai["handle"] in self.WeaponMasteries.get_handles():
-#                    survivor_weapon_masteries.add(ai["handle"])
-
-        for survivor in self.survivors:
-            for a_and_i in survivor.list_assets('abilities_and_impairments'):
-                self.logger.error(dir(a_and_i))
-                meow
-
-        return sorted(list(survivor_weapon_masteries))
 
 
     def get_timeline(self, return_type=None):
@@ -4910,35 +4919,6 @@ class Settlement(UserAsset):
         as a proper settlement_note document in mdb. """
         err = "Settlement notes may no longer be ported from V1!"
         raise utils.InvalidUsage(err)
-
-
-    def _storage_handle_to_object(self, handle):
-        """ private method that turns any storage handle into an object. Needs
-        to be deprecated at some point, but is not a priority in 2023. """
-
-        # first, try to get it as gear
-        asset_dict = self.Gear.get_asset(
-            handle, raise_exception_if_not_found=False
-        )
-        # if that fails, get it as a resource
-        if asset_dict is None:
-            asset_dict = self.Resources.get_asset(
-                handle, raise_exception_if_not_found=False
-        )
-
-        # die violently if we still can't find it
-        if asset_dict is None:
-            err = "Storage handle '%s' not found in Gear or Resources!"
-            raise utils.InvalidUsage(err % handle)
-
-        if asset_dict['type'] == 'gear':
-            return KingdomDeath.gear.Gear(
-                handle = handle, collection_obj = self.Gear
-            )
-
-        return KingdomDeath.resources.Resource(
-            handle = handle, collection_obj = self.Resources
-        )
 
 
 

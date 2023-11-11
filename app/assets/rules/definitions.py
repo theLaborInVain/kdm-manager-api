@@ -124,8 +124,11 @@ core = {
     },
     'deadly': {
         'name': 'Deadly',
-        'type': 'special_rule',
-        'desc': """A gear special rule. Gain +l luck while attacking with this weapon. This increases the odds of inflicting critical wounds.""",
+        'type': 'gear_special_rule',
+        'desc': (
+            'A gear special rule. Gain +l luck while attacking with this '
+            'weapon. This increases the odds of inflicting critical wounds.'
+        ),
     },
     'deflect_x': {
         'name': 'Deflect X',
@@ -137,7 +140,7 @@ core = {
             'When you Deflect X, you lose the benefits of Block.'
         ),
     },
-    'devastating': {
+    'devastating_x': {
         'name': 'Devastating X',
         'type': 'special_rule',
         'desc': (

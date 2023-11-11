@@ -36,8 +36,8 @@ class Storage(Asset):
 
 
     def __init__(self, *args, **kwargs):
-        # initialize the AssetCollection at an arbitrary version, defaulting to
-        #   whatever the current/HEAD version of the game is; theory being, 
+        raise AttributeError(kwargs)
+        meow
         self.version = kwargs.get('version', API.config['DEFAULT_GAME_VERSION'])
         self.assets = Assets(self.version)
         Asset.__init__(self,  *args, **kwargs)

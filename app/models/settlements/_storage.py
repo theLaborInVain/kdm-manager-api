@@ -83,12 +83,11 @@ class Storage():
         self._set_location_flair(location_handle)
 
 
-
     def add_item_to_storage(self, handle=None, quantity=0):
         ''' Add a 'quanity' of 'item_handle' to settlement storage. '''
 
-        item_obj = self._item_handle_to_item_object(handle)
-        item_dict = copy(item_obj.serialize(dict))
+        item_obj = self.item_handle_to_item_object(handle)
+        item_dict = copy(item_obj.asset)
         item_dict['quantity'] = quantity
 
         # die informatively if we can't add this because we don't have the loc
@@ -101,12 +100,7 @@ class Storage():
         )
 
 
-
-    #
-    #   private methods follow
-    #
-
-    def _item_handle_to_item_object(self, item_handle=None):
+    def item_handle_to_item_object(self, item_handle=None):
         ''' Returns an item object or dies bloody. '''
 
         if item_handle in self.gear_collection.get_handles():
@@ -123,6 +117,11 @@ class Storage():
 
         err = "Item asset handle '%s' could not be initialized!"
         raise AttributeError(err % (item_handle))
+
+
+    #
+    #   private methods follow
+    #
 
 
     def _set_location_assets(self, location_handle=None):
@@ -143,7 +142,7 @@ class Storage():
         for item_handle in collection_obj.get_assets_by_sub_type(
             sub_type = location_handle
         ):
-            item_object = self._item_handle_to_item_object(item_handle)
+            item_object = self.item_handle_to_item_object(item_handle)
             location['handles'].append(item_handle)
             location['assets'].append(item_object)
 

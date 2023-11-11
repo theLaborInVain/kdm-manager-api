@@ -30,7 +30,7 @@ class Assets(Collection):
     def __init__(self, *args, **kwargs):
         ''' Needs a refactor to remove mandatory_attributes, which is
         deprecated and should be replaced with data model.'''
-        self.mandatory_attributes = {'keywords': [], 'desc': ""}
+        self.mandatory_attributes = {'keywords': [], 'desc': "", 'copies': 1}
         Collection.__init__(self,  *args, **kwargs)
         self.set_rarity()
 
@@ -70,13 +70,15 @@ class Assets(Collection):
                     if rarity_dict['score'] >= score:
                         rarity_dict['rating'] = _RARITY_RATING[score]
                 self.assets[r_handle]['rarity'] = rarity_dict
+                self.assets[r_handle]['cards_in_deck'] = total_cards_in_deck
 
 
 
 class Resource(Asset):
+    ''' Initialize a single Resource object. '''
 
     def __init__(self, *args, **kwargs):
-        self.assets = Assets()
+        ''' Modern init; no custom stuff. '''
         Asset.__init__(self,  *args, **kwargs)
 
     def is_consumable(self):

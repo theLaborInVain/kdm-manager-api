@@ -1985,11 +1985,12 @@ core = {
 }
 
 weapon_crafter = {
+    # blood sheath moves to plumery in 1.6!
     'blood_sheath': {
         'name': 'Blood Sheath',
         'keywords': ['item', 'bone', 'other'],
         'rules': ['Block 1'],
-        'related_rules': ['frail','sharp'],
+        'related_rules': ['frail', 'sharp', 'super_dense'],
         'desc': (
             'When Rainbow Katana is left of Blood Sheath, it loses '
             '<b>Frail</b> and gains <b>Sharp</b> (add 1d10 strength to '
@@ -2014,6 +2015,7 @@ weapon_crafter = {
         'speed': 2,
         'accuracy': 6,
         'strength': 4,
+        'related_rules': ['devastating_x'],
         'affinities': {'top': 'red', 'right': 'green'},
         'affinity_bonus': {
             'desc': (
@@ -2064,6 +2066,7 @@ weapon_crafter = {
         'speed': 4,
         'accuracy': 4,
         'strength': 4,
+        'related_rules': ['deadly'],
         'affinities': {'left': 'red'},
         'affinity_bonus': {
             'desc': 'Gains <b>Deadly</b>.',
@@ -3575,6 +3578,7 @@ vignettes_of_death_white_gigalion = {
 pinups_of_death_2 = {
     'lantern_brassiere': {
         'name': 'Lantern Brassiere',
+        'expansion': 'pinups_of_death_2',
         'type': 'rare_gear',
         'armor': 0,
         'location': 'body',
@@ -3596,6 +3600,7 @@ pinups_of_death_2 = {
     },
     'leather_bodysuit': {
         'name': 'Leather Bodysuit',
+        'expansion': 'pinups_of_death_2',
         'type': 'rare_gear',
         'armor': 0,
         'location': 'body',
@@ -3606,6 +3611,7 @@ pinups_of_death_2 = {
     },
     'rawhide_corset': {
         'name': 'Rawhide Corset',
+        'expansion': 'pinups_of_death_2',
         'type': 'rare_gear',
         'armor': 0,
         'location': 'body',
@@ -3620,13 +3626,14 @@ pinups_of_death_2 = {
     },
     'teeth_bikini': {
         'name': 'Teeth Bikini',
+        'expansion': 'pinups_of_death_2',
         'type': 'rare_gear',
         'armor': 0,
         'location': 'body',
         'keywords': ['armor', 'set', 'scale'],
         'affinities': {'left': 'red', 'top': 'blue', 'right': 'red'},
         'rules': ['Outfit'],
-        'related_rules': ['outfit', 'shadow_walk', 'collision'],
+        'related_rules': ['outfit', 'collision'],
         'affinity_bonus': {
             'requires': {'puzzle': {'blue': 1}, 'complete': {'red': 2}},
             'desc': '+1 accuracy',

@@ -172,7 +172,7 @@ crimson_crocodile_resources = {
             "<b>Immortal Arm</b>. <br/>"
             'You may spend <font class="kdm_manager_font">E</font> to archive '
             'this and suck an artery. Gain'
-            '<span class="kd deck_icon deck="FA">FA</span> <b>Bloodzerker</b>.'
+            '<span class="kd deck_icon" deck="FA">FA</span> <b>Bloodzerker</b>.'
         ),
     },
     'secret_stone': {
@@ -202,7 +202,7 @@ crimson_crocodile_resources = {
             '<span class="kd deck_icon kdm_manager_font" deck="p">XX</span> '
             "<b>Blood Drinker</b>. <br/>"
             '<b>Consume:</b> Archive this to gain '
-            '<span class="kd deck_icon deck="SF">SF</span> <b>Aerial '
+            '<span class="kd deck_icon" deck="SF">SF</span> <b>Aerial '
             'Transfusion</b>.'
         ),
     },

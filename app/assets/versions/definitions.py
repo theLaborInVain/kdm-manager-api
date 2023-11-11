@@ -420,5 +420,19 @@ VERSIONS = OrderedDict({
             },
         },
     },
-    # core 1.7
+
+    # Gambler's Chest!
+    'gamblers_chest': {
+        'major': 1,
+        'minor': 7,
+        'released': datetime(2023, 7, 31),
+        'name': "Gambler's Chest",
+        'assets': {
+            'resources': {
+                'perfect_bone': {'copies': 2},
+                'perfect_hide': {'copies': 2},
+                'perfect_organ': {'copies': 2},
+            },
+        }
+    },
 })

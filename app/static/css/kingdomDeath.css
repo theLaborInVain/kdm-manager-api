@@ -954,6 +954,7 @@ select.kd.capsule {
 }
 .gear_card_pattern_stamp::after {
     content: 'p';
+    color: #A47E3C;
     display: block;
     font-family: 'kdm-manager';
     font-size: var(--font-large);

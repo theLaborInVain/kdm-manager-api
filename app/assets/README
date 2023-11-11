@@ -20,11 +20,11 @@ Use the following cheatsheet to implement KD:M icons using the API's unique
 Deck icons:
 
  - Fighting Art
-    <span class="kd deck_icon deck="FA">FA</span>
+    <span class="kd deck_icon" deck="FA">FA</span>
  - Pattern
     <span class="kd deck_icon kdm_manager_font" deck="p">XX</span>
  - Secret Fighting Art
-    <span class="kd deck_icon deck="SF">SF</span>
+    <span class="kd deck_icon" deck="SF">SF</span>
 
 
 HTML entities:

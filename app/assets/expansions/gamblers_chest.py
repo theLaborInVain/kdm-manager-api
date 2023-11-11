@@ -31,6 +31,11 @@ gamblers_chest = {
             {'ly': 0, 'handle': 'gc_devour_the_white_lion'},
             {'ly': 1, 'handle': 'first_crimson_day'},
         ],
+        "flair": {
+            "border_color": "DAD4D8",
+            "bgcolor": "B78086",
+            'color': 'fff',
+        },
         'timeline_rm': [
             {'ly': 1, 'handle': 'core_first_day'},
         ],

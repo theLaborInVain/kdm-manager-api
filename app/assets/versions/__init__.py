@@ -10,6 +10,7 @@
 """
 
 # standard library
+from copy import copy
 from datetime import datetime, timedelta
 
 # asset module imports
@@ -80,7 +81,7 @@ class Version():
             err = "Version objects must be initialized with the 'handle' kwarg!"
             raise AttributeError(err)
 
-        self.asset = VERSIONS[self.handle]
+        self.asset = copy(VERSIONS[self.handle])
 
         if self.kwargs.get('no_assets'):
             self.remove_assets()
@@ -101,3 +102,9 @@ class Version():
     def serialize(self):
         ''' Returns a dict. '''
         return dict(self.asset)
+
+
+    def get_float(self):
+        ''' Returns a float representing the version. '''
+        return float("%s.%s" % (self.asset['major'], self.asset['minor']))
+
