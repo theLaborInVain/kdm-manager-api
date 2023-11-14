@@ -406,8 +406,6 @@ class Collection():
                     v_dict['assets'].get(self.type, None) is not None
                 ):
                     updates = v_dict['assets'][self.type]
-                    if self.type == 'gear':
-                        self.logger.warn(updates)
                     for asset_handle in v_dict['assets'].get(self.type, {}):
                         self.assets[asset_handle].update(updates[asset_handle])
                         self.assets[asset_handle]['patch_level'] = v_key

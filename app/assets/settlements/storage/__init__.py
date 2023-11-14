@@ -37,7 +37,6 @@ class Storage(Asset):
 
     def __init__(self, *args, **kwargs):
         raise AttributeError(kwargs)
-        meow
         self.version = kwargs.get('version', API.config['DEFAULT_GAME_VERSION'])
         self.assets = Assets(self.version)
         Asset.__init__(self,  *args, **kwargs)
@@ -52,7 +51,7 @@ class Storage(Asset):
         We use asset collections here to get the assets whose 'sub_type' attrib
         matches to self.handle.
 
-        Output is list of 
+        November 2023: we might not need this anymore.
         """
 
         if self.sub_type == 'gear':

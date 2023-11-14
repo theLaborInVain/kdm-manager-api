@@ -695,7 +695,7 @@ class Settlement(UserAsset):
                 output["game_assets"][c] = self.get_timeline_monster_event_options(c)
 
             # meta/other game assets
-            output["game_assets"]["campaign"] = self.campaign.serialize(dict)
+            output["game_assets"]["campaign"] = self.campaign.asset
             output["game_assets"]["expansions"] = self.get_expansions(dict)
 
             # misc helpers for front-end
@@ -756,8 +756,277 @@ class Settlement(UserAsset):
 
 
     #
-    #   meta/check/query methods here
+    #   methods to get options (e.g. for building drop-downs, etc.)
     #
+
+    def get_innovations_options(self, exclude_principles=True):
+        """ Returns the settlement's available options for adding a new
+        Innovation. """
+
+        compatible = self.get_compatible_assets(self.Innovations)
+
+        # list comp to exclude principles
+        if exclude_principles: [
+            compatible.remove(innovation) for
+            innovation in compatible if
+            innovation.get('sub_type', None) == 'principle'
+        ]
+
+        options = []
+        for innovation in compatible:
+            if innovation['handle'] not in self.settlement['innovations']:
+                options.append(innovation)
+
+        return options
+
+
+    def get_locations_options(self):
+        """ Similar to the other get_whatever_options() methods, this one
+        returns a list of options for adding new locations to the settlement.
+        Does not have 'return_type' options. Always returns a list of handles.
+        """
+
+        compatible = self.get_compatible_assets(self.Locations)
+
+        options = []
+        for location in compatible:
+            if (
+                location['handle'] not in self.settlement['locations'] and
+                location.get('selectable', False)
+            ):
+                options.append(location)
+
+        return options
+
+
+    def get_milestones_options(self, return_type=list):
+        """ Returns a list of dictionaries where each dict is a milestone def-
+        inition. Useful for front-end stuff. """
+
+        # die if we don't have a campaign asset
+        if self.campaign.asset.get('milestones', []) == []:
+            err = "self.campaign asset has no milestones! %s"
+            raise AttributeError(err % self.campaign.asset)
+
+        # handle returns
+        if return_type==dict:
+            output = {}
+            for m_handle in self.campaign.asset['milestones']:
+                output[m_handle] = self.Milestones.get_asset(m_handle)
+            return output
+
+        if return_type==list:
+            output = []
+            for m_handle in self.campaign.asset['milestones']:
+                output.append(self.Milestones.get_asset(m_handle))
+            return output
+
+        err = "get_milestones_options() does not support return_type=%s"
+        raise utils.InvalidUsage(err % return_type)
+
+
+    def get_patterns_options(self):
+        """ Similar to the other get_whatever_options() methods, this one
+        returns a list of options for adding new patterns to the settlement.
+        Does not have 'return_type' options. Always returns a list of handles.
+        """
+
+        compatible = self.get_compatible_assets(self.Gear)
+
+        options = []
+        for gear in compatible:
+            if (
+                gear['handle'] not in self.settlement.get('patterns', []) and
+                gear.get('sub_type', None) == 'pattern'
+            ):
+                options.append(gear)
+
+        return options
+
+
+    def get_monster_options(self, monster_type):
+        """ Returns a list of available nemesis or quarry monster handles for
+        use with the Settlement Sheet controls.
+
+        The 'monster_type' kwarg should be something such as 'nemesis_monsters'
+        that will be present in our campaign and expansion definitions.
+        """
+
+        options = []
+
+        # first check our campaign and expansion assets, and get all options
+        if monster_type in self.campaign.asset:
+            c_monsters = self.campaign.asset[monster_type]
+            options.extend(c_monsters)
+
+        for exp in self.get_expansions(dict):
+            e_dict = self.get_expansions(dict)[exp]
+            if monster_type in e_dict.keys():
+                options.extend(e_dict[monster_type])
+
+        # now convert our list into a set (just in case) and then go on to
+        # remove anything we've already got present in the settlement
+        option_set = set(options)
+        for n in self.settlement.get(monster_type, []):
+            if n in option_set:
+                option_set.remove(n)
+
+        # check the remaining to see if they're selectable:
+        option_set = list(option_set)
+        final_set = []
+        for m_handle in option_set:
+            monster_object = KingdomDeath.monsters.Monster(
+                handle = m_handle,
+                collection_obj = self.Monsters
+            )
+            if monster_object.is_selectable():
+                final_set.append(m_handle)
+
+        # remove any monsters that the campaign forbids
+        forbidden_assets = self.campaign.asset.get('forbidden', {})
+        forbidden_monsters = copy(forbidden_assets.get(monster_type, []))
+        for m_handle in set(forbidden_monsters):
+            if m_handle in final_set:
+                final_set.remove(m_handle)
+
+        # now turn our set
+        output = []
+        for m_handle in sorted(list(final_set)):
+            monster_object = KingdomDeath.monsters.Monster(
+                handle = m_handle,
+                collection_obj = self.Monsters
+            )
+            output.append({
+                "handle": monster_object.handle,
+                "name": monster_object.name,
+            })
+
+        return output
+
+
+    def get_principles_options(self):
+        """ Returns a dict (JSON) meant to be interated over in an ng-repeat on
+        the Settlement Sheet. """
+
+        p_handles = self.campaign.asset['principles']
+        all_principles = {}
+        for p_handle in p_handles:
+            p_dict = self.Principles.get_asset(p_handle)
+            all_principles[p_dict["name"]] = p_dict
+
+        sorting_hat = {}
+        for p in all_principles.keys():
+            sorting_hat[all_principles[p]["sort_order"]] = all_principles[p]
+
+        output = []
+        for n in sorted(sorting_hat.keys()):
+
+            p_dict = sorting_hat[n]
+            p_dict["options"] = {}
+
+            for o in p_dict["option_handles"]:
+                o_dict = self.Innovations.get_asset(o)
+
+                selected=False
+                if o_dict["handle"] in self.settlement["principles"]:
+                    selected=True
+
+                o_dict.update({"input_id": "%s_%s_selector" % (p_dict["handle"],o), "checked": selected})
+                p_dict["options"][o] = o_dict
+
+            p_dict["form_handle"] = "set_principle_%s" % p_dict["name"]
+            output.append(p_dict)
+
+        return output
+
+
+    def get_timeline_monster_event_options(self, context=None):
+        """ Returns a sorted list of strings (they call it an 'array' in JS,
+        because they fancy) representing the settlement's possible showdowns,
+        given their quarries, nemeses, etc.
+
+        The idea here is that you specify a 'context' that has to do with user
+        needs, e.g. 'showdown_options', to get back an appropriate list.
+        """
+
+        # use context to get a list of candidate handles
+
+        candidate_handles = []
+        if context == "showdown_options":
+            candidate_handles.extend(self.settlement.get("quarries", []))
+        elif context == "nemesis_encounters":
+            candidate_handles.extend(
+                self.settlement.get("nemesis_monsters", [])
+            )
+            candidate_handles.append(self.campaign.asset['final_boss'])
+        elif context == "defeated_monsters":
+            candidate_handles.extend(self.settlement.get("quarries", []))
+            candidate_handles.extend(self.settlement.get("nemesis_monsters",[]))
+            candidate_handles.extend(self.get_special_showdowns())
+            candidate_handles.append(self.campaign.asset['final_boss'])
+        elif context == "special_showdown_options":
+            candidate_handles.extend(self.get_special_showdowns())
+        else:
+            self.logger.warn(
+                "Unknown 'context' for get_monster_options() method!"
+            )
+
+        # now create the output list based on our candidates
+        output = []
+
+        # uniquify candidate handles just in case
+        candidate_handles = list(set(candidate_handles))
+
+        for m_handle in candidate_handles:
+            monster_object = KingdomDeath.monsters.Monster(
+                handle = m_handle,
+                collection_obj=self.Monsters
+            )
+
+            # hack the prologue White Lion / Crimson Croc in
+            if monster_object.handle == "white_lion":
+                output.append("White Lion (First Story)")
+            if monster_object.handle == 'crimson_crocodile':
+                output.append('Prologue Crimson Crocodile')
+
+            if monster_object.is_unique():
+                output.append(monster_object.name)
+            else:
+                blank_string = '%s lvl %s'
+                if isinstance(monster_object.asset['levels'], int):
+                    for l in range(monster_object.asset['levels']):
+                        lvl = l+1
+                        output.append(blank_string % (monster_object.name, lvl))
+                elif isinstance(monster_object.asset['levels'], list):
+                    for lvl in monster_object.asset['levels']:
+                        output.append(blank_string % (monster_object.name, lvl))
+                else:
+                    err_msg = 'Monster levels must be integer or list types!'
+                    raise utils.InvalidUsage(err_msg)
+
+        output = sorted(output)
+
+        return output
+
+
+
+    #
+    #   asset compatibility and gathering methods follow
+    #
+
+    def get_compatible_assets(self, asset_collection_obj):
+        """ Returns a list of compatible assets from 'asset_collection_obj',
+        which is an initialized asset collection object. """
+
+        compatible_assets = []
+        all_assets = copy(asset_collection_obj.assets)
+
+        for handle in all_assets:
+            if self.is_compatible(all_assets[handle]):
+                compatible_assets.append(all_assets[handle])
+
+        return compatible_assets
+
 
     def is_compatible(self, asset_dict={}):
         """Evaluates an asset's dictionary to determine it is compatible for
@@ -824,6 +1093,9 @@ class Settlement(UserAsset):
     #   Initialization methods. Be careful with these because every single one
     #   of them does massive overwrites and doesn't ask for permission, if you
     #   know what I mean.
+    #
+    #   This needs to be refactored since these are first time / run once kind
+    #   of methods: even though they're named 'init', they're more like  'new'
     #
 
     def initialize_sheet(self):
@@ -2958,19 +3230,6 @@ class Settlement(UserAsset):
         return output
 
 
-    def get_compatible_assets(self, assetClassObject):
-        """ Returns a list of compatible assets from 'assetClass'."""
-
-        compatible_assets = []
-        all_assets = copy(assetClassObject.assets)
-
-        for handle in all_assets.keys():
-            if self.is_compatible(all_assets[handle]):
-                compatible_assets.append(all_assets[handle])
-
-        return compatible_assets
-
-
     def get_death_count(self, return_type=int):
         """ By default this returns the settlement's total number of deaths as
         an int.
@@ -3200,27 +3459,6 @@ class Settlement(UserAsset):
         return s_innovations
 
 
-    def get_innovations_options(self, exclude_principles=True):
-        """ Returns the settlement's available options for adding a new
-        Innovation. """
-
-        compatible = self.get_compatible_assets(self.Innovations)
-
-        # list comp to exclude principles
-        if exclude_principles: [
-            compatible.remove(innovation) for
-            innovation in compatible if
-            innovation.get('sub_type', None) == 'principle'
-        ]
-
-        options = []
-        for innovation in compatible:
-            if innovation['handle'] not in self.settlement['innovations']:
-                options.append(innovation)
-
-        return options
-
-
     def get_innovation_deck(self, return_type=False):
         """ Uses the settlement's current innovations to create an Innovation
         Deck, which, since it's a pure game asset, is returned as a list of
@@ -3431,51 +3669,11 @@ class Settlement(UserAsset):
         return None
 
 
-    def get_locations_options(self):
-        """ Similar to the other get_whatever_options() methods, this one
-        returns a list of options for adding new locations to the settlement.
-        Does not have 'return_type' options. Always returns a list of handles.
-        """
-
-        compatible = self.get_compatible_assets(self.Locations)
-
-        options = []
-        for location in compatible:
-            if (
-                location['handle'] not in self.settlement['locations'] and
-                location.get('selectable', False)
-            ):
-                options.append(location)
-
-        return options
-
-
     def get_monster_volumes(self):
         """ Returns the settlement's self.settlement['monster_volumes'] list,
         which is a list of unique strings. """
 
         return self.settlement.get('monster_volumes', [])
-
-
-    def get_patterns_options(self):
-        """ Similar to the other get_whatever_options() methods, this one
-        returns a list of options for adding new patterns to the settlement.
-        Does not have 'return_type' options. Always returns a list of handles.
-        """
-
-        compatible = self.get_compatible_assets(self.Gear)
-
-        options = []
-        for gear in compatible:
-            if (
-                gear['handle'] not in self.settlement.get('patterns', []) and
-                gear.get('sub_type', None) == 'pattern'
-            ):
-                options.append(gear)
-
-        return options
-
-
     def get_parents(self):
         """ Returns a list of survivor couplings, based on the 'father'/'mother'
         attributes of all survivors in the settlement. """
@@ -4021,128 +4219,6 @@ class Settlement(UserAsset):
         return version_object
 
 
-    def get_milestones_options(self, return_type=list):
-        """ Returns a list of dictionaries where each dict is a milestone def-
-        inition. Useful for front-end stuff. """
-
-        # die if we don't have a campaign asset
-        if self.campaign.asset.get('milestones', []) == []:
-            err = "self.campaign asset has no milestones! %s"
-            raise AttributeError(err % self.campaign.asset)
-
-        # handle returns
-        if return_type==dict:
-            output = {}
-            for m_handle in self.campaign.asset['milestones']:
-                output[m_handle] = self.Milestones.get_asset(m_handle)
-            return output
-
-        if return_type==list:
-            output = []
-            for m_handle in self.campaign.asset['milestones']:
-                output.append(self.Milestones.get_asset(m_handle))
-            return output
-
-        err = "get_milestones_options() does not support return_type=%s"
-        raise utils.InvalidUsage(err % return_type)
-
-
-    def get_monster_options(self, monster_type):
-        """ Returns a list of available nemesis or quarry monster handles for
-        use with the Settlement Sheet controls.
-
-        The 'monster_type' kwarg should be something such as 'nemesis_monsters'
-        that will be present in our campaign and expansion definitions.
-        """
-
-        options = []
-
-        # first check our campaign and expansion assets, and get all options
-        if monster_type in self.campaign.asset:
-            c_monsters = self.campaign.asset[monster_type]
-            options.extend(c_monsters)
-
-        for exp in self.get_expansions(dict):
-            e_dict = self.get_expansions(dict)[exp]
-            if monster_type in e_dict.keys():
-                options.extend(e_dict[monster_type])
-
-        # now convert our list into a set (just in case) and then go on to
-        # remove anything we've already got present in the settlement
-        option_set = set(options)
-        for n in self.settlement.get(monster_type, []):
-            if n in option_set:
-                option_set.remove(n)
-
-        # check the remaining to see if they're selectable:
-        option_set = list(option_set)
-        final_set = []
-        for m_handle in option_set:
-            monster_object = KingdomDeath.monsters.Monster(
-                handle = m_handle,
-                collection_obj = self.Monsters
-            )
-            if monster_object.is_selectable():
-                final_set.append(m_handle)
-
-        # remove any monsters that the campaign forbids
-        forbidden_assets = self.campaign.asset.get('forbidden', {})
-        forbidden_monsters = copy(forbidden_assets.get(monster_type, []))
-        for m_handle in set(forbidden_monsters):
-            if m_handle in final_set:
-                final_set.remove(m_handle)
-
-        # now turn our set
-        output = []
-        for m_handle in sorted(list(final_set)):
-            monster_object = KingdomDeath.monsters.Monster(
-                handle = m_handle,
-                collection_obj = self.Monsters
-            )
-            output.append({
-                "handle": monster_object.handle,
-                "name": monster_object.name,
-            })
-
-        return output
-
-
-    def get_principles_options(self):
-        """ Returns a dict (JSON) meant to be interated over in an ng-repeat on
-        the Settlement Sheet. """
-
-        p_handles = self.campaign.asset['principles']
-        all_principles = {}
-        for p_handle in p_handles:
-            p_dict = self.Principles.get_asset(p_handle)
-            all_principles[p_dict["name"]] = p_dict
-
-        sorting_hat = {}
-        for p in all_principles.keys():
-            sorting_hat[all_principles[p]["sort_order"]] = all_principles[p]
-
-        output = []
-        for n in sorted(sorting_hat.keys()):
-
-            p_dict = sorting_hat[n]
-            p_dict["options"] = {}
-
-            for o in p_dict["option_handles"]:
-                o_dict = self.Innovations.get_asset(o)
-
-                selected=False
-                if o_dict["handle"] in self.settlement["principles"]:
-                    selected=True
-
-                o_dict.update({"input_id": "%s_%s_selector" % (p_dict["handle"],o), "checked": selected})
-                p_dict["options"][o] = o_dict
-
-            p_dict["form_handle"] = "set_principle_%s" % p_dict["name"]
-            output.append(p_dict)
-
-        return output
-
-
     def get_special_rules(self):
         """ Assets that can have special rules (so far) are these:
 
@@ -4202,77 +4278,6 @@ class Settlement(UserAsset):
         self.logger.error(err % target_ly)
         self.logger.error('Returning empty dictionary...')
         return {}
-
-
-    def get_timeline_monster_event_options(self, context=None):
-        """ Returns a sorted list of strings (they call it an 'array' in JS,
-        because they fancy) representing the settlement's possible showdowns,
-        given their quarries, nemeses, etc.
-
-        The idea here is that you specify a 'context' that has to do with user
-        needs, e.g. 'showdown_options', to get back an appropriate list.
-        """
-
-        # use context to get a list of candidate handles
-
-        candidate_handles = []
-        if context == "showdown_options":
-            candidate_handles.extend(self.settlement.get("quarries", []))
-        elif context == "nemesis_encounters":
-            candidate_handles.extend(
-                self.settlement.get("nemesis_monsters", [])
-            )
-            candidate_handles.append(self.campaign.asset['final_boss'])
-        elif context == "defeated_monsters":
-            candidate_handles.extend(self.settlement.get("quarries", []))
-            candidate_handles.extend(self.settlement.get("nemesis_monsters",[]))
-            candidate_handles.extend(self.get_special_showdowns())
-            candidate_handles.append(self.campaign.asset['final_boss'])
-        elif context == "special_showdown_options":
-            candidate_handles.extend(self.get_special_showdowns())
-        else:
-            self.logger.warn(
-                "Unknown 'context' for get_monster_options() method!"
-            )
-
-        # now create the output list based on our candidates
-        output = []
-
-        # uniquify candidate handles just in case
-        candidate_handles = list(set(candidate_handles))
-
-        for m_handle in candidate_handles:
-            monster_object = KingdomDeath.monsters.Monster(
-                handle = m_handle,
-                collection_obj=self.Monsters
-            )
-
-            # hack the prologue White Lion / Crimson Croc in
-            if monster_object.handle == "white_lion":
-                output.append("White Lion (First Story)")
-            if monster_object.handle == 'crimson_crocodile':
-                output.append('Prologue Crimson Crocodile')
-
-            if monster_object.is_unique():
-                output.append(monster_object.name)
-            else:
-                blank_string = '%s lvl %s'
-                if isinstance(monster_object.asset['levels'], int):
-                    for l in range(monster_object.asset['levels']):
-                        lvl = l+1
-                        output.append(blank_string % (monster_object.name, lvl))
-                elif isinstance(monster_object.asset['levels'], list):
-                    for lvl in monster_object.asset['levels']:
-                        output.append(blank_string % (monster_object.name, lvl))
-                else:
-                    err_msg = 'Monster levels must be integer or list types!'
-                    raise utils.InvalidUsage(err_msg)
-
-        output = sorted(output)
-
-        return output
-
-
     @web_method
     def rm_player(self):
         """ Expects a request with the param 'login'. Iterates all survivor

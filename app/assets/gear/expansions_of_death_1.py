@@ -1360,7 +1360,7 @@ spidicules = {
     },
 }
 
-lion_god = {
+lion_god_rare_gear = {
     'ancient_lion_claws': {
         'expansion': 'lion_god',
         'type': 'rare_gear',
@@ -1479,12 +1479,14 @@ lion_god = {
 }
 
 
+#
+#   Manhunter
+#
 
 
-manhunter = {
+manhunter_gear = {
     'deathpact': {
         'expansion': 'manhunter',
-        'type': 'manhunter_gear',
         'name': 'Deathpact',
         'affinities': {'top': 'blue', 'right': 'red'},
         'keywords': ['item', 'metal', 'fragile'],
@@ -1497,7 +1499,6 @@ manhunter = {
     },
     "hunters_heart": {
         'expansion': 'manhunter',
-        'type': 'manhunter_gear',
         'name': "Hunter's Heart",
         'keywords': ['item', 'consumable', 'metal', 'heavy'],
         'rules': ['Unique'],
@@ -1510,7 +1511,6 @@ manhunter = {
     },
     "manhunters_hat": {
         'expansion': 'manhunter',
-        'type': 'manhunter_gear',
         'name': "Manhunter's Hat",
         'affinities': {'top': 'red', 'left': 'red', 'bottom': 'blue'},
         'armor': 2,
@@ -1527,7 +1527,6 @@ manhunter = {
     },
     'reverberating_lantern': {
         'expansion': 'manhunter',
-        'type': 'manhunter_gear',
         'name': 'Reverberating Lantern',
         'keywords': ['item','tool','lantern'],
         'rules': ['Unique'],
@@ -1540,12 +1539,15 @@ manhunter = {
     },
     'tool_belt': {
         'expansion': 'manhunter',
-        'type': 'manhunter_gear',
         'name': 'Tool Belt',
         'keywords': ['item', 'metal', 'fragile'],
-        'rules': ['Unique'],
-        'desc': """If you have no weapons in your gear grid, gain +3 evasion.<br/>Tools in your gear grid lose <b>frail</b>. Tools with attack profiles gain +1 speed, +3 accuracy and <b>sharp</b>.""",
         'affinities': {'top': 'blue', 'right': 'green'},
+        'rules': ['Unique'],
+        'desc': (
+            'If you have no weapons in your gear grid, gain +3 evasion.<br/>'
+            'Tools in your gear grid lose <b>frail</b>. Tools with attack '
+            'profiles gain +1 speed, +3 accuracy and <b>sharp</b>.'
+        ),
     },
 }
 
