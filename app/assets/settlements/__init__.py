@@ -40,22 +40,19 @@ class Assets(Collection):
         YHBW
         """
 
-        self.assets = {}
+        self.assets = {'campaigns': []}
 
-        for mod in [campaigns, expansions]:
+        campaign_collection = campaigns.Assets()
+        for c_dict in campaigns.Assets().get_dicts():
+            asset_repr = {
+                "handle": c_dict['handle'],
+                "name": c_dict["name"]
+            }
+            for optional_key in ["subtitle", "default"]:
+                if c_dict.get(optional_key, None) is not None:
+                    asset_repr[optional_key] = c_dict[optional_key]
+            self.assets['campaigns'].append(asset_repr)
 
-            mod_string = "%s" % str(mod.__name__).split(".")[2]
-            self.assets[mod_string] = []
-
-            CA = mod.Assets()
-
-            for c in sorted(CA.get_handles()):
-                asset = CA.get_asset(c)
-                asset_repr = {"handle": c, "name": asset["name"]}
-                for optional_key in ["subtitle", "default", 'ui']:
-                    if optional_key in asset.keys():
-                        asset_repr[optional_key] = asset[optional_key]
-                self.assets[mod_string].append(asset_repr)
-
+        self.assets['expansions'] = expansions.Assets().assets
         self.assets["macros"] = macros.Assets().assets
 

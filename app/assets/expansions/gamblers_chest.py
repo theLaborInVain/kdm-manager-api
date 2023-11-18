@@ -31,14 +31,14 @@ gamblers_chest = {
             {'ly': 0, 'handle': 'gc_devour_the_white_lion'},
             {'ly': 1, 'handle': 'first_crimson_day'},
         ],
+        'timeline_rm': [
+            {'ly': 1, 'handle': 'core_first_day'},
+        ],
         "flair": {
             "border_color": "DAD4D8",
             "bgcolor": "B78086",
             'color': 'fff',
         },
-        'timeline_rm': [
-            {'ly': 1, 'handle': 'core_first_day'},
-        ],
         'help': [
             {
                 'type': 'game_assets',
@@ -49,5 +49,24 @@ gamblers_chest = {
                 ),
             },
         ],
+    },
+
+    'smog_singers': {
+        'name': 'Smog Singers',
+        'release': datetime(2023, 7, 31, 12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': "Quarry"},
+#        'quarries': ['smog_singers'],
+#        'timeline_add': [
+#            {'ly': 0, 'handle': 'gc_devour_the_white_lion'},
+#            {'ly': 1, 'handle': 'first_crimson_day'},
+#        ],
+        "flair": {
+            "border_color": "7F7A6A",
+            "bgcolor": "A6A292",
+            'color': 'FFF',
+        },
+#        'timeline_rm': [
+#            {'ly': 1, 'handle': 'core_first_day'},
+#        ],
     },
 }

@@ -47,6 +47,11 @@ quarry = {
         "sort_order": 7,
         "node": 2,
     },
+    "smog_singers": {
+        "name": "Smog Singers",
+        "sort_order": 8,
+        "node": 2,
+    },
 
     # quarry node 3
     "phoenix": {
@@ -81,7 +86,7 @@ quarry = {
         "sort_order": 16,
         "node": 4,
     },
-
+    #  the king
 
     # no node / undefined
     "white_gigalion": {
@@ -165,6 +170,7 @@ nemesis = {
         "misspellings": ["SLENDER MAN",],
         "node": 2,
     },
+    # atnas
 
     # nemesis node 3
     "the_hand": {
@@ -174,40 +180,6 @@ nemesis = {
         'node': 3,
     },
 
-
-    # core monsters (no levels)
-    "ancient_sunstalker": {
-        "unique": True,
-        "name": "Ancient Sunstalker",
-        "expansion": "sunstalker",
-        "sort_order": 200,
-        "selectable": False,
-        "final_boss": True,
-    },
-    "dragon_king_lv3": {
-        "unique": True,
-        "name": "The Dragon King",
-        "sort_order": 201,
-        "selectable": False,
-        "final_boss": True,
-    },
-    "watcher": {
-        "unique": True,
-        "name": "Watcher",
-        "sort_order": 202,
-        "misspellings": ["THE WATCHER"],
-        "selectable": True,
-        "final_boss": False,
-    },
-
-    # finale 
-    "gold_smoke_knight": {
-        "unique": True,
-        "name": "Gold Smoke Knight",
-        "sort_order": 203,
-        "selectable": False,
-        "final_boss": True,
-    },
 
     # Special nemesis
     "lonely_tree": {
@@ -225,6 +197,47 @@ nemesis = {
     },
 }
 
+core = {
+    # core monsters (no levels)
+    "ancient_sunstalker": {
+        "unique": True,
+        'core_monster': True,
+        "name": "Ancient Sunstalker",
+        "expansion": "sunstalker",
+        "sort_order": 200,
+        "selectable": False,
+    },
+    "dragon_king_lv3": {
+        "unique": True,
+        'core_monster': True,
+        "name": "The Dragon King",
+        "sort_order": 201,
+        "selectable": False,
+    },
+    "watcher": {
+        "unique": True,
+        'core_monster': True,
+        "name": "Watcher",
+        "sort_order": 202,
+        "misspellings": ["THE WATCHER"],
+        "selectable": True,
+
+    },
+    # gambler
+}
+
+
+finale = {
+    "gold_smoke_knight": {
+        "unique": True,
+        "finale_monster": True,
+        "name": "Gold Smoke Knight",
+        "sort_order": 203,
+        "selectable": False,
+    },
+    # godhand
+
+}
 
 #
 #   helpers and shorthands below

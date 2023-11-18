@@ -517,7 +517,11 @@ core = {
         'accuracy': 6,
         'strength': 5,
         'affinities': {'left': 'red', 'right': 'red'},
-        'desc': '<b>Cumbersome:</b> Spend <font class="kdm_font">c</font> as an additional cost to activate this weapon. Ignore Cumbersome if this weapon is activated indirectly (Pounce, Charge, etc.).',
+        'desc': (
+            '<b>Cumbersome:</b> Spend <font class="kdm_font">c</font> as an '
+            'additional cost to activate this weapon. Ignore Cumbersome if '
+            'this weapon is activated indirectly (Pounce, Charge, etc.).'
+        ),
     },
     'bone_dagger': {
         'type': 'bone_smith',
@@ -621,8 +625,13 @@ core = {
         'type': 'catarium',
         'name': 'Cat Gut Bow',
         'keywords': ['weapon','ranged','bow','two-handed'],
-        'rules': ['Cumbersome','Range: 6'],
-        'desc': '<b>Aim:</b> When you attack, before rolling to hit, you may reduce the speed of this weapon by 1 to gain +2 accuracy for that attack.',
+        'rules': ['Cumbersome', 'Range: 6'],
+        'related_rules': ['cumbersome', 'range_x'],
+        'desc': (
+            '<b>Aim:</b> When you attack, before rolling to hit, you may '
+            'reduce the speed of this weapon by 1 to gain +2 accuracy for '
+            'that attack.'
+        ),
         'speed': 2,
         'accuracy': 7,
         'strength': 3,
@@ -1638,7 +1647,11 @@ core = {
         'name': 'Twilight Sword',
         'keywords': ['weapon','melee','two-handed', 'finesse', 'other'],
         'rules': ['Slow','Cursed','Cumbersome','Sentient','Irreplaceable'],
-        'desc': 'Gains <b>Devastating 2</b> when fighting the Watcher.<br/>* Accuracy is 9 - Twilight Sword proficiency level.',
+        'related_rules': ['cumbersome', 'devastating_x'],
+        'desc': (
+            'Gains <b>Devastating 2</b> when fighting the Watcher.<br/>'
+            '* Accuracy is 9 - Twilight Sword proficiency level.'
+        ),
         'speed': 1,
         'accuracy': '*',
         'strength': 9,
@@ -2994,7 +3007,7 @@ promo = {
 
     # allison the twilight knight
     'blue_lantern': {
-        'expansion': 'promo',
+        'expansion': 'allison_the_twilight_knight',
         'type': 'rare_gear',
         'name': 'Blue Lantern',
         'keywords': ['item', 'lantern', 'order', 'other'],
@@ -3006,7 +3019,7 @@ promo = {
         ),
     },
     'dormant_twilight_cloak': {
-        'expansion': 'promo',
+        'expansion': 'allison_the_twilight_knight',
         'type': 'rare_gear',
         'name': 'Dormant Twilight Cloak',
         'keywords': ['item','heavy','order','other'],
@@ -3090,12 +3103,14 @@ promo = {
             'On <b>Arrival</b> (at the start of the showdown), you may archive '
             'this and ambush the monster. limit, once per campaign.'
         ),
-        'expansion': 'promo',
+        'expansion': 'black_friday_ninja',
         'type': 'promo',
         'name': 'Black Friday Lantern',
         'keywords': ['item', 'lantern', 'other'],
         'rules': ['+1 Evasion'],
     },
+
+    # strange spot
     'belt_of_gender_swap': {
         'expansion': 'promo',
         'type': 'promo',
@@ -3237,7 +3252,7 @@ promo = {
 
     # beyond the wall
     'cloth_leggings': {
-        'expansion': 'allison_the_twilight_knight',
+        'expansion': 'promo',
         'type': 'gear_recipe',
         'name': 'Cloth Leggings',
         'keywords': ['item','cloth'],
@@ -3258,7 +3273,7 @@ promo = {
         ],
     },
     'hard_breastplate': {
-        'expansion': 'allison_the_twilight_knight',
+        'expansion': 'promo',
         'type': 'gear_recipe',
         'name': 'Hard Breastplate',
         'keywords': ['armor','leather','heavy'],
@@ -4531,81 +4546,4 @@ novice = {
             },
         ],
     },
-}
-
-hellebore = {
-    'cold_face_dagger': {
-        'name': 'Cold Face Dagger',
-        'beta': True,
-        'type': 'beta_gear_recipe',
-        'expansion': 'hellebore',
-        'speed': 2,
-        'accuracy': 7,
-        'strength': 0,
-        'keywords': ['weapon', 'melee', 'dagger', 'ice', 'stone'],
-        'rules': ['Melting 4'],
-        'desc': (
-            'If you are <b>Insulated</b>, your warm hands can better clutch '
-            'the blade. This gains +1 speed.'
-        ),
-        'recipes': [
-            {
-                'endeavor_tokens': 1,
-                'gear_handles': {'founding_stone': 1},
-            },
-        ],
-    },
-}
-
-death_crown_inheritor_aya = {
-    'heartstop_arrows': {
-        'name': 'Heartstop Arrows',
-        'type': 'pattern',
-        'expansion': 'death_crown_inheritor_aya',
-        'speed': 1,
-        'accuracy': 4,
-        'strength': 9,
-        'keywords': ['item', 'ammunition', 'arrow', 'fragile', 'other'],
-        'rules': ['Ammo - Heartbow, Campaign Limit 5'],
-        'desc': (
-            'When you wound with this, the monster is knocked down.'
-        ),
-        'recipes': [
-            {
-                'resource_handles': [
-                    {'leather': 2},
-                    {'undying_heart': 1},
-                    {'phoenix_eye': 1},
-                ],
-            },
-        ],
-    },
-    'heartbow': {
-        'name': 'Heartbow',
-        'type': 'pattern',
-        'expansion': 'death_crown_inheritor_aya',
-        'speed': 2,
-        'accuracy': 7,
-        'strength': 7,
-        'keywords': ['weapon', 'ranged', 'bow', 'two-handed', 'other'],
-        'rules': ['Cumbersome', 'Range: 4'],
-        'affinities': {'top': 'red', 'bottom': 'red'},
-        'affinity_bonus': {
-            'requires': {'puzzle': {'red': 2}},
-            'desc': (
-                'If you have no non-red affinities, this loses '
-                '<b>Cumbersome</b> and gains <b>Sharp</b>.'
-            ),
-        },
-        'recipes': [
-            {
-                'resource_handles': [
-                    {'perfect_bone': 2},
-                    {'undying_heart': 1},
-                    {'phoenix_whisker': 1},
-                ],
-            },
-        ],
-    },
-
 }

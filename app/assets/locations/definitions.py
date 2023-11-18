@@ -91,7 +91,11 @@ resources = {
     "crimson_crocodile_resources":{
         "name": "Crimson Crocodile Resources",
         "expansion": "crimson_crocodile",
-        "color": "F90E1D",
+        "selectable": False,
+    },
+    "smog_singers_resources":{
+        "name": "Smog Singers Resources",
+        "expansion": "smog_singers",
         "selectable": False,
     },
 }
@@ -493,6 +497,13 @@ location = {
         'name': 'Crimson Crockery',
         'expansion': 'crimson_crocodile',
         'color': '894142',
+        'font_color': 'fff',
+    },
+    'chorusseum': {
+        'type': 'gear',
+        'name': 'Chorusseum',
+        'expansion': 'smog_singers',
+        'color': 'A2A291',
         'font_color': 'fff',
     },
 }

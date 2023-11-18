@@ -375,7 +375,9 @@ class UserAsset():
             return [p["login"] for p in player_set]
 
         # if we're still here, we need settlement info for the full return
-        settlement_record = self.get_settlement_record()
+        settlement_record = utils.mdb.settlements.find_one(
+            {'_id': self.get_settlement_id()}
+        )
         player_list = []
         for p in player_set:
             p_dict = {"login": p["login"], "_id": p["_id"]}
@@ -449,11 +451,6 @@ class UserAsset():
 
         return output
 
-
-    def get_settlement_record(self):
-        """ Settlement and Survivor models have self.settlement_id, which this
-            method uses to retrieve the raw settlement record from MDB. """
-        return utils.mdb.settlements.find_one({'_id': self.get_settlement_id()})
 
 
     def get_settlement_id(self):
@@ -551,7 +548,7 @@ class UserAsset():
 
         # convert the incoming 'attrib' to snake case, because that's how it's
         #   going to appear as a Settlement attribute
-        collection = utils.str_to_snake(attrib)
+        collection = utils.snake_to_camel_case(attrib)
 
         # special handling for 'principles', which are innovations
         if attrib == "principles":
@@ -672,7 +669,8 @@ class UserAsset():
             "created_on": datetime.now(),
             'created_by': created_by,
             'created_by_email': created_by_email,
-            "settlement_id": getattr(self, 'settlement_id', None),
+#            "settlement_id": getattr(self, 'settlement_id', None),
+            "settlement_id": self.get_settlement_id(),
             "ly": self.get_current_ly(),
             'event_type': event_type,
             'event': msg,
@@ -697,7 +695,7 @@ class UserAsset():
             d['modified']['asset'] = {
                 "type": "settlement",
                 "name": self.settlement['name'],
-                '_id': self.settlement_id
+                '_id': self.settlement['_id']
             }
 
         # create the 'action'

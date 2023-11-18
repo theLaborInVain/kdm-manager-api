@@ -137,6 +137,7 @@ hr.three_dee {
     --border-checkbox: 0.1rem solid;
     --border-checkbox-bold: 0.2rem solid;
     --border-worksheet: 0.3rem solid;
+    --border-survivor-sheet: 0.125rem solid;
     --color-kd-affinity-blue: #1C99CD;
     --color-kd-affinity-green: #4CB848;
     --color-kd-affinity-red: #CD2027;
@@ -179,6 +180,10 @@ hr.three_dee {
     padding: 1rem;
     padding-top: 0.5rem;
 }
+.kd.survivor_sheet.worksheet_block {
+    border: var(--border-survivor-sheet);
+    margin: 1rem auto; 
+}
 .kd.worksheet_block.flex {
     display: flex;
 }
@@ -205,13 +210,15 @@ hr.three_dee {
     position: relative; 
     pointer-events: none;
 }
-.kd.worksheet_block.disabled:before{
+.kd.worksheet_block.disabled:before {
     content: "";
-    position: absolute;
-    width: 94%;
-    height: 94%;
     background: #fff;
+    bottom: 0.1rem;
+    left: 0.1rem;
+    right: 0.1rem;
     opacity: .7;
+    position: absolute;
+    top: 0.1rem;
 }
 .kd.worksheet_page_title,
     .kd.worksheet_block_title {
@@ -235,6 +242,9 @@ hr.three_dee {
     margin: 0 auto;
     padding: 0.5rem;
     width: 100%;
+}
+.kd.worksheet_row.disabled {
+    opacity: 0.5;
 }
 .kd.worksheet_row.spaced {
     justify-content: space-between;
@@ -273,7 +283,8 @@ hr.three_dee {
 
 /*  checkboxes */
 
-.kd.checkbox {
+.kd.checkbox,
+.kd.lockbox {
     border: var(--border-checkbox);
     box-sizing: border-box;
     height: 0.8rem;
@@ -282,6 +293,7 @@ hr.three_dee {
     min-width: 0.8rem;
     width: 0.8rem;
 }
+.kd.lockbox {border: none;}
 .kd.checkbox:after {
     content: attr(caption-text);
     font-size: var(--font-small);

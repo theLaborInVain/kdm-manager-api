@@ -225,7 +225,10 @@ ability = {
         'type': 'ability',
     },
     'marrow_hunger': {
-        'desc': 'When the Murder or Skull Eater settlement events are drawn, this survivor is nominated.',
+        'desc': (
+            'When the Murder or Skull Eater settlement events are drawn, this '
+            'survivor is nominated.'
+        ),
         'epithet': 'skull_eater',
         'name': 'Marrow Hunger',
         'type': 'impairment'

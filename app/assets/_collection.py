@@ -521,11 +521,20 @@ class Collection():
         return asset
 
 
-    def get_dicts(self):
+    def get_dicts(self, sort_on_handles=False):
         """ Dumps a list of dicts where each dict is an asset dict. """
+
+        # get all handles (sorted by name)
+        asset_handles = self.get_handles()
+
         output = []
-        for h in sorted(self.get_handles()):
-            output.append(self.get_asset(h))
+        if sort_on_handles:
+            for handle in sorted(asset_handles):
+                output.append(self.get_asset(handle))
+        else:
+            for handle in asset_handles:
+                output.append(self.get_asset(handle))
+
         return output
 
 

@@ -61,7 +61,7 @@ class Survivor(UserAsset):
     DATA_MODEL.add('public', bool)
 
     # sheet
-    DATA_MODEL.add('name', str, 'Anonymous')
+    DATA_MODEL.add('name', str, default_value='Anonymous')
     DATA_MODEL.add('sex', str, 'R', options=['M', 'F'])
     DATA_MODEL.add("survival", int, minimum=0)
     DATA_MODEL.add("Insanity", int, minimum=0)
@@ -102,8 +102,9 @@ class Survivor(UserAsset):
     DATA_MODEL.add("max_bleeding_tokens", int, 5)
     DATA_MODEL.add('partner_id', ObjectId, required=False)
 
-    # flags
+    # user stuff
     DATA_MODEL.add('departing', bool)
+    DATA_MODEL.add('groups', list, required=False)
 
     # misc
     DATA_MODEL.add('inherited', dict, {'father': {}, 'mother': {}})
@@ -204,7 +205,10 @@ class Survivor(UserAsset):
 
         # require an intitialized settlement object; we need it for game assets
         self.Settlement = kwargs.get('Settlement', None)
-        if self.Settlement is None or not hasattr(self.Settlement, 'settlement'):
+        if (
+            self.Settlement is None or
+            not hasattr(self.Settlement, 'settlement')
+        ):
             err = '%s.__init__() requires initialized Settlement object! %s\n%s'
             raise TypeError(
                 err % (
@@ -218,6 +222,10 @@ class Survivor(UserAsset):
         for sa_key in self.Settlement.SpecialAttributes.assets:
             self.DATA_MODEL.add(
                 sa_key, bool, required=False, category='special_attributes'
+            )
+        for sa_key in self.Settlement.OncePerLifetime.assets:
+            self.DATA_MODEL.add(
+                sa_key, bool, required=False, category='once_per_lifetime'
             )
 
         # if we're doing a new survivor, it will happen when we subclass the
@@ -1004,7 +1012,7 @@ class Survivor(UserAsset):
 
         #   2.) initialize/import the AssetModule and an AssetCollection object
         collection_obj = getattr(
-            self.Settlement, utils.str_to_snake(collection)
+            self.Settlement, utils.snake_to_camel_case(collection)
         )
 
 

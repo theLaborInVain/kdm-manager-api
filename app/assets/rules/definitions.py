@@ -1,7 +1,7 @@
 core = {
     'accessory': {
         'name': 'Accessory',
-        'type': 'keyword',
+        'type': 'gear_special_rule',
         'desc': (
             'A gear special rule. Accessory gear may be worn in addition to '
             'armor on a hit location. Each accessory specifies the hit '
@@ -28,14 +28,14 @@ core = {
     },
     'ammuntion': {
         'name': 'Ammunition',
-        'type': 'keyword',
+        'type': 'gear_keyword',
         'desc': (
-            "A gear keyword. This gear is ammunition for another weapon gear."
+            "This gear is ammunition for another weapon gear."
         ),
     },
     'archive': {
         'name': 'Archive',
-        'type': 'keyword',
+        'type': 'rule',
         'desc': (
             'Remove this card from play and return it to the game box. Unless '
             "it is recorded into settlement storage or the survivor's record "
@@ -44,14 +44,14 @@ core = {
     },
     'arrow': {
         'name': 'Arrow',
-        'type': 'keyword',
-        'desc': "A gear keyword. This gear card is an arrow.",
+        'type': 'gear_keyword',
+        'desc': "This gear card is an arrow.",
     },
     'balm': {
         'name': 'Balm',
-        'type': 'keyword',
+        'type': 'gear_keyword',
         'desc': (
-            "A gear keyword. Balm items work by rubbing them on a survivor's "
+            "Balm items work by rubbing them on a survivor's "
             "skin."
         ),
     },
@@ -70,7 +70,7 @@ core = {
         'expansion': 'sunstalker',
         'desc': '-1 Accuracy',
     },
-    'block': {
+    'block_x': {
         'name': 'Block N',
         'type': 'special_rule',
         'desc': (
@@ -81,9 +81,9 @@ core = {
     },
     'bone': {
         'name': 'Bone',
-        'type': 'keyword',
+        'type': 'gear_keyword',
         'desc': (
-            'A gear keyword. Bone is one of the primary materials used to '
+            'Bone is one of the primary materials used to '
             'craft this gear.'
         ),
     },
@@ -104,7 +104,7 @@ core = {
     'consumable': {
         'name': 'Consumable',
         'type': 'keyword',
-        'desc': """A keyword. This may be consumed by survivors.""",
+        'desc': "A keyword. This may be consumed by survivors.",
         'related': ['consume'],
     },
     'cumbersome': {
@@ -118,23 +118,27 @@ core = {
     },
     'cursed': {
         'name': 'Cursed',
-        'type': 'special_rule',
-        'desc': """A gear special rule. This gear cannot be removed from the gear grid for any reason. If the survivor dies, archive this gear.""",
+        'type': 'gear_special_rule',
+        'desc': (
+            'This gear cannot be removed from the gear '
+            'grid for any reason. If the survivor dies, archive this gear.'
+        ),
         'related': ['archive'],
     },
     'deadly': {
         'name': 'Deadly',
         'type': 'gear_special_rule',
         'desc': (
-            'A gear special rule. Gain +l luck while attacking with this '
+            'Gain +l luck while attacking with this '
             'weapon. This increases the odds of inflicting critical wounds.'
         ),
     },
     'deflect_x': {
         'name': 'Deflect X',
         'type': 'gear_special_rule',
+        'related': ['block_x'],
         'desc': (
-            'A gear special rule, when you Deflect X, gain (or lose) deflect '
+            'When you Deflect X, gain (or lose) deflect '
             'tokens until you have X of them. When you are hit, if you have '
             'any deflect tokens, you ignore that hit and lose a deflect token. '
             'When you Deflect X, you lose the benefits of Block.'
@@ -142,9 +146,9 @@ core = {
     },
     'devastating_x': {
         'name': 'Devastating X',
-        'type': 'special_rule',
+        'type': 'gear_special_rule',
         'desc': (
-            'A gear special rule. When a devastating weapon wounds a monster, '
+            'When a devastating weapon wounds a monster, '
             'it will inflict X additional wounds.'
         ),
     },
@@ -169,27 +173,34 @@ core = {
     'ethereal': {
         'name': 'Ethereal',
         'type': 'special_rule',
-        'desc': """A survivor must be <b>insane</b> and depart with a Savior to wear it. When the settlement has no Savior, archive it.""",
+        'desc': (
+            'A survivor must be <b>insane</b> and depart with a Savior to wear '
+            'it. When the settlement has no Savior, archive it.'
+        ),
     },
     'feather': {
         'name': 'Feather',
-        'type': 'keyword',
-        'desc': """A gear keyword. This gear is substantively crafted of feathers.""",
+        'type': 'gear_keyword',
+        'desc': 'This gear is substantively crafted of feathers.',
     },
     'finesse': {
         'name': 'Finesse',
-        'type': 'keyword',
-        'desc': """A gear keyword. This gear requires finesse to use. This keyword does not interact with the core game in any way and is one of those annoying keywords for expansions.""",
+        'type': 'gear_keyword',
+        'desc': (
+            'This gear requires finesse to use. This keyword does not interact '
+            'with the core game in any way and is one of those annoying '
+            'keywords for expansions.'
+        ),
     },
     'flammable': {
         'name': 'Flammable',
-        'type': 'keyword',
-        'desc': """A gear keyword. Fire can destroy this gear.""",
+        'type': 'gear_keyword',
+        'desc': """Fire can destroy this gear.""",
     },
     'fragile': {
         'name': 'Fragile',
-        'type': 'keyword',
-        'desc': """A gear keyword. This gear is easily broken.""",
+        'type': 'gear_keyword',
+        'desc': """This gear is easily broken.""",
     },
     'frail': {
         'name': 'Frail',
@@ -203,10 +214,8 @@ core = {
     },
     'fur': {
         'name': 'Fur',
-        'type': 'keyword',
-        'desc': (
-            'A gear keyword. This gear is substantively crafted of thick fur.'
-        ),
+        'type': 'gear_keyword',
+        'desc': 'This gear is substantively crafted of thick fur.',
     },
     'guard': {
         'name': 'Guard',
@@ -217,64 +226,77 @@ core = {
             'in your gear grid, spend 1 survival to move 3 spaces directly '
             'away from the monster and <b>Block 1</b> for free.'
         ),
-        'related': ['block'],
+        'related': ['block_x'],
     },
     'heavy': {
         'name': 'Heavy',
-        'type': 'keyword',
-        'desc': """A gear keyword. This gear has substantial weight.""",
+        'type': 'gear_keyword',
+        'desc': """This gear has substantial weight.""",
     },
     'herb': {
         'name': 'Hide',
-        'type': 'keyword',
-        'desc': """A gear keyword. An item primarily made of herbs.""",
+        'type': 'gear_keyword',
+        'desc': 'An item primarily made of herbs.',
     },
     'instrument': {
         'name': 'Instrument',
-        'type': 'keyword',
-        'desc': """A gear keyword. This gear can be used to play music.""",
+        'type': 'gear_keyword',
+        'desc': "This gear can be used to play music.",
     },
     'irreplaceable': {
         'name': 'Irreplaceable',
         'type': 'special_rule',
-        'desc': """A gear special rule. If a survivor dies, archive all irreplaceable gear in their gear grids.""",
+        'desc': (
+            'A gear special rule. If a survivor dies, archive all irreplaceable'
+            ' gear in their gear grids.'
+        ),
         'related': ['archive'],
+    },
+    'item': {
+        'name': 'Item',
+        'type': 'gear_keyword',
+        'desc': 'Gear that is neither a weapon nor armor.',
     },
     'jewelry': {
         'name': 'Jewelry',
-        'type': 'keyword',
-        'desc': """A gear keyword. Decorative and functional!""",
+        'type': 'gear_keyword',
+        'desc': 'Decorative and functional!',
     },
     'lantern': {
         'name': 'Lantern',
-        'type': 'keyword',
-        'desc': """A gear keyword. A lantern illuminates the darkness.""",
+        'type': 'gear_keyword',
+        'desc': """A lantern illuminates the darkness.""",
     },
     'leather': {
         'name': 'Leather',
-        'type': 'keyword',
-        'desc': """A gear keyword. Cured hides are a crucial component of this gear.""",
+        'type': 'gear_keyword',
+        'desc': """Cured hides are a crucial component of this gear.""",
     },
     'melee': {
         'name': 'Melee',
-        'type': 'keyword',
-        'desc': """ A weapon gear keyword. To attack with a melee weapon, survivors must be in a space adjacent to the monster. Melee weapons with Reach can attack from further away.""",
+        'type': 'gear_keyword',
+        'related': ['reach_x'],
+        'desc': (
+            'A weapon gear keyword. To attack with a melee weapon, survivors '
+            'must be in a space adjacent to the monster. Melee weapons with '
+            'Reach can attack from further away.'
+        ),
     },
     'metal': {
         'name': 'Metal',
-        'type': 'keyword',
-        'desc': """A gear keyword. This gear is substantively crafted of metal.""",
+        'type': 'gear_keyword',
+        'desc': """This gear is substantively crafted of metal.""",
     },
     'noisy': {
         'name': 'Noisy',
-        'type': 'keyword',
-        'desc': """A gear keyword. This gear Is hard to keep quiet.""",
+        'type': 'gear_keyword',
+        'desc': """This gear Is hard to keep quiet.""",
     },
     'obstacle': {
         'name': 'Obstacle',
-        'type': 'keyword',
+        'type': 'terrain_rule',
         'desc': (
-            'A terrain rule. This terrain blocks survivor and monster field of '
+            'This terrain blocks survivor and monster field of '
             'view. Interrupting ranged weapon attacks and monster targeting. '
             'To check if field of view is blocked, draw an imaginary line from '
             "the center of the miniature's base to the center of the intended "
@@ -285,8 +307,8 @@ core = {
     },
     'other': {
         'name': 'Other',
-        'type': 'keyword',
-        'desc': "A gear keyword. The effects of this gear are otherworldly.",
+        'type': 'gear_keyword',
+        'desc': "The effects of this gear are otherworldly.",
     },
     'outfit': {
         'name': 'Outfit',
@@ -312,9 +334,9 @@ core = {
     },
     'pickaxe': {
         'name': 'Pickaxe',
-        'type': 'keyword',
+        'type': 'gear_keyword',
         'desc': (
-            'A gear keyword, in certain situations, this can be used to mine '
+            'In certain situations, this can be used to mine '
             'minerals.'
         ),
     },
@@ -340,14 +362,17 @@ core = {
     },
     'ranged': {
         'name': 'Ranged',
-        'type': 'keyword',
-        'desc': """A gear keyword. A ranged weapon, like a bow or dart, allows survivors to attack from a distance.""",
+        'type': 'gear_keyword',
+        'desc': (
+            'A ranged weapon, like a bow or dart, allows survivors to attack '
+            'from a distance.'
+        ),
         'related': ['range'],
     },
     'rawhide': {
         'name': 'Rawhide',
-        'type': 'keyword',
-        'desc': 'A gear keyword. This gear is crafted of uncured hides.',
+        'type': 'gear_keyword',
+        'desc': 'This gear is crafted of uncured hides.',
     },
     'reach_x': {
         'name': 'Reach',
@@ -386,7 +411,7 @@ core = {
     },
     'set': {
         'name': 'Set',
-        'type': 'keyword',
+        'type': 'gear_keyword',
         'desc': (
             'A gear keyword listed on some armor cards. This means this armor '
             'is part of an armor set.'
@@ -403,9 +428,9 @@ core = {
     },
     'sickle': {
         'name': 'Sickle',
-        'type': 'keyword',
+        'type': 'gear_keyword',
         'desc': (
-            'A gear keyword. In certain situations, this can be used to '
+            'In certain situations, this can be used to '
             'harvest herbs.'
         ),
     },
@@ -419,13 +444,13 @@ core = {
     },
     'soluble': {
         'name': 'Soluble',
-        'type': 'keyword',
-        'desc': 'A gear keyword. Able to be dissolved in liquid.',
+        'type': 'gear_keyword',
+        'desc': 'Able to be dissolved in liquid.',
     },
     'stinky': {
         'name': 'Stinky',
-        'type': 'keyword',
-        'desc': 'A gear keyword. This item has a strong odor.',
+        'type': 'gear_keyword',
+        'desc': 'This item has a strong odor.',
     },
     'super_dense': {
         'name': 'Super-dense',
@@ -439,16 +464,16 @@ core = {
     },
     'tool': {
         'name': 'Tool',
-        'type': 'keyword',
+        'type': 'gear_keyword',
         'desc': (
-            'A gear keyword. Some tools trigger story events or grant bonuses.'
+            'Some tools trigger story events or grant bonuses.'
         ),
     },
     'two_handed': {
         'name': 'Two-handed',
-        'type': 'keyword',
+        'type': 'gear_keyword',
         'desc': (
-            'A gear keyword. This weapon requires two hands to use. Some gear '
+            'This weapon requires two hands to use. Some gear '
             'and rules do not work with two-handed weapons.'
         ),
     },
@@ -599,7 +624,8 @@ expansion = {
         'expansion': 'badar',
         'name': 'Sealed',
         'desc': (
-            'Seal gear has a bonus effect that can only be earned by training. '
+            'Sealed gear has a bonus effect that can only be earned by '
+            'training. '
             'A survivor can unseal the gear by declaring it as their weapon '
             'proficiency, forsaking the normal bonuses of selecting a weapon '
             'type. When the survivor reaches the specialization rank, they '

@@ -485,7 +485,7 @@ class GridfsImage(object):
 #   misc. helper methods
 #
 
-def str_to_snake(string):
+def snake_to_camel_case(string):
     ''' Converts 'string' to a snake-case string. '''
     string = string.split('_')
     return "".join([part.capitalize() for part in string])

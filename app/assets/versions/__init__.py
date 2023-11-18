@@ -20,10 +20,8 @@ from .definitions import *
 
 
 class Assets(Collection):
-    ''' Versions have their own, unique class method for creating a collection.
-    object. Main reason being, they are a sort of 'meta' or governing object
-    for other game assets, and thus cannot use the normal Collection() base
-    class. '''
+    ''' Version collections are like any other collection, even though
+    individual version assets have a unique class method (see below).'''
 
 
     def __init__(self, *args, **kwargs):

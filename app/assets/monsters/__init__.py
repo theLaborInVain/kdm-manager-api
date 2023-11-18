@@ -128,20 +128,9 @@ class Monster(Asset):
                 setattr(self, attr, self.asset[attr])
 
 
-
-    def is_final_boss(self):
-        """ Returns a bool representing whether the monst is a final boss.
-        Monsters are not final bosses by default. """
-#        if hasattr(self, "final_boss"):
-        if self.asset.get('final_boss', False):
-            return self.asset['final_boss']
-        return False
-
-
     def is_unique(self):
         """ Returns a bool representing whether the monst is unique. Monsters
         are non-unique by default. """
-#        if hasattr(self, "unique"):
         if self.asset.get('unique', False):
             return self.asset['unique']
         return False
@@ -150,7 +139,6 @@ class Monster(Asset):
     def is_selectable(self):
         """ Returns a bool representing whether the monst is unique. Monsters
         are selectable by default. """
-#        if hasattr(self, "selectable"):
         if self.asset.get('selectable', False):
             return self.asset['selectable']
         return True

@@ -13,12 +13,10 @@
 # standard library imports
 import collections
 from copy import copy, deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime
 import inspect
 import json
-import random
 import os
-import time
 import urllib
 
 # second-party imports
@@ -32,6 +30,7 @@ from app import API, utils
 import app.assets.kingdom_death as KingdomDeath
 
 from ..survivors import Survivor
+from .._data_model import DataModel
 from .._user_asset import UserAsset
 from .._decorators import deprecated, web_method, paywall
 
@@ -41,6 +40,31 @@ from ._storage import Storage as StorageObject
 class Settlement(UserAsset):
     """ This is the base class for all expansions. Private methods exist for
     enabling and disabling expansions (within a campaign/settlement). """
+
+    DATA_MODEL = DataModel()
+
+    # meta
+    DATA_MODEL.add('version', str)
+
+    # user stuff
+    DATA_MODEL.add('admins', list)
+    DATA_MODEL.add('hunt_started', datetime, required=False)
+
+    # sheet
+    DATA_MODEL.add('campaign', str, immutable=True)
+    DATA_MODEL.add('death_count', int, minimum=0)
+    DATA_MODEL.add('expansions', list)
+    DATA_MODEL.add('locations', list)
+    DATA_MODEL.add('population', int, minimum=0)
+    DATA_MODEL.add('innovations', list)
+    DATA_MODEL.add('inspirational_statue', str, required=False)
+    DATA_MODEL.add('name', str, default_value='Unknown')
+    DATA_MODEL.add('lantern_year', int, minimum=0)
+    DATA_MODEL.add('lantern_research_level', int, required=False)
+    DATA_MODEL.add('lost_settlements', int, minimum=0)
+    DATA_MODEL.add('survival_limit', int, minimum=1)
+
+
 
     @utils.metered
     def __init__(self, *args, **kwargs):
@@ -74,18 +98,6 @@ class Settlement(UserAsset):
         self.normalize()
 
 
-    def load(self):
-        """ Calls the base class load() method and then sets a few additional,
-        settlement-specific attributes.
-
-        There is more here than there is in the other load() methods, since the
-        settlement object has so much crap on it.
-        """
-
-        super().load()
-        self.settlement_id = self._id   # probably need to deprecate this
-
-
     @utils.metered
     def _initialize_asset_collections(self):
         """ Called during __init__(); these are used by numerous methods. """
@@ -94,9 +106,12 @@ class Settlement(UserAsset):
             err = "Settlement object must be loaded before assets can init!"
             raise AttributeError(err)
 
-        # set versions first, since this is used by the get_versions() method
-        #   that gets called to get assets at the settlement's version
-        self.Versions = KingdomDeath.versions.Assets()
+        # this sets self.Versions and should eventually be the way we do this
+        self._require_asset_collection_attributes([
+            'once_per_lifetime',
+        ])
+
+        # eventually deprecate these:
 
         self.AbilitiesAndImpairments = \
             KingdomDeath.abilities_and_impairments.Assets(self.get_version(str))
@@ -124,6 +139,7 @@ class Settlement(UserAsset):
 
         # settlement sheet assets
         self.Macros = KingdomDeath.macros.Assets()
+        self.PulseDiscoveries = KingdomDeath.pulse_discoveries.Assets()
         self.Storage = KingdomDeath.storage.Assets(self.get_version(str))
 
         # survivor sheet assets
@@ -137,6 +153,34 @@ class Settlement(UserAsset):
         # add the constellations
         if 'dragon_king' in self.settlement['expansions']:
             self.TheConstellations = KingdomDeath.the_constellations.Assets()
+
+
+    def _require_asset_collection_attributes(self, attribs=[]):
+        ''' Loops through 'attribs', which is a list of strings corresponding to
+        game asset types, and makes sure that it's an attribute of self. '''
+
+        if not isinstance(attribs, list):
+            raise TypeError("The 'attribs' kwarg must be a list!")
+
+        # the self.get_version() method requires self.Versions
+        if not hasattr(self, 'Versions'):
+            self.Versions = KingdomDeath.versions.Assets()
+
+        for asset_type_snake in attribs:
+            asset_type_camel = utils.snake_to_camel_case(asset_type_snake)
+            if not hasattr(self, asset_type_camel):
+                setattr(
+                    self,
+                    asset_type_camel,
+                    getattr(
+                        KingdomDeath,
+                        asset_type_snake
+                    ).Assets(
+                        self.get_version(str)
+                    )
+                )
+#                msg = "%s Set required collection -> self.%s (KingdomDeath.%s)"
+#                self.logger.debug(msg, self, asset_type_camel, asset_type_snake)
 
 
     def _initialize_settlement_storage(self):
@@ -215,6 +259,11 @@ class Settlement(UserAsset):
 
 
 
+    #
+    #   PUBLIC METHODS START BELOW
+    #
+
+
     def new(self):
         """ Creates a new settlement. Expects a fully-loaded request, i.e. with
         an initialized User object, json() params, etc.
@@ -285,16 +334,12 @@ class Settlement(UserAsset):
 
 
 
-
-        #
-        #   This is where we save and load(); use self.settlement from here
-        #
-
+        #   insert and load(); use self.settlement from here
         self._id = utils.mdb.settlements.insert(settlement)
         self.load() # uses self._id
 
-        # can't use self.Names because we haven't initialized assets yet
-        self.Names = KingdomDeath.names.Assets()
+        #   set required asset collections AFTER load()
+        self._require_asset_collection_attributes(['names'])
 
         # set the settlement name before we save to MDB
         s_name = settlement['name']
@@ -304,7 +349,6 @@ class Settlement(UserAsset):
                 s_name = self.Names.get_random_settlement_name()
         self.settlement['name'] = None
         self.set_name(s_name)
-
 
         # from here, we'll need self.campaign, so initialize it!
         self._initialize_self_campaign()
@@ -348,19 +392,17 @@ class Settlement(UserAsset):
         """ Starting in January 2021, settlement macros can be applied
         arbitrarily and at will. """
 
-        # in case we've haven't initialized yet, e.g. new settlement creation
-        #   REFACTOR AND DEPRECATE THIS PLEASE
-        if not hasattr(self, 'AbilitiesAndImpairments'):
-            self.AbilitiesAndImpairments = KingdomDeath.abilities_and_impairments.Assets()
-        if not hasattr(self, 'Macros'):
-            self.Macros = KingdomDeath.macros.Assets()
-        if not hasattr(self, 'Monsters'):
-            self.Monsters = KingdomDeath.monsters.Assets()
-        if not hasattr(self, 'SpecialAttributes'):
-            self.SpecialAttributes = KingdomDeath.special_attributes.Assets()
-        if not hasattr(self, 'Tags'):
-            self.Tags = KingdomDeath.tags.Assets()
+        # require collections
+        self._require_asset_collection_attributes([
+            'abilities_and_impairments',
+            'macros',
+            'monsters',
+            'once_per_lifetime',
+            'special_attributes',
+            'tags',
+        ])
 
+        # sanity check / initialize vars
         if handle is None:
             self.check_request_params(['handle'])
             handle = self.params["handle"]
@@ -431,14 +473,14 @@ class Settlement(UserAsset):
         self.baseline()
 
         if self.settlement.get("settlement_notes", None) is not None:
-            self._migrate_settlement_notes()
+            raise utils.ConversionException()
 
 
         #
         #       timeline migrations
         #
         if self.settlement["meta"].get("timeline_version", None) is None:
-            self._convert_timeline_to_JSON()
+            raise utils.ConversionException()
 
         if self.settlement["meta"]["timeline_version"] == 1.0:
             self.convert_timeline_quarry_events()
@@ -449,39 +491,15 @@ class Settlement(UserAsset):
             self.perform_save = True
 
         #
-        #       other migrations
+        #   November 2023: legacy conversions are no longer supported
         #
-        if self.settlement["meta"].get("campaign_version", None) is None:
-            self._convert_campaign_to_handle()
-            self.perform_save = True
-
-        if self.settlement["meta"].get("expansions_version", None) is None:
-            self.convert_expansions_to_handles()
-            self.perform_save = True
-
-        if self.settlement["meta"].get("innovations_version", None) is None:
-            self.convert_innovations_to_handles()
-            self.perform_save = True
-
-        if self.settlement["meta"].get("locations_version", None) is None:
-            self.convert_locations_to_handles()
-            self.perform_save = True
-
-        if self.settlement["meta"].get("milestones_version", None) is None:
-            self.convert_milestones_to_handles()
-            self.perform_save = True
-
-        if self.settlement["meta"].get("monsters_version", None) is None:
-            self.convert_monsters_to_handles()
-            self.perform_save = True
-
-        if self.settlement["meta"].get("principles_version", None) is None:
-            self.convert_principles_to_handles()
-            self.perform_save = True
-
-        if self.settlement["meta"].get("storage_version", None) is None:
-            self.convert_storage()
-            self.perform_save = True
+        for version_attrib in [
+            'campaign', 'expansions', 'innovations', 'locations',
+            'milestones', 'monsters', 'principles', 'storage'
+        ]:
+            handle = version_attrib + '_version'
+            if self.settlement["meta"].get(handle, None) is None:
+                raise utils.ConversionException()
 
 
         # enforce minimums
@@ -551,14 +569,16 @@ class Settlement(UserAsset):
         self.log_event(action="unset", value="removed", event_type="sysadmin")
         if unremove_survivors:
             self.logger.debug("Unremoving survivors...")
-            for s in utils.mdb.survivors.find({'settlement': self.settlement['_id']}):
+            for s in utils.mdb.survivors.find(
+                {'settlement': self.settlement['_id']}
+            ):
                 if s.get('removed',False):
                     S = Survivor(_id=s['_id'])
                     S.unremove()
         self.save()
 
 
-    def __serialize_preflight(self):
+    def _serialize_preflight(self):
         ''' Since serializing a settlement is ...basically the main thing the
         API does, this method does sanity checks before we let it rip. '''
 
@@ -575,13 +595,13 @@ class Settlement(UserAsset):
             )
             raise TypeError(err % dir(getattr(self, 'campaign', None)))
 
-
+    @utils.metered
     def serialize(self, return_type=None):
         """ Renders the settlement, including all methods and supplements, as
         a monster JSON object. This is where all views come from."""
 
 
-        self.__serialize_preflight()
+        self._serialize_preflight()
 
         output = self.get_serialize_meta()
 
@@ -638,7 +658,6 @@ class Settlement(UserAsset):
 
         # create game_assets
         if return_type in [None, 'game_assets', 'campaign']:
-            start = datetime.now()
             output.update({"game_assets": {}})
             for asset_package in [
                 self.AbilitiesAndImpairments,
@@ -650,6 +669,7 @@ class Settlement(UserAsset):
                 self.Gear,
                 self.Innovations,
                 self.Monsters,
+                self.OncePerLifetime,
                 self.Resources,
                 self.StrainMilestones,
                 self.SurvivalActions,
@@ -675,7 +695,7 @@ class Settlement(UserAsset):
             )['weapon_proficiency']
 
             # options (i.e. decks)
-            output["game_assets"]["pulse_discoveries"] = self.get_pulse_discoveries()
+            output["game_assets"]["pulse_discoveries"] = self.PulseDiscoveries.get_dicts(sort_on_handles=True)
             output["game_assets"]["innovations_options"] = self.get_innovations_options()
             output['game_assets']['locations_options'] = self.get_locations_options()
             output['game_assets']['patterns_options'] = self.get_patterns_options()
@@ -718,14 +738,13 @@ class Settlement(UserAsset):
         if return_type in [None, 'campaign']:
             output['survivor_color_schemes'] = self.SurvivorColorSchemes.get_sorted_assets()
             output["survivor_bonuses"] = self.get_bonuses("JSON")
-            output["survivor_attribute_milestones"] = self.get_survivor_attribute_milestones()
+            output["survivor_attribute_milestones"] = self.campaign.asset['survivor_attribute_milestones']
             output["eligible_parents"] = self.get_eligible_parents()
             output['survivor_status_flags'] = self.SurvivorStatusFlags.assets
 
 
         # campaign summary specific
         if return_type in ['campaign']:
-            start = datetime.now()
             output.update({'campaign':{}})
             output['campaign'].update({'last_five_log_lines': self.get_event_log(lines=5)})
             output['campaign'].update({'most_recent_milestone': self.get_latest_milestone()})
@@ -931,7 +950,10 @@ class Settlement(UserAsset):
                 if o_dict["handle"] in self.settlement["principles"]:
                     selected=True
 
-                o_dict.update({"input_id": "%s_%s_selector" % (p_dict["handle"],o), "checked": selected})
+                o_dict.update({
+                    "input_id": "%s_%s_selector" % (p_dict["handle"], o),
+                    "checked": selected
+                })
                 p_dict["options"][o] = o_dict
 
             p_dict["form_handle"] = "set_principle_%s" % p_dict["name"]
@@ -958,14 +980,14 @@ class Settlement(UserAsset):
             candidate_handles.extend(
                 self.settlement.get("nemesis_monsters", [])
             )
-            candidate_handles.append(self.campaign.asset['final_boss'])
+            candidate_handles.append(self.campaign.asset['finale_monster'])
         elif context == "defeated_monsters":
             candidate_handles.extend(self.settlement.get("quarries", []))
             candidate_handles.extend(self.settlement.get("nemesis_monsters",[]))
-            candidate_handles.extend(self.get_special_showdowns())
-            candidate_handles.append(self.campaign.asset['final_boss'])
+            candidate_handles.extend(self._get_special_showdowns())
+            candidate_handles.extend(self._get_endgame_showdowns())
         elif context == "special_showdown_options":
-            candidate_handles.extend(self.get_special_showdowns())
+            candidate_handles.extend(self._get_special_showdowns())
         else:
             self.logger.warn(
                 "Unknown 'context' for get_monster_options() method!"
@@ -1276,28 +1298,28 @@ class Settlement(UserAsset):
         LY that the content wants to be added.
         """
 
-        # in case we're creating new; REFACTOR AND DEPRECATE THIS
-        if not hasattr(self, 'Expansions'):
-            self.Expansions = KingdomDeath.expansions.Assets()
-        if not hasattr(self, 'Events'):
-            self.Events = KingdomDeath.events.Assets()
-
+        # require asset collections 
+        self._require_asset_collection_attributes(['events', 'expansions'])
 
         # create a list of expansions to add
         if e_list == []:
             self.check_request_params(['expansions'])
             e_list = self.params['expansions']
 
-        # prune the list to reduce risk of downstream cock-ups
+        #
+        # sanity check / filter the incoming list
+        #
         for e_handle in e_list:
-            # 1.) filter bogus handles
+            # filter bogus handles
             if e_handle not in self.Expansions.get_handles():
                 e_list.remove(e_handle)
-                self.logger.warn("Unknown expansion handle '%s' is being ignored!" % (e_handle))
-            # 2.) filter redundant handles
+                warn = "%s Unknown expansion handle '%s' cannot be added!"
+                self.logger.warning(warn, self, e_handle)
+            # filter redundant handles
             if e_handle in self.settlement["expansions"]:
                 e_list.remove(e_handle)
-                self.logger.warn("Expansion handle '%s' is already in %s" % (e_handle, self))
+                warn = "%s Expansion handle '%s' already present. Ignoring..."
+                self.logger.warn(warn, self, e_handle)
 
         #
         #   here is where we process the expansion dictionary
@@ -1359,9 +1381,11 @@ class Settlement(UserAsset):
             # grab the dict
             e_dict = self.Expansions.get_asset(e_handle)
 
-            # add the handle (or else fail is_compatible(check)
+            # add the handle (or else fail is_compatible() check)
             self.settlement["expansions"].append(e_handle)
-            self.log_event(action="adding", key="expansions", value=e_dict['name'])
+            self.log_event(
+                action="adding", key="expansions", value=e_dict['name']
+            )
 
             # decide which post-process method to use
             if self.get_current_ly() >= e_dict.get('maximum_intro_ly', 666):
@@ -1369,7 +1393,8 @@ class Settlement(UserAsset):
             else:
                 normal_add()
 
-        self.logger.debug("Successfully added %s expansions to %s" % (len(e_list), self))
+        msg = "Successfully added %s expansions to %s"
+        self.logger.debug(msg, len(e_list), self)
         if save:
             self.save()
 
@@ -1828,7 +1853,10 @@ class Settlement(UserAsset):
             self.logger.error(err % (self, monster_handle, m_type))
 
         # additional handling for nemeses
-        if m_type == 'nemesis' and monster_handle in self.settlement['nemesis_encounters'].keys():
+        if (
+            m_type == 'nemesis' and
+            monster_handle in self.settlement['nemesis_encounters'].keys()
+        ):
             del self.settlement["nemesis_encounters"][monster_handle]
 
         self.log_event(
@@ -2045,19 +2073,17 @@ class Settlement(UserAsset):
         """ Adds a timeline event to self.settlement["timeline"]. Expects a dict
         containing the whole event's data: no lookups here. """
 
-        #
-        #   Initialize and Sanity Check
-        #
+        self._require_asset_collection_attributes(['events'])
 
-        if not hasattr(self, 'Events'):
-            self.Macros = KingdomDeath.events.Assets()
 
         # ensure that the incoming event specifies the target LY
         t_index = e.get('ly', None)
         if t_index is None:
-            raise utils.InvalidUsage("To add an event to the Timeline, the incoming event dict must specify a Lantern Year, e.g. {'ly': 3}")
-
-#        del e['ly'] # we don't need this any more; remove it
+            err = (
+                "To add an event to the Timeline, the incoming event dict must "
+                "specify a Lantern Year, e.g. {'ly': 3}"
+            )
+            raise utils.InvalidUsage(err)
 
         # if we can, "enhance" the incoming dict with additional asset info
         if e.get('handle', None) is not None:
@@ -2065,12 +2091,21 @@ class Settlement(UserAsset):
 
         # if we don't know the event's sub_type, we have to bail
         if e.get('sub_type', None) is None:
-            utils.InvalidUsage("To add an event to the Timeline, the incoming event dict must specify the 'sub_type' of the event, e.g. {'sub_type': 'nemesis_encounter'}")
+            err = (
+                "To add an event to the Timeline, the incoming event dict must "
+                "specify the 'sub_type' of the event, e.g. {'sub_type': "
+                "'nemesis_encounter'}"
+            )
+            utils.InvalidUsage(err)
             return False
 
         # compatibility check!
         if not self.is_compatible(e):
-            self.logger.warn("Event '%s' is not compatible with this campaign! Ignoring reuqest to add..." % e['name'])
+            err = (
+                "Event '%s' is not compatible with this campaign! Ignoring "
+                "reuqest to add..."
+            )
+            self.logger.warn(err, e['name'])
             return False
 
 
@@ -2082,7 +2117,7 @@ class Settlement(UserAsset):
         target_ly = self.settlement["timeline"][t_index]
         self.settlement['timeline'].remove(target_ly)
 
-        # update the target LY list to include a dict for our incomign sub_type
+        # update the target LY list to include a dict for our incoming sub_type
         #    if it doesn't already have one
         if target_ly.get(e['sub_type'], None) is None:
             target_ly[e['sub_type']] = []
@@ -2092,7 +2127,12 @@ class Settlement(UserAsset):
         # re-insert and save if successful
         self.settlement['timeline'].insert(t_index, target_ly)
 
-        self.log_event(action='add', key="timeline (LY %s)" % t_index, value=e["name"], event_type="sysadmin")
+        self.log_event(
+            action='add',
+            key="timeline (LY %s)" % t_index,
+            value=e["name"],
+            event_type="sysadmin"
+        )
 
         # finish with a courtesy save
         if save:
@@ -2319,17 +2359,20 @@ class Settlement(UserAsset):
         try:
             fa_dict = self.FightingArts.get_asset(fa_handle)
         except:
-            raise utils.InvalidUsage("Fighting Art handle '%s' is not a known asset handle!" % (fa_handle))
+            err = "Fighting Art handle '%s' is not a known asset handle!"
+            raise utils.InvalidUsage(err % fa_handle)
 
         self.settlement['inspirational_statue'] = fa_handle
-        self.log_event(action="set", key="Inspirational Statue", value=fa_dict['name'])
+        self.log_event(
+            action="set", key="Inspirational Statue", value=fa_dict['name']
+        )
         self.save()
 
 
     @web_method
     def set_lantern_research_level(self):
-        """ Sets the self.settlement['lantern_research_level'] to incoming 'value'
-        param. Requires a request context."""
+        """ Sets the self.settlement['lantern_research_level'] to incoming
+        'value' param. Requires a request context."""
 
         self.check_request_params(['value'])
         level = self.params['value']
@@ -2988,6 +3031,22 @@ class Settlement(UserAsset):
         return output
 
 
+    def _get_timeline_year(self, target_ly=0):
+        """ Accepts an int 'ly' and returns that LY's dictionary (as a copy). """
+
+        for ly in self.settlement['timeline']:
+            if int(ly['year']) == int(target_ly):
+                return copy(ly)
+
+        err = (
+            '_get_timeline_year() error! Attempted to get LY %s, '
+            'but could not find it in the settlement timeline! '
+        )
+        self.logger.error(err % target_ly)
+        self.logger.error('Returning empty dictionary...')
+        return {}
+
+
     def get_available_endeavors(self, return_total=True):
         """ Returns a list of endeavor handles based on campaign, innovations,
         locations, survivors and settlement events. """
@@ -3079,7 +3138,7 @@ class Settlement(UserAsset):
 
         # settlement events - crazy hacks here
         settlement_events = []
-        current_ly = self.get_timeline_year(self.get_current_ly())
+        current_ly = self._get_timeline_year(self.get_current_ly())
         events = current_ly.get('settlement_event', None)
         if events is not None:
             for event_dict in events:
@@ -3163,7 +3222,8 @@ class Settlement(UserAsset):
             return output
 
         # raise an exception for un-handled return type
-        raise utils.InvalidUsage('get_available_fighting_arts() does not support %s returns!' % return_type)
+        err = 'get_available_fighting_arts() does not support %s returns!'
+        raise utils.InvalidUsage(err % return_type)
 
 
     def get_available_monster_volumes(self):
@@ -3273,9 +3333,6 @@ class Settlement(UserAsset):
         Setting return_type="dict" gets a dictionary where expansion 'name'
         attributes are the keys and asset dictionaries are the values. """
 
-#        if return_type is None:
-#            return self.settlement.get('expansions', []) # legacy support
-
         s_expansions = copy(self.settlement['expansions'])
 
         if return_type == dict:
@@ -3375,20 +3432,6 @@ class Settlement(UserAsset):
                     eligible_parents["female"].append(s_dict)
 
         return eligible_parents
-
-
-    def get_final_boss(self, return_type=None):
-        """ Returns the settlement's final boss monster (according to the
-        campaign asset. Returns a handle by default. """
-
-        final_boss = KingdomDeath.monsters.Monster(self.campaign.asset['final_boss'])
-
-        if return_type == 'name':
-            return final_boss.name
-        elif return_type == object:
-            return final_boss
-
-        return final_boss.handle
 
 
     def get_founder(self):
@@ -3619,11 +3662,7 @@ class Settlement(UserAsset):
 
             return json.dumps(output)
 
-
-        #
         #   Default return (i.e. dump the list of strings)
-        #
-
         return json.dumps(deck_list)
 
 
@@ -3717,68 +3756,6 @@ class Settlement(UserAsset):
             return output
 
         return int(self.settlement["population"])
-
-
-    def get_pulse_discoveries(self):
-        """ Returns JSON representing Pulse Discoveries. Hardcoded for now. Hack
-        City, bruh. """
-
-        return [
-            {
-                "level": 1,
-                "bgcolor": "#E1F3FD",
-                "name": "Aggression Overload",
-                "subtitle": "Add an attack roll to an attack.",
-                "desc": (
-                    "During your attack, after making your attack rolls but "
-                    "before drawing hit locations, you may roll the Death Die "
-                    "as an additional attack roll."
-                ),
-            },
-            {
-                "level": 2,
-                "bgcolor": "#D8F2FF",
-                "name": "Acceleration",
-                "subtitle": "Add +1d10 movement to a move action.",
-                "desc": (
-                    "Before moving, you may roll the Death Die and add the "
-                    "result to your movement for one move action this round."
-                ),
-            },
-            {
-                "level": 3,
-                "bgcolor": "#CEEDFE",
-                "name": "Uninhibited Rage",
-                "subtitle": "Add +1d10 strength to a wound attempt.",
-                "desc": (
-                    "After a wound attempt is rolled you may roll the Death "
-                    "Die and add the result to the strength of your wound "
-                    "attempt."
-                ),
-            },
-            {
-                "level": 4,
-                "bgcolor": "#C4E8FF",
-                "name": "Legs Locked",
-                "desc": (
-                    "When you gian the Death Die, you you stand. While you "
-                    "have the Death Die, you cannot be knocked down for any "
-                    "reason."
-                )
-            },
-            {
-                "level": 5,
-                "bgcolor": "#AFDCFD",
-                "name": "Metabolic Surrender",
-                "desc": (
-                    "Any time during the showdown, you may roll the Death Die. "
-                    "Gain twice that much survival. This round, ignore the "
-                    "negative effects of permanent injuries, impairments, "
-                    "disorders and negative attributes (including tokens). "
-                    "At the end of the round, you die."
-                )
-            },
-        ]
 
 
     def get_settlement_notes(self):
@@ -4147,13 +4124,6 @@ class Settlement(UserAsset):
         return sa_dict
 
 
-    def get_survivor_attribute_milestones(self):
-        """ Returns a dictionary of the settlement's survivor attribute
-        milestones. """
-
-        return self.campaign.asset['survivor_attribute_milestones']
-
-
     def get_survival_limit(self, return_type=int):
         """ By default, this returns the settlement's Survival Limit as an
         integer.
@@ -4176,7 +4146,8 @@ class Settlement(UserAsset):
                 if not e_dict.get("enforce_survival_limit", True):
                     return False
             return True
-        elif return_type == 'min':
+
+        if return_type == 'min':
 
             minimum = 1
 
@@ -4197,12 +4168,12 @@ class Settlement(UserAsset):
     def get_timeline(self, return_type=None):
         """ Returns the timeline. """
 
-        TL = self.settlement['timeline']
+        timeline = self.settlement['timeline']
 
         if return_type=="JSON":
-            return json.dumps(TL, default=json_util.default)
+            return json.dumps(timeline, default=json_util.default)
 
-        return TL
+        return timeline
 
 
     def get_version(self, return_type=object):
@@ -4247,7 +4218,21 @@ class Settlement(UserAsset):
         return list(output)
 
 
-    def get_special_showdowns(self):
+    def _get_endgame_showdowns(self):
+        ''' Returns a list of the so-called 'endgame' showdowns, i.e. core and
+        finale type monsters for the campaign. '''
+
+        output = []
+
+        for m_type in ['core_monster', 'finale_monster']:
+            if self.campaign.asset.get(m_type, None) is not None:
+                output.append(self.campaign.asset[m_type])
+
+        return output
+
+
+
+    def _get_special_showdowns(self):
         """ Returns a list of monster handles representing the available special
         showdown monsters, given campaign and expansion assets. """
 
@@ -4264,20 +4249,8 @@ class Settlement(UserAsset):
         return list(set(output))
 
 
-    def get_timeline_year(self, target_ly=0):
-        """ Accepts an int 'ly' and returns that LY's dictionary (as a copy). """
 
-        for ly in self.settlement['timeline']:
-            if int(ly['year']) == int(target_ly):
-                return copy(ly)
 
-        err = (
-            'get_timeline_year() error! Attempted to get LY %s, '
-            'but could not find it in the settlement timeline! '
-        )
-        self.logger.error(err % target_ly)
-        self.logger.error('Returning empty dictionary...')
-        return {}
     @web_method
     def rm_player(self):
         """ Expects a request with the param 'login'. Iterates all survivor
@@ -4392,7 +4365,8 @@ class Settlement(UserAsset):
         if new_val < 0:
             new_val = 0
         self.settlement["endeavor_tokens"] = new_val
-        self.log_event("%s set endeavor tokens to %s" % (flask.request.User.login, new_val))
+        msg = "%s set endeavor tokens to %s"
+        self.log_event(msg % (flask.request.User.login, new_val))
 
         if save:
             self.save()
@@ -4410,19 +4384,21 @@ class Settlement(UserAsset):
 
         m_dict = self.Monsters.get_asset(handle)
 
+        # die if the nemesis hasn't  been added to the settlement yet
         if handle not in self.settlement["nemesis_monsters"]:
             err = "Nemesis handle '%s' is not in the 'nemesis_monsters' list!"
-            self.logger.error(err % handle)
+            self.logger.error(err, handle)
             raise utils.InvalidUsage(err)
-        else:
-            self.settlement["nemesis_encounters"][handle] = levels
-            self.log_event('%s updated %s encounters to include %s' % (
-                flask.request.User.login,
-                m_dict["name"],
-                utils.list_to_pretty_string(levels)
-                )
+
+        # if we're still here, do it / log it
+        self.settlement["nemesis_encounters"][handle] = levels
+        self.log_event('%s updated %s encounters to include %s' % (
+            flask.request.User.login,
+            m_dict["name"],
+            utils.list_to_pretty_string(levels)
             )
-            self.save()
+        )
+        self.save()
 
 
     def update_population(self, modifier=None):
@@ -4430,7 +4406,7 @@ class Settlement(UserAsset):
         never go below zero."""
 
         if modifier is None:
-            self.check_request_params["modifier"]
+            self.check_request_params(["modifier"])
             modifier = self.params["modifier"]
 
         current = self.settlement["population"]
@@ -4471,14 +4447,21 @@ class Settlement(UserAsset):
         # now check the include and get our targets
         target_group = []
         if include == 'departing':
-            target_group = utils.mdb.survivors.find({'settlement': self.settlement['_id'], 'departing': True, 'dead': {'$exists': False}})
+            target_group = utils.mdb.survivors.find(
+                {
+                    'settlement': self.settlement['_id'],
+                    'departing': True,
+                    'dead': {'$exists': False}
+                }
+            )
         else:
-            raise InvalidUsage("update_survivors() cannot process the 'include' value '%s'" % (include))
+            err = "update_survivors() cannot process the 'include' value '%s'"
+            raise InvalidUsage(err % include)
 
         # now initialize survivors and update them with update_attribute()
-        for s in target_group:
-            S = Survivor(_id=s['_id'], Settlement=self)
-            S.update_attribute(attribute, modifier)
+        for survivor in target_group:
+            survivor_obj = Survivor(_id=survivor['_id'], Settlement=self)
+            survivor_obj.update_attribute(attribute, modifier)
 
 
 
@@ -4535,7 +4518,7 @@ class Settlement(UserAsset):
             wb_index = self.settlement['expansions'].index('white_box')
             self.settlement['expansions'].insert(wb_index, 'promo')
             self.settlement['expansions'].remove('white_box')
-            self.logger.warn("Converted 'white_box' expansion to 'promo'.")
+            self.logger.warning("Converted 'white_box' expansion to 'promo'.")
             self.perform_save=True
 
         #
@@ -4555,18 +4538,21 @@ class Settlement(UserAsset):
 
         if not "admins" in self.settlement.keys():
             self.logger.info("Creating 'admins' key for %s" % (self))
-            creator = utils.mdb.users.find_one({"_id": self.settlement["created_by"]})
+            creator = utils.mdb.users.find_one(
+                {"_id": self.settlement["created_by"]}
+            )
             self.settlement["admins"] = [creator["login"]]
             self.perform_save = True
 
         founder = self.get_founder()
         if not founder["login"] in self.settlement["admins"]:
             self.settlement["admins"].append(founder["login"])
-            self.logger.debug("Adding founder '%s' to %s admins list." % (founder["login"], self))
+            msg = "Adding founder '%s' to %s admins list."
+            self.logger.debug(msg, founder["login"], self)
             self.perform_save = True
 
         if not "expansions" in self.settlement.keys():
-            self.logger.info("Creating 'expansions' key for %s" % (self))
+            self.logger.info("Creating 'expansions' key for %s", self)
             self.settlement["expansions"] = []
             self.perform_save = True
 
@@ -4592,219 +4578,36 @@ class Settlement(UserAsset):
             if i == "manhunter's_hat":
                 self.settlement['storage'].remove(i)
                 self.settlement['storage'].insert(item_index, 'manhunters_hat')
-                self.logger.warn("%s BUG FIX: changed %s to 'manhunters_hat'" % (self,i))
+                self.logger.warning("%s BUG FIX: changed %s to 'manhunters_hat'" % (self,i))
                 self.perform_save = True
             elif i == "hunter's_heart":
                 self.settlement['storage'].remove(i)
                 self.settlement['storage'].insert(item_index, 'hunters_heart')
-                self.logger.warn("%s BUG FIX: changed %s to 'hunters_heart'" % (self,i))
+                self.logger.warning("%s BUG FIX: changed %s to 'hunters_heart'" % (self,i))
                 self.perform_save = True
             elif i == "jack_o'_lantern":
                 self.settlement['storage'].remove(i)
                 self.settlement['storage'].insert(item_index, 'jack_o_lantern')
-                self.logger.warn("%s BUG FIX: changed %s to 'jack_o_lantern'" % (self,i))
+                self.logger.warning("%s BUG FIX: changed %s to 'jack_o_lantern'" % (self,i))
                 self.perform_save = True
 
         # 2018-03-20 - missing timeline bug
         if self.settlement.get('timeline', None) is None:
-            self.logger.error("%s has no Timeline! Initializing Timeline..." % self)
+            err = "%s has no Timeline! Initializing Timeline..."
+            self.logger.error(err, self)
             self.initialize_timeline()
 
         # 2017-12-16 - principles in the innovations list
         for i in self.list_assets('innovations'):
             if i.get('sub_type', None) == 'principle':
                 self.settlement['innovations'].remove(i['handle'])
-                self.logger.warn("%s Removed principle '%s' from innovations list!" % (self, i['name']))
+                warn  = "%s Removed principle '%s' from innovations list!"
+                self.logger.warning(warn, self, i['name'])
 
         # 2017-10-05 - missing settlement attrib
         if self.settlement.get("expansions", None) is None:
             self.settlement["expansions"] = []
             self.perform_save = True
-
-
-    def _convert_campaign_to_handle(self):
-        ''' Formerly used to convert v1 settlements where campaign handles were
-        names. Now raises an exception. '''
-        raise utils.ConversionException()
-
-
-    def convert_expansions_to_handles(self):
-        """ Takes a legacy settlement object and swaps out its expansion name
-        key values for handles. """
-
-        new_expansions = []
-        for e in self.get_expansions():
-            if e in self.Expansions.get_handles():
-                new_expansions.append(e)
-            elif self.Expansions.get_asset_from_name(e) is None:
-                self.logger.warn("Expansion '%s' is being removed from %s" % (e, self))
-            elif self.Expansions.get_asset_from_name(e) is not None:
-                new_expansions.append(self.Expansions.get_asset_from_name(e)["handle"])
-            else:
-                msg = "The expansion asset '%s' from %s cannot be migrated!" % (e, self)
-                self.logger.error(msg)
-                models.AssetMigrationError(msg)
-
-        self.settlement["expansions"] = new_expansions
-        self.settlement["meta"]["expansions_version"] = 1.0
-        self.logger.info("Migrated %s expansions to version 1.0. %s expansions were migrated!" % (self, len(new_expansions)))
-
-
-    def convert_innovations_to_handles(self):
-        """ Swaps out innovation 'name' key values for handles. """
-
-        new_innovations = []
-        for i in self.settlement["innovations"]:
-            i_dict = self.Innovations.get_asset_from_name(i)
-            if i_dict is None:
-                self.log_event("Unknown innovation '%s' removed from settlement!" % i, event_type="sysadmin")
-                self.logger.warn("Could not migrate innovation '%s'!" % i)
-            else:
-                new_innovations.append(i_dict["handle"])
-                self.logger.debug("Converted '%s' to '%s'" % (i, i_dict["handle"]))
-
-        if "innovation_levels" in self.settlement.keys():
-            for i_name in self.settlement["innovation_levels"].keys():
-                i_dict = self.Innovations.get_asset_from_name(i_name)
-                if i_dict is None:
-                    self.logger.warn("Could not convert innovation level for '%s'!" % i_name)
-                else:
-                    self.settlement["innovation_levels"][i_dict["handle"]] = self.settlement["innovation_levels"][i_name]
-                    del self.settlement["innovation_levels"][i_name]
-
-        self.settlement["innovations"] = new_innovations
-        self.settlement["meta"]["innovations_version"] = 1.0
-        self.logger.info("Converted innovations from names (legacy) to handles for %s" % (self))
-
-
-    def convert_locations_to_handles(self):
-        """ Swaps out location 'name' key values for handles. """
-
-        L = locations.Assets()
-
-        # first, swap all keys for handles, dropping any that we can't look up
-        new_locations = []
-        for loc in self.settlement["locations"]:
-            loc_dict = L.get_asset_from_name(loc)
-            if loc_dict is None:
-                self.log_event("Unknown location '%s' removed from settlement!" % loc, event_type="sysadmin")
-                self.logger.warn("Could not migrate location '%s'!" % loc)
-            else:
-                new_locations.append(loc_dict["handle"])
-                self.logger.debug("Converted '%s' to '%s'" % (loc, loc_dict["handle"]))
-
-        # next, migrate any location levels
-        if "location_levels" in self.settlement.keys():
-            for loc_name in self.settlement["location_levels"].keys():
-                loc_dict = L.get_asset_from_name(loc_name)
-                if loc_dict is None:
-                    self.logger.warn("Could not convert location level for '%s'!" % loc_name)
-                else:
-                    self.settlement["location_levels"][loc_dict["handle"]] = self.settlement["location_levels"][loc_name]
-                    del self.settlement["location_levels"][loc_name]
-
-        self.settlement["locations"] = new_locations
-        self.settlement["meta"]["locations_version"] = 1.0
-        self.logger.info("Converted locations from names (legacy) to handles for %s" % (self))
-
-
-    def convert_milestones_to_handles(self):
-        """ Swaps out milestone name values for handles. """
-
-        new_milestones = []
-        for m_dict in self.list_assets('milestone_story_events'):
-            if m_dict is not None:
-                new_milestones.append(m_dict['handle'])
-        self.settlement['milestone_story_events'] = new_milestones
-        self.settlement["meta"]["milestones_version"] = 1.0
-        self.logger.info("%s Converted %s milestones form names (legacy) to handles." % (self, len(new_milestones)))
-
-
-    def convert_principles_to_handles(self):
-        """ Swaps out principle 'name' keys for handles. """
-
-        new_principles = []
-
-        for p in self.settlement["principles"]:
-            p_dict = self.Innovations.get_asset_from_name(p)
-
-            if p_dict is None:
-                self.logger.error("%s Ignoring unknown principle '%s'! Unable to convert!" % (self,p))
-            else:
-                new_principles.append(p_dict["handle"])
-                self.logger.info("%s Migrated principle '%s' to '%s'" % (self, p, p_dict["handle"]))
-
-        self.settlement["principles"] = new_principles
-        self.settlement["meta"]["principles_version"] = 1.0
-        self.logger.info("Converted principles from names (legacy) to handles for %s" % (self))
-
-
-    def convert_monsters_to_handles(self):
-        """ Takes a legacy settlement object and swaps out its monster name
-        lists for monster handles. """
-
-        # create the v1.0 'nemesis_encounters' list and transcribe nemesis info
-        self.settlement["nemesis_encounters"] = {}
-        for n in self.settlement["nemesis_monsters"]:
-            try:
-                M = KingdomDeath.monsters.Monster(name=n)
-                self.settlement["nemesis_encounters"][M.handle] = []
-                n_levels = self.settlement["nemesis_monsters"][n]
-                for l in n_levels:
-                    self.settlement["nemesis_encounters"][M.handle].append(int(l[-1]))
-            except Exception as e:
-                self.logger.exception(e)
-                self.logger.critical("%s nemesis encounter w/ '%s' cannot be migrated to 1.0 data model!" % (self,n))
-
-        for list_key in ["quarries","nemesis_monsters"]:
-            new_list = []
-            old_list = self.settlement[list_key]
-            for m in old_list:
-                try:
-                    M = KingdomDeath.monsters.Monster(name=m)
-                    new_list.append(M.handle)
-                except:
-                    self.logger.exception(e)
-                    self.logger.critical("%s monster '%s' will cannot be migrated to 1.0 data model!" % (self,m))
-
-            self.settlement[list_key] = new_list
-
-        self.settlement["meta"]["monsters_version"] = 1.0
-        self.logger.debug("Migrated %s monster lists from legacy data model to 1.0." % self)
-
-
-    def convert_storage(self):
-        """ Converts settlement storage from legacy (list of names) to current
-        (list of handles).
-
-        Dumps old, custom, legacy free-text entries (they have no place in the
-        glorious future).
-        """
-
-        old_storage = self.settlement['storage']
-        new_storage = []
-
-        for name in old_storage:
-            a_dict = self.Gear.get_asset_from_name(name)
-            if a_dict is None:
-                a_dict = self.Resources.get_asset_from_name(name)
-            if a_dict is None:
-                self.logger.warn("%s Cannot convert storage name '%s' to a handle!" % (self, name))
-            else:
-                new_storage.append(a_dict['handle'])
-
-        self.logger.info('%s Converted %s settlement storage items from names to handles!' % (self, len(new_storage)))
-        if len(old_storage) < len(new_storage):
-            self.logger.warn('%s %s settlement storage items could not be converted!' % (self, len(old_storage)-len(new_storage)))
-
-        self.settlement['storage'] = sorted(new_storage)
-        self.settlement["meta"]["storage_version"] = 1.0
-        self.logger.debug("Migrated %s storage list from legacy data model to 1.0." % self)
-
-
-    def _convert_timeline_to_JSON(self):
-        ''' No longer supported as of October 2023. '''
-        raise utils.ConversionException()
 
 
     def convert_timeline_quarry_events(self):
@@ -4821,20 +4624,20 @@ class Settlement(UserAsset):
 
         self.settlement["timeline"] = new_timeline
         self.settlement["meta"]["timeline_version"] = 1.1
-        self.logger.warn("Migrated %s timeline to version 1.1", self)
+        self.logger.warning("Migrated %s timeline to version 1.1", self)
 
 
     def flatten_timeline_events(self):
         """ Takes a 1.1 timeline and un-expands detailed dictionary info."""
 
         new_timeline = []
-        for y in self.settlement['timeline']:
+        for orig_year in self.settlement['timeline']:
             new_year = {}
-            for event_group in y.keys():
+            for event_group in orig_year.keys():
                 if event_group != 'year':
                     new_event_group = []
                     try:
-                        for event in y[event_group]:
+                        for event in orig_year[event_group]:
                             # if we have a 'name' and not a 'handle', prefer it
                             if (
                                 event.get('name', None) is not None and
@@ -4846,12 +4649,12 @@ class Settlement(UserAsset):
                                     {'handle': event['handle']}
                                 )
                         new_year[event_group] = new_event_group
-                    except KeyError as e:
-                        err = 'Timeline event could not be migrated! %s' % event
-                        self.logger.exception(e)
-                        self.logger.error(err)
+                    except KeyError as error:
+                        msg = 'Timeline event could not be migrated! %s' % event
+                        self.logger.exception(error)
+                        self.logger.error(msg)
                 else:
-                    new_year['year'] = y['year']
+                    new_year['year'] = orig_year['year']
             new_timeline.append(new_year)
 
         self.settlement["timeline"] = new_timeline
@@ -4915,16 +4718,6 @@ class Settlement(UserAsset):
     def rm_note(self):
         """ DEPRECATED. Use add_settlement_admin_instead. """
         self.rm_settlement_note()
-
-    @deprecated
-    def _migrate_settlement_notes(self):
-        """ In the legacy data model, settlement notes were a single string that
-        got saved to MDB on the settlement (yikes!). If the settlement has the
-        'settlement_notes' key, this method removes it and creates that string
-        as a proper settlement_note document in mdb. """
-        err = "Settlement notes may no longer be ported from V1!"
-        raise utils.InvalidUsage(err)
-
 
 
 

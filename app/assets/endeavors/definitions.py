@@ -248,7 +248,9 @@ core = {
     },
     'scarification_initiation': {
         'name': "Initiation",
-        'desc': 'Once per lifetime, gain +1 courage and roll the hit location die.',
+        'desc': (
+            'Once per lifetime, gain +1 courage and roll the hit location die.'
+        ),
         'cost': 1,
     },
     'scrap_smelting_purification': {
@@ -565,7 +567,13 @@ expansions = {
     },
     'sacred_pool_1':{
         'name': 'Purification Ceremony',
-        'desc': 'You may endeavor here once per lifetime. Your body is infused with sacred water and <b>Purified</b> (record this). You cannot <b>depart</b> this year. Gain the <b>Protective</b> disorder and roll 1d10. On 8+ gain +1 permanent attribute of your choice. Otherwise, gain +1 permanent strength or accuracy.',
+        'desc': (
+            'You may endeavor here once per lifetime. Your body is infused '
+            'with sacred water and <b>Purified</b> (record this). You cannot '
+            '<b>depart</b> this year. Gain the <b>Protective</b> disorder and '
+            'roll 1d10. On 8+ gain +1 permanent attribute of your choice. '
+            'Otherwise, gain +1 permanent strength or accuracy.'
+        ),
         'cost': 2,
     },
     'sacred_pool_2':{

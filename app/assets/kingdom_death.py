@@ -37,11 +37,13 @@ from . import (
 # survivor sheet pseudo assets
 from .survivors import causes_of_death
 from .survivors import color_schemes
+from .survivors import once_per_lifetime
 from .survivors import special_attributes
 from .survivors import status_flags
 from .survivors import weapon_proficiency
 
 # settlement sheet pseudo assets
 from .settlements import macros
+from .settlements import pulse_discoveries
 from .settlements import storage
 from .campaigns import milestone_story_events

@@ -11,44 +11,64 @@ TIMEZONE = API.config['TIMEZONE']
 from .echoes_of_death import echoes_of_death
 from .expansions_of_death_1 import expansions_of_death_1
 from .gamblers_chest import gamblers_chest
+from .white_box_2023 import white_box_2023
 
+white_box = {
 
-product_lines = {
-
-    # white box
-    "tenth_anniversary_white_speaker": {
-        "name": "10th Anniversary White Speaker",
-        "ui": {"pretty_category": "White Box"},
-        "released": datetime(2019, 10, 9, 12, tzinfo=TIMEZONE),
-        'strain_milestones': ['plot_twist'],
-    },
-
-    "tenth_anniversary_survivors": {
-        "name": "10th Anniversary Survivors",
-        "ui": {"pretty_category": "White Box"},
-        "released": datetime(2019, 10, 9, 12, tzinfo=TIMEZONE),
-    },
+    # 2016 white box
 
     "fade": {
         "name": "Fade",
         "ui": {"pretty_category": "White Box"},
         "released": datetime(2016, 8, 4, 12, tzinfo=TIMEZONE),
         'basic_hunt_event': ['baby_and_the_sword'],
-        'help': [
-            {
-                'type': 'store',
-                'tip': (
-                    'Though she ships in a White Box, Fade is expansion '
-                    'content, '
-                    '<a href="https://shop.kingdomdeath.com/products/fade-2" '
-                    'target="top">according to the Kingdom Death store</a>. '
-                    'For this reason, Fade is separate from other White Box '
-                    'content in the Manager.'
-                ),
-            },
-        ],
+        'subscriber_level': 2,
     },
 
+    'allison_the_twilight_knight': {
+        'name': 'Allison the Twilight Knight',
+        "released": datetime(2016, 8, 16, 12, tzinfo=TIMEZONE),
+        'subtitle': (
+            'As released in the White Box Hard Plastic Collection.'
+        ),
+        'ui': {'pretty_category': 'White Box'},
+        'url': (
+            'https://www.kickstarter.com/projects/poots/kingdom-death-monster/'
+            'posts/381921/'
+        ),
+        'subscriber_level': 2,
+    },
+
+    'pinup_wet_nurse': {
+        'name': 'Pinup Wet Nurse',
+        'released': datetime(2016, 10, 31, 12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+    'black_friday_ninja': {
+        'name': 'Black Friday Ninja',
+        'released': datetime(2016, 11, 24, 12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+    "tenth_anniversary_white_speaker": {
+        "name": "10th Anniversary White Speaker",
+        "ui": {"pretty_category": "White Box"},
+        "released": datetime(2019, 10, 9, 12, tzinfo=TIMEZONE),
+        'strain_milestones': ['plot_twist'],
+        'subscriber_level': 2,
+    },
+
+    "tenth_anniversary_survivors": {
+        "name": "10th Anniversary Survivors",
+        "ui": {"pretty_category": "White Box"},
+        "released": datetime(2019, 10, 9, 12, tzinfo=TIMEZONE),
+        'subscriber_level': 2,
+    },
+
+    # 2019 White Box
     "oktoberfest_aya": {
         "name": "Oktoberfest Aya",
         'subtitle': (
@@ -56,6 +76,7 @@ product_lines = {
         ),
         "ui": {"pretty_category": "White Box"},
         "released": datetime(2019, 10, 31, 12, tzinfo=TIMEZONE),
+        'subscriber_level': 2,
         'help': [
             {
                 'type': 'gear',
@@ -78,18 +99,14 @@ product_lines = {
         ),
         "ui": {"pretty_category": "White Box"},
         "released": datetime(2019, 10, 31, 12, tzinfo=TIMEZONE),
-    },
-
-    "halloween_ringtail_vixen_2020": {
-        'name': 'Halloween Ringtail Vixen',
-        'ui': {'pretty_category': 'White Box'},
-        'released': datetime(2020, 10, 31, 12, tzinfo=TIMEZONE),
+        'subscriber_level': 2,
     },
 
     'holiday_white_speaker_nico': {
         'released': datetime(2012, 7, 1, 12, tzinfo=TIMEZONE),
         'name': 'Holiday White Speaker Nico',
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
 
     "percival": {
@@ -97,6 +114,7 @@ product_lines = {
         "ui": {"pretty_category": "White Box"},
         "released": datetime(2016, 8, 4, 12, tzinfo=TIMEZONE),
         'basic_hunt_event': ['dead_warrior'],
+        'subscriber_level': 2,
     },
 
     'santa_satan': {
@@ -104,6 +122,7 @@ product_lines = {
         'name': 'Santa Satan',
         'ui': {'pretty_category': 'White Box'},
         'strain_milestones': ['atmospheric_change'],
+        'subscriber_level': 2,
         'subtitle': (
             'This promo release from Holiday 2018 contains the &#128917; '
             '<i>Atmostpheric Change</i> Strain Milestone.'
@@ -130,6 +149,7 @@ product_lines = {
         'name': "Valentine's Day Pinup Twilight Knight",
         'ui': {'pretty_category': 'White Box'},
         'released': datetime(2019, 2, 14, 12, tzinfo=TIMEZONE),
+        'subscriber_level': 2,
     },
     'swashbuckler': {
         'name': 'Swashbuckler',
@@ -139,18 +159,21 @@ product_lines = {
             'One of the few figures from the <i>Generic</i> line that also '
             'includes game content.'
         ),
+        'subscriber_level': 2,
     },
     'easter_pinup_twilight_knight': {
         'name': "Easter Pinup Twilight Knight",
         'ui': {'pretty_category': 'White Box'},
         'released': datetime(2019, 4, 22, 12, tzinfo=TIMEZONE),
         'subtitle': 'Adds <b>Gibbering Haremite</b> vermin only.',
+        'subscriber_level': 2,
     },
     "sword_hunter": {
         "name": "Sword Hunter",
         "ui": {"pretty_category": "White Box"},
         "released": datetime(2019, 8, 1, 12, tzinfo=TIMEZONE),
         'basic_hunt_event': ['sword_in_the_stone'],
+        'subscriber_level': 2,
     },
     'vignettes_of_death_white_gigalion': {
         'released': datetime(2019, 8, 1, 12, tzinfo=TIMEZONE),
@@ -165,64 +188,82 @@ product_lines = {
     },
 
     # 2020 whiteboxes
+    "halloween_ringtail_vixen_2020": {
+        'name': 'Halloween Ringtail Vixen',
+        'ui': {'pretty_category': 'White Box'},
+        'released': datetime(2020, 10, 31, 12, tzinfo=TIMEZONE),
+        'subscriber_level': 2,
+    },
+
     'pinups_of_death_2': {
         'name': 'Pinups of Death II',
         'ui': {'pretty_category': 'White Box'},
         'released': datetime(2020, 11, 1, 12, tzinfo=TIMEZONE),
+        'subscriber_level': 2,
     },
 
     'winter_solstice_lucy': {
         'name': 'Winter Solstice Lucy',
         'ui': {'pretty_category': 'White Box'},
         'released': datetime(2020, 12, 22, 12, tzinfo=TIMEZONE),
+        'subscriber_level': 2,
     },
 
     'halloween_survivors_series_2': {
         'name': 'Halloween Survivors - Series II',
         'ui': {'pretty_category': 'White Box'},
         'released': datetime(2021, 11, 25, 12, tzinfo=TIMEZONE),
+        'subscriber_level': 2,
     },
 
     'grimmory': {
         'released': datetime(2022,3,1, 12, tzinfo=TIMEZONE),
         'name': 'Grimmory',
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
     'pascha': {
         'name': 'Pascha',
         'released': datetime(2022,4,22,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
     'willow': {
         'name': 'Willow',
         'released': datetime(2022,4,22,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
     'badar': {
         'name': 'Badar',
         'released': datetime(2022,5,31,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
         'sealed_gear': True,
+        'subscriber_level': 2,
     },
     'doll': {
         'name': 'Doll',
         'released': datetime(2022,8,9,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
     'summer_cyrus': {
         'name': 'Summer Cyrus',
         'released': datetime(2022,8,9,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
     'summer_aya': {
         'name': 'Summer Aya',
         'released': datetime(2022,9,30,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
     'summer_goth_twilight_knight': {
     'name': 'Summer Goth - Twilight Knight',
         'released': datetime(2022,9,30,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
 
     # halloween 2022
@@ -230,11 +271,13 @@ product_lines = {
         'name': 'Reapokratis',
         'released': datetime(2022,10,31,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
     'erza_of_dedheim': {
         'name': 'Erza of Dedheim',
         'released': datetime(2022,10,31,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
     'halloween_survivor_flower_knight_costume': {
         'name': 'Halloween Survivor - Flower Knight Costume',
@@ -243,6 +286,7 @@ product_lines = {
         'subtitle': (
             'Includes crafting recipes that require <b>Flower Knight</b>.'
         ),
+        'subscriber_level': 2,
     },
 
 
@@ -255,6 +299,7 @@ product_lines = {
             "color": "FFF",
             "bgcolor": "00833B",
         },
+        'subscriber_level': 2,
     },
 
     # novice - 2022-12-25
@@ -262,37 +307,8 @@ product_lines = {
         'name': 'Novice',
         'released': datetime(2022,12,25,12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
     },
-
-    # hellebore - 2023-01-31
-    'hellebore': {
-        'name': 'Hellebore - A Frozen Survivor',
-        'released': datetime(2023,1,31,12, tzinfo=TIMEZONE),
-        'ui': {'pretty_category': 'White Box'},
-    },
-
-    # death crown inheritor aya - 2023-02-28
-    'death_crown_inheritor_aya': {
-        'name': 'Death Crown Inheritor Aya',
-        'released': datetime(2023,2,28,12, tzinfo=TIMEZONE),
-        'ui': {'pretty_category': 'White Box'},
-        'flair': {
-            'bgcolor': 'C55745',
-            'color': 'FFF'
-        },
-    },
-
-    # lunar twilight knight - 2023-02-28
-
-    # vitanvox - 2023-03-31
-
-    # skrelle - 2023-03-31
-
-    # gnostin stonesmasher - 2023-05-02
-
-    # lolowen - 2023-05-02
-
-    # mist raikin armor - 2023-06-12
 
 }
 
@@ -338,25 +354,6 @@ miscellaneous = {
         ],
     },
 
-    'allison_the_twilight_knight': {
-        'name': 'Allison the Twilight Knight',
-        "released": datetime(2016, 8, 16, 12, tzinfo=TIMEZONE),
-        'subtitle': (
-            'As released in the White Box Hard Plastic Collection.'
-        ),
-        'ui': {'pretty_category': 'White Box'},
-        'url': (
-            'https://www.kickstarter.com/projects/poots/kingdom-death-monster/'
-            'posts/381921/'
-        ),
-    },
-
-    'pinup_wet_nurse': {
-        'name': 'Pinup Wet Nurse',
-        'released': datetime(2016, 10, 31, 12, tzinfo=TIMEZONE),
-        'ui': {'pretty_category': 'White Box'},
-    },
-
     "promo": {
         "released": datetime(2015, 9, 2, 12, tzinfo=TIMEZONE),
         "name": "Promo",
@@ -369,22 +366,19 @@ miscellaneous = {
             'Adds promotional events, gear, Abilities & Impairments, etc. '
             'to Settlement and Survivor Sheet drop-down lists. '
             'Collects the following releases: '
-            'Before the Wall, '
-            'Beyond the Wall, '
-            "Black Friday Ninja, "
-            "Detective Twilight Knight, "
+            'Before the Wall, ' #2016-08-16 - white box hard plastic
+            'Beyond the Wall, ' #2016-08-16 - white box hard plastic
+#            "Black Friday Ninja, "  #2016-11-24
+            "Detective Twilight Knight, " #2017-08-31
             'Halloween Pinup Twilight Knight, '
-            "Pinup Easter Aya, "
-#            "Pinup Easter Twilight Knight, "
+            "Pinup Easter Aya, " #2019-04-22
             "Pinup Devil Satan (Halloween 2018), "
             'Pinup Order Knight, '
             'Pinup Sci-fi Twilight Knight, '
             "Pinup Sci-fi White Speaker, "
             'Pinup Warrior of the Sun, '
-            "Pinups of Death, "
-#            "Valentine's Day Pinup Twilight Knight, "
+            "Pinups of Death, " #2016-03-25
             'White Speaker.'
-#            "White Speaker Nico, "
         ),
         'help': [
             {
@@ -418,6 +412,7 @@ miscellaneous = {
         'released': datetime(2021, 11, 25, 12, tzinfo=TIMEZONE),
         'name': 'Sunlion Armor (Beta)',
         'ui': {'pretty_category': 'Enhancement'},
+        'subscriber_level': 2,
     },
     'white_sunlion_armor': {
         'name': 'White Sunlion Armor',
@@ -427,6 +422,7 @@ miscellaneous = {
             'Augments <b>People of the Sun</b> campaign; includes '
             '<b>Bleeding Corpse Lily</b> terrain and Strange Resource.'
         ),
+        'subscriber_level': 2,
     },
 
 
@@ -435,15 +431,10 @@ miscellaneous = {
         'name': 'Screaming Sun Armor',
         'released': datetime(2022, 11, 25, 12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': 'Enhancement'},
+        'subscriber_level': 2,
     },
 
-
-
-
 }
-
-
-
 
 
 
