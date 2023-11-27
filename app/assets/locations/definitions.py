@@ -162,7 +162,6 @@ gear = {
     },
     "promo": {
         "name": "Promo",
-        "expansion": "promo",
         "color": "3BB9FF",
         "selectable": False,
     },

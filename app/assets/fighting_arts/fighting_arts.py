@@ -361,4 +361,37 @@ fighting_art = {
         'desc': 'Gain +1 accuracy and +1 speed while you have no insanity.'
     },
 
+    # smog singers
+    'monster_empathy': {
+        'name': 'Monster Empathy',
+        'expansion': 'smog_singers',
+        'desc': (
+            "Attuning your feelings to the monster's teaches you how to defeat "
+            "it.<br/> Gain +1 strength for each mood in play."
+        ),
+    },
+    'relentless': {
+        'name': 'Relentless',
+        'expansion': 'smog_singers',
+        'related_rules': ['pursue'],
+        'desc': (
+            'When a monster moves away from you during your attack, you may '
+            '<b>pursue</b>. Limit once per attack.<br/>'
+            '<b>Pursue:</b> '
+            'Gain <font class="kdm_manager_font">M</font>, which must be '
+            'immediately spent to move towards the monster. If you moved and '
+            'are now adjacent, draw another '
+            '<span class="kd deck_icon" deck="HL">HL</span>.'
+        ),
+    },
+    'virtuoso': {
+        'name': 'Virtuoso',
+        'expansion': 'smog_singers',
+        'desc': (
+            'When you activate an instrument, all survivors are '
+            '<b>encouraged</b>.<br/> Your <b>Ballads</b> cost 2 less to '
+            'perform.'
+        ),
+    },
+
 }

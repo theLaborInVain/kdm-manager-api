@@ -1325,6 +1325,7 @@ core = {
         'accuracy': 6,
         'strength': 11,
         'rules': ['Slow','Ammo - Bow'],
+        'related_rules': ['slow'],
         'desc':
             'On a hit, monster gains -1 movement token. Use once per showdown.',
         'recipes': [
@@ -1344,6 +1345,7 @@ core = {
         'name': 'Hours Ring',
         'keywords': ['item','other'],
         'rules': ['Unique', 'Selfish'],
+        'related_rules': ['unique', 'selfish'],
         'desc': (
             'Do not gain any tokens for any reason. Do not gain Hunt XP or '
             'weapon proficiency. <b>Retired</b> wearers can <b>depart</b>.'
@@ -1509,152 +1511,6 @@ core = {
                 },
             },
         ],
-    },
-
-    # rare gear
-    'adventure_sword': {
-        'type': 'rare_gear',
-        'name': 'Adventure Sword',
-        'keywords': ['weapon','melee','sword','finesse','other'],
-        'rules': ['Unique','Irreplaceable'],
-        'desc': "Your courage is added to this weapon's strength.",
-        'speed': 3,
-        'accuracy': 6,
-        'strength': 0,
-    },
-    'butcher_cleaver': {
-        'type': 'rare_gear',
-        'name': 'Butcher Cleaver',
-        'keywords': ['weapon','melee','axe','other'],
-        'rules': ['Paired', 'Sentient', 'Irreplaceable'],
-        'speed': 2,
-        'accuracy': 5,
-        'strength': 5,
-        'desc': '<b>Sentient:</b> Must be insane to activate.<br/><b>Irreplaceable:</b> When you die, archive this card.',
-    },
-    'forsaker_mask': {
-        'type': 'rare_gear',
-        'name': 'Forsaker Mask',
-        'keywords': ['item','mask','metal','other'],
-        'rules': ['Unique','Irreplaceable','Accessory'],
-        'desc': 'During the Aftermath, you run off into the darkness never to be seen again.<hr/>During the Settlement Phase, you may archive this item to build the <b>Mask Maker</b> location.',
-        'armor': 2,
-        'location': 'head',
-    },
-    'lantern_halberd': {
-        'type': 'rare_gear',
-        'name': 'Lantern Halberd',
-        'keywords': ['weapon','melee','two-handed','spear','other'],
-        'rules': ['Reach 2','Irreplaceable','Unique'],
-        'desc': (
-            'After attacking, if standing, you may move up to 2 spaces '
-            'directly away from the monster.'
-        ),
-        'speed': 2,
-        'accuracy': 4,
-        'strength': 7,
-    },
-    'muramasa': {
-        'type': 'rare_gear',
-        'name': 'Muramasa',
-        'keywords': ['weapon','melee','katana', 'two-handed','other'],
-        'rules': ['Frail','Sharp','Sentient','Deadly 2','Unique'],
-        'desc': 'When you critically wound with this weapon, gain 2 bleeding tokens.',
-        'speed': 6,
-        'accuracy': 6,
-        'strength': 6,
-    },
-    'regal_faulds': {
-        'type': 'rare_gear',
-        'name': 'Regal Faulds',
-        'keywords': ['armor','bone','metal'],
-        'rules': ['Cursed'],
-        'desc': "At the Aftermath, <font class='kdm_font'>g</font> <b>King's Curse</b>.",
-        'armor': 4,
-        'location': 'waist',
-    },
-    'regal_gauntlet': {
-        'type': 'rare_gear',
-        'name': 'Regal Gauntlet',
-        'keywords': ['armor','bone','metal'],
-        'rules': ['Cursed'],
-        'desc': "At the Aftermath, <font class='kdm_font'>g</font> <b>King's Curse</b>.",
-        'armor': 4,
-        'location': 'arms',
-    },
-    'regal_greaves': {
-        'type': 'rare_gear',
-        'name': 'Regal Greaves',
-        'keywords': ['armor','bone','metal'],
-        'rules': ['Cursed'],
-        'desc': "At the Aftermath, <font class='kdm_font'>g</font> <b>King's Curse</b>.",
-        'armor': 4,
-        'location': 'legs',
-    },
-    'regal_helm': {
-        'type': 'rare_gear',
-        'name': 'Regal Helm',
-        'keywords': ['armor','bone','metal'],
-        'rules': ['Cursed'],
-        'desc': "At the Aftermath, <font class='kdm_font'>g</font> <b>King's Curse</b>.",
-        'armor': 4,
-        'location': 'head',
-    },
-    'regal_plackart': {
-        'type': 'rare_gear',
-        'name': 'Regal Plackart',
-        'keywords': ['armor','bone','metal'],
-        'rules': ['Cursed'],
-        'desc': "At the Aftermath, <font class='kdm_font'>g</font> <b>King's Curse</b>.",
-        'armor': 4,
-        'location': 'body',
-    },
-    'steel_shield': {
-        'type': 'rare_gear',
-        'name': 'Steel Shield',
-        'keywords': ['weapon','melee','shield','metal','heavy'],
-        'rules': ['Irreplaceable',],
-        'desc': '-3 movement.<br/>Spend <font class="kdm_font">a</font> or survival to ignore a hit.',
-        'speed': 1,
-        'accuracy': 6,
-        'strength': 6,
-    },
-    'steel_sword': {
-        'type': 'rare_gear',
-        'name': 'Steel Sword',
-        'keywords': ['weapon','melee','sword','finesse','metal'],
-        'rules': ['Irreplaceable','Slow','Sharp'],
-        'desc': (
-            'On a <b>Perfect hit</b>, the edge sharpens. Gain +1d10 strength '
-            'for the rest of the attack.'
-        ),
-        'speed': 1,
-        'accuracy': 4,
-        'strength': 5,
-    },
-    'thunder_maul': {
-        'type': 'rare_gear',
-        'name': 'Thunder Maul',
-        'keywords': ['weapon','melee','club','two-handed','other'],
-        'rules': ['Irreplaceable', 'Unique','Cursed'],
-        'desc': 'On a <b>Perfect hit</b>, the monster is knocked down. Suffer a severe arm injury. All non-deaf survivors suffer 1 brain damage.',
-        'speed': 2,
-        'accuracy': 6,
-        'strength': 10,
-    },
-    'twilight_sword': {
-        'type': 'rare_gear',
-        'name': 'Twilight Sword',
-        'keywords': ['weapon','melee','two-handed', 'finesse', 'other'],
-        'rules': ['Slow','Cursed','Cumbersome','Sentient','Irreplaceable'],
-        'related_rules': ['cumbersome', 'devastating_x'],
-        'desc': (
-            'Gains <b>Devastating 2</b> when fighting the Watcher.<br/>'
-            '* Accuracy is 9 - Twilight Sword proficiency level.'
-        ),
-        'speed': 1,
-        'accuracy': '*',
-        'strength': 9,
     },
 
     # skinnery
@@ -1994,6 +1850,180 @@ core = {
                 'resource_handles': {'pelt': 1},
             },
         ],
+    },
+}
+
+rare_gear = {
+
+    'adventure_sword': {
+        'name': 'Adventure Sword',
+        'keywords': ['weapon','melee','sword','finesse','other'],
+        'rules': ['Unique','Irreplaceable'],
+        'related_rules': ['unique', 'irreplaceable'],
+        'desc': "Your courage is added to this weapon's strength.",
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 0,
+    },
+    'butcher_cleaver': {
+        'name': 'Butcher Cleaver',
+        'keywords': ['weapon','melee','axe','other'],
+        'rules': ['Paired', 'Sentient', 'Irreplaceable'],
+        'speed': 2,
+        'accuracy': 5,
+        'strength': 5,
+        'desc': (
+            '<b>Sentient:</b> Must be insane to activate.<br/>'
+            '<b>Irreplaceable:</b> When you die, archive this card.'
+        ),
+    },
+    'forsaker_mask': {
+        'name': 'Forsaker Mask',
+        'keywords': ['item','mask','metal','other'],
+        'rules': ['Unique','Irreplaceable','Accessory'],
+        'desc': (
+            'During the Aftermath, you run off into the darkness never to be '
+            'seen again.<hr/>During the Settlement Phase, you may archive this '
+            'item to build the <b>Mask Maker</b> location.'
+        ),
+        'armor': 2,
+        'location': 'head',
+    },
+    'lantern_halberd': {
+        'name': 'Lantern Halberd',
+        'keywords': ['weapon','melee','two-handed','spear','other'],
+        'rules': ['Reach 2','Irreplaceable','Unique'],
+        'desc': (
+            'After attacking, if standing, you may move up to 2 spaces '
+            'directly away from the monster.'
+        ),
+        'speed': 2,
+        'accuracy': 4,
+        'strength': 7,
+    },
+    'muramasa': {
+        'name': 'Muramasa',
+        'keywords': ['weapon','melee','katana', 'two-handed','other'],
+        'rules': ['Frail','Sharp','Sentient','Deadly 2','Unique'],
+        'desc': 'When you critically wound with this weapon, gain 2 bleeding tokens.',
+        'speed': 6,
+        'accuracy': 6,
+        'strength': 6,
+    },
+
+    # regal / king's man
+    'regal_faulds': {
+        'name': 'Regal Faulds',
+        'keywords': ['armor','bone','metal'],
+        'armor': 4,
+        'location': 'waist',
+        'rules': ['Cursed'],
+        'related_rules': ['cursed'],
+        'desc': (
+            'At the Aftermath, <font class="kdm_manager_font">S</font> '
+            "<b>King's Curse</b>."
+        ),
+    },
+    'regal_gauntlet': {
+        'name': 'Regal Gauntlet',
+        'keywords': ['armor','bone','metal'],
+        'armor': 4,
+        'location': 'arms',
+        'rules': ['Cursed'],
+        'related_rules': ['cursed'],
+        'desc': (
+            'At the Aftermath, <font class="kdm_manager_font">S</font> '
+            "<b>King's Curse</b>."
+        ),
+    },
+    'regal_greaves': {
+        'name': 'Regal Greaves',
+        'keywords': ['armor','bone','metal'],
+        'armor': 4,
+        'location': 'legs',
+        'rules': ['Cursed'],
+        'related_rules': ['cursed'],
+        'desc': (
+            'At the Aftermath, <font class="kdm_manager_font">S</font> '
+            "<b>King's Curse</b>."
+        ),
+    },
+    'regal_helm': {
+        'name': 'Regal Helm',
+        'keywords': ['armor','bone','metal'],
+        'armor': 4,
+        'location': 'head',
+        'rules': ['Cursed'],
+        'related_rules': ['cursed'],
+        'desc': (
+            'At the Aftermath, <font class="kdm_manager_font">S</font> '
+            "<b>King's Curse</b>."
+        ),
+    },
+    'regal_plackart': {
+        'name': 'Regal Plackart',
+        'keywords': ['armor','bone','metal'],
+        'armor': 4,
+        'location': 'body',
+        'rules': ['Cursed'],
+        'related_rules': ['cursed'],
+        'desc': (
+            'At the Aftermath, <font class="kdm_manager_font">S</font> '
+            "<b>King's Curse</b>."
+        ),
+    },
+
+    'steel_shield': {
+        'name': 'Steel Shield',
+        'keywords': ['weapon','melee','shield','metal','heavy'],
+        'rules': ['Irreplaceable',],
+        'desc': (
+            '-3 movement.<br/>Spend <font class="kdm_font">a</font> or '
+            'survival to ignore a hit.'
+        ),
+        'speed': 1,
+        'accuracy': 6,
+        'strength': 6,
+    },
+    'steel_sword': {
+        'name': 'Steel Sword',
+        'keywords': ['weapon','melee','sword','finesse','metal'],
+        'rules': ['Irreplaceable','Slow','Sharp'],
+        'desc': (
+            'On a <b>Perfect hit</b>, the edge sharpens. Gain +1d10 strength '
+            'for the rest of the attack.'
+        ),
+        'speed': 1,
+        'accuracy': 4,
+        'strength': 5,
+    },
+    'thunder_maul': {
+        'name': 'Thunder Maul',
+        'keywords': ['weapon','melee','club','two-handed','other'],
+        'rules': ['Irreplaceable', 'Unique','Cursed'],
+        'desc': (
+            'On a <b>Perfect hit</b>, the monster is knocked down. Suffer a '
+            'severe arm injury. All non-deaf survivors suffer 1 brain damage.'
+        ),
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 10,
+    },
+    'twilight_sword': {
+        'name': 'Twilight Sword',
+        'keywords': ['weapon','melee','two-handed', 'finesse', 'other'],
+        'rules': ['Slow','Cursed','Cumbersome','Sentient','Irreplaceable'],
+        'related_rules': [
+            'cumbersome', 'cursed', 'devastating_x',
+            'irreplaceable', 'slow', 'sentient'
+        ],
+        'desc': (
+            'Gains <b>Devastating 2</b> when fighting the Watcher.<br/>'
+            '* Accuracy is 9 - Twilight Sword proficiency level.'
+        ),
+        'speed': 1,
+        'accuracy': '*',
+        'strength': 9,
     },
 }
 
@@ -2802,60 +2832,6 @@ white_box = {
         ],
     },
 
-    # Halloween White Speaker 2019
-    'black_ghost_dagger': {
-        'name': 'Black Ghost Dagger',
-        'expansion': 'halloween_white_speaker_2019',
-        'type': 'pattern',
-        'pattern_id': -10,
-        'keywords': ['weapon', 'melee', 'dagger', 'metal', 'other'],
-        'affinities': {'top': 'blue', 'bottom': 'red'},
-        'footnote': {
-            'char': '1',
-            'desc': (
-                "This gains +10 strength when attacking a monster with 10+ "
-                "toughness."
-            ),
-        },
-        'speed': 3,
-        'accuracy': 7,
-        'strength': 2,
-        'desc': 'Gains <b>Sharp</b> when attacking &#127875; monsters.',
-        'affinity_bonus': {
-            'desc': 'Gains <b>Deflect 1</b>',
-            'requires': {
-                'puzzle': {
-                    'red': 1,
-                    'blue': 1,
-                },
-            }
-        },
-        'recipes': [
-            {
-                'resource_handles': {
-                    'dark_water': 3,
-                    'iron': 2,
-                },
-                'crafting_process': [
-                    (
-                        'Boil <b>Nightmare Corn</b> in Dark Water over '
-                        '<b>Heat</b> to create syrup infused with paranoia.'
-                    ),
-                    (
-                        'Isolate a <b>survivor with +10 insanity</b> in a '
-                        '<b>hovel</b> with the dagger. Their deranged '
-                        'outbursts will chip the dagger, revealing its final '
-                        'shape.'
-                    ),
-                    (
-                        'A survivor with <b>Blotted Out consumes</b> the '
-                        'syrup. Their inevitable regurgitation of of syrup '
-                        'and fearful bile is used to patinate the weapon.'
-                    ),
-                ],
-            },
-        ],
-    },
 
     # Halloween Ringtail Vixen 2020
     'vixen_tail': {
@@ -2975,11 +2951,10 @@ white_box = {
 
 promo = {
 
-    # any promo stuff can go here; white box expansions are separate
-
     # rare gear
     'ancient_root': {
         'name': 'Ancient Root',
+        'expansion': 'promo',
         'keywords': ['item', 'vegetable', 'heavy', 'consumable', 'other'],
         'affinities': {'left': 'blue'},
         'expansion': 'promo',
@@ -2999,62 +2974,6 @@ promo = {
                     'follow a shrill echo in the darkness. A Fleshy stalk '
                     'quivers in the ground, its muffled shrieking begs to be '
                     'uprooted. Gain the <b>Ancient Root</b> rare gear.'
-                ),
-            },
-        ],
-    },
-
-
-    # allison the twilight knight
-    'blue_lantern': {
-        'expansion': 'allison_the_twilight_knight',
-        'type': 'rare_gear',
-        'name': 'Blue Lantern',
-        'keywords': ['item', 'lantern', 'order', 'other'],
-        'rules': ['Sentient', 'Cursed'],
-        'desc': (
-            '<font class="kdm_font">a</font>: Suffer 2d10 brain damage and '
-            'reveal HL cards until you reveal the the trap. Put them back in '
-            'the same order. Limit, once per showdown.'
-        ),
-    },
-    'dormant_twilight_cloak': {
-        'expansion': 'allison_the_twilight_knight',
-        'type': 'rare_gear',
-        'name': 'Dormant Twilight Cloak',
-        'keywords': ['item','heavy','order','other'],
-        'rules': ['Unique','Irreplaceable','Accessory'],
-        'desc': (
-            'Ignore <b>sentient</b> on all gear. You cannot <b>depart</b> with '
-            'this if you have 3+ understanding.'
-        ),
-        'affinities': {'top': 'blue'},
-        'location': 'head',
-        'armor': 3,
-    },
-
-    # pinup devil satan halloween 2018
-    'hope_stealer': {
-        'expansion': 'promo',
-        'type': 'rare_gear',
-        'name': 'Hope Stealer',
-        'speed': 2,
-        'accuracy': 6,
-        'strength': 0,
-        'keywords': ['weapon','melee','spear','two-handed','other'],
-        'rules': ['Unique','Sentient','Reach 2'],
-        'desc': (
-            "At the end of the showdown, you die. Your settlement's death "
-            "count is added to this weapon's strength."
-        ),
-        'recipes': [
-            {
-                'prefix_text': (
-                    "If you're <b>insane</b> when you pull the <b>Adventure "
-                    "Sword</b> from the grimacing stone face, you hear a "
-                    "distant cackle.<br/>You're holding a much different "
-                    "weapon!<br/> Gain the <b>Hope Stealer</b> instead. "
-                    "<br/>(Hunt Event 85)"
                 ),
             },
         ],
@@ -3097,19 +3016,6 @@ promo = {
     # promo
     #
 
-    # black friday ninja
-    'black_friday_lantern': {
-        'desc': (
-            'On <b>Arrival</b> (at the start of the showdown), you may archive '
-            'this and ambush the monster. limit, once per campaign.'
-        ),
-        'expansion': 'black_friday_ninja',
-        'type': 'promo',
-        'name': 'Black Friday Lantern',
-        'keywords': ['item', 'lantern', 'other'],
-        'rules': ['+1 Evasion'],
-    },
-
     # strange spot
     'belt_of_gender_swap': {
         'expansion': 'promo',
@@ -3151,49 +3057,6 @@ promo = {
         ),
     },
 
-    # detective twilight knight
-    'detective_cap': {
-        'expansion': 'promo',
-        'type': 'promo',
-        'name': 'Detective Cap',
-        'armor':2,
-        'location': 'head',
-        'keywords': ['armor','accessory','other'],
-        'affinities': {'left': 'red', 'top': 'blue', 'right': 'red', 'bottom': 'blue'},
-        'desc': 'You must <b>investigate</b> if a choice to investigate arises. When you would roll to investigate, pick any result. If you are a returning survivor, you leave your hardboiled life behind and retired.',
-    },
-    'twilight_revolver': {
-        'expansion': 'promo',
-        'type': 'promo',
-        'name': 'Twilight Revolver',
-        'speed': 1,
-        'accuracy': 6,
-        'strength': 10,
-        'keywords': ['weapon','ranged','metal','finesse','other'],
-        'affinities': {'left': 'red', 'right': 'blue'},
-        'rules': ['Cursed', 'Sentient', 'Range 8'],
-        'desc': (
-            '<font class="kdm_font">c</font> <font class="kdm_font">a</font> '
-            'and 1 survival: Make an attack using this weapon. This attack has '
-            '<b>Range 3</b> and gains -2 Accuracy, +5 speed. Ignore <font '
-            'class="kdm_font_10">e</font> <b>WOUND</b> for this attack. Limit, '
-            'once per showdown.'
-        ),
-    },
-
-    # pinup wet nurse
-    'nightmare_breast_pump': {
-        'expansion': 'pinup_wet_nurse',
-        'name': 'Nightmare Breast Pump',
-        'affinities': {'top': 'blue'},
-        'keywords': ['item','noisy','fragile','other'],
-        'rules': ['Sentient','Irreplaceable','Female Only'],
-        'desc': (
-            "The pump mimics a baby's cries, stimulating your milk glands. As "
-            "a returning survivor, gain +1 to your intimacy rolls this "
-            "settlement phase."
-        ),
-    },
 
     # prismatic warrior of the sun
     'prismatic_lantern': {
@@ -3443,26 +3306,6 @@ generic = {
                 ),
             },
         ],
-    },
-}
-
-
-sword_hunter = {
-    'excalibur': {
-        'name': 'Excalibur',
-        'type': 'rare_gear',
-        'speed': 2,
-        'accuracy': 4,
-        'strength': 4,
-        'expansion': 'sword_hunter',
-        'keywords': ['weapon', 'melee', 'sword', 'heavy', 'metal', 'other'],
-        'rules': ['Savage', 'Unique'],
-        'desc': (
-            'When you die, you cease to exist (ignore death principle) and '
-            'this gains +2 permanent strength (note this on the settlement '
-            'record sheet).'
-        ),
-        'affinities': {'left': 'blue'},
     },
 }
 
@@ -3898,43 +3741,6 @@ willow = {
                 'gear_handles': {'lantern_sword': 1},
                 'resource_handles': {'perfect_bone': 1},
                 'suffix_text': '5x Resource from a level 3 monster',
-            },
-        ],
-    },
-}
-
-badar = {
-    'toxicimitar': {
-        'name': 'Toxicimitar',
-        'beta': True,
-        'type': 'beta_gear_recipe',
-        'expansion': 'badar',
-        'keywords': ['weapon', 'melee', 'scimitar', 'other'],
-        'rules': ['Sharp', 'Cleave'],
-        'sealed_gear': True,
-        'speed': 2,
-        'accuracy': 6,
-        'strength': 2,
-        'affinities': {'top': 'blue'},
-        'desc': (
-            'The blade is toxic. On <b>Arrival</b>, lose '
-            '<font class="inline_shield">1</font> at all hit locations. '
-            'When this wounds the monster the 3rd time, it gains a -1 movement '
-            'and -1 evasion token.<br/>'
-            '<b>Sealed</b> - gain the <b>Crescent Step</b> '
-            '<span class="kd deck_icon" deck="SF">SF</span>'
-        ),
-        'recipes': [
-            {
-                'prefix_text':
-                    '1x <b>Venom Sac</b> from a level 3 Spidicules',
-                'resource_types': {'iron': 1, 'bone': 1},
-            },
-            {
-                'prefix_text':
-                    '1x <b>Organ</b> resource from a level 3 monster',
-                'resource_handles': {'perfect_organ': 1},
-                'resource_types': {'iron': 1, 'bone': 1},
             },
         ],
     },
@@ -4518,31 +4324,6 @@ halloween_survivor_flower_knight_costume = {
                         'petals and sew them together into leather.'
                     ),
                 ],
-            },
-        ],
-    },
-}
-
-novice = {
-    'novice_dagger': {
-        'name': 'Novice Dagger',
-        'beta': True,
-        'type': 'beta_gear_recipe',
-        'expansion': 'novice',
-        'speed': 3,
-        'accuracy': 7,
-        'strength': 1,
-        'keywords': ['weapon', 'melee', 'dagger', 'bone'],
-        'affinities': {'left': 'blue', 'right': 'red'},
-        'desc': (
-            'If you are a <b>Novice</b> when you critically wound '
-            'with this, inflict 1 additional wound and gain a deflect '
-            'token. Limit once per attack.'
-        ),
-        'recipes': [
-            {
-                'endeavor_tokens': 1,
-                'resource_handles': {'perfect_bone': 1},
             },
         ],
     },

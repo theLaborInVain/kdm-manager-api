@@ -91,6 +91,7 @@ class Survivor(UserAsset):
     DATA_MODEL.add('returning_survivor', list)
     DATA_MODEL.add("Weapon Proficiency", int)
     DATA_MODEL.add("weapon_proficiency_type", str)
+    DATA_MODEL.add("weapon_proficiency_type_sealed", str)
     DATA_MODEL.add(
         'weapon_proficiency_sealed', str, required=False, unset_on_none=True
     )

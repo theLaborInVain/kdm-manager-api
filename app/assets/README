@@ -11,6 +11,8 @@ Use the following cheatsheet to implement KD:M icons using the API's unique
     <font class="kdm_manager_font">E</font>
  - Movement (chess knight)
     <font class="kdm_manager_font">M</font>
+ - Reaction (monster reaction; R diamond)
+    <font class="kdm_manager_font">R</font>
  - Shield (for rules text; not gear cards)
     <font class="inline_shield">1</font>
  - Story Event (book)
@@ -29,5 +31,9 @@ Deck icons:
 
 HTML entities:
 
+ - Affinity blocks (e.g. inline with rules or other descriptive text)
+    - Affinity RED:  <font class="kd affinity_red_text" >&#9724;</font>
+    - Affinity BLUE:  <font class="kd affinity_blue_text" >&#9724;</font>
+    - Affinity GREEN:  <font class="kd affinity_green_text" >&#9724;</font>
  - Star (as in monster level)
     &#9733;

@@ -70,7 +70,11 @@ secret_fighting_art = {
         'name': "Synchronized Strike",
     },
     'zero_presence': {
-        'desc': 'Gain +1 Strength when attacking a monster from its blind spot. Whenever you attack a monster, you are always considered to be in its blind spot.',
+        'desc': (
+            'Gain +1 Strength when attacking a monster from its blind spot. '
+            'Whenever you attack a monster, you are always considered to be in '
+            'its blind spot.'
+        ),
         'name': 'Zero Presence',
     },
 
@@ -96,7 +100,12 @@ secret_fighting_art = {
     },
     'frozen_star': {
         'constellation': {'horizontal': 'Absolute', 'vertical': 'Rust'},
-        'desc': "Once per round, you may spend 1 survival to freeze a monster's brain. They gain -2 accuracy until the end of the round.<br/>Once per round, you may spend 1 survival to freeze a survivor's brain, killing them instantly. They die.",
+        'desc': (
+            "Once per round, you may spend 1 survival to freeze a monster's "
+            'brain. They gain -2 accuracy until the end of the round.<br/>'
+            "Once per round, you may spend 1 survival to freeze a survivor's "
+            "brain, killing them instantly. They die."
+        ),
         'expansion': 'dragon_king',
         'name': 'Frozen Star',
     },
@@ -211,18 +220,32 @@ secret_fighting_art = {
 
     # sunstalker
     'hellfire': {
-        'desc': 'You cannot lose or remove this fighting art.<br/>Gain +1 strength for each <font id="Caratosis">&#x02588;</font> you have. You cannot be nominated for <b>Intimacy</b>. You ignore <b>Extreme Heat</b>.<br/>At the start of your act, lose 1 survival. At the end of your act, if your survival is 0 or you have any +1 strength tokens, your organs cook themselves and you die.',
         'expansion': 'sunstalker',
         'name': 'Hellfire',
-        'epithet': "hellion",
+        'desc': (
+            'You cannot lose or remove this fighting art.<br/>'
+            'Gain +1 strength for each '
+            '<font class="kd affinity_red_text" >&#9724;</font> '
+            'you have. You cannot be nominated for <b>Intimacy</b>. '
+            'You ignore <b>Extreme Heat</b>.<br/>'
+            'At the start of your act, lose 1 survival. At the end of your '
+            'act, if your survival is 0 or you have any +1 strength tokens, '
+            'your organs cook themselves and you die.'
+        ),
     },
     'sun_eater': {
-        'desc': "Your body mysteriously absorbs light. At the start of the showdown, gain survival up to the settlement's Survival Limit.<br/>If you have any +1 strength tokens, you may spend them all to perform the <b>Surge</b> survival action (following all of its normal rules and restrictions).",
         'expansion': 'sunstalker',
         'name': 'Sun Eater',
         'survival_actions': {
             'enable': ['surge'],
         },
+        'desc': (
+            'Your body mysteriously absorbs light. At the start of the '
+            "showdown, gain survival up to the settlement's Survival Limit."
+            "<br/>If you have any +1 strength tokens, you may spend them all "
+            "to perform the <b>Surge</b> survival action (following all of "
+            "its normal rules and restrictions)."
+        ),
     },
     'suppressed_shadow': {
         'expansion': 'sunstalker',
@@ -276,7 +299,9 @@ secret_fighting_art = {
         ),
     },
 
-    # crimson crocodile
+    #
+    # gambler's chest
+    #
     'aerial_transfusion': {
         'expansion': 'crimson_crocodile',
         'name': 'Aerial Transfusion',
@@ -287,5 +312,16 @@ secret_fighting_art = {
         ),
         'max_bleeding_tokens': 2,
     },
+    'devils_melody': {
+        'expansion': 'smog_singers',
+        'name': "Devil's Melody",
+        'desc': (
+            "<b>Ballad of the Devil's Melody [4]:</b> Gain +10 survival, +10 "
+            'insanity, +1 movement token, and +1 speed token. At the start of '
+            'each round, the monster suffers an automatic wound and each '
+            'survivor suffers a random severe injury.'
+        ),
+    },
+
 
 }

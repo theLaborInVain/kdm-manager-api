@@ -3003,10 +3003,6 @@ class Settlement(UserAsset):
                 else:
                     available.append(a_dict)
 
-        # REMOVE THIS the next time you see it
-#        if type(available) == list: #list of dicts; needs sorting
-#            available = sorted(available, key=lambda k: k['name'])
-
         asset_collection_name = asset_collection.__module__.split('.')[-1]
         return {asset_collection_name: available}
 

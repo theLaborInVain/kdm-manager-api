@@ -5,11 +5,26 @@
 
 """
 
+from .. import gear as Gear
+
 from .._asset import Asset
 from .._collection import Collection
+
 from .definitions import *
 
-from .. import gear as Gear
+from .echoes_of_death import echoes_of_death
+from .expansions_of_death_1 import expansions_of_death_1
+from .gamblers_chest import gamblers_chest
+from .white_box import (
+    white_box_2016,
+    white_box_2017,
+    white_box_2018,
+    white_box_2019,
+    white_box_2020,
+    white_box_2021,
+    white_box_2022,
+    white_box_2023
+)
 
 class Assets(Collection):
 

@@ -76,7 +76,7 @@
  .kd.deck_icon {    /* for when display requires the inline deck icon */
     background-image:
         url('https://api.kdm-manager.com/static/media/images/deck_icon.png');
-    background-size: 1rem;
+    background-size: 1em;
     background-repeat: no-repeat;
     background-position: center;
     background-position-y: top;
@@ -87,10 +87,10 @@
  .kd.deck_icon:after {
     color: rgba(255,255,255);
     content: attr(deck);
-    font-size: var(--font-small);
-    margin: 0.2rem auto auto -0.75rem;
-    position: absolute;
-    text-align: center; 
+    display: inline-block;
+    font-size: clamp(3px, 0.5rem, 12px);
+    margin: auto 0.1rem auto -0.6rem;
+    vertical-align: middle;
 }
 
 /*
@@ -159,11 +159,13 @@ hr.three_dee {
     --color-kd-fighting-art-red-gradient: linear-gradient(to bottom, #D14D3A, #CE483C, #D14D3A);
     --color-kd-green: #32A54A;
     --color-kd-grey: #f2f2f2;
+    --color-kd-pattern: #7E7E7E;
     --color-kd-pink: #F35295;
     --color-kd-pink-gradient: radial-gradient(#F06DbC, #F35295);
     --color-kd-promo-gradient: radial-gradient(circle, #5Dd7F2, #50CAF5, #3FACCF);
     --color-kd-red: #B92426;
     --color-kd-red-gradient: linear-gradient(#DC2426, #B92426);
+    --color-kd-seed-pattern: #A47E3C;
     --color-kd-silver-gradient: linear-gradient(to right, #eaebeb, #efefef, #fefefe, #efefef, #eaebeb);
     --color-kd-yellow: #EEC051;
     --color-kd-yellow-gradient: radial-gradient(#fEf0a1, #EEC051);
@@ -530,15 +532,24 @@ select.kd.capsule {
     border-color: var(--color-kd-affinity-red);
     color: #fff;
 }
+.kd.affinity_red_text {
+    color: var(--color-kd-affinity-red);
+}
 .kd.affinity_blue {
     background: var(--color-kd-affinity-blue);
     border-color: var(--color-kd-affinity-blue);
     color: #fff;
 }
+.kd.affinity_blue_text {
+    color: var(--color-kd-affinity-blue);
+}
 .kd.affinity_green {
     background: var(--color-kd-affinity-green);
     border-color: var(--color-kd-affinity-green);
     color: #fff;
+}
+.kd.affinity_green_text {
+    color: var(--color-kd-affinity-green);
 }
 .kd.black {
     background: #000;
@@ -755,6 +766,11 @@ select.kd.capsule {
 .kd.card.disorder.survivor_effect {
     min-height: 10rem;
 }
+.kd.card.disorder.survivor_effect br {
+    content: "";
+    display: block;
+    margin-top: 0.5rem;
+}
 
 /*  fighting_arts   */
 .kd.card.fighting_art.container {
@@ -962,15 +978,18 @@ select.kd.capsule {
 .kd.card.gear.title_gutter {
     display:flex;
     justify-content: center;
-    width: 3rem;
+    width: 2rem;
 }
 .gear_card_pattern_stamp::after {
+    color: var(--color-kd-pattern);
     content: 'p';
-    color: #A47E3C;
     display: block;
     font-family: 'kdm-manager';
     font-size: var(--font-large);
     margin: -0.2rem -1rem 0 0;
+}
+.gear_card_pattern_stamp.seed::after {
+    color: var(--color-kd-seed-pattern);
 }
 
 /*  gear card armor/attack stats */
@@ -1175,6 +1194,7 @@ select.kd.capsule {
 .kd.card.resource.container {
     background: var(--color-kd-resource-card-gradient);
     max-width: 2.5in;
+    min-width: 2.5in;
     padding-bottom: 1rem; 
 }
 .kd.card.resource.title_bar.expansion div {

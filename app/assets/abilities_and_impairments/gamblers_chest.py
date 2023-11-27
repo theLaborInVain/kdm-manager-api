@@ -27,4 +27,13 @@ crimson_crocodile = {
         'max_bleeding_tokens': 1,
         'max': False,
     },
+
 }
+
+smog_singers = {
+    'songheart':  {
+        'name': 'Songheart',
+        'type': 'ability',
+        'desc': 'Reduce the cost of performing your Ballads by 1.'
+    },
+},

@@ -24,7 +24,7 @@ gamblers_chest = {
 
     'crimson_crocodile': {
         'name': 'Crimson Crocodile',
-        'release': datetime(2023, 7, 31, 12, tzinfo=TIMEZONE),
+        'released': datetime(2023, 7, 31, 12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': "Quarry"},
         'quarries': ['crimson_crocodile'],
         'timeline_add': [
@@ -53,20 +53,18 @@ gamblers_chest = {
 
     'smog_singers': {
         'name': 'Smog Singers',
-        'release': datetime(2023, 7, 31, 12, tzinfo=TIMEZONE),
+        'released': datetime(2023, 7, 31, 12, tzinfo=TIMEZONE),
         'ui': {'pretty_category': "Quarry"},
-#        'quarries': ['smog_singers'],
-#        'timeline_add': [
-#            {'ly': 0, 'handle': 'gc_devour_the_white_lion'},
-#            {'ly': 1, 'handle': 'first_crimson_day'},
-#        ],
+        'quarries': ['smog_singers'],
+        'timeline_add': [
+            {'ly': 2, 'handle': 'gc_death_of_song'},
+        ],
+        'maximum_intro_ly': 2,
+        'late_intro_event': 'gc_death_of_song',
         "flair": {
             "border_color": "7F7A6A",
             "bgcolor": "A6A292",
             'color': 'FFF',
         },
-#        'timeline_rm': [
-#            {'ly': 1, 'handle': 'core_first_day'},
-#        ],
     },
 }

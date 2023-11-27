@@ -583,3 +583,484 @@ crimson_crocodile_misc_gear = {
 #
 #   smog singers
 #
+
+chorusseum = {
+    'energy_drum': {
+        'expansion': 'smog_singers',
+        'name': 'Energy Drum',
+        'keywords': ['item', 'instrument', 'noisy'],
+        'affinities': {'left': 'blue'},
+        'desc': (
+            '<font class="kdm_manager_font">A</font>: Spend 1 survival to play '
+            'this. An adjacent survivor gains '
+            '<font class="kdm_manager_font">A</font>, which they must spend '
+            'immediately. Limit once per round.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'gaseous_belly': 1, 'vocal_chords': 1},
+            },
+        ],
+    },
+    'hamfluter': {
+        'expansion': 'smog_singers',
+        'name': 'Hamfluter',
+        'keywords': ['weapon', 'melee', 'club', 'instrument', 'noisy'],
+        'speed': 1,
+        'accuracy': 6,
+        'strength': 3,
+        'affinities': {'top': 'red'},
+        'desc': (
+            '<b>Ballad of Perfection [7]:</b> Spend '
+            '<font class="kdm_manager_font">A</font> and archive 7 cards from '
+            'the wound stack to perform. All survivors increase their '
+            '<b>Perfect hit</b> range by 1.'
+        ),
+        'affinity_bonus': {
+            'desc': (
+                'This whistles while you swing. Gain +1 survival and +1 '
+                'insanity when you attack.'
+            ),
+            'requires': {'complete': {'red': 1, 'blue': 1},},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'whistle_tooth': 1},
+                'resource_types': {'bone': 1},
+            },
+        ],
+    },
+    'harpy_harp': {
+        'expansion': 'smog_singers',
+        'name': 'Harpy Harp',
+        'keywords': ['item', 'instrument', 'noisy'],
+        'affinities': {'bottom': 'red', 'left': 'green'},
+        'desc': 'You ignore <b>Overwhelming Darkness</b>.',
+        'affinity_bonus': {
+            'desc': (
+                'Your noisy weapons gain +1 strength for each instrument in '
+                'your gear grid.'
+            ),
+            'requires': {'puzzle': {'red': 1, 'green': 1},},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'singing_tongue': 1, 'whistle_tooth': 1},
+                'resource_types': {'scrap': 1},
+            },
+        ],
+    },
+    'peace_dagger': {
+        'expansion': 'smog_singers',
+        'name': 'Peace Dagger',
+        'keywords': ['weapon', 'melee', 'dagger', 'instrument', 'noisy'],
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 2,
+        'affinities': {'top': 'blue', 'right': 'red', 'left': 'green'},
+        'desc': (
+            '<b>Ballad of Peace [3]:</b> Spend '
+            '<font class="kdm_manager_font">A</font> and archive 3 cards from '
+            'the wound stack to perform. '
+            'In the <b>Aftermath</b>, if you did not attack this showdown, '
+            'gain +1 <font class="kdm_manager_font">E</font>.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'fluted_bone': 1, 'tail_fat': 1},
+                'resource_types': {'hide': 1},
+            },
+        ],
+    },
+    'pipa': {
+        'expansion': 'smog_singers',
+        'name': 'Pipa',
+        'keywords': ['weapon', 'melee', 'club', 'instrument', 'noisy'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 0,
+        'affinities': {
+            'top': 'red', 'right': 'red', 'botton': 'red', 'left': 'red'
+        },
+        'related_rules': ['savage'],
+        'desc': (
+            '<b>Ballad of Peace [6]:</b> Spend '
+            '<font class="kdm_manager_font">A</font> and archive 6 cards from '
+            'the wound stack to perform. '
+            "All survivors weapons gain <b>savage</b>."
+        ),
+        'affinity_bonus': {
+            'desc': '+4 strength',
+            'requires': {'puzzle': {'red': 2},},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'fluted_severed_head': 1, 'pink_flesh': 1},
+                'resource_types': {'organ': 1},
+            },
+        ],
+    },
+    'razor_cymbals': {
+        'expansion': 'smog_singers',
+        'name': 'Razor Cymbals',
+        'keywords': ['weapon', 'melee', 'katar', 'instrument', 'noisy'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 4,
+        'affinities': {'top': 'red', 'botton': 'blue',},
+        'rules': ['Paired'],
+        'related_rules': ['paired'],
+        'desc': (
+            'Make attack rolls one at a time. For each hit, the monster '
+            'suffers -1 evasion until the end of this attack.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'delicate_hand': 1},
+                'resource_types': {'scrap': 1},
+            },
+        ],
+    },
+    'singing_heart': {
+        'expansion': 'smog_singers',
+        'name': 'Singing Heart',
+        'keywords': ['item', 'lantern', 'instrument', 'noisy'],
+        'affinities': {'left': 'paired'},
+        'desc': (
+            'The weapon to the left gains noisy and +1 accuracy.'
+        ),
+        'related_rules': ['dazed'],
+        'affinity_bonus': {
+            'desc': (
+                'You may archive this to smash it, creating a vexing wave '
+                'of white noise. Discard all moods in play. The monster is '
+                '<b>dazed</b>.'
+            ),
+            'requires': {'complete': {'red': 1, 'blue': 1, 'green': 1},},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'singing_tongue': 1},
+                'resource_types': {'bone': 1, 'scrap': 1},
+            },
+        ],
+    },
+    'spear_of_life': {
+        'expansion': 'smog_singers',
+        'name': 'Spear of Life',
+        'keywords': ['weapon', 'melee', 'spear', 'two-handed'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 4,
+        'rules': ['Reach 2'],
+        'related_rules': ['reach_x'],
+        'affinities': {'left': 'green'},
+        'affinity_bonus': {
+            'desc': (
+                'When another survivor dies from bleeding tokens, roll 1d10. '
+                'On a 7+, your dart saves them! They suffer -1 permanent '
+                'evasion and remove up to 3 bleeding tokens.'
+            ),
+            'requires': {'puzzle': {'green': 1},},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'fluted_bone': 1, 'whistle_tooth': 1},
+                'resource_types': {'hide': 1},
+            },
+        ],
+    },
+    'spinning_sword': {
+        'expansion': 'smog_singers',
+        'name': 'Spinning Sword',
+        'keywords': ['weapon', 'melee', 'sword'],
+        'speed': 2,
+        'accuracy': 7,
+        'strength': 3,
+        'affinities': {'right': 'green', 'left': 'green',},
+        'rules': ['Paired'],
+        'related_rules': ['paired'],
+        'desc': (
+            'Gain +2 evasion against ranged attacks for each of your spinning '
+            'swords.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'fluted_bone': 1},
+                'resource_types': {'bone': 1},
+            },
+        ],
+    },
+
+    # armor
+    'singing_boots': {
+        'expansion': 'smog_singers',
+        'name': 'Singing Boots',
+        'keywords': ['armor', 'set', 'flesh'],
+        'armor': 3,
+        'location': 'legs',
+        'affinities': {'top': 'green', 'left': 'blue'},
+        'affinity_bonus': {
+            'desc': (
+                'At the end of your act, you may move up to 3 spaces away from '
+                'the monster.'
+            ),
+            'requires': {'puzzle': {'green': 1}, 'complete': {'blue': 1},},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'pink_flesh': 1},
+                'resource_types': {'hide': 1},
+            },
+        ],
+    },
+    'singing_breastplate': {
+        'expansion': 'smog_singers',
+        'name': 'Singing Breastplate',
+        'keywords': ['armor', 'set', 'flesh'],
+        'armor': 3,
+        'location': 'body',
+        'affinities': {'top': 'blue', 'right': 'red'},
+        'desc': (
+            '<b>Hit Song:</b> spend '
+            '<font class="kdm_manager_font">M</font>'
+            '<font class="kdm_manager_font">A</font> to full move forward '
+            'and attack. If you moved at least 4 spaces, the first time you '
+            'wound during this attack, <b>encourage</b> all survivors.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'pink_flesh': 1},
+                'resource_types': {'bone': 1},
+            },
+        ],
+    },
+    'singing_cap': {
+        'expansion': 'smog_singers',
+        'name': 'Singing Cap',
+        'keywords': ['armor', 'set', 'flesh'],
+        'armor': 3,
+        'location': 'head',
+        'affinities': {'top': 'green', 'bottom': 'blue'},
+        'affinity_bonus': {
+            'desc': (
+                'When you are attacked and suffer more than 1 hit, ignore '
+                '1 hit.'
+            ),
+            'requires': {'puzzle': {'green': 1, 'blue': 1}, },
+        },
+        'recipes': [
+            {
+                'resource_handles': {'gaseous_belly': 1},
+                'resource_types': {'organ': 1},
+            },
+        ],
+    },
+    'singing_gloves': {
+        'expansion': 'smog_singers',
+        'name': 'Singing Gloves',
+        'keywords': ['armor', 'set', 'flesh'],
+        'armor': 3,
+        'location': 'arms',
+        'affinities': {'left': 'green', 'right': 'blue'},
+        'desc': 'Reduce the cost of perfoming your Ballads by 1.',
+        'recipes': [
+            {
+                'resource_handles': {'delicate_hand': 1},
+                'resource_types': {'organ': 1},
+            },
+        ],
+    },
+    'singing_pantaloons': {
+        'expansion': 'smog_singers',
+        'name': 'Singing Pantaloons',
+        'keywords': ['armor', 'set', 'flesh'],
+        'armor': 3,
+        'location': 'waist',
+        'affinities': {'bottom': 'green'},
+        'recipes': [
+            {
+                'resource_handles': {'pink_flesh': 1},
+                'resource_types': {'organ': 1},
+            },
+        ],
+    },
+
+}
+
+smog_singer_pattern_gear = {
+    'saxe': {
+        'expansion': 'smog_singers',
+        'type': 'pattern',
+        'name': 'Saxe',
+        'keywords': [
+            'weapon', 'melee', 'axe', 'bone', 'metal', 'instrument', 'noisy'
+        ],
+        'speed': 2,
+        'accuracy': 7,
+        'strength': 8,
+        'affinities': {'left': 'red',},
+        'desc': (
+            '<b>Ballad of Blues [8]:</b> Spend '
+            '<font class="kdm_manager_font">A</font> and archive 8 cards from '
+            'the wound stack to perform. '
+            'The monster and all survivors shed a tear. Archive all moods in '
+            'play.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'crystallized_song': 1},
+                'resource_types': {'bone': 2, 'organ': 1},
+            },
+        ],
+    },
+    'drum_of_hope': {
+        'expansion': 'smog_singers',
+        'type': 'pattern',
+        'name': 'Drum of Hope',
+        'keywords': [
+            'weapon', 'melee', 'club', 'axe', 'bone', 'instrument', 'noisy'
+        ],
+        'speed': 1,
+        'accuracy': 6,
+        'strength': 9,
+        'affinities': {'top': 'red', 'right': 'red', 'bottom': 'red'},
+        'rules': ['Slow'],
+        'related_rules': ['slow'],
+        'desc': (
+            '<b>Ballad of Smash [6]:</b> Spend '
+            '<font class="kdm_manager_font">A</font> and archive 6 cards from '
+            'the wound stack to perform.'
+            'All <font class="kdm_manager_font">R</font> Wound become '
+            '<font class="kdm_manager_font">R</font> Failure. End this ballad '
+            'at the end of the round if you fail to hit with this weapon.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'belly_steel': 1},
+                'resource_types': {'perfect': 1, 'bone': 1},
+            },
+        ],
+    },
+    'Discordian': {
+        'expansion': 'smog_singers',
+        'type': 'pattern',
+        'name': 'Discordian',
+        'keywords': [
+            'weapon', 'melee', 'sword', 'metal', 'instrument', 'noisy'
+        ],
+        'speed': 1,
+        'accuracy': 6,
+        'strength': 9,
+        'affinities': {'right': 'red', 'left': 'green',},
+        'rules': ['Unwieldy', 'Sharp'],
+        'related_rules': ['sharp', 'unwieldy', 'finesse', 'deflect_x'],
+        'desc': (
+            '<b>Ballad of Swordpolka [5]:</b> Spend '
+            '<font class="kdm_manager_font">A</font> and archive 5 cards from '
+            'the wound stack to perform.'
+            "All survivors' swords gain finesse and <b>Deflect 1</b>. If "
+            'they already have <b>Deflect</b>, increase it by 1.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'foreskin_hood': 1},
+                'resource_types': {'hide': 1, 'bone': 2},
+            },
+        ],
+    },
+    'curse_hammer': {
+        'expansion': 'smog_singers',
+        'type': 'pattern',
+        'name': 'Curse Hammer',
+        'keywords': [
+            'weapon', 'melee', 'grand', 'club', 'instrument', 'heavy', 'noisy'
+        ],
+        'speed': 2,
+        'accuracy': 7,
+        'strength': 12,
+        'affinities': {'top': 'blue', },
+        'desc': 'When you wound with this, gain -1 strength token.',
+        'affinity_bonus': {
+            'desc': (
+                '<b>Ballad of Inversion [7]:</b> Spend '
+                '<font class="kdm_manager_font">A</font> and archive 7 cards '
+                'from the wound stack to perform.'
+                'Flip all your negative attribute tokens.'
+            ),
+            'requires': {'complete': {'blue': 1}, 'puzzle': {'blue': 1}, },
+        },
+        'recipes': [
+            {
+                'resource_handles': {'fused_feet': 1},
+                'resource_types': {'organ': 2, 'bone': 1},
+            },
+        ],
+    },
+
+    # seed
+    'hushing_harmonium': {
+        'expansion': 'smog_singers',
+        'type': 'seed_pattern',
+        'name': 'Hushing Harmonium',
+        'pattern_id': 15,
+        'keywords': ['seed', 'weapon', 'melee', 'instrument', 'metal', 'other'],
+        'affinities': {'right': 'green', 'bottom': 'green'},
+        'speed': 1,
+        'accuracy': 7,
+        'strength': 0,
+        'related_rules': ['hushed'],
+        'desc': (
+            '<b>Ballad of Silence [12]:</b> Spend '
+            '<font class="kdm_manager_font">A</font> and archive 12 cards from '
+            'the wound stack to perform. All other survivors are <b>hushed</b> '
+            'and are not threats.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'singing_tongue': 1,
+                    'broken_lantern': 1,
+                    'vocal_chords': 1,
+                },
+                'innovations': ['drums'],
+                'crafting_process': [
+                    (
+                        'A <b>survivor who fought the Smog Singers</b> '
+                        'seeks emotional relief through silence.'
+                    ),
+                    (
+                        'They play <b>Drums</b> until they discover one sound '
+                        'that crushes all others.'
+                    ),
+                    (
+                        'They play until <b>deaf</b>, scrunching and pushing '
+                        'the sound into a metal cage.'
+                    ),
+                ],
+            },
+        ],
+    },
+}
+
+smog_singers_rare_gear =  {
+    'smog_lantern': {
+        'expansion': 'smog_singers',
+        'name': 'Smog Lantern',
+        'type': 'rare_gear',
+        'keywords': ['item', 'lantern'],
+        'rules': ['Vital'],
+        'related_rules': ['vital'],
+        'affinities': {
+            'top': 'green',
+            'right': 'green',
+            'bottom': 'green',
+            'left': 'green'
+        },
+        'desc': (
+            'A cherished keepsake from your friends in the sky. You will never '
+            'forget them.'
+        ),
+    },
+
+}

@@ -8,7 +8,7 @@ core = {
             'location it covers.'
         ),
     },
-    'activation_limit': {
+    'activation_limit_x': {
         'name': 'Activation Limit: N',
         'type': 'special_rule',
         'expansion': 'sunstalker',
@@ -40,6 +40,16 @@ core = {
             'Remove this card from play and return it to the game box. Unless '
             "it is recorded into settlement storage or the survivor's record "
             "sheet, any archived card is permanently lost."
+        ),
+    },
+    'armor': {
+        'name': 'Armor',
+        'type': 'gear_keyword',
+        'desc': (
+            'Gear with this keyword is armor. Protects the survivor from '
+            'injury. Each piece of armor will have the hit location symnbol '
+            'for the hit location it can be worn on. Each hit location may '
+            'only wear one piece of armor.'
         ),
     },
     'arrow': {
@@ -124,6 +134,15 @@ core = {
             'grid for any reason. If the survivor dies, archive this gear.'
         ),
         'related': ['archive'],
+    },
+    'dazed': {
+        'name': 'Dazed',
+        'type': 'gear_special_rule',
+        'desc': (
+            'The monster is dazed, and gains -1 '
+            'speed token until the end of its turn. A monster can be dazed '
+            'once per round.'
+        ),
     },
     'deadly': {
         'name': 'Deadly',
@@ -393,6 +412,14 @@ core = {
             'trigger on Impervious hit locations.'
         ),
     },
+    'seed': {
+        'name': 'Seed',
+        'type': 'gear_keyword',
+        'desc': (
+            'Gear cards with the seed keyword can be crafted only via their '
+            'respective Seed Pattern recipes.'
+        ),
+    },
     'selfish': {
         'name': 'Selfish',
         'type': 'gear_special_rule',
@@ -419,9 +446,9 @@ core = {
     },
     'sharp': {
         'name': 'Sharp',
-        'type': 'special_rule',
+        'type': 'gear_special_rule',
         'desc': (
-            'A gear special rule. Add 1dlO strength to each wound attempt '
+            'Add 1dlO strength to each wound attempt '
             'using this gear. This d1O is not a wound roll, and cannot cause '
             'critical wounds.'
         ),
@@ -436,9 +463,9 @@ core = {
     },
     'slow': {
         'name': 'Slow',
-        'type': 'special_rule',
+        'type': 'gear_special_rule',
         'desc': (
-            'A gear special rule. Slow weapons always have an attack speed of '
+            'Slow weapons always have an attack speed of '
             '1. Do not add speed modifiers.'
         ),
     },
@@ -469,7 +496,7 @@ core = {
             'Some tools trigger story events or grant bonuses.'
         ),
     },
-    'two_handed': {
+    'two-handed': {
         'name': 'Two-handed',
         'type': 'gear_keyword',
         'desc': (
@@ -479,17 +506,17 @@ core = {
     },
     'unique': {
         'name': 'Unique',
-        'type': 'special_rule',
+        'type': 'gear_special_rule',
         'desc': (
-            'A gear special rule. A settlement may only have one copy of this '
+            'A settlement may only have one copy of this '
             'gear card at a time.'
         ),
     },
     'unwieldy': {
         'name': 'Unwieldy',
-        'type': 'special_rule',
+        'type': 'gear_special_rule',
         'desc': (
-            'A gear special rule. If any attack dice roll results are 1, the '
+            'If any attack dice roll results are 1, the '
             'weapon causes 1 random damage to the survivor for each 1 roiled. '
             'Continue the attack as normal.'
         ),
@@ -505,6 +532,14 @@ core = {
             'to make room in their grid if needed).'
         ),
     },
+    'weapon': {
+        'name': 'Weapon',
+        'desc': (
+            'A type of gear card. Weapon types in the core game include axe, '
+            'bow, club, dagger, fist & tooth, grand, katar, shield, spear, '
+            'sword, and whip.'
+        ),
+    },
 }
 
 expansion = {
@@ -513,45 +548,6 @@ expansion = {
     'female_only': {
         'expansion': 'promo',
         'name': 'Female Only',
-        'desc': None,
-    },
-
-    # flower knight
-    'parry': {
-        'expansion': 'flower_knight',
-        'type': 'hit_location',
-        'name': 'Parry',
-        'desc': (
-            'A parry hit location represents the monster skillfully deflecting '
-            'an attack. <br/> When attempting to would Parry hit locations, '
-            'all wound attempts fail unless the wound roll result is critical. '
-            'This failure triggers any any Failure reactions as normal.'
-        ),
-    },
-    'perishable': {
-        'expansion': 'flower_knight',
-        'type': 'special_rule',
-        'name': 'Perishable',
-        'desc': (
-            'This cannot be added to settlement storage. At the end of the '
-            'settlement phase, it is lost. Archive it.'
-        ),
-    },
-
-    # sunstalker
-    'prismatic': {
-        'expansion': 'sunstalker',
-        'type': 'special_rule',
-        'name': 'Prismatic',
-        'desc': (
-            'Your complete affinities and incomplete affinity halves count '
-            'as all colors.'
-        ),
-    },
-    'shadow_walk': {
-        'expansion': 'sunstalker',
-        'type': 'special_rule',
-        'name': 'Shadow Walk',
         'desc': None,
     },
 
@@ -632,7 +628,7 @@ expansion = {
             'earn the effect listed after the gear card.<br/>'
             "A survivor can only earn a gear's <b>Sealed</b> bonus once per "
             'lifetime.<br/>'
-            'For example, the <b>Toxicimitar</b> has "<b>Sealed - Gain the '
+            'For example, the <b>Toxicimitar</b> has "<b>Sealed</b> - Gain the '
             '<b>Crescent Step</b> <span class="kd deck_icon" deck="SF">'
             'SF</span>." When a survivor with '
             '<b>Toxicimitar</b> proficiency reaches rank 3 (specialization), '
@@ -693,95 +689,34 @@ expansion = {
         ),
     },
 
-    # crimson croc
-    'clobber_x': {
-        'expansion': 'crimson_crocodile',
-        'name': 'Clobber X',
-        'type': 'special_gear_rule',
-        'related_rules': ['super_dense'],
-        'desc': (
-            'Gain +X strength while attempting to wound a <b>Super-dense</b> '
-            'hit location.'
-        ),
-    },
-    'disarm': {
-        'expansion': 'crimson_crocodile',
-        'name': 'Disarm',
-        'type': 'special_rule',
-        'desc':(
-            'When a survivor suffers disarm or is disarmed, end their attack. '
-            'Place a disarm tile on the attack weapon and a matching tile 5 '
-            'spaces away from that survivor. That survivor may not activate '
-            'that weapon until they remove the tile on it or the show down '
-            'ends. When a survivor moves over their associated tile, archive '
-            'it and remove the tile on your gear grid.'
-        ),
-    },
-    'guardless': {
-        'expansion': 'crimson_crocodile',
-        'name': 'Guardless',
-        'type': 'special_rule',
-        'desc': (
-            'A special rule. A guardless survivor may not dodge, block, '
-            'deflect, or ignore hits. Attack rolls can still miss guardless '
-            'survivors, as they still factor their evasion in.'
-        ),
-    },
-    'heroic': {
-        'expansion': 'crimson_crocodile',
-        'type': 'weapon_ability',
-        'name': 'Heroic',
-        'desc': (
-            'A weapon ability. During your attack with this weapon, reroll '
-            'any natural 1s. You must keep the new results.'
-        ),
-    },
-    'honed_x': {
-        'expansion': 'crimson_crocodile',
-        'name': 'Honed X',
-        'type': 'gear_special_rule',
-        'desc': (
-            'Honed weapons gain +X strength until they strike something '
-            'hard (Super-Dense or Parry hit locations), ruining their edge. '
-            'Unless something explicitly preserves or restores the edge of a '
-            'honed weapon, it loses its additional strength until it is '
-            'restored at the settlement.'
-        ),
-    },
-    'locked': {
-        'expansion': 'crimson_crocodile',
-        'name': 'Locked',
-        'type': 'gear_special_rule',
-        'desc': 'This cannot be disarmed.',
-    },
-    'foresight': {
-        'expansion': 'crimson_crocodile',
-        'name': 'Foresight',
-        'type': 'special_gear_rule',
-        'desc': (
-            'New special gear rule. Survivors have Foresight if there are '
-            'any revleaed AI or HL cards.'
-        )
-    },
-    'surpass_x': {
-        'expansion': 'crimson_crocodile',
-        'name': 'Surpass X',
-        'type': 'special_rule',
-        'desc': (
-            'When your successful wound attempt total '
-            "surpasses the monster's toughness by X or more, the monster "
-            'suffers an additional wound.'
-        ),
-    },
-
     # death crown inheritor aya
     'campaign_limit_x': {
         'expansion': 'death_crown_inheritor_aya',
         'name': 'Campaign Limit X',
-        'type': 'special_gear_rule',
+        'type': 'gear_special_rule',
         'desc': (
-            'A special gear rule. This gear may only be activated X times '
+            'This gear may only be activated X times '
             'per campaign. Track this on your settlement record sheet. '
+        ),
+    },
+
+    # Vitanvox
+    'banshee_dura_x':{
+        'expansion': 'vitanvox',
+        'name': 'Banshee Dura X',
+        'type': 'gear_special_rule',
+        'desc': (
+            'At the start of your act, gain (or lose) howling tokens until '
+            'you have X of them. During your act or a survival opportunity, '
+            'you may spend one howling token to: <ul>'
+            '<li>Gain <font class="kdm_manager_font">M</font>, which must be '
+            'spent immediately. Limit once per round.</li>'
+            '<li>Gain <font class="kdm_manager_font">A</font>, which must be '
+            'spent immediattely. Limit once per round.</li>'
+            '<li>Perform a survival action, using the howling token in place '
+            'of survival.</li>'
+            '<li>Gain +1 strength token until the end of the round.</li>'
+            '</ul>'
         ),
     },
 

@@ -221,8 +221,16 @@ story_event = {
     # Slenderman
     "slender_its_already_here": {"name": "It's Already Here", "page": 2, "expansion": "slenderman",},
     "slender_dark_place": {"name": "Dark Place", "page": 11, "expansion": "slenderman",},
-    "slender_light_forging": {"name": "Light-Forging", "page": 13, "expansion": "slenderman",},
-    "slender_forgotten_fear": {"name": "Forgotten Fear", "page": 15, "expansion": "slenderman",},
+    "slender_light_forging": {
+        "expansion": "slenderman",
+        "name": "Light-Forging",
+        "page": 13,
+    },
+    "slender_forgotten_fear": {
+        "expansion": "slenderman",
+        "name": "Forgotten Fear",
+        "page": 15,
+    },
 
     # gambler's chest
     'gc_recurrent_story': {
@@ -239,5 +247,20 @@ story_event = {
         'expansion': 'crimson_crocodile',
         'name': 'Devour the White Lion',
         'page': 119,
+    },
+    'gc_death_of_song': {
+        'expansion': 'smog_singers',
+        'name': 'Death of Song',
+        'page': 113,
+    },
+    'gc_emotional_breakdown': {
+        'expansion': 'smog_singers',
+        'name': 'Emotional Breakdown',
+        'page': 123,
+    },
+    'gc_a_song_for_the_darkness': {
+        'expansion': 'smog_singers',
+        'name': 'A Song for the Darkness',
+        'page': 109,
     },
 }
