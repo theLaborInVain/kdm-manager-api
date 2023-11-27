@@ -178,7 +178,10 @@ ability = {
         "type": "ability",
     },
     "kings_curse": {
-        'desc': 'At the Aftermath, <font class="kdm_font">g</font> <b>King\'s Curse</b>.',
+        'desc': (
+            'At the Aftermath, <font class="kdm_font">g</font> '
+            "<b>King's Curse</b>."
+        ),
         'epithet': "kings_curse",
         'name': "King's Curse",
         'type': 'curse'
@@ -190,19 +193,29 @@ ability = {
         'type': 'ability'
     },
     'leprosy': {
-        'desc': 'Reduce all damage suffered by 1 to a minimum of 1. Suffer -2 to severe injury rolls.',
+        'desc': (
+            'Reduce all damage suffered by 1 to a minimum of 1. Suffer -2 to '
+            'severe injury rolls.'
+        ),
         'epithet': 'leper',
         'name': 'Leprosy',
         'type': 'impairment'
     },
     'leyline_walker': {
-        'desc': 'While there is no armor or accessory gear in your grid, gain +3 evasion.',
+        'desc': (
+            'While there is no armor or accessory gear in your grid, gain +3 '
+            'evasion.'
+        ),
         'epithet': 'leyline_walker',
         'name': 'Leyline Walker',
         'type': 'ability'
     },
     'lovelorn_rock': {
-        'desc': 'Forever in love, the straggler loses one gear slot permanently to the rock. This survivor must always leave one gear space empty to hold their rock. The rock can be lost like normal gear.',
+        'desc': (
+            'Forever in love, the straggler loses one gear slot permanently to '
+            'the rock. This survivor must always leave one gear space empty to '
+            'hold their rock. The rock can be lost like normal gear.'
+        ),
         'name': 'Lovelorn Rock',
         'type': 'impairment',
         'epithet': 'lithophile',
@@ -601,7 +614,10 @@ expansion_ai = {
         'type': 'ability'
     },
     'solid': {
-        'desc': 'If you would be knocked down, roll 1d10. On a 4+, you are not knocked down.',
+        'desc': (
+            'If you would be knocked down, roll 1d10. On a 4+, you are not '
+            'knocked down.'
+        ),
         'expansion': 'beta_challenge_scenarios',
         'max': 1,
         'name': 'Solid',
@@ -903,6 +919,8 @@ expansion_ai = {
     'bald': {
         'desc': 'You fidget too much.',
         'name': 'Bald',
+        'expansion': 'winter_solstice_lucy',
+        'type': 'ability',
     },
 
 }

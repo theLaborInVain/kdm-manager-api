@@ -6,6 +6,7 @@
 
 crimson_crocodile = {
     'anemic': {
+        'expansion': 'crimson_crocodile',
         'name': 'Anemic',
         'type': 'impairment',
         'desc': (
@@ -18,6 +19,7 @@ crimson_crocodile = {
         'max': False,
     },
     'hemostasis': {
+        'expansion': 'crimson_crocodile',
         'name': 'Hemostasis',
         'type': 'ability',
         'desc': (
@@ -32,6 +34,7 @@ crimson_crocodile = {
 
 smog_singers = {
     'songheart':  {
+        'expansion': 'smog_singers',
         'name': 'Songheart',
         'type': 'ability',
         'desc': 'Reduce the cost of performing your Ballads by 1.'

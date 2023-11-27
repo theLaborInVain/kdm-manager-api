@@ -25,6 +25,19 @@ miscellaneous = {
     # anything that's not part of a product line or group of related things
     # gets filed here
 
+
+    'vignettes_of_death_white_gigalion': {
+        'released': datetime(2019, 8, 1, 12, tzinfo=TIMEZONE),
+        'name': 'Vignette of Death: White Gigalion',
+        'ui': {'pretty_category': 'Quarry'},
+        'flair': {
+            'color': 'fff',
+            'bgcolor': '000'
+        },
+        'strain_milestones': ['somatotropin_surge'],
+        'quarries': ['white_gigalion'],
+    },
+
     "beta_challenge_scenarios": {
         "released": datetime(2016, 2, 1, 12, tzinfo=TIMEZONE),
         "name": "Beta Challenge Scenarios",

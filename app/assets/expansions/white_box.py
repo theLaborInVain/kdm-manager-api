@@ -129,17 +129,6 @@ white_box_2019 = {
         'basic_hunt_event': ['sword_in_the_stone'],
         'subscriber_level': 2,
     },
-    'vignettes_of_death_white_gigalion': {
-        'released': datetime(2019, 8, 1, 12, tzinfo=TIMEZONE),
-        'name': 'Vignettes of Death: White Gigalion',
-        'ui': {'pretty_category': 'Quarry'},
-        'flair': {
-            'color': 'fff',
-            'bgcolor': '000'
-        },
-        'strain_milestones': ['somatotropin_surge'],
-        'quarries': ['white_gigalion'],
-    },
     "tenth_anniversary_white_speaker": {
         "name": "10th Anniversary White Speaker",
         "ui": {"pretty_category": "White Box"},
