@@ -980,7 +980,7 @@ class Settlement(UserAsset):
             candidate_handles.extend(
                 self.settlement.get("nemesis_monsters", [])
             )
-            candidate_handles.append(self.campaign.asset['finale_monster'])
+#            candidate_handles.append(self.campaign.asset['finale_monster'])
         elif context == "defeated_monsters":
             candidate_handles.extend(self.settlement.get("quarries", []))
             candidate_handles.extend(self.settlement.get("nemesis_monsters",[]))

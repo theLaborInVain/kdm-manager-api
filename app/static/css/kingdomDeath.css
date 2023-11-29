@@ -701,9 +701,12 @@ select.kd.capsule {
 }
 .kd.card.title_bar div:last-child { /*  keywords go last in a title bar */
     font-size: 0.8rem;
-    text-align: center; 
+    text-align: center;
+    width: 100%; 
 }
-
+.kd.card.title {
+    font-size: var(--font-large);
+}
 
 .kd.card.body {
     margin: 0 auto 1rem auto;
@@ -748,7 +751,6 @@ select.kd.capsule {
 .kd.card.disorder.title {
     color: #fff;
     font-family: 'Silverado';
-    font-size: var(--font-large);
     margin-bottom: 2rem;
     text-transform: none;
     width: 100%; 
@@ -784,7 +786,6 @@ select.kd.capsule {
 }
 .kd.card.fighting_art.title {
     font-family: 'Silverado';
-    font-size: var(--font-large);
     margin: 0 auto;
     text-transform: none;
     width: 100%; 
@@ -799,20 +800,16 @@ select.kd.capsule {
     content: " - ";
 }
 
-/*  fighting art/disorder title style for expansion cards*/
+/*  title style for expansion cards that have expansion flair crest */
 .kd.card.fighting_art.expansion.title_bar {
     margin: 1.5rem auto 0.5rem auto;
 }
 .kd.card.disorder.expansion.title_bar {
     margin: 1.5rem auto 3rem auto;
 }
-.kd.card.fighting_art.expansion.title,
-    .kd.card.disorder.expansion.title {
-    margin:  auto auto auto -1.5rem;
-}
-.kd.card.fighting_art.expansion.subtitle,
-    .kd.card.disorder.expansion.subtitle {
-    margin:  auto auto auto -1.5rem;
+.kd.card.expansion.title,
+    .kd.card.expansion.subtitle {
+    margin: auto auto auto -1.5rem;
 }
 
 /* fighting art unique display elements, gradients, strain, etc. */
@@ -872,10 +869,6 @@ select.kd.capsule {
     font-size: 0.7em;
     text-align: center;
     width: 100%;
-}
-
-/* disorder card visual customizations */
-.kd.card.disorder.title_bar {
 }
 
 
