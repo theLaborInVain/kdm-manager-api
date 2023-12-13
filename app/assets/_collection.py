@@ -22,7 +22,7 @@ import flask
 
 # KDM API imports
 from app import API, utils
-from app.assets.versions import definitions as versions_definitions
+from app.assets import versions
 
 
 class Collection():
@@ -55,10 +55,10 @@ class Collection():
             self.asset_logger.debug('Asset logger initialized!')
 
         # set self.version, which MUST be a version handle. Die if it's not
-        self.version = assets_version
-        if not isinstance(self.version, str):
+        if not isinstance(assets_version, str):
             err = "'asset_version' must be a version handle, 'not %s' / %s"
-            raise AttributeError(err % (self.version, type(self)))
+            raise AttributeError(err % (assets_version, type(self)))
+        self.version = versions.Version(handle=assets_version)
 
         # asset debugger 
         curframe = inspect.currentframe()
@@ -68,7 +68,7 @@ class Collection():
             self.asset_logger.debug(
                 'Initializing %s.%s() at KD:M version %s. Caller: %s',
                 self.__module__, self.__class__.__name__,
-                self.version,
+                self.version.get_float(),
                 caller_func
             )
 
@@ -139,8 +139,9 @@ class Collection():
                 len(getattr(self, 'assets', []))
             )
 
-        return "AssetCollection object '%s' (%s assets)" % (
+        return "AssetCollection object '%s' @ v%s (%s assets) " % (
             self.type,
+            self.version.get_float(),
             len(getattr(self, 'assets', []))
         )
 
@@ -389,18 +390,9 @@ class Collection():
         'target'. Is basically a cumulative patch. Uses self.version, a str
         version handle. """
 
-        try:
-            target_vers_dict = versions_definitions.VERSIONS[self.version]
-        except KeyError as error:
-            msg = "Version handle '%s' not found in %s -> %s" % (
-                self.version, versions_definitions.VERSIONS.keys(), error
-            )
-            self.logger.error(msg)
-            raise
-
-        for v_key in versions_definitions.VERSIONS.keys():
-            v_dict = versions_definitions.VERSIONS[v_key]
-            if v_dict['released'] <= target_vers_dict['released']:
+        for v_key in versions.definitions.VERSIONS.keys():
+            v_dict = versions.definitions.VERSIONS[v_key]
+            if v_dict['released'] <= self.version.asset['released']:
                 if (
                     v_dict.get('assets', None) is not None and
                     v_dict['assets'].get(self.type, None) is not None
@@ -499,19 +491,14 @@ class Collection():
 
         # if the asset is still None, we want to raise an expception
         if asset is None and raise_exception_if_not_found:
-            if not backoff_to_name:
-                curframe = inspect.currentframe()
-                calframe = inspect.getouterframes(curframe, 2)
-                caller_function = calframe[1][3]
-                msg = (
-                    "%s() -> get_asset() "
-                    "The handle '%s' could not be found in %s!"
-                ) % (caller_function, handle, self.get_handles() )
-                self.logger.error(msg)
-            elif backoff_to_name:
-                msg = "After backoff to name lookup, asset handle '%s' is not\
-                in %s and could not be retrieved." % (handle, self.get_names())
-                self.logger.error(msg)
+            curframe = inspect.currentframe()
+            calframe = inspect.getouterframes(curframe, 2)
+            caller_function = calframe[1][3]
+            msg = (
+                "%s() -> get_asset() "
+                "The handle '%s' could not be found in %s!"
+            ) % (caller_function, handle, self.get_handles() )
+            self.logger.error(msg)
             raise utils.InvalidUsage(msg, status_code=500)
 
         for key in exclude_keys:
@@ -586,7 +573,7 @@ class Collection():
     #
 
     def get_handles(self):
-        """ Dumps all asset handles, i.e. the list of self.assets keys. """
+        """ Dumps all asset handles, i.e. the list of self.assets.keys(). """
 
         try:
             return sorted(self.assets, key=lambda x: self.assets[x]['name'])

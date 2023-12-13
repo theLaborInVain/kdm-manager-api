@@ -12,7 +12,7 @@ from ._killboard_asset import KillboardAsset
 
 class Killboard(KillboardAsset):
     """ Use this to initialize a killboard entry. It's base class lives in the
-    app.models.__init__ module. """
+    app.models.killboard module/folder. """
 
     def __init__(self, *args, **kwargs):
         KillboardAsset.__init__(self,  *args, **kwargs)

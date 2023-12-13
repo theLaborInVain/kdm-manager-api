@@ -143,7 +143,7 @@ nemesis = {
         "sort_order": 101,
         "selectable": False,
         "levels": 4,
-        "misspellings": ["THE MANHUNTER", "MAN HUNTER"],
+        "misspellings": ["THE MANHUNTER", "MAN HUNTER", 'THE HANGED MAN'],
         "node": 1,
     },
 

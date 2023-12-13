@@ -5,21 +5,24 @@
 
 """
 
+import re
+
 from app import utils
 
 from .._asset import Asset
 from .._collection import Collection
 from .definitions import *
 
+
 class Assets(Collection):
 
     def __init__(self, *args, **kwargs):
         """ Initialize the asset collection object. """
         Collection.__init__(self,  *args, **kwargs)
-        self.set_levels()
+        self._set_levels()
 
 
-    def set_levels(self):
+    def _set_levels(self):
         """ Used while initializing the monsters asset collection to synthesize
         the levels attribute based on key/value pairs that should already be in
         the monster's dict.
@@ -43,46 +46,9 @@ class Assets(Collection):
 
 
     def get_asset_from_name(self, name=None, decompose=True):
-        """ Overwrites the base class method of the same name. """
-
-        # fail if we don't get a str
-        if not isinstance(name, str):
-            err = "'name' kwarg must be 'str'! Got %s (%s)"
-            raise utils.InvalidUsage(err % (type(name), name))
-
-        name_upper = name.strip().upper()
-
-        # now create a NON-CASE-SENSITIVE look-up dict to search
-        name_lookup = {}
-        for m_dict in self.get_dicts():
-            name_lookup[m_dict['name'].upper()] = m_dict
-
-        # now check it against the incoming string
-        base_class_result = None
-        if name_upper in name_lookup.keys():
-            base_class_result = self.get_asset(
-                name_lookup[name_upper]['handle']
-            )
-
-        # if that worked, return it
-        if base_class_result is not None:
-            return base_class_result
-
-        # if it didn't and we're not decomposing, return None
-        if base_class_result is None and not decompose:
-            return base_class_result # i.e. None
-
-        # now try decomposition
-        variations = []
-        name_list = name.split(" ")
-        for i in range(len(name_list) + 1) :
-            variations.append(" ".join(name_list[:i]))
-            variations.append(" ".join(name_list[i:]))
-
-        for variation in variations:
-            asset_dict = self.get_asset_from_name(variation, decompose=False)
-            if asset_dict is not None:
-                return asset_dict
+        ''' Tries to return an asset dict based on 'name', a string. '''
+        asset_handle = get_handle_from_name(name)
+        return self.get_asset(handle=asset_handle)
 
 
     def init_asset_from_name(self, name=None):
@@ -108,25 +74,42 @@ class Monster(Asset):
     """ This is the base class for all monsters. We should NOT have to sub-class
     it with quarry/nemesis type child classes, but that design may change. """
 
-    def __init__(self, *args, level=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         ''' Normal init followed by special attrib fuckery. '''
 
-        Asset.__init__(self, *args, **kwargs)
+        # pop out kwargs that aren't allows by the base class Asset definition
+        self.name = kwargs.pop('name', None)
+        self.level = kwargs.pop('name', None)
 
-        self.level = level
-        if self.level is None:
-            del self.level
+        # This is the last asset we allow to be set from name values and this
+        #   is where we support that
+        if not 'handle' in kwargs and self.name is not None:
+            self.logger = utils.get_logger()    # because we haven't init'd yet
+            handle = get_handle_from_name()
+            self.logger.warn('GOT HANDLE: %s', handle)
+
+        Asset.__init__(self, *args, handle=handle, **kwargs)
+
+        # use name to try to set some attributes
+        p_name, p_level, p_comment = split_name_level_comment(self.name)
+
+        # try to use derived values to set level, comment
+        for attr in ['level', 'comment']:
+            if getattr(self, attr, None) is None:
+                setattr(self, attr, 'p_' + attr)
+                if getattr(self, attr, None) is None:
+                    delattr(self, attr)
 
         # strip level for uniques
         if self.asset.get('unique', False):
             if hasattr(self, 'level'):
                 del self.level
 
-        # set attribs (yikes)
-        for attr in ['comment', 'type']:
-            if self.asset.get(attr, None) is not None:
-                setattr(self, attr, self.asset[attr])
 
+
+    #
+    # object query methods
+    #
 
     def is_unique(self):
         """ Returns a bool representing whether the monst is unique. Monsters
@@ -146,60 +129,104 @@ class Monster(Asset):
 
 
 
-    def initialize_from_name(self, check_asset=True):
-        """ Try to initialize a monster object from a string. Lots of craziness
-        here to protect the users from themselves.
-        """
+def get_handle_from_name(raw_name=None, decompose=True):
+    """ God's mistake. This absolute disasterpiece tries to parse 'name' and
+    return a valid handle of a monster asset. """
 
-        # sanity warning
-        if "_" in self.name:
-            self.logger.warn("Asset name '%s' contains underscores. Names should use whitespace." % self.name)
-            self.logger.warn("Attempting to initialize by handle...")
-            self.handle = self.name
-            self.initialize_from_handle()
-            return True
+    # default failure/error msg
+    failure_exception = AttributeError(
+        "Could not get Monster handle from name '%s'" % raw_name
+    )
 
-        # first, check for an exact name match (long-shot)
-        asset_dict = self.assets.get_asset_from_name(self.name, decompose=False)
-        if asset_dict is not None:
-            self.initialize_asset(asset_dict)
-            return True
+    # 
+    # sanity checks
+    #
+    if not isinstance(raw_name, str):
+        err = "'name' kwarg must be 'str'! Got %s (%s)"
+        raise utils.InvalidUsage(err % (type(name), name))
 
-        # next, split to a list and try to set asset and level
-        name_list = self.name.split(" ")
-        for i in name_list:
-            if i.isdigit():
-                setattr(self, "level", int(i))
-
-        # now iterate through the list and see if we can get a name from it
-        for variation in utils.decompose_name_string(self.name):
-            asset_dict = self.assets.get_asset_from_name(variation, decompose=False)
-            if asset_dict is not None:
-                self.initialize_asset(asset_dict)
-#                if len(name_list) > i and name_list[i].upper() not in ["LEVEL","LVL","L"]:
-#                    setattr(self, "comment", (" ".join(name_list[i:])))
-                return True
-
-        # finally, create a list of misspellings and try to get an asset from that
-        #   (this is expensive, so it's a last resort)
-        m_dict = {}
-        for asset_handle in self.assets.get_handles():
-            asset_dict = self.assets.get_asset(asset_handle)
-            if "misspellings" in asset_dict.keys():
-                for m in asset_dict["misspellings"]:
-                    m_dict[m] = asset_handle
-
-        for i in range(len((name_list))+1):
-            parsed_name = " ".join(name_list[:i]).upper()
-            if parsed_name in m_dict.keys():
-                asset_handle = m_dict[parsed_name]
-                self.initialize_asset(self.assets.get_asset(asset_handle))
-                if len(name_list) > i and name_list[i].upper() not in ["LEVEL","LVL","L"]:
-                    setattr(self, "comment", (" ".join(name_list[i:])))
-                return True
+    if "_" in raw_name:
+        warn = "Name '%s' contains underscores. Names use whitespace."
+        raise utils.InvalidUsave(warn % raw_name)
 
 
-        # if we absolutely cannot guess wtf monster name this is, give up and
-        #   throw a utils.Asseterror()
-        if self.handle is None:
-            raise models.AssetInitError("Asset name '%s' could not be translated to an asset handle!" % self.name)
+    # if we're doing this, stage up some stuff:
+    # create a dictionary of 'raw' assets (not-initalized) to use later
+    raw_assets = {}
+    for asset_dict in [quarry, nemesis, core, finale]:
+        raw_assets.update(asset_dict)
+
+    # get a name value without level cruft; 'raw_name' no longer used
+    name, _, _ = split_name_level_comment(raw_name)
+    name_upper = name.strip().upper()
+
+    # method one: see if the incoming name matches a known asset name
+    # create a NON-CASE-SENSITIVE look-up dict to search
+    name_lookup = {}
+    for asset_handle, asset_dict in raw_assets.items():
+        asset_dict['handle'] = asset_handle
+        name_lookup[asset_dict['name'].upper()] = asset_dict
+
+    # and then search 'name' (which we just made) against it:
+    if name_upper in name_lookup.keys():
+        return name_lookup[name_upper]['handle']
+
+    # at this point, if optional methods aren't enabled, return None
+    if not decompose:
+        return None
+
+    # optional method: name string decomposition
+    if decompose:
+        variations = []
+        name_list = name.split(" ")
+        for i in range(len(name_list) + 1) :
+            variations.append(" ".join(name_list[:i]))
+            variations.append(" ".join(name_list[i:]))
+
+        for variation in variations:
+            handle = get_handle_from_name(variation, decompose=False)
+            if handle is not None:
+                return handle
+
+    # optional method: misspellings
+    # for this, make a lookup table of misspelled names
+    misspelling_lookup = {}
+    for asset_handle, asset_dict in raw_assets.items():
+        if asset_dict.get('misspellings', None) is not None:
+            for incorrect_name in asset_dict["misspellings"]:
+                misspelling_lookup[incorrect_name] = asset_handle
+
+    if name_upper in misspelling_lookup:
+        return misspelling_lookup[name_upper]
+
+
+    raise failure_exception
+
+
+
+def split_name_level_comment(raw_name):
+    """ Private method that takes a 'raw_name' string and tries to return a
+    tuple of the name and the level (as an int)."""
+
+    name = None
+    level = None
+
+    # go after the comment first
+    match = re.search(r'\((.*?)\)', raw_name)
+    comment = match.group(1).strip() if match else None
+
+    # now pull out the level stuff
+    # not DRY, but if you modify the list while iterating, python gets weird
+    name_list = raw_name.split(' ')
+    for fragment in name_list:
+        if fragment.isdigit():
+            name_list.remove(fragment)
+            level = int(fragment)
+
+    for fragment in name_list:
+        if fragment.upper()[:3] == 'LVL':
+            name_list.remove(fragment)
+
+    name = ' '.join(name_list)
+    return name, level, comment
+

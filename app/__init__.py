@@ -12,6 +12,8 @@
 # standard library imports
 from datetime import datetime, timedelta
 import socket
+import sys
+import uuid
 
 # second party imports
 import flask
@@ -21,27 +23,32 @@ import pymongo
 import werkzeug
 
 # app imports
-import config
+from config import Config
 
 # create the app
 API = flask.Flask(__name__, instance_relative_config=True)
-API.config.from_object(config.Config)
+API.uuid = uuid.uuid4()
+API.config.from_object(Config)
 API.config.from_pyfile('secret.py')
 
-# import the settings module and add it
+# confirm initialization
+#API.logger.info('KD:M API version %s initialized.', API.config['VERSION'])
+#sys.stdout.write(f' * Instance UUID: {API.uuid}\n')
+
+# import these here to avoid a circular import
 from app import assets, utils
-from app.utils import settings
-from app.utils import crossdomain
 
 # fiddle the loggers; remove the default to avoid handle conflicts
 API.logger.removeHandler(flask.logging.default_handler)
 API.logger = utils.get_logger(log_name="server")
 
-API.settings = settings
+# DEPRECATED - get rid of this in 2024
+API.settings = utils.settings
+
+
 
 #   Javascript Web Token! DO NOT import jwt (i.e. pyjwt) here!
 JWT = flask_jwt_extended.JWTManager(API)
-
 
 #   HTTP basic auth, which we use for the admin panel:
 API.basicAuth = HTTPBasicAuth()
@@ -66,9 +73,24 @@ def verify_password(username, password):
     return True
 
 
+
+# initialize the asset collections
+from app.assets.kingdom_death import Monster
+if not hasattr(API, 'kdm'):
+    API.kdm = Monster(flask_app=API, logger=utils.get_logger(log_name='kdm'))
+
+
+
+
 #
 #   pre- and post-request methods, exception handling, etc.
 #
+
+#@API.before_first_request
+#def before_first_request():
+#    ''' This happens AFTER initialization, but before the first request.'''
+#    from app.assets.kingdom_death import Monster
+#    API.kdm = Monster(flask_app=API, logger=utils.get_logger(log_name='kdm'))
 
 @API.before_request
 def before_request():
@@ -125,7 +147,7 @@ def method_not_allowed(e):
 
 
 @API.errorhandler(Exception)
-@crossdomain(origin=['*'])
+@utils.crossdomain(origin=['*'])
 def general_exception(exception):
     """ This is how we do automatic email alerts on arbitrary API failures.
 
@@ -160,13 +182,13 @@ def general_exception(exception):
 
 
 @API.errorhandler(utils.InvalidUsage)
-@crossdomain(origin=['*'])
+@utils.crossdomain(origin=['*'])
 def return_exception(exception):
     """ This is how we fail user error (i.e. back) to the requester. """
     return flask.Response(response=exception.msg, status=exception.status_code)
 
 @API.errorhandler(utils.ConversionException)
-@crossdomain(origin=['*'])
+@utils.crossdomain(origin=['*'])
 def conversion_exception(exception):
     """ This is how we fail user error (i.e. back) to the requester. """
     return flask.Response(response=exception.msg, status=exception.status_code)

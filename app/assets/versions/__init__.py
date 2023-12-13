@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 # asset module imports
 from .._asset import Asset
 from .._collection import Collection
-from .definitions import *
+from .definitions import VERSIONS
 
 
 class Assets(Collection):

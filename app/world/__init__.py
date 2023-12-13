@@ -38,9 +38,13 @@ from app import API, utils
 from app.admin import notifications
 
     # assets
-from app.assets.kingdom_death import campaigns, innovations, principles
+from app.assets.kingdom_death import (
+    campaigns,
+    innovations,
+    monsters,
+    principles
+)
 #from app.assets import campaigns as campaigns_models
-from app.assets import monsters as monster_models
 from app.assets import expansions as expansions_models
 from . import assets as world_assets
 
@@ -96,6 +100,7 @@ class World(object):
         ]
 
         self.total_refreshed_assets = 0
+
 
     @utils.metered
     def create_indexes(self, collections_in_scope=[
@@ -1001,46 +1006,52 @@ class World(object):
         """ Create the killboard. Return a blank dict if there's nothing in the
         MDB to show, e.g. if it's a freshly initialized db. """
 
-        # first, figure out what monster types are in the killboard collection
-        known_types = list(utils.mdb.killboard.find().distinct("type"))
-        if self.query_debug:
-            self.logger.debug('Monster types in killboard: %s' % known_types)
-        if known_types == []:
+        # get all records, initialize them to correct/normalize
+        all_kills = utils.mdb.killboard.find()
+        for killed in all_kills:
+            kb_object = Killboard(
+                _id=killed['_id'],
+                monsters_collection_obj = API.kdm.collections.monsters
+            )
+
+        # return an empty dict if there's nothing on the board
+        if all_kills.count() == 0:
             return {}
 
-        # log an error if we find the generic asset type in the known types:
-        if 'monsters' in known_types:
-            bad_type = utils.mdb.killboard.find({'type': 'monsters'})
-            err = "%s killboard monsters with invalid type 'monsters' found!"
-            self.logger.error(err, bad_type.count())
+        #
+        #   First, build a list of all possible monster types; we'll use that
+        #       list of types to organize the output dictionary
+        #
 
-            # initialize the bogus entries, which will normalize/fix them
-            for killed in bad_type:
-                Killboard(_id = killed['_id'])
+        monster_types = set()
 
-            # finally, remove 'monsters' from known types:
-            known_types.remove('monsters')
+        for m_asset in API.kdm.collections.monsters.get_dicts():
+            monster_types.add(m_asset['sub_type'])
+
+        monster_types.union(set(utils.mdb.killboard.find().distinct("type")))
+        if self.query_debug:
+            self.logger.debug('Defined/known monster types: %s', monster_types)
 
         # now, start creating the dictionary representation
         killboard = {}
-        for t in known_types:
+        for t in monster_types:
             killboard[t] = {}
 
-        # iterate monster assert dicts and use them to create our base killboard
-        monster_assets = monster_models.Assets()
-        for m_asset in monster_assets.get_dicts():
+        # iterate monster assert dicts and use them to create our base output
+        for m_asset in API.kdm.collections.monsters.get_dicts():
             killboard[m_asset["sub_type"]][m_asset['handle']] = {
                 "name": m_asset["name"],
                 "count": 0,
                 "sort_order": m_asset["sort_order"]
             }
+        if self.query_debug:
+            self.logger.debug('Initialized killboard: %s', killboard)
 
-        # now go and get the monsters, ignoring broken ones
-        results = utils.mdb.killboard.find(
-            {"handle": {"$exists": True}, "type": {"$exists": True}}
-        )
-        for d in results:
-            killboard[d["type"]][d["handle"]]["count"] += 1
+        # iterate through the 'all_kills' query results, build the board
+        for killed in all_kills:
+            if killed.get('type', None) is None:
+                killed = self._killboard_type_fix(killed)
+            killboard[killed["type"]][killed["handle"]]["count"] += 1
 
         for type in list(killboard.keys()):
             sort_order_dict = {}

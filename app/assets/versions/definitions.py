@@ -72,7 +72,7 @@ VERSIONS = OrderedDict({
         'minor': 6,
         'released': datetime(2020, 11, 27),
         'desc': 'Version 1.6, announced Black Friday 2020.',
-        'name': 'Version 1.6, announced Black Friday 2020.',
+        'name': 'Kingdom Death: Monster 1.6',
         'assets': {
             'gear': {
                 'blood_sheath': {

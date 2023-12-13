@@ -91,7 +91,7 @@ class Survivor(UserAsset):
     DATA_MODEL.add('returning_survivor', list)
     DATA_MODEL.add("Weapon Proficiency", int)
     DATA_MODEL.add("weapon_proficiency_type", str)
-    DATA_MODEL.add("weapon_proficiency_type_sealed", str)
+    DATA_MODEL.add("weapon_proficiency_type_sealed", str, required=False)
     DATA_MODEL.add(
         'weapon_proficiency_sealed', str, required=False, unset_on_none=True
     )
@@ -2880,13 +2880,16 @@ class Survivor(UserAsset):
 
 
     @web_method
-    def set_weapon_proficiency_type(self, handle=None, save=True):
+    def set_weapon_proficiency_type(self, handle=None, unset=False, save=True):
         """ Sets the self.survivor["weapon_proficiency_type"] string to a
         handle. """
 
         # if this is a request, and has the 'unset' param, process it and
         #   return immediately
-        if self.params.get('unset', None) is not None:
+        if (
+            self.params.get('unset', None) is not None or
+            unset == True
+        ):
             self.survivor['weapon_proficiency_type'] = ''
             msg = '%s unset weapon proficiency type for %s.' % (
                 request.User.login,
@@ -2964,6 +2967,13 @@ class Survivor(UserAsset):
         mastery A&I that it gets auto-applied. DOES NOT SAVE. '''
 
         wp_handle = self.survivor.get('weapon_proficiency_type', None)
+
+        # catch values with a literal/string 'None'
+        if wp_handle == 'None':
+            warn = "%s Weapon proficiency type is 'None' (str)!"
+            self.logger.warning(warn, self)
+            self.set_weapon_proficiency_type(unset=True)
+            wp_handle = None
 
         # return True if we don't actually have one set or don't care
         if (

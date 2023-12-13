@@ -79,7 +79,7 @@ def get_logger(log_level=None, log_name=None):
     if log_name == '':
         log_name = 'default'
 
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(log_name)
     logger.setLevel(log_level)
 
     if len(logger.handlers):    # if we're initializing a log, kill other

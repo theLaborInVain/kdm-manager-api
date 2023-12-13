@@ -7,16 +7,16 @@
 
 # KD:M API imports
 from app import utils
-from app.assets import kingdom_death as KingdomDeath
+from app.assets import monsters
 
-# dirty-ass constants
-
-MONSTERS = KingdomDeath.monsters.Assets()
 
 class KillboardAsset:
     """ This is where we do work with killboard assets. """
 
-    def __init__(self, _id=None, params=None):
+    def __repr__(self):
+        return '[%s] killboard object (%s)' % (self._id, self.created_on)
+
+    def __init__(self, _id=None, params=None, monsters_collection_obj=None):
         """ Basic init routine. Use a valid ObjectID as '_id' if you've got an
         edit that you want to do; leave '_id' set to None to create a new
         entry in the killboard."""
@@ -55,32 +55,37 @@ class KillboardAsset:
         for key, value in self.document.items():
             setattr(self, key, value)
 
+        self.monster_asset = monsters_collection_obj.get_asset_from_name(
+            self.name
+        )
+
         #finally, normalize:
-        self.normalize()
+        self._normalize()
 
 
     def save(self, verbose=True):
         """ Generic save method. """
         utils.mdb.killboard.save(self.document)
         if verbose:
-            self.logger.info('Saved changes to Killboard object: %s', self._id)
+            self.logger.info('Saved changes to Killboard object: %s', self)
 
 
-    def normalize(self):
+    def _normalize(self):
         """ Forces Killboard objects to adhere to our data model. """
 
         perform_save = False
 
-        # fix the type, if necessary, to be the type in the monsters asset dict
-        if self.type == 'monsters':
-            self.logger.warning("Correcting Killboard entry 'type' attribute!")
-            monster_asset = KingdomDeath.monsters.Monster(
-                handle = self.handle,
-                collection_obj = MONSTERS
-            )
-            self.type = monster_asset.asset.get('sub_type', None)
+        # fix invalid types 
+        if self.type in ['monsters', None]:
+            orig_type = self.type
+            warn = "%s Fixing killboard obj 'type' attr..." % self
+            self.logger.warning(warn)
+            self.type = self.monster_asset.get('sub_type', None)
             self.document['type'] = self.type
             perform_save = True
+            self.logger.warning(
+                "%s Changed type from '%s' to '%s'", self, orig_type, self.type
+            )
 
         if perform_save:
             self.save()
