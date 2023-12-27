@@ -36,13 +36,16 @@ from app.models import settlements, survivors, users
 @utils.metered
 def get_game_asset(collection_name, return_type=flask.Response):
     """ Formerly a part of the (deprecated) request_broker.py module, this
-    method imports an asset type, alls its Assets() method and then returns
+    method imports an asset type, calls its Assets() method and then returns
     its request_response() method.
 
     This could honestly go back into routes.py at this point.
     """
 
-    game_asset = getattr(KingdomDeath, collection_name)
+    game_asset = getattr(KingdomDeath, collection_name, None)
+    if game_asset is None:
+        return utils.HTTP_404
+
     try:
         asset_object = game_asset.Assets() # initialize a collection object
     except AttributeError as error:

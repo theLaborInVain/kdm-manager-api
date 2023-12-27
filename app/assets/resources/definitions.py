@@ -530,6 +530,30 @@ expansion_version = {
         ),
     },
 
+    # cockroach queen
+    'blind_rocker': {
+        'name': 'Blind Rocker',
+        'expansion': 'cockroach_queen',
+        'type': 'vermin_resources',
+        'keywords': ['vermin', 'consumable'],
+        'survival_limit': 1,
+        'detail_box': {
+            'title': 'Survival Limit +1',
+            'desc': (
+                'Creates a pleasing melody with its limbs while in settlement '
+                'storage.'
+            ),
+        },
+        'desc': (
+            'When survivors return to the settlement and the Blind Rocker is '
+            'in storage, roll 1d10. On a 7+, select a <b>returning '
+            'survivor</b> to <b>consume</b> this and roll 1d10. On a 1-2, they '
+            'die, otherwise they gain the following ability:</br>'
+            '<b>Myopic Fighter:</b> Gain +2 accuracy. You may only attack with '
+            'daggers or katars.'
+        ),
+    },
+
 }
 
 

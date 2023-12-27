@@ -80,6 +80,12 @@ white_box_2018 = {
         'released': datetime(2018, 10, 31, 12, tzinfo=TIMEZONE),
         'subscriber_level': 2,
     },
+    'white_speaker_2018': {
+        'name': "White Speaker",
+        'ui': {'pretty_category': 'White Box'},
+        'released': datetime(2018, 11, 22, 12, tzinfo=TIMEZONE),
+        'subscriber_level': 2,
+    },
     'santa_satan': {
         'released': datetime(2018, 12, 25, 12, tzinfo=TIMEZONE),
         'name': 'Santa Satan',
@@ -336,5 +342,15 @@ white_box_2023 = {
     # lolowen - 2023-05-02
 
     # mist raikin armor - 2023-06-12
+
+
+    # cockroach queen - 2023-12-25
+
+    'cockroach_queen':{
+        'name': 'Cockroach Queen',
+        'released': datetime(2023,12,25,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
 
 }

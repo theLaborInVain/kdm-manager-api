@@ -202,8 +202,8 @@ def dump_settlement_to_cli(s_id, verbose=False):
     )
 
     print("  %s survivors found. %s have been removed.\n" % (
-        survivors.count(),
-        removed_survivors.count()
+        len(list(survivors)),
+        len(list(removed_survivors))
     ))
 
     for survivor in survivors:

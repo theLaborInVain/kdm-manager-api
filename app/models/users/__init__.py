@@ -284,7 +284,7 @@ def jwt_identity_handler(payload):
         user_object = User(_id=user["_id"])
         return user_object.serialize()
 
-    return utils.http_404
+    return utils.HTTP_404
 
 
 def refresh_authorization(expired_token):

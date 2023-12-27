@@ -82,7 +82,7 @@ class Settlement(UserAsset):
         UserAsset.__init__(self, *args, **kwargs) # calls load() as well
 
         # hang a bunch of other asset collections on the settlement object
-        self._initialize_asset_collections()   # inits self.Campaigns
+        self._initialize_asset_collections()
         self._initialize_settlement_storage()
 
         # set self.campaign to be a campaigns.Campaign() asset if it hasn't been
@@ -115,7 +115,6 @@ class Settlement(UserAsset):
 
         self.AbilitiesAndImpairments = \
             KingdomDeath.abilities_and_impairments.Assets(self.get_version(str))
-        self.Campaigns = KingdomDeath.campaigns.Assets(self.get_version(str))
         self.CursedItems = KingdomDeath.cursed_items.Assets(
             self.get_version(str)
         )
@@ -195,8 +194,13 @@ class Settlement(UserAsset):
 
 
     def _initialize_self_campaign(self, force=False):
-        ''' Initializes self.campaign. Has some idiot-proofing so we don't do
-        this more than once. Set 'force' to True if you want to do it anyway.'''
+        ''' Initializes self.campaign, which is an initialized campaign asset.
+
+        It's kind of all-important, since so many other assets are going to
+        reference it at various points of working with the Settlement.
+
+        This method Has some idiot-proofing so we don't accidentally do this
+        more than once. Set 'force' to True if you want to do it anyway.'''
 
         # re-init with 'force' kwarg
         if getattr(self, 'campaign', None) is not None and not force:
@@ -205,24 +209,11 @@ class Settlement(UserAsset):
             self.logger.warning(msg, self, self.campaign)
             return True
 
-
-        # check if self.Campaigns (i.e. the collection exists. If not, make
-        #   sure we're only doing this in the context of self.new()
-        if not hasattr(self, 'Campaigns'):
-            curframe = inspect.currentframe()
-            calframe = inspect.getouterframes(curframe, 2)
-            caller_func = calframe[1][3]
-            if caller_func != 'new':
-                err = '%s self.campaign initialized outside of new()'
-                raise utils.InvalidUsage(err % self)
-
-            self.Campaigns = KingdomDeath.campaigns.Assets()
-
         # if we're doing it, do it:
         if getattr(self, 'campaign', None) is None or force:
             self.campaign = KingdomDeath.campaigns.Campaign(
                 handle = self.settlement['campaign'],
-                collection_obj=self.Campaigns
+                collection_obj=API.kdm.collections.campaigns
             )
 
         msg = "%s self.campaign (%s) initialized! ('force'=%s)"
@@ -1910,13 +1901,22 @@ class Settlement(UserAsset):
         vol_string=self.params['name']
 
         if vol_string not in self.get_monster_volumes():
-            self.logger.warn("%s Monster volume string '%s' is not recorded! Ignoring bogus request..." % (self, vol_string))
+            warn = (
+                "%s Monster volume string '%s' is not recorded! "
+                "Ignoring bogus request..."
+            )
+            self.logger.warn(warn, self, vol_string)
             return True
 
         # add the list if it's not present
         self.settlement['monster_volumes'].remove(vol_string)
 
-        self.log_event(action="rm", key="Monster Volumes", value=vol_string, event_type='rm_monster_volume')
+        self.log_event(
+            action="rm",
+            key="Monster Volumes",
+            value=vol_string,
+            event_type='rm_monster_volume'
+        )
         self.save()
 
 
@@ -4288,7 +4288,7 @@ class Settlement(UserAsset):
 
         if operation not in ['set', 'increment', 'decrement']:
             err = "update_all_survivors() cannot process '%s' operations!"
-            self.logger.exception(err % operation)
+            self.logger.exception(err, operation)
             raise utils.InvalidUsage(err % operation)
 
         for s in self.survivors:
@@ -4495,12 +4495,12 @@ class Settlement(UserAsset):
         #   'core_1_5', so set that as the default; if the settlement has
         #   a 'rules' key, normalize it to 'version'
         if not "version" in self.settlement.keys():
-            self.logger.info("Creating 'rules' key for %s" % (self))
+            self.logger.info("Creating 'rules' key for %s", self)
             self.settlement["rules"] = 'core_1_5'
             self.perform_save = True
 
         if 'rules' in self.settlement.keys():
-            self.logger.info("Converting 'rules' key for %s" % (self))
+            self.logger.info("Converting 'rules' key for %s", self)
             self.settlement['version'] = self.settlement['rules']
             del self.settlement['rules']
             self.perform_save = True
@@ -4523,17 +4523,20 @@ class Settlement(UserAsset):
         #
 
         if not "meta" in self.settlement.keys():
-            self.logger.info("Creating 'meta' key for %s" % self)
+            self.logger.info("Creating 'meta' key for %s", self)
             self.settlement["meta"] = {}
-            for meta_key in ["timeline_version", "monsters_version","expansions_version"]:
+            for meta_key in [
+                "timeline_version", "monsters_version","expansions_version"
+            ]:
                 if meta_key in self.settlement:
                     self.settlement["meta"][meta_key] = self.settlement[meta_key]
                     del self.settlement[meta_key]
-                    self.logger.info("Moved meta key '%s' to settlement 'meta' dict for %s" % (meta_key,self))
+                    msg = "Moved meta key '%s' to settlement 'meta' dict for %s"
+                    self.logger.info(msg, meta_key, self)
             self.perform_save = True
 
         if not "admins" in self.settlement.keys():
-            self.logger.info("Creating 'admins' key for %s" % (self))
+            self.logger.info("Creating 'admins' key for %s", self)
             creator = utils.mdb.users.find_one(
                 {"_id": self.settlement["created_by"]}
             )
@@ -4584,7 +4587,8 @@ class Settlement(UserAsset):
             elif i == "jack_o'_lantern":
                 self.settlement['storage'].remove(i)
                 self.settlement['storage'].insert(item_index, 'jack_o_lantern')
-                self.logger.warning("%s BUG FIX: changed %s to 'jack_o_lantern'" % (self,i))
+                warn = "%s BUG FIX: changed %s to 'jack_o_lantern'"
+                self.logger.warning(warn, self, i)
                 self.perform_save = True
 
         # 2018-03-20 - missing timeline bug

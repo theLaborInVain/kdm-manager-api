@@ -132,6 +132,38 @@ white_box_2018 = {
         ],
     },
 
+    # white speaker 2018
+    'bloodskin': {
+        'expansion': 'white_speaker_2018',
+        'type': 'rare_gear',
+        'name': 'Bloodskin',
+        'keywords': ['item','consumable','other'],
+        'affinities': {'top': 'green','bottom': 'green'},
+        'desc': (
+            'When you <b>depart</b>, you fill the bloodskin and gain 2 '
+            'bleeding tokens. At the start of each of each of your acts, '
+            'remove 1 bleeding token.'
+        ),
+    },
+    'speaker_cult_knife': {
+        'expansion': 'white_speaker_2018',
+        'type': 'rare_gear',
+        'name': 'Speaker Cult Knife',
+        'keywords': ['weapon','melee','steel','dagger','fist & tooth'],
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 4,
+        'rules': ['Deadly','Sharp'],
+        'affinities': {'top': 'red', 'bottom': 'red'},
+        'affinity_bonus': {
+            'desc': (
+                'While <b>insane</b>, and not wearing armor or accessories, '
+                'gain +2 evasion, +2 strength.'
+            ),
+            'requires': {'puzzle': {'red': 2}},
+        },
+    },
+
 }
 
 white_box_2019 = {

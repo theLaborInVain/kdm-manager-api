@@ -130,8 +130,7 @@ def after_request(response):
 @API.errorhandler(404)
 def four_oh_four(e):
     """ Default 404 for the API, which gets a lot of bogus endpoint spam. """
-
-    return utils.http_404
+    return utils.HTTP_404
 
 
 @API.errorhandler(werkzeug.exceptions.MethodNotAllowed)

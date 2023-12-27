@@ -7,7 +7,6 @@
 
 # KD:M API imports
 from app import utils
-from app.assets import monsters
 
 
 class KillboardAsset:

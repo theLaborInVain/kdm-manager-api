@@ -699,7 +699,6 @@ http_402 = flask.Response(
     status=402
 )
 http_403 = flask.Response(response="Unauthorized!", status=403)
-http_404 = flask.Response(response="Resource not found", status=404)
 HTTP_404 = flask.Response(response='Resource not found', status=404)
 http_405 = flask.Response(
     response="Method not allowed (did you mean to POST?)",

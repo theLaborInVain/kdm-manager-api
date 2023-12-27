@@ -68,7 +68,7 @@ def blog_content(view, asset):
     try:
         flask.render_template('blog/' + view + '.html')
     except jinja2.exceptions.TemplateNotFound:
-        return utils.http_404
+        return utils.HTTP_404
 
     flask.request.view = view
     flask.request.asset = asset
@@ -289,7 +289,6 @@ def lookup_asset(asset_type):
 @crossdomain(origin=['*'])
 def get_random_names(count):
     """ Rapid-fire random name generator for FIRST names. """
-    names_object = names.Assets()
     return flask.Response(
         response=json.dumps(
             names.get_random_names(int(count)),
@@ -303,7 +302,6 @@ def get_random_names(count):
 @crossdomain(origin=['*'])
 def get_random_surnames(count):
     """ Rapid-fire random name generator for LAST names. """
-    names_object = names.Assets()
     return flask.Response(
         response=json.dumps(
             names.get_random_surnames(int(count)),

@@ -256,7 +256,11 @@ ability = {
         'excluded': ['stalwart','prepared'],
     },
     'metal_maw': {
-        '4desc': 'Your Fist & Tooth gains <b>Sharp</b>. (Add 1d10 strength to each wound attempt using this gear. This d10 is not a wound roll, and cannot cause critical wounds.)',
+        'desc': (
+            'Your Fist & Tooth gains <b>Sharp</b>. (Add 1d10 strength to each '
+            'wound attempt using this gear. This d10 is not a wound roll, and '
+            'cannot cause critical wounds.)'
+        ),
         'name': 'Metal Maw',
         'type': 'ability'
     },
@@ -900,7 +904,7 @@ expansion_ai = {
         'type': 'ability',
     },
 
-    # white box
+    # pin-ups of death
     'gender_swap': {
         'desc': (
             'You own the <b>Belt of Gender Swap</b>, it will always take one '
@@ -915,12 +919,22 @@ expansion_ai = {
         'type': 'curse'
     },
 
-    # winter solstice lucy
+    # winter solstice lucy 2022
     'bald': {
-        'desc': 'You fidget too much.',
         'name': 'Bald',
         'expansion': 'winter_solstice_lucy',
         'type': 'ability',
+        'desc': 'You fidget too much.',
+    },
+
+    # cockroach queen 2023
+    'myopic_fighter': {
+        'name': 'Myopic Fighter',
+        'expansion': 'cockroach_queen',
+        'type': 'ability',
+        'desc': (
+            'Gain +2 accuracy. You may only attack with daggers or katars.'
+        ),
     },
 
 }

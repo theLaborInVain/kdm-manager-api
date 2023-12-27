@@ -62,6 +62,7 @@ class Monster():
     ''' Objects of this class represent Kingdom Death: Monster. '''
 
     _asset_modules = [
+        campaigns,
         gear,
         monsters,
 #        names,

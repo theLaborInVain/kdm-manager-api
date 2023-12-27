@@ -1,6 +1,7 @@
 """
 
-    All known expansions are defined here.
+    Expansions that can't be organized easily into their own python module
+    live here.
 
 """
 
@@ -95,7 +96,7 @@ miscellaneous = {
             "Pinup Sci-fi White Speaker, "
             'Pinup Warrior of the Sun, '
             "Pinups of Death, " # 2016-03-25
-            'White Speaker.'    # 2018
+#            'White Speaker.'    # 2018
         ),
         'help': [
             {

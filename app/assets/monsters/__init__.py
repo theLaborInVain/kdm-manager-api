@@ -15,6 +15,9 @@ from .definitions import *
 
 
 class Assets(Collection):
+    ''' Initializes a collection of monster assets. This collection has a couple
+    of custom methods related to being able to get an asset from a name string
+    (instead of a handle.'''
 
     def __init__(self, *args, **kwargs):
         """ Initialize the asset collection object. """
@@ -33,19 +36,19 @@ class Assets(Collection):
         Otherwise, we set 'levels' = 3 and go about our business.
         """
 
-        for m in self.assets.keys():
+        for m_handle in self.assets.keys():
 
-            m_dict = self.assets[m]
+            m_dict = self.assets[m_handle]
 
             if "levels" in m_dict.keys():
                 pass
             elif "unique" in m_dict.keys() and m_dict["unique"]:
-                self.assets[m]["levels"] = 0
+                self.assets[m_handle]["levels"] = 0
             else:
-                self.assets[m]["levels"] = 3
+                self.assets[m_handle]["levels"] = 3
 
 
-    def get_asset_from_name(self, name=None, decompose=True):
+    def get_asset_from_name(self, name=None):
         ''' Tries to return an asset dict based on 'name', a string. '''
         asset_handle = get_handle_from_name(name)
         return self.get_asset(handle=asset_handle)
@@ -79,16 +82,16 @@ class Monster(Asset):
 
         # pop out kwargs that aren't allows by the base class Asset definition
         self.name = kwargs.pop('name', None)
-        self.level = kwargs.pop('name', None)
+        self.level = kwargs.pop('level', None)
 
         # This is the last asset we allow to be set from name values and this
         #   is where we support that
-        if not 'handle' in kwargs and self.name is not None:
+        if 'handle' not in kwargs and self.name is not None:
             self.logger = utils.get_logger()    # because we haven't init'd yet
-            handle = get_handle_from_name()
-            self.logger.warn('GOT HANDLE: %s', handle)
+            kwargs['handle'] = get_handle_from_name()
+#            self.logger.warn('GOT HANDLE: %s', kwargs['handle'])
 
-        Asset.__init__(self, *args, handle=handle, **kwargs)
+        Asset.__init__(self, *args, **kwargs)
 
         # use name to try to set some attributes
         p_name, p_level, p_comment = split_name_level_comment(self.name)
@@ -147,7 +150,7 @@ def get_handle_from_name(raw_name=None, decompose=True):
 
     if "_" in raw_name:
         warn = "Name '%s' contains underscores. Names use whitespace."
-        raise utils.InvalidUsave(warn % raw_name)
+        raise utils.InvalidUsage(warn % raw_name)
 
 
     # if we're doing this, stage up some stuff:

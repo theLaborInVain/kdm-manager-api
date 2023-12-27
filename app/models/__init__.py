@@ -11,8 +11,6 @@
 """
 
 # standard lib imports
-from bson import json_util
-from bson.objectid import ObjectId
 from collections import OrderedDict
 from copy import copy, deepcopy
 from datetime import datetime, timedelta
@@ -21,11 +19,13 @@ import importlib
 import inspect
 import json
 import os
-from user_agents import parse as ua_parse
 import random
 
 # third party imports
+from bson import json_util
+from bson.objectid import ObjectId
 import flask
+from user_agents import parse as ua_parse
 import werkzeug
 
 # local imports
@@ -111,35 +111,3 @@ def get_user_asset(collection=None, asset_id=None):
         "Collection '%s' does not exist!" % collection,
         status_code=422
     )
-
-
-
-
-#
-#   Exception classes!
-#
-
-class AssetMigrationError(Exception):
-    """ Handler for asset migration/conversion errors. """
-
-    def __init__(self, message="An error occurred while migrating this asset!"):
-        self.logger = utils.get_logger()
-        self.logger.exception(message)
-        Exception.__init__(self, message)
-
-class AssetInitError(Exception):
-    """ Handler for asset-based errors. """
-
-    def __init__(self, message="An error occurred while loading this asset!"):
-        self.logger = utils.get_logger()
-        self.logger.exception(message)
-        Exception.__init__(self, message)
-
-class AssetLoadError(Exception):
-    """ Handler for asset-based errors. """
-
-    def __init__(self, message="Asset could not be retrieved from mdb!"):
-        self.logger = utils.get_logger()
-        self.logger.exception(message)
-        Exception.__init__(self, message)
-

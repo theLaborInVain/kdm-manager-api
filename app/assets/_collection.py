@@ -487,6 +487,16 @@ class Collection():
         """ Return an asset dict based on a handle. Return None if the handle
         cannot be retrieved. """
 
+        # sanity check the incoming handle; the next time you see this, change
+        #   this from logging a warning to throwing an exception
+        if len(handle.split(' ')) != 1:
+            warn = (
+                "Attempting to initialize %s asset from handle '%s' which does "
+                "not appear to be an asset handle!"
+            )
+            self.logger.warning(warn, self.__module__, handle)
+
+        # grab the asset
         asset = copy(self.assets.get(handle, None))     # return a copy
 
         # if the asset is still None, we want to raise an expception
@@ -495,9 +505,9 @@ class Collection():
             calframe = inspect.getouterframes(curframe, 2)
             caller_function = calframe[1][3]
             msg = (
-                "%s() -> get_asset() "
+                "%s %s() -> get_asset() "
                 "The handle '%s' could not be found in %s!"
-            ) % (caller_function, handle, self.get_handles() )
+            ) % (self.__module__, caller_function, handle, self.get_handles() )
             self.logger.error(msg)
             raise utils.InvalidUsage(msg, status_code=500)
 
@@ -710,7 +720,7 @@ class Collection():
             asset_dict = self.get_asset(a_handle)
 
         if asset_dict is None:
-            return utils.http_404
+            return utils.HTTP_404
 
         return flask.Response(
             response=json.dumps(asset_dict, default=json_util.default),
