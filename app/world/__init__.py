@@ -1006,17 +1006,22 @@ class World(object):
         """ Create the killboard. Return a blank dict if there's nothing in the
         MDB to show, e.g. if it's a freshly initialized db. """
 
-        # get all records, initialize them to correct/normalize
-        all_kills = utils.mdb.killboard.find()
-        for killed in all_kills:
-            kb_object = Killboard(
-                _id=killed['_id'],
-                monsters_collection_obj = API.kdm.collections.monsters
+        killboard_objects = []
+        for killed in utils.mdb.killboard.find():
+            killboard_objects.append(
+                Killboard(
+                    _id=killed['_id'],
+                    monsters_collection_obj = API.kdm.collections.monsters
+                )
             )
 
         # return an empty dict if there's nothing on the board
-        if all_kills.count() == 0:
+        killboard_count = len(killboard_objects)
+        if killboard_count == 0:
+            self.logger.warning('Killboard has no kills!')
             return {}
+
+
 
         #
         #   First, build a list of all possible monster types; we'll use that
@@ -1047,11 +1052,12 @@ class World(object):
         if self.query_debug:
             self.logger.debug('Initialized killboard: %s', killboard)
 
-        # iterate through the 'all_kills' query results, build the board
-        for killed in all_kills:
-            if killed.get('type', None) is None:
-                killed = self._killboard_type_fix(killed)
-            killboard[killed["type"]][killed["handle"]]["count"] += 1
+        # iterate through the 'all_kills' query results, set the counts
+        index_lookup = {}
+        for killed in killboard_objects:
+            killed_handle = killed.monster_asset['handle']
+            killed_type = killed.monster_asset['sub_type']
+            killboard[killed_type][killed_handle]["count"] += 1
 
         for type in list(killboard.keys()):
             sort_order_dict = {}
