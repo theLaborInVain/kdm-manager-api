@@ -1169,7 +1169,7 @@ class Settlement(UserAsset):
             'created_on': datetime.now(),
             'handle': monst_obj.handle,
             'name': monst_obj.name,
-            'type': monst_obj.type,
+            'type': monst_obj.asset.get('type', None),
             'raw_name': monster_string,
         }
         for a in ['comment', 'level']:
@@ -1185,7 +1185,7 @@ class Settlement(UserAsset):
             msg % (
                 flask.request.User,
                 monster_string,
-                monst_obj.type,
+                monst_obj.asset.get('type', None),
                 self.get_current_ly()
             )
         )
