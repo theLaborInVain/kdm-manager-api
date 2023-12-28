@@ -16,6 +16,7 @@ from .echoes_of_death import echoes_of_death
 from .expansions_of_death_1 import expansions_of_death_1
 from .gamblers_chest import gamblers_chest
 from .white_box import (
+    white_box_2012,
     white_box_2016,
     white_box_2017,
     white_box_2018,

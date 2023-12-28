@@ -8,6 +8,18 @@ from datetime import datetime
 from app import API
 TIMEZONE = API.config['TIMEZONE']
 
+white_box_2012 = {
+
+    'holiday_white_speaker_nico': {
+        'released': datetime(2012, 7, 1, 12, tzinfo=TIMEZONE),
+        'name': 'Holiday White Speaker Nico',
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+}
+
+
 white_box_2016 = {
     'swashbuckler': {
         'name': 'Swashbuckler',

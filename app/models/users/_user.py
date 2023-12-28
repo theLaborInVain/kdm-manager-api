@@ -260,9 +260,10 @@ class User(UserAsset):
         ).hexdigest()
 
         # count user assets created by the user
-        output["user"]["settlements_created"] = utils.mdb.settlements.find(
-            {'created_by': self.user['_id'], 'removed': {'$exists': False}}
-        ).count()
+        output['user']['settlements_created'] = self.get_settlements(
+            qualifier = 'created_by',
+            return_type = int,
+        )
         output["user"]["survivors_created"] = utils.mdb.survivors.find(
             {'created_by': self.user['_id']}
         ).count()
@@ -276,10 +277,12 @@ class User(UserAsset):
             output["dashboard"] = {}
             output["dashboard"]["friends"] = self.get_friends(return_type=list)
             output["dashboard"]["campaigns"] = self.get_settlements(
-                return_type='list_of_dicts', qualifier='player'
+                qualifier='player',
+                return_type='list_of_dicts',
             )
             output["dashboard"]["settlements"] = self.get_settlements(
-                return_type='list_of_dicts', qualifier='player'
+                qualifier='player',
+                return_type='list_of_dicts',
             )
 
         # punch the user up if we're returning to the admin panel
@@ -296,13 +299,16 @@ class User(UserAsset):
                 return_type=int
             )
             output["user"]["survivors_owned"] = self.get_survivors(
-                qualifier="owner", return_type=int
+                qualifier="owner",
+                return_type=int
             )
             output["user"]["settlements_administered"] = self.get_settlements(
-                qualifier="admin", return_type=int
+                qualifier="admin",
+                return_type=int
             )
             output["user"]["campaigns_played"] = self.get_settlements(
-                qualifier="player", return_type=int
+                qualifier="player",
+                return_type=int
             )
 
         if return_type in ['admin_panel','create_new',dict]:
@@ -800,29 +806,52 @@ class User(UserAsset):
 
 
     def get_settlements(self, qualifier=None, return_type=None):
-        """ By default, this returns all settlements created by the user. Use
-        the qualifiers thus:
+        """ Returns settlements relevant to a user according to the 'qualifier'
+        kwarg, which can be any of the following:
 
-            'player' - returns all settlements where the user is a player or
-                admin or whatever. This casts the widest possible net.
-            'admin' - returns only the settlements where the user is an admin
-                but is NOT the creator of the settlement.
+            None            returns all that have not been removed.
+            'created_by'    returns settlements created by the user.
+            'player'        returns all settlements where the user is a player
+                            or admin. This casts the widest possible net.
+            'admin'         returns only the settlements where the user is an
+                            admin but is NOT the creator of the settlement.
 
         """
 
+        # sanity check the 'qualifier' kwarg
+        if qualifier not in [
+            None, 'created_by', 'player', 'admin'
+        ]:
+            err = "'%s' is not a valid qualifier for this method!" % qualifier
+            raise AttributeError(err)
+
+
+        # no qualifier
         if qualifier is None:
-            settlements = utils.mdb.settlements.find({"$or": [
-                {"created_by": self.user["_id"], "removed": {"$exists": False}, },
-                {"admins": {"$in": [self.user["login"], ]}, "removed": {"$exists": False}, },
-            ]})
-        elif qualifier == 'created_by':
+            settlements = utils.mdb.settlements.find({
+                "$or": [
+                    {
+                        "created_by": self.user["_id"],
+                        "removed": {"$exists": False},
+                    },
+                    {
+                        "admins": {"$in": [self.user["login"], ]},
+                        "removed": {"$exists": False},
+                    },
+                ]
+            })
+
+        # created by
+        if qualifier == 'created_by':
             settlements = utils.mdb.settlements.find(
                 {
                     'created_by': self.user['_id'],
                     'removed': {'$exists': False}
                 }
             )
-        elif qualifier == "player":
+
+        # player
+        if qualifier == "player":
             settlement_id_set = set()
 
             survivors = self.get_survivors(qualifier="player")
@@ -838,14 +867,14 @@ class User(UserAsset):
                     "removed": {"$exists": False}
                 }
             )
-        elif qualifier == "admin":
+
+        # admin
+        if qualifier == "admin":
             settlements = utils.mdb.settlements.find({
                 "admins": {"$in": [self.user["login"]]},
                 "created_by": {"$ne": self.user["_id"]},
                 "removed": {"$exists": False},
             })
-        else:
-            raise Exception("'%s' is not a valid qualifier for this method!" % qualifier)
 
 
         # change settlements to a list so we can do python post-process
@@ -913,9 +942,9 @@ class User(UserAsset):
                     S = Settlement(_id=s["_id"], normalize_on_init=False)
                     sheet = json.loads(S.serialize('dashboard'))
                     output.append(sheet)
-                except Exception as e:
+                except Exception as exception:
                     self.logger.error("Could not serialize %s", s)
-                    self.logger.exception(e)
+                    self.logger.exception(exception)
                     raise
 
             return output
@@ -1128,5 +1157,3 @@ class User(UserAsset):
             )
 
         return super().request_response(action)
-
-# ~fin

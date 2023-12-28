@@ -9,18 +9,6 @@ from datetime import datetime
 from app import API
 TIMEZONE = API.config['TIMEZONE']
 
-white_box = {
-
-    'holiday_white_speaker_nico': {
-        'released': datetime(2012, 7, 1, 12, tzinfo=TIMEZONE),
-        'name': 'Holiday White Speaker Nico',
-        'ui': {'pretty_category': 'White Box'},
-        'subscriber_level': 2,
-    },
-
-}
-
-
 miscellaneous = {
 
     # anything that's not part of a product line or group of related things
