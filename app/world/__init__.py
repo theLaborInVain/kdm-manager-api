@@ -638,7 +638,8 @@ class World(object):
                 {
                     '$group': {
                         '_id': '$' + attrib,  # Group by the 'attrib' field
-                        'count': {'$sum': 1}  # Increment count for each group
+                        'count': {'$sum': 1},  # Increment count for each group
+                        attrib: {'$first': '$name'},
                     }
                 },
                 {
