@@ -630,14 +630,23 @@ class World(object):
             self.logger.debug("MDB query:   %s" % query)
 
         if asset_type == str:
-            results = utils.mdb[collection].group(
-                [attrib], query, {"count": 0}, "function(o, p){p.count++}"
-            )
 
-            sorted_list = sorted(results, key=lambda k: k["count"], reverse=True)
-            for i in sorted_list:
-                i["value"] = i[attrib]
-                i["count"] = int(i["count"])
+            pipeline = [
+                {
+                    '$match': query  # Add a $match stage if necessary based on your existing 'query'
+                },
+                {
+                    '$group': {
+                        '_id': '$' + attrib,  # Group by the 'attrib' field
+                        'count': {'$sum': 1}  # Increment count for each group
+                    }
+                },
+                {
+                    '$sort': {'count': -1}  # Sort by 'count' field in descending order
+                }
+            ]
+
+            sorted_list = list(utils.mdb[collection].aggregate(pipeline))
 
         elif asset_type == list:
             sample_set = self.get_eligible_documents(collection, attrib)
@@ -1223,12 +1232,16 @@ class World(object):
             )
 
             if c_dict is not None:
-                c_name = c_dict['name']
+                c_name = c_dict.get('name', None)
 
-            if c_name in list(popularity_contest.keys()):
-                popularity_contest[c_name] += total
+                if c_name in list(popularity_contest.keys()):
+                    popularity_contest[c_name] += total
+                else:
+                    popularity_contest[c_name] = total
             else:
-                popularity_contest[c_name] = total
+                if self.query_debug:
+                    warn = "Ignoring bogus campaign handle '%s"
+                    self.logger.debug(warn, c_handle)
 
         return popularity_contest
 
