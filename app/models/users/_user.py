@@ -48,7 +48,22 @@ class User(UserAsset):
     DATA_MODEL.add('subscriber', dict, {'level': 0})
     DATA_MODEL.add('verified_email', bool)
     DATA_MODEL.add('email_verification_code', str)
-    DATA_MODEL.add('favorite_survivors', str)
+    DATA_MODEL.add('favorite_survivors', list)
+
+    # optional/runtime attributes
+    DATA_MODEL.add('current_settlement', ObjectId, required=False)
+    DATA_MODEL.add('latest_action', str, required=False)
+    DATA_MODEL.add('latest_activity', datetime, required=False)
+    DATA_MODEL.add('latest_authentication', datetime, required=False)
+    DATA_MODEL.add('latest_user_agent', str, required=False)
+    DATA_MODEL.add('latest_api_client', str, required=False)
+    DATA_MODEL.add('activity_log', list, required=False)
+
+    # legacy kdm-manager.com
+    DATA_MODEL.add('current_session', ObjectId, required=False)
+
+    # special
+    DATA_MODEL.add('admin', bool, required=False)
 
 
     def __repr__(self):
@@ -61,17 +76,18 @@ class User(UserAsset):
 
 
     def __init__(self, *args, **kwargs):
+        """ Custom __init__ for user objects, we are subject to special biz
+        logic for a few different things. """
+
         self.collection="users"
         UserAsset.__init__(self,  *args, **kwargs)
 
-        # JWT needs this
+        # JWT needs this; pylint sez: "that'll never make number one"
         self.id = str(self.user["_id"])
 
         # baseline/normalize
         self.perform_save = False
-        self.baseline()
-        self.bug_fixes()
-        self.normalize()
+        self._normalize()
 
         # check temporary users for expiration
         if (
@@ -94,6 +110,37 @@ class User(UserAsset):
                 activity_string = flask.request.path,
                 ua_string = flask.request.user_agent.string
             )
+
+
+    def _normalize(self):
+        """ Coerce the user record into compliance with the data model. """
+
+        # 'patron' becomes 'subscriber' in the 1.0.0 release
+        if 'patron' in self.user.keys():
+            self.user['subscriber'] = self.user['patron']
+            del self.user['patron']
+            self.logger.warning("%s Normalized 'patron' to 'subscriber'!", self)
+            self.perform_save = True
+
+        if isinstance(self.user['subscriber']['level'], str):
+            warn = "%s Subscriber 'level' is str type! Normalizing to int..."
+            self.logger.warning(warn, self)
+            self.user['subscriber']['level'] = int(
+                self.user['subscriber']['level']
+            )
+            self.perform_save = True
+
+	# inflict/apply the data model
+        corrected_record = self.DATA_MODEL.apply(self.user)
+        if corrected_record != self.user:
+            self.logger.warning('[%s] data model corrections applied!', self)
+            self.user = corrected_record
+            self.perform_save = True
+
+        if self.perform_save:
+            msg = "%s user modified during normalization! Saving changes..."
+            self.logger.info(msg, self)
+            self.save()
 
 
     def load(self):
@@ -191,13 +238,15 @@ class User(UserAsset):
 #        self.logger.debug(msg % (self, len(assets_dict["survivors"])))
 
         # now we have to go to GridFS to get avatars
-        for s in assets_dict["survivors"]:
-            if "avatar" in s.keys():
+        for s_rec in assets_dict["survivors"]:
+            if "avatar" in s_rec.keys():
                 try:
-                    img = gridfs.GridFS(utils.mdb).get(ObjectId(s["avatar"]))
+                    img = gridfs.GridFS(utils.mdb).get(
+                        ObjectId(s_rec["avatar"])
+                    )
                     img_dict = {
                         "blob": img.read(),
-                        "_id": ObjectId(s["avatar"]),
+                        "_id": ObjectId(s_rec["avatar"]),
                         "content_type": img.content_type,
                         "created_by": img.created_by,
                         "created_on": img.created_on,
@@ -205,7 +254,7 @@ class User(UserAsset):
                     assets_dict["avatars"].append(img_dict)
                 except gridfs.errors.NoFile:
                     err = "Could not retrieve avatar for survivor %s"
-                    self.logger.error(err, s["_id"])
+                    self.logger.error(err, s_rec["_id"])
 
         for key in assets_dict:
             msg = "%s Added %s '%s' assets to user export..."
@@ -317,7 +366,9 @@ class User(UserAsset):
         return json.dumps(output, default=json_util.default)
 
 
-    # email verification
+    #
+    # email verification feature
+    #
 
     @web_method
     def set_verified_email(self, new_value=None, save=True):
@@ -450,6 +501,10 @@ class User(UserAsset):
         self.save()
 
 
+    #
+    #   latest: action, activity, authentication, etc.
+    #
+
     def set_latest_action(self, activity_string=None, ua_string=None,
                             save=True):
         """ Updates the user's 'latest_activity' string and saves the user back
@@ -480,6 +535,19 @@ class User(UserAsset):
             self.save(verbose=True)
 
 
+    def get_latest_activity(self, return_type=None):
+        """ Returns the user's latest activity in a number of ways. Leave the
+        'return_type' kwarg blank for a datetime stamp.
+        """
+
+        latest = self.user["latest_activity"]
+
+        if return_type is not None:
+            return utils.get_time_elapsed_since(latest, return_type)
+
+        return latest
+
+
     def set_latest_authentication(self, save=True):
         """ Sets the self.user['latest_authentication'] value to datetime.now().
         Saves, optionally. """
@@ -488,6 +556,10 @@ class User(UserAsset):
         if save:
             self.save(verbose=False)
 
+
+    #
+    #   communication
+    #
 
     @web_method
     def set_notifications(self):
@@ -536,6 +608,10 @@ class User(UserAsset):
         self.save()
 
 
+    #
+    #   password recovery
+    #
+
     def set_recovery_code(self):
         """ Sets self.user['recovery_code'] to a random value. Returns the code
         when it is called. """
@@ -551,55 +627,6 @@ class User(UserAsset):
         self.save()
 
         return self.user["recovery_code"]
-
-
-    @web_method
-    @admin_only
-    def set_subscriber_level(self, level=None):
-        """ Supersedes set_patron_attributes() in the 1.0.0 release. Sets the
-        subscriber level, i.e. self.user['subscriber']['level'] value, which, in
-        turn, sets the self.user['subscriber']['desc'] value using the
-        subscribers block of settings.cfg.
-        """
-
-        # support updates from params, but check if we're an admin
-        if hasattr(self, 'params') and 'level' in self.params:
-            level = self.params['level']
-            if flask.request.User.user.get('admin', None) is None:
-                raise utils.InvalidUsage('Only API admins can do this!')
-
-        # sanity check first
-        if level is None:
-            raise TypeError("set_subscriber_level() requires an int!")
-
-        if self.user['subscriber']['level'] == level:
-            self.logger.warning(
-                '%s Subscriber level is already %s. Ignoring...',
-                self,
-                self.user['subscriber']['level'],
-            )
-            return True
-
-        # now make the change
-        if self.user['subscriber'].get('created_on', None) is None:
-            self.user['subscriber']['created_on'] = datetime.now(tzlocal())
-
-        self.user['subscriber']['level'] = level
-        self.user['subscriber']['desc'] = utils.settings.get(
-            'subscribers',
-            'level_%s' % level
-        )
-        self.user['subscriber']['updated_on'] = datetime.now(tzlocal())
-
-        info = '%s subscriber level set to %s (admin: %s)'
-
-        # September 2021: automatically set email to verified
-#        self.set_verified_email(new_value=True, save=False)
-
-        # log and save
-        self.logger.info(info, self, level, self.user['login'])
-        self.save()
-
 
 
     @web_method
@@ -664,7 +691,6 @@ class User(UserAsset):
                 [self.rm_expansion_from_collection(exp) for exp in add_list]
 
 
-
     @web_method
     def add_expansion_to_collection(self, handle=None):
         """ Adds an expansion handle to self.user['collection']['expansions']
@@ -712,6 +738,33 @@ class User(UserAsset):
     #   query/assess methods
     #
 
+    @web_method
+    def can_create_settlement(self, raise_on_false=False):
+        """ Checks a free user's settlement count versus the limit we define
+        in config.py; returns False if they're at their limit.
+
+        Use the 'raise_on_false' kwarg to have this raise and return a 405.
+        """
+
+        # return True for subscribers
+        if self.user['subscriber']['level'] > 0:
+            return True
+
+        free_user_max = API.config['NONSUBSCRIBER_SETTLEMENT_LIMIT']
+        user_created = self.get_settlements(
+            qualifier = 'created_by',
+            return_type = int
+        )
+
+        if user_created >= free_user_max:
+            if raise_on_false:
+                msg = 'Non-subscribers may only create %s settlements!'
+                raise utils.InvalidUsage(msg % free_user_max, status_code=405)
+            return False
+
+        return True
+
+
     def is_active(self):
         """ Refactored in February 2021 to no longer reference the legacy
         webapp's 'sessions' collection in MDB. Now, we use activity in the API
@@ -736,7 +789,7 @@ class User(UserAsset):
 
 
     #
-    #   get methods
+    #   get methods re: other assets
     #
 
     def get_age(self):
@@ -755,9 +808,11 @@ class User(UserAsset):
 
         friends = None
         if len(campaigns) > 0:
-            for s in campaigns:
-                friend_ids.add(s["created_by"])
-                c_survivors = utils.mdb.survivors.find({"settlement": s["_id"]})
+            for settlement in campaigns:
+                friend_ids.add(settlement["created_by"])
+                c_survivors = utils.mdb.survivors.find(
+                    {"settlement": settlement["_id"]}
+                )
                 for survivor in c_survivors:
                     friend_ids.add(survivor["created_by"])
                     friend_emails.add(survivor["email"])
@@ -792,24 +847,12 @@ class User(UserAsset):
         return friends
 
 
-    def get_latest_activity(self, return_type=None):
-        """ Returns the user's latest activity in a number of ways. Leave the
-        'return_type' kwarg blank for a datetime stamp.
-        """
-
-        latest = self.user["latest_activity"]
-
-        if return_type is not None:
-            return utils.get_time_elapsed_since(latest, return_type)
-
-        return latest
-
-
     def get_settlements(self, qualifier=None, return_type=None):
         """ Returns settlements relevant to a user according to the 'qualifier'
         kwarg, which can be any of the following:
 
-            None            returns all that have not been removed.
+            None            returns settlements created by the user or where the
+                            user is an admin.
             'created_by'    returns settlements created by the user.
             'player'        returns all settlements where the user is a player
                             or admin. This casts the widest possible net.
@@ -818,28 +861,19 @@ class User(UserAsset):
 
         """
 
-        # sanity check the 'qualifier' kwarg
-        if qualifier not in [
-            None, 'created_by', 'player', 'admin'
-        ]:
-            err = "'%s' is not a valid qualifier for this method!" % qualifier
-            raise AttributeError(err)
-
-
-        # no qualifier
-        if qualifier is None:
-            settlements = utils.mdb.settlements.find({
-                "$or": [
-                    {
-                        "created_by": self.user["_id"],
-                        "removed": {"$exists": False},
-                    },
-                    {
-                        "admins": {"$in": [self.user["login"], ]},
-                        "removed": {"$exists": False},
-                    },
-                ]
-            })
+        # default / qualifer == None
+        settlements = utils.mdb.settlements.find({
+            "$or": [
+                {
+                    "created_by": self.user["_id"],
+                    "removed": {"$exists": False},
+                },
+                {
+                    "admins": {"$in": [self.user["login"], ]},
+                    "removed": {"$exists": False},
+                },
+            ]
+        })
 
         # created by
         if qualifier == 'created_by':
@@ -855,12 +889,12 @@ class User(UserAsset):
             settlement_id_set = set()
 
             survivors = self.get_survivors(qualifier="player")
-            for s in survivors:
-                settlement_id_set.add(s["settlement"])
+            for survivor in survivors:
+                settlement_id_set.add(survivor["settlement"])
 
             settlements_owned = self.get_settlements()
-            for s in settlements_owned:
-                settlement_id_set.add(s["_id"])
+            for settlement in settlements_owned:
+                settlement_id_set.add(settlement["_id"])
             settlements = utils.mdb.settlements.find(
                 {
                     "_id": {"$in": list(settlement_id_set)},
@@ -880,50 +914,10 @@ class User(UserAsset):
         # change settlements to a list so we can do python post-process
         settlements = list(settlements)
 
-
 	# settlement age support/freemium wall
-        # first, see if we even need to be here
-        # MOVE ALL OF THIS OUT OF THIS METHOD ASAP
-        if self.get_subscriber_level() < 1:
-            for s in settlements:
+        settlements = self._enforce_free_user_settlement_age_max(settlements)
 
-                # get asset age
-                created_on = API.config['TIMEZONE'].localize(s['created_on'])
-                asset_age = datetime.now(tzlocal()) - created_on
-
-                max_age = API.config['FREE_USER_SETTLEMENT_AGE_MAX']
-
-                older_than_cutoff = (asset_age.days > max_age)
-                if older_than_cutoff and self.user['_id'] == s['created_by']:
-                    warn = "%s settlement '%s' is more than %s days old!"
-                    self.logger.warning(warn, self, s['name'], max_age)
-                    msg = utils.html_file_to_template(
-                        'auto_remove_settlement.html'
-                    )
-
-                    # in case the admin panel hits it before the actual user
-                    if not hasattr(flask.request, 'User'):
-                        flask.request.User = utils.noUser()
-
-                    msg = msg.safe_substitute(
-                        settlement_name=s['name'],
-                        settlement_age = asset_age.days,
-                        settlement_dict = s,
-                        user_email = flask.request.User.login,
-                        user_id = flask.request.User._id,
-                    )
-                    e = utils.mailSession()
-                    e.send(
-                        subject="Settlement auto-remove! [%s]" % socket.getfqdn(),
-                        html_msg=msg
-                    )
-                    s['removed'] = datetime.now(tzlocal())
-                    utils.mdb.settlements.save(s)
-                    settlements.remove(s)
-
-        #
-        # now start handling returns
-        #
+        # handle 'return_type' or do default return
 
         if return_type == int:
             return len(settlements)
@@ -935,48 +929,69 @@ class User(UserAsset):
         if return_type == 'list_of_dicts':
             return settlements
 
-        if return_type == "asset_list":
-            output = []
-            for s in settlements:
-                try:
-                    S = Settlement(_id=s["_id"], normalize_on_init=False)
-                    sheet = json.loads(S.serialize('dashboard'))
-                    output.append(sheet)
-                except Exception as exception:
-                    self.logger.error("Could not serialize %s", s)
-                    self.logger.exception(exception)
-                    raise
-
-            return output
-
         return settlements
 
 
-    def get_subscriber_attributes(self):
-        """ Returns a dictionary of subscriber information. """
+    def _enforce_free_user_settlement_age_max(self, settlements=None):
+        """ Checks 'settlements', a list of settlement records and removes any
+        non-subscriber settlements that have aged beyond the age max. """
 
-        self.user['subscriber'].update(
-            {
-                'age': utils.get_time_elapsed_since(
-                    self.user['subscriber'].get(
-                        'created_on',
-                        datetime.now(tzlocal())
-                    ),
-                'age'
+        if self.get_subscriber_level() > 0:
+            return settlements
+
+        # if we're still here, process the list
+
+        msg = '%s Checking non-subscriber settlement list for age max...'
+        self.logger.info(msg, self)
+
+        max_age = API.config['FREE_USER_SETTLEMENT_AGE_MAX']
+        for settlement in settlements:
+
+            # get asset age
+            created_on = API.config['TIMEZONE'].localize(
+                settlement['created_on']
+            )
+            asset_age = datetime.now(tzlocal()) - created_on
+
+            # determine if it's older than the cutoff
+            older_than_cutoff = (asset_age.days > max_age)
+
+            # if older, axe it
+            if (
+                older_than_cutoff and
+                self.user['_id'] == settlement['created_by']
+            ):
+                warn = "%s settlement '%s' is more than %s days old!"
+                self.logger.warning(warn, self, settlement['name'], max_age)
+                msg = utils.html_file_to_template(
+                    'auto_remove_settlement.html'
                 )
-            }
-        )
 
-        self.user['subscriber'].update(
-            {'level_handle': 'level_%s' % self.user['subscriber']['level']}
-        )
+                # in case the admin panel hits it before the actual user
+                if not hasattr(flask.request, 'User'):
+                    flask.request.User = utils.noUser()
 
-        return self.user['subscriber']
+                msg = msg.safe_substitute(
+                    settlement_name = settlement['name'],
+                    settlement_age = asset_age.days,
+                    settlement_dict = settlement,
+                    user_email = flask.request.User.login,
+                    user_id = flask.request.User._id,
+                )
+                email_session = utils.mailSession()
+                email_session.send(
+                    subject="Settlement auto-remove! [%s]" % socket.getfqdn(),
+                    html_msg=msg
+                )
 
+                # mark it removed; save it
+                settlement['removed'] = datetime.now(tzlocal())
+                utils.mdb.settlements.save(settlement)
 
-    def get_subscriber_level(self):
-        """ Returns the user's subscriber level as an int. """
-        return self.user['subscriber']['level']
+                # remove it from the incoming list
+                settlements.remove(settlement)
+
+        return settlements
 
 
     def get_survivors(self, qualifier=None, return_type=None):
@@ -1015,29 +1030,36 @@ class User(UserAsset):
         return survivors
 
 
-    @web_method
-    def can_create_settlement(self, raise_on_false=False):
-        """ Checks a free user's settlement count versus the limit we define
-        in config.py; returns False if they're at their limit.
 
-        Use the 'raise_on_false' kwarg to have this raise and return a 405.
-        """
+    #
+    #   subscriber methods
+    #
 
-        if self.user['subscriber']['level'] > 0:
-            return True
+    def get_subscriber_attributes(self):
+        """ Returns a dictionary of subscriber information. """
 
-        free_user_max = API.config['NONSUBSCRIBER_SETTLEMENT_LIMIT']
-        user_created = self.get_settlements(
-            qualifier = 'created_by',
-            return_type=int
+        self.user['subscriber'].update(
+            {
+                'age': utils.get_time_elapsed_since(
+                    self.user['subscriber'].get(
+                        'created_on',
+                        datetime.now(tzlocal())
+                    ),
+                'age'
+                )
+            }
         )
 
-        if user_created >= free_user_max:
-            if raise_on_false:
-                msg = 'Non-subscribers may only create %s settlements!'
-                raise utils.InvalidUsage(msg % free_user_max, status_code=405)
+        self.user['subscriber'].update(
+            {'level_handle': 'level_%s' % self.user['subscriber']['level']}
+        )
 
-        return False
+        return self.user['subscriber']
+
+
+    def get_subscriber_level(self):
+        """ Returns the user's subscriber level as an int. """
+        return self.user['subscriber']['level']
 
 
     def check_subscriber_expiration(self):
@@ -1065,75 +1087,55 @@ class User(UserAsset):
             self.set_subscriber_level(0)
 
 
-    #
-    #   baseline/normalize
-    #       these appear here in order. When we initialize a user, we go
-    #           1. baseline()
-    #           2. bug_Fixes()
-    #           3. normalize()
-    #
-
-    def baseline(self):
-        """ Baseline the user record to our data model. """
-
-        if 'collection' not in self.user.keys():
-            self.user['collection'] = {"expansions": [], }
-            self.logger.info(
-                "%s Baselined 'collection' key into user dict.", self
-            )
-            self.perform_save = True
-
-        if 'notifications' not in self.user.keys():
-            self.user['notifications'] = {}
-            self.logger.info(
-                "%s Baselined 'notifications' key into user dict.", self
-            )
-            self.perform_save = True
-
-        # create 'favorite_survivors' if it doesn't exist
-        if not isinstance(self.user.get('favorite_survivors', None), list):
-            self.user['favorite_survivors'] = []
-            self.perform_save = True
-
-
-    def bug_fixes(self):
-        """ Fix bugs! """
-
-
-    def normalize(self):
-        """ Force/coerce the user into compliance with our data model for users.
+    @web_method
+    @admin_only
+    def set_subscriber_level(self, level=None):
+        """ Supersedes set_patron_attributes() in the 1.0.0 release. Sets the
+        subscriber level, i.e. self.user['subscriber']['level'] value, which, in
+        turn, sets the self.user['subscriber']['desc'] value using the
+        subscribers block of settings.cfg.
         """
 
-        if 'preferences' not in self.user.keys():
-            self.user['preferences'] = {'preserve_sessions': False}
+        # support updates from params, but check if we're an admin
+        if hasattr(self, 'params') and 'level' in self.params:
+            level = self.params['level']
+            if flask.request.User.user.get('admin', None) is None:
+                raise utils.InvalidUsage('Only API admins can do this!')
+
+        # sanity check first
+        if level is None:
+            raise TypeError("set_subscriber_level() requires an int!")
+
+        if self.user['subscriber']['level'] == level:
             self.logger.warning(
-                "%s has no 'preferences' attrib! Normalizing...", self
+                '%s Subscriber level is already %s. Ignoring...',
+                self,
+                self.user['subscriber']['level'],
             )
-            self.perform_save = True
+            return True
 
-        # 'patron' becomes 'subscriber' in the 1.0.0 release
-        if 'patron' in self.user.keys():
-            self.user['subscriber'] = self.user['patron']
-            del self.user['patron']
-            self.logger.warning("%s Normalized 'patron' to 'subscriber'!", self)
-            self.perform_save = True
+        # now make the change
+        if self.user['subscriber'].get('created_on', None) is None:
+            self.user['subscriber']['created_on'] = datetime.now(tzlocal())
 
-        if 'subscriber' not in self.user.keys():
-            self.user['subscriber'] = {'level': 0}
-            self.logger.warning("%s Added 'subscriber' dict to user!", self)
-            self.perform_save = True
+        self.user['subscriber']['level'] = level
+        self.user['subscriber']['desc'] = utils.settings.get(
+            'subscribers',
+            'level_%s' % level
+        )
+        self.user['subscriber']['updated_on'] = datetime.now(tzlocal())
 
-        if isinstance(self.user['subscriber']['level'], str):
-            warn = "%s Subscriber 'level' is str type! Normalizing to int..."
-            self.logger.warning(warn, self)
-            self.user['subscriber']['level'] = int(
-                self.user['subscriber']['level']
-            )
-            self.perform_save = True
+        info = '%s subscriber level set to %s (admin: %s)'
 
-        if self.perform_save:
-            self.save()
+        # log and save
+        self.logger.info(info, self, level, self.user['login'])
+        self.save()
 
+
+
+    #
+    #   finale
+    #
 
     def request_response(self, action=None):
         """ Initializes params from the request and then responds to the

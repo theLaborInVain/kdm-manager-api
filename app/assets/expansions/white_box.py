@@ -355,7 +355,6 @@ white_box_2023 = {
 
     # mist raikin armor - 2023-06-12
 
-
     # cockroach queen - 2023-12-25
 
     'cockroach_queen':{

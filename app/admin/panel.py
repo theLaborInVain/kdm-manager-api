@@ -77,17 +77,48 @@ def get_user_data():
     about user agents, etc. """
 
     # first, do the user agent popularity contest, since that's simple
-    results = utils.mdb.users.group(
-        ['latest_user_agent'],
-        {'latest_user_agent': {'$exists': True}},
-        {"count": 0},
-        "function(o, p){p.count++}"
-    )
-    sorted_list = sorted(results, key=lambda k: k["count"], reverse=True)
-    for i in sorted_list:
-        i["value"] = i['latest_user_agent']
-        i["count"] = int(i["count"])
-    ua_data = sorted_list[:25]
+#    results = utils.mdb.users.group(
+#        ['latest_user_agent'],
+#        {'latest_user_agent': {'$exists': True}},
+#        {"count": 0},
+#        "function(o, p){p.count++}"
+#    )
+
+    pipeline = [
+        {
+            '$match': {
+                'latest_user_agent': {'$exists': True}
+            }
+        },
+        {
+            '$group': {
+                '_id': '$latest_user_agent',
+                'count': {'$sum': 1}
+            }
+        },
+        {
+            '$project': {
+                'latest_user_agent': '$_id',
+                'value': 'latest_user_agent',
+                'count': 1,
+                '_id': 0
+            }
+        },
+        {
+            '$sort': {
+               'count': -1  # Sort in descending order
+             }
+        },
+        {
+            '$limit': 25
+        }
+    ]
+    ua_data = list(utils.mdb.users.aggregate(pipeline))
+
+#    for i in results:
+#        i["value"] = i['latest_user_agent']
+#        i["count"] = int(i["count"])
+#    ua_data = results[:25]
 
 
     # next, get active/recent users
