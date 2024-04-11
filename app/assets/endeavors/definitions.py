@@ -616,14 +616,20 @@ expansions = {
     },
     'silk_refining_2': {
         'name': 'Build',
-        'desc': 'Spend 2 silk, 1 bone, and 1 organ to build the <b>Silk Mill</b> settlement location.',
+        'desc': (
+            'Spend 2 silk, 1 bone, and 1 organ to build the <b>Silk Mill</b> '
+            'settlement location.'
+        ),
         'cost': 1,
         'class': 'available_endeavors_build',
         'hide_if_location_exists': 'silk_mill',
     },
     'stoic_statue_worship_the_monster': {
         'name': 'Worship the monster',
-        'desc': '<b>Worship the monster.</b> You may not <b>depart</b> or endeavor again this settlement phase. Roll 1d10.',
+        'desc': (
+            '<b>Worship the monster.</b> You may not <b>depart</b> or endeavor '
+            'again this settlement phase. Roll 1d10.'
+        ),
         'cost': 1,
     },
     'subterranean_agriculture_0': {
@@ -671,6 +677,12 @@ expansions = {
             'Table</b> result (d100) this lantern year. They must reroll '
             'before performing the event.'
         ),
+        'cost': 1,
+    },
+
+    # skrelle
+    'skrelle_deep_root_massage': {
+        'name': 'Deep Root Massage',
         'cost': 1,
     },
 }

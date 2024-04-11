@@ -8,6 +8,92 @@ from datetime import datetime
 from app import API
 TIMEZONE = API.config['TIMEZONE']
 
+white_box_2024 = {
+
+    'gunborg': {
+        'name': 'Gunborg',
+        'released': datetime(2024,4,2,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+}
+
+white_box_2023 = {
+
+    'hellebore': {
+        'name': 'Hellebore - A Frozen Survivor',
+        'released': datetime(2023,1,31,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+    'death_crown_inheritor_aya': {
+        'name': 'Death Crown Inheritor Aya',
+        'released': datetime(2023,2,28,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'flair': {
+            'bgcolor': 'C55745',
+            'color': 'FFF'
+        },
+        'subscriber_level': 2,
+    },
+    'lunar_twilight_knight': {
+        'name': 'Lunar Twilight Knight',
+        'released': datetime(2023,2,28,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+    'vitanvox': {
+        'name': 'Vitanvox',
+        'released': datetime(2023,3,31,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+    'skrelle': {
+        'name': 'Skrelle',
+        'released': datetime(2023,3,31,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+    'gnostin_stonesmasher': {
+        'name': 'Gnostin Stonesmasher',
+        'released': datetime(2023,5,2,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+    'lolowen': {
+        'name': 'Lolowen',
+        'released': datetime(2023,5,2,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+    'mist_raikin_armor': {
+        'name': 'Mist - Raikin Armor',
+        'released': datetime(2023,6,12,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+    'lune': {
+        'name': 'Lune',
+        'released': datetime(2023,8,28,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+    'cockroach_queen':{
+        'name': 'Cockroach Queen',
+        'released': datetime(2023,12,25,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
+
+}
+
+
 white_box_2012 = {
 
     'holiday_white_speaker_nico': {
@@ -314,54 +400,3 @@ white_box_2022 = {
 
 }
 
-white_box_2023 = {
-
-    'hellebore': {
-        'name': 'Hellebore - A Frozen Survivor',
-        'released': datetime(2023,1,31,12, tzinfo=TIMEZONE),
-        'ui': {'pretty_category': 'White Box'},
-        'subscriber_level': 2,
-    },
-    'death_crown_inheritor_aya': {
-        'name': 'Death Crown Inheritor Aya',
-        'released': datetime(2023,2,28,12, tzinfo=TIMEZONE),
-        'ui': {'pretty_category': 'White Box'},
-        'flair': {
-            'bgcolor': 'C55745',
-            'color': 'FFF'
-        },
-        'subscriber_level': 2,
-    },
-    'lunar_twilight_knight': {
-        'name': 'Lunar Twilight Knight',
-        'released': datetime(2023,2,28,12, tzinfo=TIMEZONE),
-        'ui': {'pretty_category': 'White Box'},
-        'subscriber_level': 2,
-    },
-
-    # vitanvox - 2023-03-31
-    'vitanvox': {
-        'name': 'Vitanvox',
-        'released': datetime(2023,3,31,12, tzinfo=TIMEZONE),
-        'ui': {'pretty_category': 'White Box'},
-        'subscriber_level': 2,
-    },
-
-    # skrelle - 2023-03-31
-
-    # gnostin stonesmasher - 2023-05-02
-
-    # lolowen - 2023-05-02
-
-    # mist raikin armor - 2023-06-12
-
-    # cockroach queen - 2023-12-25
-
-    'cockroach_queen':{
-        'name': 'Cockroach Queen',
-        'released': datetime(2023,12,25,12, tzinfo=TIMEZONE),
-        'ui': {'pretty_category': 'White Box'},
-        'subscriber_level': 2,
-    },
-
-}

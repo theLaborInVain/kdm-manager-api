@@ -683,7 +683,14 @@ expansion = {
         "innovation_type": "home",
         "expansion": "dragon_king",
         "consequences": ["empire"],
-        "survivor_buff": """Newborn survivors inherit the following from their parents:<ul><li>The <font class="maroon_text">Oracle's Eye</font>, <font class="maroon_text">Iridescent Hide</font>, or <font class="maroon_text">Pristine</font> ability (choose 1)</li><li>1 <b>Surname</b></li><li>Half of one parent's weapon proficiency levels (rounded up)</li></ul>""",
+        "survivor_buff": (
+            'Newborn survivors inherit the following from their parents:'
+            """<ul><li>The <font class="maroon_text">Oracle's Eye</font>, """
+            '<font class="maroon_text">Iridescent Hide</font>, or '
+            '<font class="maroon_text">Pristine</font> ability (choose 1)</li>'
+            "<li>1 <b>Surname</b></li><li>Half of one parent's weapon "
+            'proficiency levels (rounded up)</li></ul>'
+        ),
     },
 
     "radiating_orb": {
@@ -691,9 +698,38 @@ expansion = {
         "innovation_type": "science",
         "expansion": "dragon_king",
         "settlement_buff": "<b>Departing Survivors</b> and newborn survivors gain +1 survival.<br/><b>Departing survivors</b> with a constellation gain +1 survival.",
-        "consequences": ["cooking","scrap_smelting"],
+        "consequences": ["cooking", "scrap_smelting"],
         "newborn_survivor": {"survival": 1},
-        "desc": "<b>Departing Survivors</b> and newborn survivors gain +1 survival.<br/><b>Departing survivors</b> with a constellation gain +1 survival.",
+        "desc": (
+            '<b>Departing Survivors</b> and newborn survivors gain +1 survival.'
+            '<br/><b>Departing survivors</b> with a constellation gain +1 '
+            'survival.'
+        ),
         'departing_survival_bonus': {'all': 1,},
     },
+
+
+    # Skrelle
+    'fig_sapling': {
+        'name': 'Fig Sapling',
+        'innovation_type': 'science',
+        'expansion': 'skrelle',
+        'consequences': ['fig_tree'],
+        'endeavors': ['skrelle_deep_root_massage'],
+    },
+    'fig_tree': {
+        'name': 'Fig Tree',
+        'innovation_type': 'science',
+        'expansion': 'skrelle',
+        'desc': (
+            'Each spray of colorless blooms gives birth to humming fruit that '
+            'swings heavy on the branch. Lush and foaming with sweetness, '
+            'the fruit nurtures the settlement.<br/>'
+            'Departing survivors <b>consume</b> the fruit and gain +1 '
+            'survival.'
+        ),
+        'departing_survival_bonus': {'all': 1,},
+        'survival_limit': 1,
+    },
+
 }

@@ -2,9 +2,12 @@
 
     The magic module / skeleton key to KD:M game assets.
 
+    Important! If an asset class is not imported here, it doesn't exist!
+
     This file also defines a class method for initializing an object called
     'Monster', which is a representation of Kingdom Death: Monster that allows
-    for programmatic access to collections.
+    for programmatic access to certain asset collections at the HEAD game
+    revision.
 
 '''
 
@@ -15,6 +18,7 @@ import flask
 from . import (
     abilities_and_impairments,
     campaigns,
+    character,
     cursed_items,
     disorders,
     endeavors,
@@ -63,6 +67,7 @@ class Monster():
 
     _asset_modules = [
         campaigns,
+        character,
         gear,
         monsters,
 #        names,

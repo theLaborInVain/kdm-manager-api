@@ -101,6 +101,12 @@ settlement_event = {
         'name': 'First Crimson Day', 'expansion': 'crimson_crocodile',
     },
 
+
+    # skrelle
+    'the_plant_and_the_stone': {
+        'name': 'The Plant and the Stone', 'expansion': 'skrelle',
+    },
+
 }
 
 story_event = {

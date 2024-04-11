@@ -1131,7 +1131,11 @@ spidicules = {
     # rare gear
     'grinning_visage': {
         'keywords': ['weapon', 'melee', 'shield'],
-        'desc': """When you wound with this shield, you may spend 1 survival to add <font class="inline_shield">1</font> to all hit locations.<br/>Limit, once per attack.""",
+        'desc': (
+            "When you wound with this shield, you may spend 1 survival to add "
+            '<font class="inline_shield">1</font> to all hit locations.<br/>'
+            "Limit, once per attack."
+        ),
         'expansion': 'spidicules',
         'type': 'rare_gear',
         'name': 'Grinning Visage',

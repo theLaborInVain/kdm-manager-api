@@ -678,7 +678,7 @@ expansion = {
             'that grant them armor points.'
         ),
     },
-    'melting': {
+    'melting_x': {
         'expansion': 'hellebore',
         'name': 'Melting X',
         'type': 'special_gear_rule',
@@ -717,6 +717,65 @@ expansion = {
             'of survival.</li>'
             '<li>Gain +1 strength token until the end of the round.</li>'
             '</ul>'
+        ),
+    },
+
+    # gnostin
+    'demolish': {
+        'expansion': 'gnostin_stonesmasher',
+        'name': 'Demolish',
+        'type': 'gear_special_rule',
+        'desc': (
+            'Spend <font class="kdm_manager_font">A</font> to archive an '
+            'adjacent <b>Impassable</b> terrain tile. If a monster is standing '
+            'on that terrain when its archived, the monster is knocked down.'
+        ),
+    },
+
+
+    # gunborg
+    'bloodeater': {
+        'expansion': 'gunborg',
+        'name': 'Bloodeater',
+        'type': 'gear_special_rule',
+        'desc': (
+            'If you are adjacent to another survivor, you may spent '
+            '<font class="kdm_manager_font">A</font> to kill them. '
+            'Transfer their bleeding tokens to you and it takes an '
+            'additional 5 bleeding tokens to kill you this showdown.'
+        ),
+    },
+
+
+    # lolowen
+    'rush': {
+        'expansion': 'lolowen',
+        'name': 'Rush',
+        'desc': (
+            'When a survivor hits 3+ times in a single attack, they Rush for '
+            'that attack.'
+        ),
+    },
+    'surpass_x': {
+        'expansion': 'lolowen',
+        'name': 'Surpass X',
+        'type': 'gear_special_rule',
+        'desc': (
+            "When a survivor's wound attempt total surpasses the monster's "
+            'toughness by X or more, the monster suffers an additional wound.'
+        ),
+    },
+
+    # mist - raikin armor
+    'charged_token': {
+        'expansion': 'mist_raikin_armor',
+        'name': 'Charged token',
+        'type': 'gear_special_rule',
+        'desc': (
+            'If you have a Charged token at the end of your attack with a '
+            'metal weapon, if you hit the monster, it is shocked and suffers '
+            'an automatic wound. <br/> Archive all Charged tokens at the end '
+            'of each round.'
         ),
     },
 
