@@ -626,4 +626,15 @@ expansion_resources = {
         'flavor_text': 'Slowly ticks at regular intervals.',
     },
 
+    'overgrown_dewclaw': {
+        'name': 'Overgrown Dewclaw',
+        'keywords': ['indomitable', 'perfect', 'bone'],
+        'desc': (
+            'When you gain this, gain '
+            '<span class="kd deck_icon kdm_manager_font" deck="p">XX</span> '
+            '<b>Longclaw</b>.'
+        ),
+        'flavor_text': 'A powerful vein runs through its center.',
+    },
+
 }

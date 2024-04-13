@@ -83,6 +83,20 @@ white_box_2023 = {
         'ui': {'pretty_category': 'White Box'},
         'subscriber_level': 2,
     },
+    'longclaw_lenore': {
+        'name': 'Indomitable Survivor Longclaw Lenore',
+        'released': datetime(2023,8,28,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+        'subtitle': '("Longclaw Lioness Lenore")',
+    },
+
+    'dark_of_star': {
+        'name': 'Dark of Star',
+        'released': datetime(2023,10,2,12, tzinfo=TIMEZONE),
+        'ui': {'pretty_category': 'White Box'},
+        'subscriber_level': 2,
+    },
 
     'cockroach_queen':{
         'name': 'Cockroach Queen',

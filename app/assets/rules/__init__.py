@@ -11,6 +11,7 @@ from .._collection import Collection
 from .definitions import *
 from .expansions_of_death_1 import *
 from .gamblers_chest import *
+from .white_box import *
 
 class Assets(Collection):
 

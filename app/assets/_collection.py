@@ -280,6 +280,13 @@ class Collection():
                 not dict_handle.startswith('_') # avoid built-in/private dicts
             )
         ]
+
+        # check to see if we have the same dict_handle more than once
+        for dict_handle in asset_definitions:
+            if asset_definitions.count(dict_handle) > 1:
+                err = "%s asset definition module '%s' is not unique!"
+                raise AttributeError(err % (package_name, dict_handle))
+
         if self.asset_logger:
             self.asset_logger.debug(
                 ' - Package contains %s definitions', len(asset_definitions)
@@ -356,6 +363,21 @@ class Collection():
 
             # iterate through the assets; make a new one to preserve the def
             for asset_handle, asset in definition_dict.items():
+
+                # verify uniqueness first
+                if asset_handle in all_assets.keys():
+                    self.logger.error("Cannot init '%s' collection!", self.type)
+                    err = (
+                        "Asset definition conflict detected while processing "
+                        "the asset '%s' module '%s': asset %s would overwrite "
+                        "existing '%s' asset: %s."
+                    ) % (
+                        self.type, asset_def_handle, asset,
+                        self.type, all_assets[asset_handle],
+                    )
+                    raise ValueError(err)
+
+                # now load the asset up
                 new_asset = copy(asset)
                 new_asset['handle'] = asset_handle
                 new_asset['sub_type'] = asset.get("type", asset_def_handle)
@@ -518,7 +540,7 @@ class Collection():
         return asset
 
 
-    def get_dicts(self, sort_on_handles=False):
+    def get_dicts(self, sort_on_handles=False, sort_on=None):
         """ Dumps a list of dicts where each dict is an asset dict. """
 
         # get all handles (sorted by name)
@@ -526,8 +548,12 @@ class Collection():
 
         output = []
         if sort_on_handles:
+            warn = "get_dicts() 'sort_on_handles' flag is deprecated!"
+            self.logger.warning(warn)
             for handle in sorted(asset_handles):
                 output.append(self.get_asset(handle))
+        elif sort_on is not None:
+            output = sorted(self.assets.values(), key=lambda x: x[sort_on])
         else:
             for handle in asset_handles:
                 output.append(self.get_asset(handle))

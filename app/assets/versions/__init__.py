@@ -36,7 +36,8 @@ class Assets(Collection):
         """ Sets self.version, which is a float, and self.version_string, which
         is also a float. Just kidding, it's a string. """
 
-        versions_list = self.get_dicts()
+        versions_list = self.get_dicts(sort_on='released')
+
         for a_dict in versions_list:
 
             handle = a_dict['handle']
@@ -62,6 +63,7 @@ class Assets(Collection):
                 self.assets[handle]['eol'] = eol
             else:
                 self.assets[handle]['eol'] = datetime.now()
+
 
 
 class Version():

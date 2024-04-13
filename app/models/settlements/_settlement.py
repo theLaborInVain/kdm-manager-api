@@ -2828,15 +2828,13 @@ class Settlement(UserAsset):
             checks out, do the needful and log about it. """
 
             # initialize the gear
-            gear_object = KingdomDeath.gear.Gear(
-                handle = handle, collection_obj=self.Gear
-            )
+            gear_asset = self.Gear.get_asset(handle)
 
             # sanity check the gear
-            gear_sub_type = getattr(gear_object, 'sub_type')
+            gear_sub_type = gear_asset.get('sub_type', None)
             if gear_sub_type != 'pattern':
                 err = "%s must be 'pattern' sub_type, not '%s'"
-                raise utils.InvalidUsage(err % (gear_object, gear_sub_type))
+                raise utils.InvalidUsage(err % (gear_asset, gear_sub_type))
 
             # do the action
             if action == 'rm':
@@ -2849,7 +2847,7 @@ class Settlement(UserAsset):
             self.log_event(
                 action = action,
                 key = "Patterns",
-                value = getattr(gear_object, 'name')
+                value = gear_asset.get('name', None)
             )
 
 

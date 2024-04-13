@@ -273,6 +273,81 @@ white_box_2023 = {
         ],
     },
 
+    #longclaw lenore
+    'longclaw':{
+        'name': 'Longclaw',
+        'type': 'pattern',
+        'expansion': 'longclaw_lenore',
+        'speed': 3,
+        'accuracy': 6,
+        'strength': 3,
+        'keywords': ['weapon', 'melee', 'bone', 'katar'],
+        'rules': ['Reach 2', 'Deadly', 'Sharp'],
+        'related_rules': ['reach_x', 'pounce'],
+        'affinities': {'right': 'red', 'bottom': 'blue'},
+        'affinity_bonus': {
+            'desc': (
+                'When you <b>Pounce</b> with this, cancel reactions '
+                'on one <span class="kd deck_icon" deck="HL">HL</span> of your '
+                'choice.'
+            ),
+            'requires': {'puzzle': {'red': 1,}, 'complete': {'blue': 1} },
+        },
+        'recipes': [
+            {
+                'resource_handles': {'overgrown_dewclaw': 1, 'iron': 2},
+                'resource_types': {'bone': 2, 'hide': 2,},
+                'innovations': ['nightmare_training'],
+            },
+        ],
+    },
+    'undying_lantern': {
+        'name': 'Undying Lantern',
+        'type': 'beta_gear_recipe',
+        'expansion': 'longclaw_lenore',
+        'beta': True,
+        'keywords': ['item', 'lantern', 'other'],
+        'related_rules': ['undeathable'],
+        'desc': (
+            'When you have the same name as the player controlling you, gain '
+            '<b>Undeathable</b> during lantern years 1-7.'
+        ),
+        'recipes': [
+            {
+                'prefix_text': (
+                    'Gain this the first time you name a survivor after '
+                    'yourself. Limit once per campaign.'
+                ),
+            },
+        ],
+    },
+
+    # dark of star
+    'cenobite_leotard': {
+        'name': 'Cenobite Leotard',
+        'type': 'beta_gear_recipe',
+        'expansion': 'dark_of_star',
+        'beta': True,
+        'armor': 2,
+        'location': 'chest',
+        'keywords': ['amor', 'leather', 'metal'],
+        'affinities': {'top': 'blue'},
+        'desc': 'Ignore the <b>frenzy</b> brain trauma.',
+        'affinity_bonus': {
+            'desc': (
+                'On <b>Arrival</b>, gain a death token for each permanent '
+                'injury you have recorded.'
+            ),
+            'requires': {'puzzle': {'blue': 1}, 'complete': {'red': 1}},
+        },
+        'recipes': [
+            {
+                'resource_handles': {'leather': 2},
+                'resource_types': {'scrap': 1},
+            }
+        ],
+    },
+
 }
 
 white_box_2022 = {
@@ -334,6 +409,280 @@ white_box_2022 = {
             {
                 'endeavor_tokens': 1,
                 'resource_handles': {'perfect_bone': 1},
+            },
+        ],
+    },
+
+    'sighing_acanthus_hat': {
+        'name': 'Sighing Acanthus Hat',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'summer_cyrus',
+        'keywords': ['herb', 'flammable'],
+        'location': 'head',
+        'armor': 1,
+        'affinities': {'right': 'blue'},
+        'rules': ['Accessory'],
+        'affinity_bonus': {
+            'desc': (
+                'When you draw the trap, gain a reroll token. If wearing no '
+                'armor, gain 2.'
+            ),
+            'requires': {
+                'puzzle': {'blue': 1},
+                'complete': {'red': 1},
+            },
+        },
+        'recipes': [
+            {
+                'resource_handles': {
+                    'fresh_acanthus': 2,
+                    'black_lichen': 1,
+                },
+                'suffix_text':
+                    '1 x <b>Sighing Bloom</b> or 1 x <b>Perfect Organ</b>',
+            },
+        ],
+    },
+    'acanthus_underwear': {
+        'name': 'Acanthus Underwear',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'summer_cyrus',
+        'keywords': ['underwear', 'herb', 'flammable'],
+        'location': 'body',
+        'aux_location': 'waist',
+        'armor': 1,
+        'affinities': {'right': 'green', 'left': 'blue'},
+        'rules': ['Accessory'],
+        'affinity_bonus': {
+            'desc': (
+                '+1 strength and +1 evasion for each reroll token you have.'
+            ),
+            'requires': {
+                'puzzle': {'green': 1, 'blue': 1},
+            },
+        },
+        'recipes': [
+            {
+                'endeavor_tokens': 1, 'resource_handles': {'fresh_acanthus': 1}
+            },
+        ],
+    },
+    'sighing_sarong': {
+        'name': 'Sighing Sarong',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'summer_cyrus',
+        'keywords': ['overwear', 'cloth'],
+        'location': 'waist',
+        'aux_location': 'legs',
+        'armor': 2,
+        'affinities': {'left': 'green'},
+        'rules': ['Accessory'],
+        'desc': 'On <b>Arrival</b>, gain a reroll token.',
+        'recipes': [
+            {
+                'endeavor_tokens': 1,
+                'resource_handles': {'fresh_acanthus': 1},
+                'suffix_text':
+                    '1 x <b>Sighing Bloom</b> or 1 x <b>Perfect Organ</b>',
+            },
+        ],
+    },
+
+
+    'survival_spear': {
+        'name': 'Survival Spear',
+        'beta': True,
+        'type': 'beta_gear',
+        'expansion': 'summer_aya',
+        'keywords': ['weapon', 'melee', 'spear', 'two-handed'],
+        'speed': 2,
+        'accuracy': 6,
+        'strength': 3,
+        'affinities': {'top': 'red', 'right': 'red', 'left': 'green'},
+        'rules': ['Reach 2', 'Unique'],
+        'desc': (
+            'This gains a +1 strength token after each time the wielder '
+            'performs a survival action.'
+        ),
+        'affinity_bonus': {
+            'desc': (
+                'On <b>Arrival</b>, gain <span class="kd deck_icon" deck="SR">'
+                'SR</span> <b>Fresh Kill</b>.'
+            ),
+            'requires': {
+                'puzzle': {'red': 2, 'green': 1},
+            },
+        },
+        'recipes': [
+            {
+                'prefix_text': (
+                    'When you scavenge a <b>Survivor Corpse</b> and roll a '
+                    '10+, gain the <b>Survival Spear</b> beta gear.<br/>'
+                    'Limit, once per campaign.'
+                ),
+            },
+        ],
+    },
+
+
+    # summer goth
+    'blackstar_bikini': {
+        'name': 'Blackstar Bikini',
+        'type': 'seed_pattern',
+        'pattern_id': -21,
+        'expansion': 'summer_goth_twilight_knight',
+        'armor': 2,
+        'location': 'body',
+        'aux_location': 'waist',
+        'keywords': ['armor', 'seed', 'void fabric', 'other'],
+        'rules': ['+1 Evasion'],
+        'affinities': {'right': 'green', 'left': 'green'},
+        'desc': (
+            'When you are hit roll 1d10. On a 7+, you narrowly avoid it. '
+            'Ignore the hit.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'leather': 1,
+                    'perfect_hide': 1,
+                    'cocoon_membrane': 1,
+                },
+                'events': ['oxidation'],
+                'crafting_process': [
+                    (
+                        'During <font class="kdm_manager_font">S</font> '
+                        '<b>Oxidation</b>, a survivor with <b>Analyze</b> '
+                        'realizes the potential of the fabric.'
+                    ),
+                    (
+                        'The survivor rubs the fabric on the smooth surface of '
+                        'the <b>Final Lantern</b>.'
+                    ),
+                    (
+                        'They press a finger to their eye and cut out the '
+                        'delicate straps of a dizzying garment.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'ghost_garters_arms': {
+        'name': 'Ghost Garters - Arms',
+        'type': 'seed_pattern',
+        'pattern_id': 30,
+        'expansion': 'summer_goth_twilight_knight',
+        'armor': 1,
+        'location': 'arms',
+        'keywords': ['seed', 'void fabric', 'other'],
+        'rules': ['Accessory'],
+        'affinities': {'top': 'red', 'bottom': 'blue'},
+        'desc': (
+            'When you wound the monster add '
+            '<font class="inline_shield">1</font> to all hit locations. '
+            'Limit, once per round unless you are not wearing arm armor.'
+        ),
+        'recipes': [
+            {
+                'endeavors': 1,
+                'resource_handles': {
+                    'lantern_tube': 1,
+                },
+                'events': ['lantern_research'],
+                'crafting_process': [
+                    (
+                        'During <font class="kdm_manager_font">S</font> '
+                        '<b>Lantern Research</b>, an <b>insane</b> survivor '
+                        'sees shadowy hands in the light.'
+                    ),
+                    (
+                        'They chase the shadow from lantern to lantern, '
+                        'trapping it in folds of void fabric.'
+                    ),
+                    (
+                        'Survivors pull the cloth taut around the shadow '
+                        'hands and cut, revealing gloves.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'ghost_garters_legs': {
+        'name': 'Ghost Garters - Legs',
+        'type': 'seed_pattern',
+        'pattern_id': 29,
+        'expansion': 'summer_goth_twilight_knight',
+        'armor': 1,
+        'location': 'legs',
+        'keywords': ['seed', 'void fabric', 'other'],
+        'rules': ['Accessory'],
+        'affinities': {'top': 'blue', 'bottom': 'red'},
+        'desc': (
+            'When you wound the monster you may remove a bleeding token. '
+            'Limit, once per round unless you are not wearing leg armor.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'perfect_hide': 1,
+                    'black_lichen': 1,
+                },
+                'locations': ['exhausted_lantern_hoard'],
+                'crafting_process': [
+                    (
+                        'A <b>Secretive</b> survivor searches deep inside the '
+                        '<b>Exhausted Lantern Hoard</b>.'
+                    ),
+                    (
+                        'They wrap themselves in discarded pieces of black '
+                        'fabric and drift off in darkness.'
+                    ),
+                    (
+                        'Awake, a new sense of calm guides their steady hand '
+                        'as they sew fabric stockings.'
+                    ),
+                ],
+            },
+        ],
+    },
+
+    'gloom_cowl': {
+        'name': 'Gloom Cowl',
+        'beta': True,
+        'type': 'beta_gear_recipe',
+        'expansion': 'reapokratis',
+        'armor': 3,
+        'location': 'head',
+        'keywords': ['armor', 'gloomy', 'leather'],
+        'add_affinity': ['blue', 'red'],
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 1, 'blue': 1}},
+            'desc': (
+                'Your attacks gain +2 accuracy when attacking a monster you '
+                'are adjacent to.'
+            ),
+        },
+        'recipes': [
+            {
+                'resource_handles': {
+                    'dark_water': 1,
+                    'leather': 1,
+                },
+                'resource_types': {
+                    'scrap': 1
+                },
+            },
+            {
+                'resource_handles': {
+                    'perfect_organ': 1,
+                    'leather': 1,
+                },
+                'resource_types': {
+                    'scrap': 1
+                },
             },
         ],
     },

@@ -150,7 +150,7 @@ innovation = {
         "survival_action": "endure",
         'survival_limit': 1,
         "available_if": [
-            ("Watcher","defeated_monsters"),
+            ("Watcher", "defeated_monsters"),
         ],
 },
 
@@ -160,7 +160,10 @@ innovation = {
         "innovation_type": "education",
         "consequences": ["nightmare_training", "storytelling"],
         "survival_limit": 1,
-        "settlement_buff": "When a survivor innovates, draw an additional 2 Innovation Cards to choose from.",
+        "settlement_buff": (
+            'When a survivor innovates, draw an additional 2 Innovation '
+            'Cards to choose from.'
+        ),
     },
     "nightmare_training": {
         "name": "Nightmare Training",

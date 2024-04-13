@@ -593,6 +593,9 @@ select.kd.capsule {
 .kd.green_text {
     color: var(--color-kd-green);
 }
+.kd.pattern_orange {
+    color: var(--color-kd-seed-pattern);
+}
 .kd.pink {
     background: var(--color-kd-pink);
     background: var(--color-kd-pink-gradient);

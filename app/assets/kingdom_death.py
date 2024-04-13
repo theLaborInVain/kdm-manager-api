@@ -71,6 +71,7 @@ class Monster():
         gear,
         monsters,
 #        names,
+        rules,
     ]
     _kdm_monster_object = True
     _collections_initialized = None
