@@ -77,6 +77,17 @@ crimson_crocodile = {
             'any revleaed AI or HL cards.'
         )
     },
+    'razor_sharp': {
+        'expansion': 'crimson_crocodile',
+        'name': 'Razor Sharp',
+        'type': 'gear_special_rule',
+        'desc': (
+            'When attacking with a razor sharp weapon, roll the razor sharp '
+            'die and add the result (denoted by the number of pips) to your '
+            'wound attempt. This is not a wound roll and cannot cause critical '
+            'wounds.'
+        ),
+    },
     'surpass_x': {
         'expansion': 'crimson_crocodile',
         'name': 'Surpass X',
@@ -87,6 +98,7 @@ crimson_crocodile = {
             'suffers an additional wound.'
         ),
     },
+
 }
 
 smog_singers = {

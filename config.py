@@ -51,18 +51,27 @@ class Config():
         'campaign',
         'custom', 'custom_url',
         'deadrock', 'dead_rock',
+        'home','index',
         'settlement',
-        'kingdom_death', 'kingdomdeath',
+        'kdm', 'kingdom_death', 'kingdomdeath',
         'none',
         'potlantern', 'people_of_the_lantern', 'peopleofthelantern',
         'potstars', 'people_of_the_stars', 'peopleofthestars',
         'potsun', 'people_of_the_sun', 'peopleofthesun',
+        'potdk', 'people_of_the_dream_keeper', 'peopleofthedreamkeeper',
         'blacklantern', 'the_black_lantern', 'theblacklantern',
         'monster', 'monsters'
     ]
     TIMEZONE = pytz.timezone('US/Central')
+    SURVIVOR_GROUPS = [
+        {'sort_order': 0, 'handle': '_departing',   'name': 'Departing',},
+        {'sort_order': 1, 'handle': '_returning',   'name': 'Returning',},
+        {'sort_order': 2, 'handle': '_skip',        'name': 'Skip Next Hunt',},
+        {'sort_order': 3, 'handle': '_retired',     'name': 'Retired',},
+        {'sort_order': 4, 'handle': '_dead',        'name': 'Dead', },
+    ]
     USER_ASSET_COLLECTIONS = ['releases', 'settlements', 'survivors', 'users']
-    VERSION = "1.210.1273"
+    VERSION = "1.214.1285"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 

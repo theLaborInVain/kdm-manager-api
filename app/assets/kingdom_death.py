@@ -63,7 +63,8 @@ from .campaigns import milestone_story_events
 #
 
 class Monster():
-    ''' Objects of this class represent Kingdom Death: Monster. '''
+    ''' Objects of this class represent Kingdom Death: Monster. The API
+    initializes this exactly once as API.kdm. '''
 
     _asset_modules = [
         campaigns,
@@ -71,10 +72,13 @@ class Monster():
         gear,
         monsters,
 #        names,
+        once_per_lifetime,
         rules,
+        special_attributes,
     ]
     _kdm_monster_object = True
     _collections_initialized = None
+
 
     def __init__(self, flask_app=None, logger=None):
         ''' These objects must be initialized with an instance of the KD:M API
@@ -175,3 +179,33 @@ class Monster():
                     )
                     raise AttributeError(err)
                 all_asset_handles[handle] = collection
+
+
+
+    def add_collection_to_data_model(self, model=None, collection_name=None,
+        attr_type=bool):
+        ''' This is meant to be done after API.kdm is initialized, so we call
+        this during API init.
+
+        Point is to tune up an existing data model to include an asset
+        collection that we're initializing as part of the Monster object, i.e.
+        one that's always supposed to be at the HEAD revision, etc.
+        '''
+
+        func_name = self.add_collection_to_data_model.__name__
+        if model is None or collection_name is None:
+            raise ValueError("%s() arguments may not be None!" % func_name)
+
+        collection = getattr(self.collections, collection_name)
+
+        for asset_handle in collection.assets:
+            model.add(asset_handle, attr_type, category=collection_name)
+
+        msg = '%s.%s() added %s %s attributes to data model'
+        self.logger.info(
+            msg,
+            self.__class__.__name__,
+            func_name,
+            len(collection.assets),
+            attr_type,
+        )

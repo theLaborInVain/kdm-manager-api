@@ -41,7 +41,7 @@ class Survivor(UserAsset):
     UserAsset (e.g. just like settlements) and tries to fallback and/or
     super() back to that base class when possible. """
 
-    DATA_MODEL = DataModel('settlement')
+    DATA_MODEL = DataModel('settlement') # foreign key is settlement
 
     # admin
     DATA_MODEL.add(
@@ -57,6 +57,7 @@ class Survivor(UserAsset):
         }
     )
     DATA_MODEL.add("email", str)
+    DATA_MODEL.add('groups', list, required=False)
     DATA_MODEL.add('settlement', ObjectId, immutable=True)
     DATA_MODEL.add('public', bool)
 
@@ -100,16 +101,10 @@ class Survivor(UserAsset):
     DATA_MODEL.add('born_in_ly', int)
     DATA_MODEL.add("bleeding_tokens", int)
     DATA_MODEL.add('color_scheme', str, required=False)
+    DATA_MODEL.add("favorite", list)
     DATA_MODEL.add("max_bleeding_tokens", int, 5)
     DATA_MODEL.add('partner_id', ObjectId, required=False)
-
-    # user stuff
-    DATA_MODEL.add('departing', bool)
-    DATA_MODEL.add('groups', list, required=False)
-
-    # misc
     DATA_MODEL.add('inherited', dict, {'father': {}, 'mother': {}})
-    DATA_MODEL.add("favorite", list)
     DATA_MODEL.add("fighting_arts_levels", dict)
 
     # armor locations
@@ -175,13 +170,11 @@ class Survivor(UserAsset):
     #
     # silly stuff / after-thoughts / one-offs, etc.
     #
-
     DATA_MODEL.add('constellation', str, required=False)
     DATA_MODEL.add(
         'sword_oath', dict, {'sword': None, 'wounds': 0}, required=False
     )
     DATA_MODEL.add('weak_spot', str, required=False)
-
 
 
 
@@ -217,16 +210,6 @@ class Survivor(UserAsset):
                     self.Settlement,
                     dir(self.Settlement),
                 )
-            )
-
-        # update the self.DATA_MODEL to include special attributes:
-        for sa_key in self.Settlement.SpecialAttributes.assets:
-            self.DATA_MODEL.add(
-                sa_key, bool, required=False, category='special_attributes'
-            )
-        for sa_key in self.Settlement.OncePerLifetime.assets:
-            self.DATA_MODEL.add(
-                sa_key, bool, required=False, category='once_per_lifetime'
             )
 
         # if we're doing a new survivor, it will happen when we subclass the

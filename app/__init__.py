@@ -78,8 +78,12 @@ def verify_password(username, password):
 from app.assets.kingdom_death import Monster
 if not hasattr(API, 'kdm'):
     API.kdm = Monster(flask_app=API, logger=utils.get_logger(log_name='kdm'))
-
-
+    API.kdm.add_collection_to_data_model(
+        assets.survivors.Survivor.DATA_MODEL, 'special_attributes'
+    )
+    API.kdm.add_collection_to_data_model(
+        assets.survivors.Survivor.DATA_MODEL, 'once_per_lifetime'
+    )
 
 
 #

@@ -26,6 +26,7 @@ class DataModel():
     ''' Object-oriented data model object initialized with one of our UserAsset
     objects. '''
 
+
     def __init__(self, unique_foreign_key=None):
         ''' Initialize with a unique foreign key value. The self.admin_attribs
         attrib gets set ABSOLUTELY LAST so that it can be used later to ignore
@@ -55,6 +56,10 @@ class DataModel():
             raise AttributeError(err)
         if not isinstance(a_type, type):
             err = 'Attribute type must be a type, e.g. int, str, etc.'
+            raise AttributeError(err)
+        if hasattr(self, name):
+            err = "Data model already has a '%s' attribute! %s %s"
+            err = err % (name, getattr(self, name), self.attribs())
             raise AttributeError(err)
 
         # set default, if not provided
@@ -147,6 +152,12 @@ class DataModel():
                     self.logger.warning(warn % (attr['name'], attr['type']))
                     try:
                         record[attr['name']] = attr['type'](record[attr['name']])
+                    except ValueError as error:
+                        msg = "Attribute '%s' (%s) is not defined correctly!"
+                        self.logger.error(msg, attr['name'], attr['type'])
+                        self.logger.error(attr)
+                        self.logger.error(error)
+                        raise error
                     except TypeError as error:
                         msg = "Could not coerce '%s' value '%s' to %s type!"
                         formatted_msg = msg % (
@@ -298,3 +309,23 @@ class DataModel():
                 return attribute['maximum']
 
         return value
+
+
+    def dump(self):
+        ''' For debug purposes. Dumps a human-readable representation of the
+        data model. '''
+
+        attributes = []
+        for attrib in self.attribs():
+            attributes.append(getattr(self, attrib))
+
+        headers = set().union(*(d.keys() for d in attributes))
+
+        output = "\n"
+        for attrib in attributes:
+            for key in sorted(attrib.keys()):
+                output += "%s -> %s\n" % (key, attrib[key])
+            output +=  "\n"
+        output += "\n\n"
+
+        return output

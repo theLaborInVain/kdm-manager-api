@@ -44,26 +44,41 @@ class Settlement(UserAsset):
     DATA_MODEL = DataModel()
 
     # meta
-    DATA_MODEL.add('version', str)
+    DATA_MODEL.add('meta', dict)
+    DATA_MODEL.add(
+        'version', str, default_value=API.config['DEFAULT_GAME_VERSION']
+    )
 
     # user stuff
     DATA_MODEL.add('admins', list)
     DATA_MODEL.add('hunt_started', datetime, required=False)
+    DATA_MODEL.add(
+        'survivor_groups', list, default = API.config['SURVIVOR_GROUPS']
+    )
 
     # sheet
     DATA_MODEL.add('campaign', str, immutable=True)
     DATA_MODEL.add('death_count', int, minimum=0)
+    DATA_MODEL.add('defeated_monsters', list)
+    DATA_MODEL.add('endeavor_tokens', int, minimum=0, default=0)
     DATA_MODEL.add('expansions', list)
-    DATA_MODEL.add('locations', list)
-    DATA_MODEL.add('population', int, minimum=0)
     DATA_MODEL.add('innovations', list)
     DATA_MODEL.add('inspirational_statue', str, required=False)
-    DATA_MODEL.add('name', str, default_value='Unknown')
     DATA_MODEL.add('lantern_year', int, minimum=0)
     DATA_MODEL.add('lantern_research_level', int, required=False)
+    DATA_MODEL.add('locations', list)
     DATA_MODEL.add('lost_settlements', int, minimum=0)
+    DATA_MODEL.add('milestone_story_events', list)
+    DATA_MODEL.add('name', str, default_value='Unknown')
+    DATA_MODEL.add('patterns', list)
+    DATA_MODEL.add('population', int, minimum=0)
+    DATA_MODEL.add('principles', list)
+    DATA_MODEL.add('quarries', list)
+    DATA_MODEL.add('nemesis_monsters', list)
     DATA_MODEL.add('survival_limit', int, minimum=1)
-
+    DATA_MODEL.add('storage', list)
+    DATA_MODEL.add('strain_milestones', list)
+    DATA_MODEL.add('timeline', list)
 
 
     @utils.metered
@@ -495,6 +510,16 @@ class Settlement(UserAsset):
 
         # enforce minimums
         self.enforce_minimums()
+
+        # finally, apply the data model
+        corrected_record = self.DATA_MODEL.apply(self.settlement)
+        if corrected_record != self.settlement:
+            self.logger.warning('[%s] data model corrections applied!', self)
+#            self.settlement = corrected_record
+            self.logger.info(self.settlement.keys())
+            self.logger.warn(corrected_record.keys())
+            meow
+            self.perform_save = True
 
         # finish
         if self.perform_save:
