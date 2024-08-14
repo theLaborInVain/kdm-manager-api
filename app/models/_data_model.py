@@ -58,6 +58,7 @@ class DataModel():
             err = 'Attribute type must be a type, e.g. int, str, etc.'
             raise AttributeError(err)
         if hasattr(self, name):
+            ''' Prevents us overwriting class methods, etc. '''
             err = "Data model already has a '%s' attribute! %s %s"
             err = err % (name, getattr(self, name), self.attribs())
             raise AttributeError(err)

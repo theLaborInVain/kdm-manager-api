@@ -112,3 +112,31 @@ def kingdom_death():
             output[asset_collection] = asset_object.get_sorted_assets()
 
     return json.dumps(output, default=json_util.default)
+
+
+def validate_data_model(class_object=None):
+    ''' Validates the 'DATA_MODEL' attribute of 'model', an object. '''
+
+    model = class_object.DATA_MODEL
+
+    info = "Validating the '%s' model (%s attributes)..."
+    API.logger.debug(info, class_object.collection, len(model.attribs()))
+
+    all_records = utils.mdb[class_object.collection].find()
+    distinct_attributes = set()
+    for record in all_records:
+        distinct_attributes.update(record.keys())
+
+    # check records in the db against the models
+    for attribute in distinct_attributes:
+        if attribute not in model.attribs():
+            affected_records = utils.mdb[class_object.collection].find({
+                attribute: {'$exists': True}
+            })
+            err = (
+                f"{affected_records.count()} '{class_object.collection}' "
+                f"records contain attribute '{attribute}', which is not "
+                f"included in the {class_object.__module__}."
+                f"{class_object.__class__} data model!"
+            )
+            API.logger.warning(err)

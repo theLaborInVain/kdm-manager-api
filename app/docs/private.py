@@ -648,30 +648,8 @@ total to become zero.</p>\
     "settlement_replace_game_assets_settlement_id": {
         "name": "/settlement/replace_game_assets/&lt;settlement_id&gt;",
         "subsection": "settlement_update_attribute",
-        "desc": """\
-<p>This route functions nearly identically to the other update-type routes in
-this subsection, except for one crucial difference: it works on list-type
-attributes of the settlement (whereas the others mostly work on string or
-integer type attributes).</p>
-<p>This route accepts a list of <code>handles</code> and a <code>type</code>
-of game asset and then evalutes the settlement's current handles of that type,
-removing and adding as necessary in order to bring the settlement's list in sync
-with the incoming list. </p>
-<p>Your POST body needs to define the attribute <code>type</code>
-you're trying to update, as well as provide a list of handles
-that represent the settlement's current asset list:</p>
-<pre><code>{
-    "type": "locations",
-    "handles": [
-        "lantern_hoard","bonesmith","organ_grinder"
-    ]
-}</code></pre>
-<p>Finally, a couple of tips/warnings on this route:<ul>
-    <li class="plain">The <code>handles</code> list/array is handled by the API as if it were a set, i.e. duplicates are silently ignored.</li>
-    <li class="plain">If any part of the update fails (i.e. individual add or remove operations), the whole update will fail and <u>no changes to the settlement will be saved</u>.</li>
-    <li class="plain">This route does not support Location or Innovation levels! (Use <code>set_location_level</code> or <code>set_innovation_level</code> for that.)</li>
-</ul></p>
-	""",
+        'deprecated': True,
+        "desc": "This endpoint is deprecated."
     },
     "settlement_update_endeavor_tokens_settlement_id": {
         "name": "/settlement/update_endeavor_tokens/&lt;settlement_id&gt;",
@@ -1353,8 +1331,6 @@ survivor_management = {
             '<tr><td class="kdm_manager_font">e</td><td>waist_damage_light</td><td>waist_damage_heavy</td>'
             '<tr><td class="kdm_manager_font">f</td><td>legs_damage_light</td><td>legs_damage_heavy</td>'
             '</table>'
-            '<p><b>Important!</b> For updating attributes that are lists of '
-            'game assets, please use <code>replace_game_assets</code>.</p>.'
         ),
         'examples': [
             '{attribute: "abilities_and_impairments", value: ["crystal_skin", "dead_inside", "prepared"]}',

@@ -313,6 +313,15 @@ class Collection():
                         )
                     )
 
+                # die if an asset_handle has punctuation
+                forbidden_chars = ["'", "&", "!", "@", "#"]
+                for f_char in forbidden_chars:
+                    if f_char in asset_handle:
+                        err = "Asset handle '%s' has forbidden character '%s'"
+                        raise AttributeError(
+                            err % (asset_handle, f_char)
+                        )
+
                 # load the individual asset dict
                 asset_count += 1
                 asset = asset_definition[asset_handle]

@@ -71,7 +71,7 @@ class Config():
         {'sort_order': 4, 'handle': '_dead',        'name': 'Dead', },
     ]
     USER_ASSET_COLLECTIONS = ['releases', 'settlements', 'survivors', 'users']
-    VERSION = "1.214.1285"
+    VERSION = "1.216.1300"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 

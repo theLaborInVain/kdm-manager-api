@@ -183,7 +183,7 @@ class Monster():
 
 
     def add_collection_to_data_model(self, model=None, collection_name=None,
-        attr_type=bool):
+                                attr_type=bool):
         ''' This is meant to be done after API.kdm is initialized, so we call
         this during API init.
 

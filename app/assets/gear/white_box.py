@@ -689,6 +689,124 @@ white_box_2022 = {
 
 }
 
+white_box_2020 = {
+
+    # Halloween Ringtail Vixen 2020
+    'vixen_tail': {
+        'expansion': 'halloween_ringtail_vixen_2020',
+        'name': 'Vixen Tail',
+        'type': 'seed_pattern',
+        'pattern_id': -12,
+        'keywords': ['item','fur','flammable','other'],
+        'affinities': {'bottom': 'green'},
+        'desc': (
+            'The bushy tail heightens your awareness. If you are insane, you '
+            'cannot be <b>ambushed</b>.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {'crab_spider': 1, 'leather': 1},
+                'resource_types': {'scrap': 1},
+                'gear_handles': {'monster_grease': 1},
+                'crafting_process': [
+                    (
+                        'Retrieve the fur baby blanket saved from '
+                        '&#x1f516; <b>Infant Adrift</b>.'
+                    ),
+                    (
+                        'Use a <b>Crab Spider</b> to eat vicious mites '
+                        'that have burrowed in the fur blanket.'
+                    ),
+                    (
+                        'Comb and fluff fur, then lightly oil with '
+                        '<b>Monster Grease</b>.'
+                    ),
+                ],
+            },
+        ],
+    },
+
+    'brazen_bat': {
+        'expansion': 'halloween_ringtail_vixen_2020',
+        'name': 'Brazen Bat',
+        'type': 'seed_pattern',
+        'pattern_id': -11,
+        'keywords': ['weapon','melee','club'],
+        'speed': 2,
+        'accuracy': 5,
+        'strength': 6,
+        'affinities': {'right': 'red'},
+        'desc': (
+            'Gains <b>Sharp</b> when attacking &#127875; monsters.<br/>'
+            'If you are not wearing any head armor, you feel a spirit of '
+            'rebellion! You may ignore the first '
+            '<font class="kdm_font_10">e</font> during your first attack each '
+            'round.'
+        ),
+        'recipes': [
+            {
+                'gear_handles': {'dried_acanthus': 1,},
+                'resource_types': {'scrap': 1, 'bone': 2,},
+                'crafting_process': [
+                    (
+                        'Create a lathe with spare bones. A survivor with '
+                        '<b>Rhythm Chaser</b> cranks it.'
+                    ),
+                    (
+                        'Use <b>Scrap Smelting</b> to heat lantern shards '
+                        'and place in a pile.'
+                    ),
+                    (
+                        'Crush Dried Acanthus and mix with urine to create a '
+                        'sealant.'
+                    ),
+                ],
+            },
+        ],
+    },
+
+    # winter solstice lucy
+    'grim_muffler': {
+        'expansion': 'winter_solstice_lucy',
+        'name': 'Grim Muffler',
+        'type': 'seed_pattern',
+        'pattern_id': -14,
+        'keywords': ['item','cloth','fur','heavy'],
+        'armor': 1,
+        'location': 'chest',
+        'affinities': {'right': 'blue'},
+        'rules': ['Accessory'],
+        'desc': (
+            'One of your gear loses the noisy keyword, as you hide it in this '
+            'cloak.'
+        ),
+        'affinity_bonus': {
+            'requires': {'complete': {'blue': 1}},
+            'desc': 'Ignore survival loss from cold hunt events.'
+        },
+        'recipes': [
+            {
+                'gear_handles': {'cloth': 1,},
+                'resource_types': {'hide': 1, 'organ': 1},
+                'crafting_process': [
+                    (
+                        'Harvest healthy tendons from a fresh <b>Organ</b> '
+                        'obtained <b>last showdown</b>.'
+                    ),
+                    (
+                        'Pluck hairs from <b>15 survivors</b>. One fidgets '
+                        'too much, record <b>Bald</b> on their sheet.'
+                    ),
+                    (
+                        "Plug a sleeping survivor's ears with hair and "
+                        'scream to test sound suppression. '
+                    ),
+                ],
+            },
+        ],
+    },
+}
+
 white_box_2019 = {
 
     #sword hunter

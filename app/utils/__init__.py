@@ -672,6 +672,44 @@ def list_compare(original_list, new_list):
 
     return add, rm
 
+
+def list_compare_deluxe(list_1, list_2):
+    """ Compares 'list_1' to 'list_2' and returns a string that
+    can be used to visually diff the two lists. """
+
+    list_1 = sorted(list_1)
+    list_2 = sorted(list_2)
+
+    output = []
+
+    # Determine the maximum length of the elements in both lists
+    max_length = max(max(len(item) for item in list_1), max(len(item) for item in list_2))
+
+    # Determine the elements that exist in both lists
+    common_elements = sorted(set(list_1).intersection(list_2))
+
+    # Print the elements that exist in both lists
+    for element in common_elements:
+        output.append(f"{element.ljust(max_length)} | {element.ljust(max_length)}\n")
+
+    # Determine the elements that exist only in list_1 and list_2 respectively
+    elements_only_in_list_1 = sorted(set(list_1) - set(list_2))
+    elements_only_in_list_2 = sorted(set(list_2) - set(list_1))
+
+    # Print the interpolated elements
+    for element_1, element_2 in zip(elements_only_in_list_1, elements_only_in_list_2):
+        output.append(f"{element_1.ljust(max_length)} | {element_2.ljust(max_length)}\n")
+
+    # Print any remaining elements from the longer list
+    for element_1 in elements_only_in_list_1[len(elements_only_in_list_2):]:
+        output.append(f"{element_1.ljust(max_length)} | {''.ljust(max_length)}\n")
+    for element_2 in elements_only_in_list_2[len(elements_only_in_list_1):]:
+        output.append(f"{''.ljust(max_length)} | {element_2.ljust(max_length)}\n")
+
+    return ''.join(output)
+
+
+
 #
 #  The JUNK DRAWER! Everything past this point is kind of...just random junk
 #

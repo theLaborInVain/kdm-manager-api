@@ -39,6 +39,8 @@ from .._user_asset import UserAsset
 class User(UserAsset):
     """ This is the main controller for all user objects. """
 
+    collection="users"
+
     DATA_MODEL = DataModel('user')
     DATA_MODEL.add('login', str)
     DATA_MODEL.add('password', str)
@@ -58,6 +60,7 @@ class User(UserAsset):
     DATA_MODEL.add('latest_user_agent', str, required=False)
     DATA_MODEL.add('latest_api_client', str, required=False)
     DATA_MODEL.add('activity_log', list, required=False)
+    DATA_MODEL.add('recovery_code', str, required=False)
 
     # legacy kdm-manager.com
     DATA_MODEL.add('current_session', ObjectId, required=False)
@@ -79,7 +82,6 @@ class User(UserAsset):
         """ Custom __init__ for user objects, we are subject to special biz
         logic for a few different things. """
 
-        self.collection="users"
         UserAsset.__init__(self,  *args, **kwargs)
 
         # JWT needs this; pylint sez: "that'll never make number one"

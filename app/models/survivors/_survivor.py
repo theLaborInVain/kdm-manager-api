@@ -41,6 +41,8 @@ class Survivor(UserAsset):
     UserAsset (e.g. just like settlements) and tries to fallback and/or
     super() back to that base class when possible. """
 
+    collection="survivors"
+
     DATA_MODEL = DataModel('settlement') # foreign key is settlement
 
     # admin
@@ -153,6 +155,7 @@ class Survivor(UserAsset):
     for flag in [
         'cannot_activate_two_handed_weapons',
         'cannot_activate_two_plus_str_gear',
+        'cannot_activate_weapons',
         'cannot_consume',
         'cannot_be_nominated_for_intimacy',
         'cannot_gain_bleeding_tokens',
@@ -170,6 +173,8 @@ class Survivor(UserAsset):
     #
     # silly stuff / after-thoughts / one-offs, etc.
     #
+    DATA_MODEL.add('avatar', ObjectId, required=False)
+    DATA_MODEL.add('savior', str, required=False)
     DATA_MODEL.add('constellation', str, required=False)
     DATA_MODEL.add(
         'sword_oath', dict, {'sword': None, 'wounds': 0}, required=False
@@ -195,7 +200,6 @@ class Survivor(UserAsset):
     def __init__(self, *args, **kwargs):
         """ Child/private class method for initializing a survivor object. """
 
-        self.collection="survivors"
 
         # require an intitialized settlement object; we need it for game assets
         self.Settlement = kwargs.get('Settlement', None)

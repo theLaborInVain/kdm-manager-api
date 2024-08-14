@@ -73,7 +73,6 @@ def verify_password(username, password):
     return True
 
 
-
 # initialize the asset collections
 from app.assets.kingdom_death import Monster
 if not hasattr(API, 'kdm'):
@@ -85,16 +84,18 @@ if not hasattr(API, 'kdm'):
         assets.survivors.Survivor.DATA_MODEL, 'once_per_lifetime'
     )
 
+# validate user asset data models
+user_asset_data_models = [
+    assets.users.User,
+    assets.survivors.Survivor,
+    assets.settlements.Settlement
+]
+#for class_object in user_asset_data_models:
+#    assets.validate_data_model(class_object)
 
 #
 #   pre- and post-request methods, exception handling, etc.
 #
-
-#@API.before_first_request
-#def before_first_request():
-#    ''' This happens AFTER initialization, but before the first request.'''
-#    from app.assets.kingdom_death import Monster
-#    API.kdm = Monster(flask_app=API, logger=utils.get_logger(log_name='kdm'))
 
 @API.before_request
 def before_request():

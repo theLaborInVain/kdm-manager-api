@@ -502,7 +502,7 @@ class UserAsset():
         """
 
 
-        # sanity checks:d
+        # sanity checks
         if attrib is None:
             msg = "The list_assets() method cannot process 'None' type values!"
             raise AttributeError(msg)
@@ -513,9 +513,6 @@ class UserAsset():
                 "self.collection value is '%s'"
             )
             raise TypeError(err)
-
-
-        #  part one: get the UserAsset's attribute or die trying
 
         # get a copy of the attribute; make sure it's a list
         try:
