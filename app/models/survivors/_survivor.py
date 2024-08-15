@@ -58,8 +58,8 @@ class Survivor(UserAsset):
             "weapon_proficiency_type_version": 1.0,
         }
     )
-    DATA_MODEL.add("email", str)
-    DATA_MODEL.add('groups', list, required=False)
+    DATA_MODEL.add('email', str)
+    DATA_MODEL.add('groups', list, is_a_set=True)
     DATA_MODEL.add('settlement', ObjectId, immutable=True)
     DATA_MODEL.add('public', bool)
 
@@ -505,6 +505,7 @@ class Survivor(UserAsset):
         logic and/or game rules on a survivor BEFORE saving it back to mdb.'''
 
         # only call validation methods here!
+        self._validate_groups()
         self._validate_max_bleeding_tokens()
         self._validate_partnership()
         self._validate_weapon_proficiency_type()
@@ -1176,6 +1177,55 @@ class Survivor(UserAsset):
 
 
     @web_method
+    @paywall
+    def set_color_scheme(self):
+        ''' Web-only method that processes a request to update the survivor's
+        color_scheme attribute. '''
+
+        # first, handle unsets
+        if (
+            'unset' in self.params and
+            self.survivor.get('color_scheme', None) is not None
+        ):
+            del self.survivor['color_scheme']
+            msg = '%s unset the color scheme for %s'
+            self.log_event(msg % (request.User.login, self.pretty_name()))
+            self.save()
+            return True
+
+        if (
+            'unset' in self.params and
+            self.survivor.get('color_scheme', None) is None
+        ):
+            msg = '%s Ignoring bogus request to unset color scheme...' % self
+            self.logger.warning(msg)
+            return False
+
+
+        # now, try to get the color scheme handle from the request params
+        cs_handle = self.params.get('value', None)
+        if cs_handle is None:
+            cs_handle = self.params.get('handle', None)
+
+        if cs_handle is None:
+            self.check_request_params(['value'])
+
+        self.survivor['color_scheme'] = cs_handle
+        scheme_dict = self.Settlement.SurvivorColorSchemes.get_asset(
+            handle=cs_handle
+        )
+        msg = "%s set the color scheme to '%s' for %s."
+        self.log_event(
+            msg % (
+                request.User.login,
+                scheme_dict['name'],
+                self.pretty_name()
+            )
+        )
+        self.save()
+
+
+    @web_method
     def set_fighting_art_level(self, save=True):
         ''' Web-only method for setting a Fighting Art 'levels' list.
 
@@ -1234,55 +1284,6 @@ class Survivor(UserAsset):
 
 
     @web_method
-    @paywall
-    def set_color_scheme(self):
-        ''' Web-only method that processes a request to update the survivor's
-        color_scheme attribute. '''
-
-        # first, handle unsets
-        if (
-            'unset' in self.params and
-            self.survivor.get('color_scheme', None) is not None
-        ):
-            del self.survivor['color_scheme']
-            msg = '%s unset the color scheme for %s'
-            self.log_event(msg % (request.User.login, self.pretty_name()))
-            self.save()
-            return True
-
-        if (
-            'unset' in self.params and
-            self.survivor.get('color_scheme', None) is None
-        ):
-            msg = '%s Ignoring bogus request to unset color scheme...' % self
-            self.logger.warning(msg)
-            return False
-
-
-        # now, try to get the color scheme handle from the request params
-        cs_handle = self.params.get('value', None)
-        if cs_handle is None:
-            cs_handle = self.params.get('handle', None)
-
-        if cs_handle is None:
-            self.check_request_params(['value'])
-
-        self.survivor['color_scheme'] = cs_handle
-        scheme_dict = self.Settlement.SurvivorColorSchemes.get_asset(
-            handle=cs_handle
-        )
-        msg = "%s set the color scheme to '%s' for %s."
-        self.log_event(
-            msg % (
-                request.User.login,
-                scheme_dict['name'],
-                self.pretty_name()
-            )
-        )
-        self.save()
-
-
-    @web_method
     def set_gear_grid(self):
         """ Updates the survivor's 'gear_grid' attribute, which is a dictionary
         of grid locations:
@@ -1318,6 +1319,62 @@ class Survivor(UserAsset):
 
         self.log_event()
         self.save()
+
+
+    @web_method
+    def set_groups(self, save=True):
+        ''' Enforces some default group memberships. '''
+
+        self.check_request_params(['attribute', 'value'])
+
+        original_set = set(self.survivor['groups'])
+        incoming_set = set(self.params['value'])
+
+        # sanity check
+        if original_set == incoming_set:
+            warn = "%s List update has no changes. Ignoring..."
+            self.logger.warning(warn, self)
+            return False
+
+        # create two lists showing adds/removes
+        added_groups = list(incoming_set - original_set)
+        removed_groups = list(original_set - incoming_set)
+
+        # make the update
+        self.survivor['groups'] = list(incoming_set)
+
+        # certain attribs get you into a group automagically:
+        for attrib in ['dead', 'departing', 'retired', 'skip_next_hunt']:
+            group_handle = '_' + attrib
+
+            # for groups we're joining, if we don't have the matching attribute,
+            #   we need to add it now
+            if (
+                group_handle in added_groups and
+                self.survivor.get(attrib, None) is None
+            ):
+                msg = "%s Joining group: '%s'; adding '%s' attribute."
+                self.logger.info(msg, self, group_handle, attrib)
+                self.survivor[attrib] = True
+
+            # for groups we're leaving, we don't need their matching attribute
+            #   anymore so we remove it
+            if (
+                group_handle in removed_groups and
+                self.survivor.get(attrib, None) is not None
+            ):
+                msg = "%s Joining group: '%s'; removing '%s' attribute."
+                self.logger.info(msg, self, group_handle, attrib)
+                self.survivor[attrib] = None
+
+        msg = "%s joined %s new groups and left %s old groups."
+        self.log_event(
+            msg % (self.pretty_name(), len(added_groups), len(removed_groups))
+        )
+
+        if save:
+            self.save()
+
 
 
     @web_method
@@ -2052,6 +2109,7 @@ class Survivor(UserAsset):
             'bleeding_tokens',
             'color_scheme',
             'damage',
+            'groups',
             'public',
             'retired',
             'sex',
@@ -2933,6 +2991,37 @@ class Survivor(UserAsset):
             self.set_attribute(attrib='max_bleeding_tokens', value=1)
 
 
+    def _validate_groups(self):
+        ''' Check magic attributes prior to save and add/remove certain
+        magic groups.
+
+        The 'set_groups' method does a version of this as well. The two methods
+        are meant to work together to make the default groups work automagically
+        for the end-users, to whom the feature is meant to be transparent.
+        '''
+
+        for attrib in ['dead', 'departing', 'retired', 'skip_next_hunt']:
+            group_handle = '_' + attrib
+
+            # if we have the attrib and no group, add the group
+            if (
+                self.survivor.get(attrib, None) is not None and
+                group_handle not in self.survivor['groups']
+            ):
+                msg = "%s '%s' attr exists; adding %s to groups"
+                self.logger.debug(msg, self, attrib, group_handle)
+                self.survivor['groups'].append(group_handle)
+
+            # if we're in the group, but don't have the attrib, remove us
+            if (
+                self.survivor.get(attrib, None) is None and
+                group_handle in self.survivor['groups']
+            ):
+                msg = "%s '%s' attr does not exist; removing %s from groups"
+                self.logger.debug(msg, self, attrib, group_handle)
+                self.survivor['groups'].remove(group_handle)
+
+
     def _validate_partnership(self):
         ''' Make sure if the survivor has a partner, they have the partnership
         AI added to their record. '''
@@ -3733,7 +3822,8 @@ class Survivor(UserAsset):
         if 'public' not in self.survivor.keys():
             self.survivor["public"] = False
             self.perform_save = True
-        elif self.survivor["public"] == "checked":
+
+        if self.survivor["public"] == "checked":
             self.survivor["public"] = True
             self.perform_save = True
 

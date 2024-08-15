@@ -64,14 +64,38 @@ class Config():
     ]
     TIMEZONE = pytz.timezone('US/Central')
     SURVIVOR_GROUPS = [
-        {'sort_order': 0, 'handle': '_departing',   'name': 'Departing',},
-        {'sort_order': 1, 'handle': '_returning',   'name': 'Returning',},
-        {'sort_order': 2, 'handle': '_skip',        'name': 'Skip Next Hunt',},
-        {'sort_order': 3, 'handle': '_retired',     'name': 'Retired',},
-        {'sort_order': 4, 'handle': '_dead',        'name': 'Dead', },
+        {'sort_order': 0, 'handle': '_departing',
+            'name': 'Departing', 'color': '#4CB848',
+            'desc': 'Survivors taking part in the next hunt and showdown.',
+        },
+        {'sort_order': 1, 'handle': '_returning',
+            'name': 'Returning', 'color': '#CD4438',
+            'desc': (
+                'All survivors who endured who endured the previous showdown '
+                'are returning survivors.'
+             ),
+        },
+        {'sort_order': 2, 'handle': '_skip_next_hunt',
+            'name': 'Skip Next Hunt',  'color': '#8E3E95',
+            'desc': 'Skipped survivors may not depart.',
+        },
+        {'sort_order': 3, 'handle': '_retired',
+            'name': 'Retired', 'color': '#EEC051',
+            'desc': (
+                'Retired survivors cannot depart but may participate in '
+                'settlement events and endeavors.'
+            ),
+        },
+        {'sort_order': 4, 'handle': '_dead',
+            'name': 'Dead', 'color': '#666',
+            'desc': (
+                'Dead survivors may not participate in the hunt, showdown, '
+                'or development phases.'
+            ),
+        },
     ]
     USER_ASSET_COLLECTIONS = ['releases', 'settlements', 'survivors', 'users']
-    VERSION = "1.216.1300"
+    VERSION = "1.217.1308"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 

@@ -687,7 +687,130 @@ white_box_2022 = {
         ],
     },
 
+
+    # erza of dedheim
+    'ghostlink_pumpkin': {
+        'name': 'Ghostlink Pumpkin',
+        'type': 'seed_pattern',
+        'pattern_id': 31,
+        'expansion': 'erza_of_dedheim',
+        'keywords': ['item', 'consumable'],
+        'affinities': {'right': 'green', 'left': 'green'},
+        'desc': (
+            '<font class="kdm_manager_font">A</font> Consume: '
+            'Suffer <b>frenzy</b> and become <b>doomed</b> until end of round. '
+            'Convert all your attribute tokens to +1 strength tokens. '
+            'Limit, once per showdown.'
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'black_lichen': 1,
+                    'muculent_droppings': 1,
+                },
+                'innovations': ['graves'],
+                'crafting_process': [
+                    (
+                        'A hungry survivor mixes droppings and lichen together '
+                        'into a pungent slurry.'
+                    ),
+                    (
+                        'It is not tasty. They abandon their creation atop '
+                        'some <b>Graves</b> after a single bite.'
+                    ),
+                    (
+                        'Harvest the plant that eventually sprouts from the '
+                        'discarded meal with a <b>sickle</b>.'
+                    ),
+                ],
+            },
+        ],
+    },
+    'scythe_of_doom': {
+        'name': 'Scythe of Doom',
+        'type': 'seed_pattern',
+        'pattern_id': 32,
+        'expansion': 'erza_of_dedheim',
+        'keywords': [
+            'weapon', 'melee', 'scythe', 'grand', 'two-handed', 'other'
+        ],
+        'affinities': {'left': 'blue'},
+        'speed': 2,
+        'accuracy': 5,
+        'strength': 13,
+        'rules': ['Doombound', 'Devastating 2', 'Deadly', 'Sharp'],
+        'desc': (
+            '<b>Doombound:</b> When you become <b>doomed</b>, place a doom '
+            'token on this. You must archive a doom token to activate this. '
+        ),
+        'recipes': [
+            {
+                'resource_handles': {
+                    'iron': 3,
+                    'leather': 1,
+                },
+                'resource_types': {'bone': 1},
+                'locations': ['blacksmith'],
+                'crafting_process': [
+                    (
+                        'A survivor returns from <b>Golden Ember</b> (Hunt '
+                        'Event 73) with a skull.'
+                    ),
+                    (
+                        'A <b>Possessed</b> survivor becomes jealous while '
+                        'speaking with the long dead skull.'
+                    ),
+                    (
+                        "They steal away the skull's golden ember, lodging "
+                        "it into a <b>Blacksmith</b>'s prototype."
+                    ),
+                ],
+            },
+        ],
+    },
+    'robes_of_dedheim': {
+        'name': 'Robes of Dedheim',
+        'type': 'seed_pattern',
+        'pattern_id': 33,
+        'expansion': 'erza_of_dedheim',
+        'armor': 2,
+        'location': 'chest',
+        'keywords': ['armor', 'rawhide', 'other'],
+        'affinities': {'top': 'red', 'right': 'red'},
+        'rules': ['Outfit'],
+        'related_rules': ['doomed', 'outfit'],
+        'desc': (
+            'When you become <b>doomed</b>, before any actions are resolved, '
+            'gain +1 evasion token.'
+        ),
+        'affinity_bonus': {
+            'requires': {'puzzle': {'red': 2}},
+            'desc': '+2 speed',
+        },
+        'recipes': [
+            {
+                'resource_types': {'cloth': 1, 'hide': 1},
+                'crafting_process': [
+                    (
+                        'The blackened sweat of a <b>Traumatized survivor</b> '
+                        'permanently stains a cloth.'
+                    ),
+                    (
+                        'A visiting <b>Bone Witch</b> binds the cloth to the '
+                        'hide of a monster that died of fear.'
+                    ),
+                    (
+                        'Survivor and bestial traumas blend to form a garb '
+                        'suffused with nervous energy.'
+                    ),
+                ],
+            },
+        ],
+    },
+
 }
+
+
 
 white_box_2020 = {
 

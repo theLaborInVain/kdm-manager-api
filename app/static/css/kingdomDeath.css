@@ -245,6 +245,12 @@ hr.three_dee {
     padding: 0.5rem;
     width: 100%;
 }
+.kd.worksheet_row.centered_inputs {
+    align-items: center;
+}
+.kd.worksheet_row.centered_inputs input {
+    margin: auto 1rem auto 1rem;
+}
 .kd.worksheet_row.disabled {
     opacity: 0.5;
 }

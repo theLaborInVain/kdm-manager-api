@@ -147,6 +147,14 @@ class DataModel():
                 ):
                     keys_to_delete.add(attr['name'])
 
+
+                # next, uniquify lists that are sets
+                if attr['type'] == list and attr.get('is_a_set', False):
+                    msg = "Uniquifying survivor attribute '%s'" % attr['name']
+                    self.logger.debug(msg)
+                    record[attr['name']] = list(set(record[attr['name']]))
+
+
                 # next, coerce if we need to
                 if type(record[attr['name']]) != attr['type']:
                     warn = "Coercing '%s' attribute to %s type..."

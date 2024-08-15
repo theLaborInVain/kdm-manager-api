@@ -1539,6 +1539,35 @@ class Settlement(UserAsset):
 
 
     @web_method
+    def set_survivor_groups(self, save=True):
+        """ Processes the incoming request and overwrites the existing list of
+        survivor groups. """
+
+        # sanity check
+        self.check_request_params(['survivor_groups'])
+        new_groups = self.params['survivor_groups']
+
+        # handle reset/default requests
+        if new_groups == 'DEFAULT':
+            new_groups = copy(API.config['SURVIVOR_GROUPS'])
+
+        # check for pointless requests
+        if new_groups == self.settlement['survivor_groups']:
+            warn = "Incoming survivor groups match existing. Ignoring..."
+            self.logger.warning(warn)
+            return False
+
+        # do it/log it
+        self.settlement['survivor_groups'] = new_groups
+        self.log_event()
+
+        # save if we're saving
+        if save:
+            self.save()
+
+
+
+    @web_method
     def add_innovation(self, i_handle=None, save=True):
         """ Adds an innovation to the settlement. Request context optional.
 
