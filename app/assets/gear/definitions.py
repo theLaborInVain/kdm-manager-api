@@ -2385,7 +2385,10 @@ beta_challenge_scenarios = {
         'expansion': 'beta_challenge_scenarios',
         'type': 'rare_gear',
         'name': 'Petal Lantern',
-        'desc': 'After rolling on the severe injury table, you may spend any amount of survival to add that number to your roll result.',
+        'desc': (
+            'After rolling on the severe injury table, you may spend any '
+            'amount of survival to add that number to your roll result.'
+        ),
     },
     'piranha_helm': {
         'keywords': ['armor', 'set', 'rawhide'],
@@ -2404,7 +2407,10 @@ beta_challenge_scenarios = {
         'armor': 2,
         'location': 'head',
         'aux_location': 'body',
-        'desc': 'Takes the place of the Leather Mask and Leather Cuirass for completing the leather armor set.',
+        'desc': (
+            'Takes the place of the Leather Mask and Leather Cuirass for '
+            'completing the leather armor set.'
+        ),
     },
     'stone_arm': {
         'keywords': ['item', 'stone', 'heavy'],
@@ -2889,7 +2895,11 @@ generic = {
         'armor': 2,
         'affinities': {'left': 'red','bottom': 'blue','right': 'red'},
         'affinity_bonus': {
-            'desc': 'After moving from a <b>dash</b>, the coat fires its guns! It attacks with this profile, ignoring your attribute modifiers (4/9/8).',
+            'desc': (
+                'After moving from a <b>dash</b>, the coat fires its guns! '
+                'It attacks with this profile, ignoring your attribute '
+                'modifiers (4/9/8).'
+            ),
             'requires': {'puzzle': {'red': 2, 'blue': 1}}
         },
         'recipes': [

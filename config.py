@@ -67,6 +67,7 @@ class Config():
         {'sort_order': 0, 'handle': '_departing',
             'name': 'Departing', 'color': '#4CB848',
             'desc': 'Survivors taking part in the next hunt and showdown.',
+            'show_on_survivor_sheet': True,
         },
         {'sort_order': 1, 'handle': '_returning',
             'name': 'Returning', 'color': '#CD4438',
@@ -74,6 +75,7 @@ class Config():
                 'All survivors who endured who endured the previous showdown '
                 'are returning survivors.'
              ),
+            'show_on_survivor_sheet': True,
         },
         {'sort_order': 2, 'handle': '_skip_next_hunt',
             'name': 'Skip Next Hunt',  'color': '#8E3E95',
@@ -92,10 +94,11 @@ class Config():
                 'Dead survivors may not participate in the hunt, showdown, '
                 'or development phases.'
             ),
+            'allow_dead_survivors': True,
         },
     ]
     USER_ASSET_COLLECTIONS = ['releases', 'settlements', 'survivors', 'users']
-    VERSION = "1.217.1308"
+    VERSION = "1.222.1324"
     WORLD_ASSET_MAX_AGE = 15    # minutes
     WORLD_REFRESH_INTERVAL = 5  # minutes
 

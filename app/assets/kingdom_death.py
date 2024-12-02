@@ -199,7 +199,12 @@ class Monster():
         collection = getattr(self.collections, collection_name)
 
         for asset_handle in collection.assets:
-            model.add(asset_handle, attr_type, category=collection_name)
+            model.add(
+                asset_handle,
+                attr_type,
+                category=collection_name,
+                required=False
+            )
 
         msg = '%s.%s() added %s %s attributes to data model'
         self.logger.info(

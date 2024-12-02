@@ -73,7 +73,7 @@ class Settlement(UserAsset):
     DATA_MODEL.add('lost_settlements', int, minimum=0)
     DATA_MODEL.add('milestone_story_events', list)
     DATA_MODEL.add('monster_volumes', list, required=False)
-    DATA_MODEL.add('name', str, default_value='Unknown')
+    DATA_MODEL.add('name', str, default_value='Unknown', cannot_be_blank=True)
     DATA_MODEL.add('nemesis_monsters', list)
     DATA_MODEL.add('nemesis_encounters', dict)
     DATA_MODEL.add('patterns', list)
@@ -295,10 +295,7 @@ class Settlement(UserAsset):
             self.perform_save = True
 
         # apply the data model
-        corrected_record = self.DATA_MODEL.apply(self.settlement)
-        if corrected_record != self.settlement:
-            self.logger.warning('[%s] data model corrections applied!', self)
-            self.settlement = corrected_record
+        if self._apply_data_model():
             self.perform_save = True
 
         # finish
@@ -3679,6 +3676,22 @@ class Settlement(UserAsset):
             return output
 
         return int(self.settlement["population"])
+
+
+    def get_survivor_groups(self, return_type=dict):
+        ''' Returns a dictionary representation of settlement groups, which is
+        normally a list of dictionaries. '''
+        survivor_groups = {}
+
+        if return_type == 'handles':
+            return list(
+                {d['handle'] for d in self.settlement['survivor_groups']}
+            )
+
+        # default return
+        for group_dict in self.settlement['survivor_groups']:
+            survivor_groups[group_dict['handle']] = group_dict
+        return survivor_groups
 
 
     def get_settlement_notes(self):

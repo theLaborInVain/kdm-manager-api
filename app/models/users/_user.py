@@ -49,7 +49,7 @@ class User(UserAsset):
     DATA_MODEL.add('notifications', dict)
     DATA_MODEL.add('subscriber', dict, {'level': 0})
     DATA_MODEL.add('verified_email', bool)
-    DATA_MODEL.add('email_verification_code', str)
+    DATA_MODEL.add('email_verification_code', str, required=False)
     DATA_MODEL.add('favorite_survivors', list)
 
     # optional/runtime attributes
@@ -88,8 +88,8 @@ class User(UserAsset):
         self.id = str(self.user["_id"])
 
         # baseline/normalize
-        self.perform_save = False
-        self._normalize()
+        if self._apply_data_model():    # <-- returns True if modifications
+            self.save()
 
         # check temporary users for expiration
         if (
@@ -112,37 +112,6 @@ class User(UserAsset):
                 activity_string = flask.request.path,
                 ua_string = flask.request.user_agent.string
             )
-
-
-    def _normalize(self):
-        """ Coerce the user record into compliance with the data model. """
-
-        # 'patron' becomes 'subscriber' in the 1.0.0 release
-        if 'patron' in self.user.keys():
-            self.user['subscriber'] = self.user['patron']
-            del self.user['patron']
-            self.logger.warning("%s Normalized 'patron' to 'subscriber'!", self)
-            self.perform_save = True
-
-        if isinstance(self.user['subscriber']['level'], str):
-            warn = "%s Subscriber 'level' is str type! Normalizing to int..."
-            self.logger.warning(warn, self)
-            self.user['subscriber']['level'] = int(
-                self.user['subscriber']['level']
-            )
-            self.perform_save = True
-
-	# inflict/apply the data model
-        corrected_record = self.DATA_MODEL.apply(self.user)
-        if corrected_record != self.user:
-            self.logger.warning('[%s] data model corrections applied!', self)
-            self.user = corrected_record
-            self.perform_save = True
-
-        if self.perform_save:
-            msg = "%s user modified during normalization! Saving changes..."
-            self.logger.info(msg, self)
-            self.save()
 
 
     def load(self):

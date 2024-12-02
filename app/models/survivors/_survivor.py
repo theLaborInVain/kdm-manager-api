@@ -39,7 +39,13 @@ from .._decorators import deprecated, web_method, paywall
 class Survivor(UserAsset):
     """ This is the class object for survivor objects. It sub-classes the
     UserAsset (e.g. just like settlements) and tries to fallback and/or
-    super() back to that base class when possible. """
+    super() back to that base class when possible.
+
+
+    WARNING: we tamper the survivor data model over in __init__.py to include
+    asset collections that are always at HEAD revision. See the
+    add_collection_to_data_model() method for more info.
+    """
 
     collection="survivors"
 
@@ -504,6 +510,9 @@ class Survivor(UserAsset):
         ''' Formerly __post_process, this is our last chance to inflict business
         logic and/or game rules on a survivor BEFORE saving it back to mdb.'''
 
+        # always apply the data model during a save
+        self._apply_data_model()
+
         # only call validation methods here!
         self._validate_groups()
         self._validate_max_bleeding_tokens()
@@ -565,13 +574,6 @@ class Survivor(UserAsset):
         # add the savior key if we're dealing with a savior
         if self.is_savior() and "savior" not in self.survivor.keys():
             self.survivor["savior"] = self.is_savior()
-            self.perform_save = True
-
-        # finally, apply the data model
-        corrected_record = self.DATA_MODEL.apply(self.survivor)
-        if corrected_record != self.survivor:
-            self.logger.warning('[%s] data model corrections applied!', self)
-            self.survivor = corrected_record
             self.perform_save = True
 
         if self.perform_save:
@@ -643,7 +645,10 @@ class Survivor(UserAsset):
 
     def apply_survival_limit(self, save=False):
         """ Check the settlement to see if we're enforcing Survival Limit. Then
-        enforce it, if indicated. Force values less than zero to zero. """
+        enforce it, if indicated. Force values less than zero to zero.
+
+        REFACTOR TO USE DATA MODEL
+        """
 
         # no negative numbers
         if self.survivor["survival"] < 0:
@@ -1330,7 +1335,16 @@ class Survivor(UserAsset):
         original_set = set(self.survivor['groups'])
         incoming_set = set(self.params['value'])
 
-        # sanity check
+        # sanity check 1: make sure we're only working with existing groups
+        known_group_handles = self.Settlement.get_survivor_groups(
+            return_type='handles'
+        )
+        for group_handle in incoming_set:
+            if group_handle not in known_group_handles:
+                err = "Cannot work with non-existent group handle '%s'!"
+                raise utils.InvalidUsage(err % group_handle)
+
+        # sanity check 2: make sure we're actually making changes
         if original_set == incoming_set:
             warn = "%s List update has no changes. Ignoring..."
             self.logger.warning(warn, self)
@@ -1339,6 +1353,12 @@ class Survivor(UserAsset):
         # create two lists showing adds/removes
         added_groups = list(incoming_set - original_set)
         removed_groups = list(original_set - incoming_set)
+
+        # validate the adds BEFORE we make the update
+        for group_handle in added_groups:
+            if not self.can_join_group(group_handle):
+                err = "Survivor cannot join the '%s' group!"
+                raise utils.InvalidUsage(err % group_handle)
 
         # make the update
         self.survivor['groups'] = list(incoming_set)
@@ -1903,12 +1923,24 @@ class Survivor(UserAsset):
     @web_method
     def controls_of_death(self):
         """ Manage all aspects of the survivor's death here. This is tied to a
-        a number of settlement methods/values, so be cautious with this one. """
+        a number of settlement methods/values, so be cautious with this one.
+
+        Refactored in 2024-08 for clarity/accuracy/safety.
+        """
 
         self.check_request_params(["dead"])
-        dead = self.params["dead"]
 
-        if dead is False:
+        # sanity check
+        if not isinstance(self.params['dead'], bool):
+            err = (
+                "Controls of death require 'dead' argument to be a Boolean! "
+                "Got %s (%s) instead."
+            ) % (self.params['dead'], type(self.params['dead']))
+            raise utils.InvalidUsage(err)
+
+        # first possible action: incoming param is False, but survivor is dead
+        #   resurrect the survivor
+        if not self.params['dead'] and self.survivor.get('dead', False):
             for death_key in ["died_on","died_in","cause_of_death","dead"]:
                 if death_key in self.survivor.keys():
                     del self.survivor[death_key]
@@ -1920,7 +1952,10 @@ class Survivor(UserAsset):
                     request.User.login, self.pretty_name()
                 )
             )
-        else:
+
+        # second possible action: incoming is True, survivor is alive
+        #   kill the survivor
+        if self.params['dead'] and not self.survivor.get('dead', False):
             self.survivor["dead"] = True
             self.survivor["died_on"] = datetime.now()
 
@@ -1950,6 +1985,15 @@ class Survivor(UserAsset):
             )
             self.Settlement.update_population(-1)
 
+        # third possible action: incoming is True, survivor is dead
+        #    update CoD
+        if self.params['dead'] and self.survivor.get('dead', False):
+            for incoming_param in ['died_in', 'died_on', 'cause_of_death']:
+                value = self.params.get(incoming_param, None)
+                if value is not None:
+                    self.set_attribute(incoming_param, value, save=False)
+
+        # finally, save
         self.save()
 
 
@@ -2132,7 +2176,7 @@ class Survivor(UserAsset):
             self.logger.info(err, self, attrib, self.survivor[attrib], value)
             return True
 
-        # validate
+        # validate the attrib we're modifying and the incoming value
         self.DATA_MODEL.is_valid(attrib, value, raise_on_failure=True)
 
         # set it and log it
@@ -2143,8 +2187,8 @@ class Survivor(UserAsset):
             )
         )
 
-        # enforce
-        self.survivor = self.DATA_MODEL.apply(self.survivor)
+        # apply data model whether we're saving or not
+        self._apply_data_model()
 
         # optional save
         if save:
@@ -2984,7 +3028,6 @@ class Survivor(UserAsset):
     #       IMPORTANT! These never save(), because they get called during save()
     #
 
-
     def _validate_max_bleeding_tokens(self):
         ''' Makes sure we never go below one. '''
         if self.survivor.get('max_bleeding_tokens', 1) < 1:
@@ -3544,6 +3587,24 @@ class Survivor(UserAsset):
         if self.survivor.get('cannot_gain_bleeding_tokens', None) is None:
             return True
         return False
+
+
+    def can_join_group(self, group_handle=None):
+        ''' Checks the settlement groups; returns a Boolean representing whether
+        the survivor can join the group. '''
+
+        if group_handle is None:
+            raise TypeError("The 'group_handle' kwarg is required!")
+
+        group_dict = self.Settlement.get_survivor_groups()[group_handle]
+
+        # groups have to allow dead survivors explicitly
+        if (
+            self.is_dead() and not group_dict.get('allow_dead_survivors', False)
+        ):
+            return False
+
+        return True
 
 
     def cannot_activate_two_handed_weapons(self):

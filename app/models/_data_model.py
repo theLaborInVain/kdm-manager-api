@@ -125,6 +125,15 @@ class DataModel():
                 self.logger.warning(warn, attr['name'], attr['default'])
                 record[attr['name']] = attr['default']
 
+            if (
+                attr['required'] and attr['type'] == str and
+                attr.get('cannot_be_blank', False) and
+                record[attr['name']] == ''
+            ):
+                warn = "Required attr '%s' is blank! Setting default: '%s'"
+                self.logger.warning(warn, attr['name'], attr['default'])
+                record[attr['name']] = attr['default']
+
             # for required datetime attributes, do not allow None
             if (
                 attr['required'] and attr['type'] == datetime and
@@ -150,9 +159,13 @@ class DataModel():
 
                 # next, uniquify lists that are sets
                 if attr['type'] == list and attr.get('is_a_set', False):
-                    msg = "Uniquifying survivor attribute '%s'" % attr['name']
-                    self.logger.debug(msg)
-                    record[attr['name']] = list(set(record[attr['name']]))
+                    if (
+                        len(    record[attr['name']]) !=
+                        len(set(record[attr['name']]))
+                    ):
+                        msg = "Uniquifying '%s' attribute..." % attr['name']
+                        self.logger.info(msg)
+                        record[attr['name']] = list(set(record[attr['name']]))
 
 
                 # next, coerce if we need to

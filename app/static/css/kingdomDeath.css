@@ -488,7 +488,13 @@ hr.three_dee {
     margin: 1rem;
     width: -webkit-fill-available;
 }
-
+.kd.capsule.search_input {
+    width: inherit 
+}
+.kd.capsule.x {
+    margin: auto 0.5rem auto 0.5rem;
+    width: min-content;
+}
 .kd.capsule:disabled {
     color: #aaa;
 }

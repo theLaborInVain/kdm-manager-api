@@ -123,6 +123,27 @@ class UserAsset():
             raise ValueError(err % (self))
 
 
+    def _apply_data_model(self):
+        ''' Compares the current asset record to one that's had the data
+        model applied to it and then:
+
+            1. Logs a warning if there is a difference.
+            2. Sets the corrected record as the record (e.g. self.survivor).
+            3. Returns True if it makes a change. Returns False if it does not.
+
+        '''
+
+        record = getattr(self, self.collection[:-1])
+
+        corrected_record = self.DATA_MODEL.apply(record)
+        if corrected_record != record:
+            self.logger.warning('[%s] data model corrections applied!', self)
+            setattr(self, self.collection[:-1], corrected_record)
+            return True
+
+        return False
+
+
     def new(self):
         ''' Raise a TypeError; require sub-classes to define their own new().'''
         error = (
@@ -479,7 +500,7 @@ class UserAsset():
             asset_record['last_accessed'] = datetime.now()
 
         if save:
-            self.save(False)
+            self.save(set_modified_on=False)
 
 
 
