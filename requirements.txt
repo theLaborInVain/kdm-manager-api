@@ -38,6 +38,6 @@ typed-ast==1.4.1
 ua-parser==0.8.0
 urllib3==1.26.17
 user-agents==2.0
-Werkzeug==1.0.1
+Werkzeug==2.2.3
 whatimage==0.0.3
 wrapt==1.12.1
